@@ -26,6 +26,7 @@ Legacy source-build routes: `docs/source-inventory/route-registry-sources.md`.
 | `/app/connect` | Connect |
 | `/app/learn` | Learn |
 | `/app/tools` | Tools |
+| `/app/tools/recovery-capital` | BARC-10 recovery capital check |
 | `/app/resources` | Resources |
 | `/app/journey` | My Journey |
 | `/app/profile` | Profile |

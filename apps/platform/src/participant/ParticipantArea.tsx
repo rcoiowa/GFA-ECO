@@ -7,6 +7,7 @@ import { MyRecoveryPage } from './pages/MyRecoveryPage';
 import { ConnectPage } from './pages/ConnectPage';
 import { LearnPage } from './pages/LearnPage';
 import { ToolsPage } from './pages/ToolsPage';
+import { RecoveryCapitalPage } from './pages/RecoveryCapitalPage';
 import { ResourcesPage } from './pages/ResourcesPage';
 import { MyJourneyPage } from './pages/MyJourneyPage';
 import { ProfilePage } from './pages/ProfilePage';
@@ -25,6 +26,7 @@ export function ParticipantArea() {
           <Route path="connect" element={<ConnectPage />} />
           <Route path="learn" element={<LearnPage />} />
           <Route path="tools" element={<ToolsPage />} />
+          <Route path="tools/recovery-capital" element={<RecoveryCapitalPage />} />
           <Route path="resources" element={<ResourcesPage />} />
           <Route path="journey" element={<MyJourneyPage />} />
           <Route path="profile" element={<ProfilePage />} />

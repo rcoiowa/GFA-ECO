@@ -6,9 +6,13 @@ Legacy source deployments: `docs/source-inventory/deployment-registry.md`.
 
 | Component | Cloudflare project | Domain | Build command | Output |
 | --- | --- | --- | --- | --- |
-| Platform (staging) | Pages `recoveryos-staging` (to create) | `staging-vrcc.pages.dev` (or assigned) | `pnpm --filter @recoveryos/platform build` | `apps/platform/dist` |
+| Platform (staging) | Worker `recoveryos-staging` (static assets; config in `apps/platform/wrangler.jsonc`) | `recoveryos-staging.<account>.workers.dev` | `pnpm --filter @recoveryos/platform build` then `wrangler deploy` | `apps/platform/dist` |
 | Platform (prod, Phase 9) | takes over `vrcc.app` custom domain | `vrcc.app` | same | same |
 | API gateway | Worker `recoveryos-api` | `api.vrcc.app` | `wrangler deploy` (from `workers/api`) | — |
+
+Staging deploy needs a `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit) available to
+wrangler — the account's MCP connector is read-only and cannot deploy. Env vars are
+baked at build time (`VITE_*`), so build with them set.
 
 SPA routing: single-page-application fallback (`/* → /index.html`).
 

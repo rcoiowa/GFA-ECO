@@ -52,11 +52,19 @@ targets the `recoveryos` schema.
 - Working engines wired: daily check-in, goals, granular consent management
 - Support Now on every screen; grounding practice; 404/not-authorized pages
 
-## Phase 3 — Shared recovery service engines ⬜ (next)
+## Phase 3 — Shared recovery service engines ◐ (in progress)
 
-Recovery capital assessment engine, sessions/appointments, content engine (Brain Atlas,
-Recovering the Mind, Training the Mind, Tapes We Carry, 59 slogans — canonical content
-intake needed), service-event emission from all engines.
+**Done (2026-07-29):** Recovery capital engine — canonical BARC-10 instrument
+(`packages/domain/src/instruments/barc10.ts`, merged from the vrcc MVP module with the
+soil-type framing preserved), assessment flow at `/app/tools/recovery-capital`,
+`service_events` attribution now emitted by both check-ins and assessments
+(migration 0012 self-insert policy; `recordSelfServiceEvent`). Live-validated:
+assessment saved (score 44 → Thorny Soil), two vrcc-context service events recorded,
+`analytics_people_served` deduplicates correctly.
+
+**Remaining:** sessions/appointments engine, content engine (Brain Atlas, Recovering
+the Mind, Training the Mind, Tapes We Carry, 59 slogans — canonical content intake
+needed), goals→service-event linkage, Walls of Honor.
 
 ## Phase 4 — Resident experience ⬜ (shell built)
 

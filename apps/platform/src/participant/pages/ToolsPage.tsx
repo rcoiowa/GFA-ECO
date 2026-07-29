@@ -29,11 +29,16 @@ export function ToolsPage() {
           </Link>
         </Card>
         <Card>
-          <h2 className="text-lg font-semibold text-ink">Recovery capital assessment</h2>
+          <h2 className="text-lg font-semibold text-ink">Recovery capital check</h2>
           <p className="mt-1 text-ink-muted">
-            Measure your recovery strengths and watch them grow over time.
+            Ten short statements about your recovery strengths — and watch them grow over time.
           </p>
-          <p className="mt-2 text-sm font-medium text-attention-700">Arriving soon</p>
+          <Link
+            to="/app/tools/recovery-capital"
+            className="mt-2 inline-block font-medium text-experience-700 underline underline-offset-2"
+          >
+            Take the check (about 2 minutes)
+          </Link>
         </Card>
       </div>
     </>

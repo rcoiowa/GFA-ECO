@@ -1,5 +1,6 @@
 import type { CheckIn, DeliveryContext } from '@recoveryos/domain';
 import { getSupabase } from '../client';
+import { recordSelfServiceEvent } from './serviceEvents';
 
 export async function listMyRecentCheckIns(personId: number, limit = 14): Promise<CheckIn[]> {
   const { data, error } = await getSupabase()
@@ -31,5 +32,12 @@ export async function createCheckIn(input: {
     .select()
     .single();
   if (error) throw error;
+
+  await recordSelfServiceEvent({
+    personId: input.personId,
+    serviceTypeKey: 'daily_check_in',
+    deliveryContext: input.deliveryContext,
+  });
+
   return data;
 }
