@@ -7,7 +7,14 @@ import { SUPPORT_LADDER, type SupportOption } from './ladder';
  * participant- and resident-facing shell. Opens an accessible dialog with the
  * escalation ladder ordered from grounding to emergency services.
  */
-export function SupportNowButton({ className = '' }: { className?: string }) {
+export function SupportNowButton({
+  className = '',
+  basePath = '',
+}: {
+  className?: string;
+  /** Experience base path ('/app', '/residence') for relative ladder routes. */
+  basePath?: string;
+}) {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const navigate = useNavigate();
@@ -23,7 +30,7 @@ export function SupportNowButton({ className = '' }: { className?: string }) {
     const { action } = option;
     if (action.kind === 'route') {
       setOpen(false);
-      navigate(action.to);
+      navigate(`${basePath}/${action.to}`);
     } else {
       window.location.href =
         action.kind === 'tel' ? `tel:${action.number}` : `sms:${action.number}`;

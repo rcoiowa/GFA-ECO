@@ -9,3 +9,7 @@ coverage/
 .turbo/
 .wrangler/
 supabase/.temp/
+
+# Source-build intake clones (audit material, never production code)
+source-builds/*
+!source-builds/README.md

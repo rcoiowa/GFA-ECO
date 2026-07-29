@@ -15,62 +15,7 @@ importers:
         specifier: ^5.8.0
         version: 5.9.3
 
-  apps/resident:
-    dependencies:
-      '@recoveryos/auth':
-        specifier: workspace:*
-        version: link:../../packages/auth
-      '@recoveryos/data-access':
-        specifier: workspace:*
-        version: link:../../packages/data-access
-      '@recoveryos/design-tokens':
-        specifier: workspace:*
-        version: link:../../packages/design-tokens
-      '@recoveryos/domain':
-        specifier: workspace:*
-        version: link:../../packages/domain
-      '@recoveryos/safety':
-        specifier: workspace:*
-        version: link:../../packages/safety
-      '@recoveryos/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      react:
-        specifier: ^19.1.0
-        version: 19.2.8
-      react-dom:
-        specifier: ^19.1.0
-        version: 19.2.8(react@19.2.8)
-      react-router:
-        specifier: ^7.6.0
-        version: 7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      zod:
-        specifier: ^3.25.0
-        version: 3.25.76
-    devDependencies:
-      '@tailwindcss/vite':
-        specifier: ^4.1.0
-        version: 4.3.3(vite@6.4.3(jiti@2.7.0)(lightningcss@1.32.0))
-      '@types/react':
-        specifier: ^19.1.0
-        version: 19.2.17
-      '@types/react-dom':
-        specifier: ^19.1.0
-        version: 19.2.3(@types/react@19.2.17)
-      '@vitejs/plugin-react':
-        specifier: ^4.4.0
-        version: 4.7.0(vite@6.4.3(jiti@2.7.0)(lightningcss@1.32.0))
-      tailwindcss:
-        specifier: ^4.1.0
-        version: 4.3.3
-      typescript:
-        specifier: ^5.8.0
-        version: 5.9.3
-      vite:
-        specifier: ^6.3.0
-        version: 6.4.3(jiti@2.7.0)(lightningcss@1.32.0)
-
-  apps/vrcc:
+  apps/platform:
     dependencies:
       '@recoveryos/auth':
         specifier: workspace:*

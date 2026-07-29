@@ -5,16 +5,22 @@ platform composed of clearly separated user experiences running on shared infras
 
 **Simple on the surface. Comprehensive underneath.**
 
-## Experiences
+## One platform, several intentional front doors
 
-| App | Path | Audience |
-| --- | --- | --- |
-| VRCC Participant | `apps/vrcc` | People receiving recovery-support services through the Virtual Recovery Community Center |
-| Resident | `apps/resident` | Recovery residence residents (recovery support + residence responsibilities) |
-| Residence Staff | `apps/residence-staff` | Residence staff and operators (Phase 5) |
-| Coach | `apps/coach` | Recovery coaches (Phase 6) |
-| Navigator | `apps/navigator` | Resource navigators (Phase 6) |
-| Admin | `apps/admin` | Administrators and executives (Phase 7) |
+`apps/platform` is the single frontend behind `vrcc.app` (ADR-0010). Experience shells
+are route-separated and lazy-loaded:
+
+| Route | Audience |
+| --- | --- |
+| `/` + `/recovery-residences/grace-house` | Public entrance and residence information |
+| `/app` | VRCC participants |
+| `/residence` | Recovery residence residents |
+| `/coach` · `/navigator` · `/staff` · `/admin` | Professional workspaces (Phase 7) |
+
+This repo is also the consolidation target for five legacy builds (vrcc.app,
+Recovery Residence OS, Grace House, Virtual Recovery, GFA Connection) — see
+`docs/source-inventory/` for the audit registries and `source-builds/README.md`
+for intake clones.
 
 ## Shared packages
 
@@ -29,9 +35,10 @@ platform composed of clearly separated user experiences running on shared infras
 
 ## Infrastructure
 
-- **Supabase** — PostgreSQL, Auth, Storage, RLS (`supabase/migrations`)
-- **Cloudflare Pages** — frontend hosting (one project per app)
-- **Cloudflare Workers** — shared API gateway (`workers/api`)
+- **Supabase** — PostgreSQL, Auth, Storage, RLS (`supabase/migrations` is the target
+  model; live-DB reconciliation per `docs/migration/README.md`)
+- **Cloudflare Pages** — hosts the platform (staging → `vrcc.app` at cutover)
+- **Cloudflare Workers** — API/orchestration layer only (`workers/api`), never a second frontend
 
 ## Getting started
 

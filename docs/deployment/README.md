@@ -1,37 +1,45 @@
-# Deployment Registry
+# Deployment Registry — Canonical Platform
+
+Legacy source deployments: `docs/source-inventory/deployment-registry.md`.
 
 ## Targets
 
-| App | Cloudflare Pages project | Domain | Build command | Output |
+| Component | Cloudflare project | Domain | Build command | Output |
 | --- | --- | --- | --- | --- |
-| VRCC | `recoveryos-vrcc` | `vrcc.app` | `pnpm --filter @recoveryos/vrcc build` | `apps/vrcc/dist` |
-| Resident | `recoveryos-resident` | `residence.vrcc.app` | `pnpm --filter @recoveryos/resident build` | `apps/resident/dist` |
-| API | Worker `recoveryos-api` | `api.vrcc.app` | `wrangler deploy` (from `workers/api`) | — |
+| Platform (staging) | Pages `recoveryos-staging` (to create) | `staging-vrcc.pages.dev` (or assigned) | `pnpm --filter @recoveryos/platform build` | `apps/platform/dist` |
+| Platform (prod, Phase 9) | takes over `vrcc.app` custom domain | `vrcc.app` | same | same |
+| API gateway | Worker `recoveryos-api` | `api.vrcc.app` | `wrangler deploy` (from `workers/api`) | — |
 
-SPA routing: each Pages project needs a `/* → /index.html 200` rule (Pages does this
-automatically for single-page apps when no `_redirects` conflicts).
+SPA routing: single-page-application fallback (`/* → /index.html`).
 
-## Environment variables (per Pages project)
+## Environment variables (Pages project)
 
 | Variable | Notes |
 | --- | --- |
 | `VITE_SUPABASE_URL` | `https://ykykeioydvtxpyreshhs.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | Publishable anon key (safe for frontend; RLS protects data) |
-| `VITE_RECOVERYOS_EXPERIENCE` | `vrcc` / `resident` |
+| `VITE_SUPABASE_ANON_KEY` | Publishable anon key (RLS protects data) |
 
-Worker secrets via `wrangler secret put` (none required in Phase 1).
+Worker secrets via `wrangler secret put` (none required yet).
+
+## Cutover (Phase 9 — no-destructive-cutover rule)
+
+1. Staging validated (UAT + checks below).
+2. Re-point `vrcc.app` custom domain from Worker `virtualrecovery` to the platform
+   deployment. Rollback = re-point back (DNS-level, minutes).
+3. Legacy workers.dev / pages.dev URLs remain read-only archives until formally retired.
 
 ## Database
 
-Apply `supabase/migrations/*.sql` in order, then `supabase/seed/seed.sql` (dev only).
-Requires authorized Supabase access (MCP connector or CLI link).
+Canonical target schema: `supabase/migrations/*.sql`. Do NOT apply blindly to the live
+project — it already hosts 4 application schemas. Follow `docs/migration/README.md`.
 
-## Launch checklist (Phase 8, not yet run)
+## Launch checklist (Phase 8/9, not yet run)
 
-- [ ] RLS review against permission matrix
+- [ ] Live-DB verification of the four legacy schemas (needs Supabase authorization)
+- [ ] Canonical schema deployed per migration strategy; RLS review vs permission matrix
+- [ ] ETL dedup validation (unique-people counts vs legacy)
 - [ ] Accessibility audit (WCAG 2.2 AA)
 - [ ] Support Now contacts verified by GFA leadership (ADR-0007)
 - [ ] Auth email templates + redirect URLs configured in Supabase
-- [ ] Session/cookie domain strategy across subdomains verified
-- [ ] Bundle code-splitting review (supabase-js chunk)
-- [ ] Backup/recovery documentation
+- [ ] Staging UAT sign-off; rollback rehearsed
+- [ ] Legacy deployments labeled ARCHIVED

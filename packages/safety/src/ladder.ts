@@ -10,7 +10,7 @@ export interface SupportOption {
   title: string;
   description: string;
   action:
-    | { kind: 'route'; to: string }
+    | { kind: 'route'; to: string } // relative to the hosting experience's base path
     | { kind: 'tel'; number: string; display: string }
     | { kind: 'sms'; number: string; body?: string; display: string };
 }
@@ -20,7 +20,7 @@ export const SUPPORT_LADDER: SupportOption[] = [
     key: 'grounding',
     title: 'Take a grounding moment',
     description: 'A short breathing and grounding exercise you can do right now, wherever you are.',
-    action: { kind: 'route', to: '/support/grounding' },
+    action: { kind: 'route', to: 'support/grounding' },
   },
   {
     key: 'gfa-support',
@@ -32,7 +32,7 @@ export const SUPPORT_LADDER: SupportOption[] = [
     key: 'my-team',
     title: 'Message your support team',
     description: 'Reach out to your coach, navigator, or a peer who knows you.',
-    action: { kind: 'route', to: '/connect' },
+    action: { kind: 'route', to: 'connect' },
   },
   {
     key: 'warmline',

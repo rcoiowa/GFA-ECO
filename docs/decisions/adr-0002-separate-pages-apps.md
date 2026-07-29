@@ -1,6 +1,6 @@
 # ADR-0002: Separate Cloudflare Pages projects per experience
 
-**Status:** Accepted · **Date:** 2026-07-29
+**Status:** SUPERSEDED by ADR-0010 (2026-07-29) · **Date:** 2026-07-29
 
 ## Context
 

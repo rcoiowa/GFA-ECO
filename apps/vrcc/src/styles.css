@@ -1,8 +1,0 @@
-@import 'tailwindcss';
-@import '@recoveryos/design-tokens/tokens.css';
-@import '@recoveryos/design-tokens/themes/vrcc.css';
-
-/* Tailwind v4 source scanning for workspace packages */
-@source '../../../packages/ui/src';
-@source '../../../packages/safety/src';
-@source '../../../packages/auth/src';

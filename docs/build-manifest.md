@@ -2,6 +2,18 @@
 
 Running record of what exists, per phase. Update in the same commit as the work.
 
+## Consolidation Phase 0–1 — Preserve, register, audit ✅ (2026-07-29)
+
+- All five legacy source builds identified, cloned (`source-builds/`, gitignored), and
+  audited; vrcc.app confirmed Git-backed (repo `Grace-For-Addictions/vrcc.app` →
+  Worker `virtualrecovery`) — the "non-Git build recovery" task is closed.
+- Registries: `docs/source-inventory/` (deployments, source routes, feature matrix,
+  data sources, component preservation). Migration strategy: `docs/migration/`.
+- Architectural pivot to one route-separated platform app recorded in ADR-0010/0011;
+  `apps/vrcc` + `apps/resident` merged into `apps/platform` with lazy-loaded
+  experience areas, `[data-experience]` theming, and an experience switcher.
+- Legacy deployments labeled SOURCE; none modified.
+
 ## Phase 0 — Foundation decisions ✅
 
 - Product architecture: `docs/architecture/product-architecture.md`
@@ -29,7 +41,7 @@ Running record of what exists, per phase. Update in the same commit as the work.
 
 ## Phase 2 — VRCC participant experience ✅ (initial)
 
-- `apps/vrcc`: landing, register, sign-in, onboarding provisioning
+- `apps/platform` `/app` area: landing, register, sign-in, onboarding provisioning
 - Seven destinations: Today, My Recovery (working goals), Connect, Learn, Tools,
   Resources, My Journey (working check-in history)
 - Working engines wired: daily check-in, goals, granular consent management
@@ -43,8 +55,9 @@ intake needed), service-event emission from all engines.
 
 ## Phase 4 — Resident experience ⬜ (shell built)
 
-`apps/resident` shell with 7-area nav, residence identity/status live; responsibilities,
-chores, curfew, passes, documents pending.
+`/residence` area with 7-area nav, residence identity/status live; responsibilities,
+chores, curfew, passes, documents pending — Residence OS source workflows
+(`source-builds/recovery-residence-os`) are the primary input.
 
 ## Phases 5–8 ⬜
 

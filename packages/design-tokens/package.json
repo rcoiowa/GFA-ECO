@@ -5,9 +5,7 @@
   "type": "module",
   "exports": {
     "./tokens.css": "./src/tokens.css",
-    "./themes/vrcc.css": "./src/themes/vrcc.css",
-    "./themes/residence.css": "./src/themes/residence.css",
-    "./themes/professional.css": "./src/themes/professional.css"
+    "./themes/platform.css": "./src/themes/platform.css"
   },
   "scripts": {
     "typecheck": "echo 'design-tokens: css only'"

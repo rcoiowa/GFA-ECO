@@ -1,0 +1,30 @@
+/*
+ * Platform experience theming. One deployment hosts multiple experiences, so
+ * experience colors are runtime-switchable: @theme registers the utilities
+ * (defaulting to the VRCC palette) and [data-experience] overrides re-point
+ * the variables for the residence and professional route subtrees. The shell
+ * sets data-experience on its root element.
+ */
+@theme {
+  /* VRCC participant default: warm, hopeful, community-oriented */
+  --color-experience-500: #348872;
+  --color-experience-600: #266d5c;
+  --color-experience-700: #20574b;
+  --color-experience-soft: #eef7f4;
+}
+
+/* Recovery residence: steady, grounded, home-like */
+[data-experience='residence'] {
+  --color-experience-500: #4372b5;
+  --color-experience-600: #35598f;
+  --color-experience-700: #2d4a76;
+  --color-experience-soft: #f2f6fc;
+}
+
+/* Professional workspaces (staff, coach, navigator, admin): calm, information-dense */
+[data-experience='professional'] {
+  --color-experience-500: #52627c;
+  --color-experience-600: #414f66;
+  --color-experience-700: #364154;
+  --color-experience-soft: #f2f4f8;
+}

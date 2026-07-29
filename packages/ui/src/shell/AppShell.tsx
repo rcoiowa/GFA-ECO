@@ -16,6 +16,8 @@ export interface AppShellProps {
   navItems: NavItem[];
   /** Persistent utilities (Support Now, profile, sign out) rendered in header. */
   utilities?: ReactNode;
+  /** Theme key for this experience subtree ([data-experience] token override). */
+  experience?: 'vrcc' | 'residence' | 'professional';
   children: ReactNode;
 }
 
@@ -24,12 +26,19 @@ export interface AppShellProps {
  * mobile (first five destinations) with the rest reachable via the sidebar
  * pattern. Every page renders inside a labeled <main> with a skip link.
  */
-export function AppShell({ productName, contextLabel, navItems, utilities, children }: AppShellProps) {
+export function AppShell({
+  productName,
+  contextLabel,
+  navItems,
+  utilities,
+  experience,
+  children,
+}: AppShellProps) {
   const location = useLocation();
   const mobileItems = navItems.slice(0, 5);
 
   return (
-    <div className="min-h-dvh flex flex-col md:flex-row">
+    <div data-experience={experience} className="min-h-dvh flex flex-col md:flex-row">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-surface-raised focus:px-4 focus:py-2 focus:rounded-md"

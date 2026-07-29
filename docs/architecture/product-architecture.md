@@ -24,21 +24,23 @@ RecoveryOS Shared Platform
 Shared capabilities live in `packages/*` and `supabase/`. Experience shells own only
 navigation, page composition, and theming. No engine is ever duplicated per shell.
 
-## Deployment model
+## Deployment model (ADR-0010)
 
-| Surface | Domain | Hosting |
+One frontend deployment — `apps/platform` behind `vrcc.app` — with route-separated,
+lazy-loaded experience shells ("one platform with several intentional front doors"):
+
+| Surface | Route | Status |
 | --- | --- | --- |
-| VRCC participant | `vrcc.app` | Cloudflare Pages |
-| Resident | `residence.vrcc.app` | Cloudflare Pages |
-| Staff | `staff.recoveryresidence.app` | Cloudflare Pages (Phase 5) |
-| Coach | `coach.vrcc.app` | Cloudflare Pages (Phase 6) |
-| Navigator | `navigator.vrcc.app` | Cloudflare Pages (Phase 6) |
-| Admin | `admin.vrcc.app` | Cloudflare Pages (Phase 7) |
-| API gateway | `api.vrcc.app` | Cloudflare Worker (`workers/api`) |
-| Data | Supabase project `ykykeioydvtxpyreshhs` | PostgreSQL + Auth + Storage + RLS |
+| Public entrance + Grace House info | `/`, `/recovery-residences/grace-house` | Built |
+| VRCC participant | `/app` | Built |
+| Resident | `/residence` | Shell built |
+| Coach / Navigator / Staff / Admin | `/coach` `/navigator` `/staff` `/admin` | Phase 7 |
+| API gateway | `api.vrcc.app` — Cloudflare Worker (`workers/api`), never a frontend | Skeleton |
+| Data | Supabase `ykykeioydvtxpyreshhs` — PostgreSQL + Auth + Storage + RLS | Target model in repo |
 
-Separate Pages projects give each experience its own bundle, release cycle, and
-role surface — route separation inside one bundle was rejected (ADR-0002).
+Each front door downloads only its own lazy chunk; guards shape navigation and RLS
+enforces access. Consolidation of the five legacy source builds into this platform is
+governed by ADR-0011 and `docs/source-inventory/`.
 
 ## The layer model
 

@@ -12,7 +12,7 @@
     "onlyBuiltDependencies": ["esbuild", "workerd"]
   },
   "scripts": {
-    "dev": "pnpm --filter @recoveryos/vrcc dev",
+    "dev": "pnpm --filter @recoveryos/platform dev",
     "build": "pnpm -r --filter './apps/*' build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r --if-present test",
