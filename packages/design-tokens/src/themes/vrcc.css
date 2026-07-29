@@ -1,0 +1,7 @@
+/* VRCC participant theme: warm, hopeful, community-oriented. */
+@theme {
+  --color-experience-500: var(--color-brand-500);
+  --color-experience-600: var(--color-brand-600);
+  --color-experience-700: var(--color-brand-700);
+  --color-experience-soft: var(--color-brand-50);
+}

@@ -1,0 +1,26 @@
+{
+  "name": "recoveryos",
+  "private": true,
+  "version": "0.1.0",
+  "description": "RecoveryOS — the Grace For Addictions digital recovery-support ecosystem",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.34.5",
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "workerd"]
+  },
+  "scripts": {
+    "dev": "pnpm --filter @recoveryos/vrcc dev",
+    "build": "pnpm -r --filter './apps/*' build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r --if-present test",
+    "format": "prettier --write \"**/*.{ts,tsx,css,md,json,sql}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,css,md,json,sql}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.5.0",
+    "typescript": "^5.8.0"
+  }
+}
