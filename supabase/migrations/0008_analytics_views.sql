@@ -3,6 +3,8 @@
 -- enrollment counts. Program and residence metrics stay separately attributable.
 
 -- People with any service event in a period (query with date filters).
+set search_path = recoveryos, public;
+
 create view analytics_people_served as
 select distinct se.person_id
 from service_events se;

@@ -1,19 +1,21 @@
 # RecoveryOS Supabase
 
-Target project: `ykykeioydvtxpyreshhs` (configured in `.mcp.json`).
+Live project: `ykykeioydvtxpyreshhs` ("Grace For Addictions", us-west-2, PG17).
+
+**Status: DEPLOYED.** Migrations 0000–0011 are applied to the live project as the
+**`recoveryos` schema** (2026-07-29), alongside the untouched legacy schemas
+(`public`, `gfa_ui`, `gfa_core`, `gfa_community`, `gfa_residence`). The app client
+targets `recoveryos` via `db: { schema: 'recoveryos' }`. Reference data
+(org, programs, Grace House, service/consent taxonomies) is seeded.
 
 ## Applying migrations
 
-Migrations are ordered SQL files in `migrations/`. Apply in filename order via
-the Supabase MCP `apply_migration` tool or the Supabase CLI:
+Ordered SQL files in `migrations/`, applied via the Supabase MCP `apply_migration`
+tool (migration names `recoveryos_<filename>`) or the CLI. Each file sets
+`search_path = recoveryos, public`. After DDL that adds tables/functions, PostgREST
+needs `notify pgrst, 'reload schema';` before the REST API sees them.
 
-```bash
-supabase link --project-ref ykykeioydvtxpyreshhs
-supabase db push
-```
-
-`seed/seed.sql` is development-only reference data (Grace For Addictions org,
-VRCC/ANCHOR programs, Grace House residence, service and consent taxonomies).
+`seed/seed.sql` holds the reference data inserts (idempotent re-runs are safe).
 
 ## Non-negotiable schema rules
 

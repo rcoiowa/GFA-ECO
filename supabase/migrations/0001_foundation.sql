@@ -2,6 +2,8 @@
 -- Convention: bigint identity primary keys; timestamptz audit columns;
 -- snake_case names mirrored exactly by @recoveryos/domain types.
 
+set search_path = recoveryos, public;
+
 create type role_key as enum (
   'participant', 'resident', 'coach', 'navigator', 'residence_staff',
   'residence_manager', 'program_manager', 'administrator', 'executive',

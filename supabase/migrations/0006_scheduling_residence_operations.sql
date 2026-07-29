@@ -2,6 +2,8 @@
 -- Residence operations are always residence-scoped and never leak into the
 -- universal recovery-support surface.
 
+set search_path = recoveryos, public;
+
 create table appointments (
   id bigint generated always as identity primary key,
   person_id bigint not null references people (id),

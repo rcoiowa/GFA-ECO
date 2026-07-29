@@ -1,7 +1,10 @@
--- Development seed data. Never run against production.
+-- Reference data seed (idempotent). Applied to the live recoveryos schema
+-- on 2026-07-29; safe to re-run.
+set search_path = recoveryos, public;
 
 insert into organizations (name, organization_type)
-values ('Grace For Addictions', 'recovery_support');
+select 'Grace For Addictions', 'recovery_support'
+where not exists (select 1 from organizations where name = 'Grace For Addictions');
 
 insert into programs (organization_id, key, name, description)
 select o.id, v.key, v.name, v.description
@@ -12,11 +15,14 @@ from organizations o,
     ('anchor', 'ANCHOR',
      'ANCHOR program participation.')
   ) as v(key, name, description)
-where o.name = 'Grace For Addictions';
+where o.name = 'Grace For Addictions'
+on conflict (key) do nothing;
 
 insert into residences (organization_id, name, address_city, address_state, capacity)
 select o.id, 'Grace House', 'Des Moines', 'IA', 12
-from organizations o where o.name = 'Grace For Addictions';
+from organizations o
+where o.name = 'Grace For Addictions'
+  and not exists (select 1 from residences where name = 'Grace House');
 
 insert into service_types (key, name, category) values
   ('coaching_session', 'Recovery coaching session', 'coaching'),
@@ -30,7 +36,8 @@ insert into service_types (key, name, category) values
   ('education_module', 'Educational content', 'education'),
   ('recovery_practice', 'Recovery practice', 'practice'),
   ('support_request', 'Support request', 'support_request'),
-  ('community_event', 'Community event', 'event');
+  ('community_event', 'Community event', 'event')
+on conflict (key) do nothing;
 
 insert into consent_types (key, category, name, description, is_required_for_service) values
   ('terms_of_use', 'account_identity', 'Terms of use and privacy notice',
@@ -48,4 +55,5 @@ insert into consent_types (key, category, name, description, is_required_for_ser
   ('ai_features', 'ai_features', 'Grace AI features',
    'Consent to use Grace AI. Optional — declining never limits other services.', false),
   ('analytics', 'analytics', 'De-identified program improvement analytics',
-   'Consent to include de-identified information in program improvement analysis.', false);
+   'Consent to include de-identified information in program improvement analysis.', false)
+on conflict (key) do nothing;

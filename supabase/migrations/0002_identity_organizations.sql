@@ -3,6 +3,8 @@
 -- person can exist before (or without) an account, e.g. an applicant entered
 -- by residence staff.
 
+set search_path = recoveryos, public;
+
 create table people (
   id bigint generated always as identity primary key,
   auth_user_id uuid unique references auth.users (id) on delete set null,

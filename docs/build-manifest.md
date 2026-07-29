@@ -36,8 +36,13 @@ Running record of what exists, per phase. Update in the same commit as the work.
 - API gateway: `workers/api` (health/version skeleton)
 - Validation: `pnpm typecheck` clean (9 projects), `pnpm build` clean (2 apps)
 
-**Pending external step:** apply migrations + seed to Supabase project
-`ykykeioydvtxpyreshhs` (requires authorized Supabase access) and set app env vars.
+**Database deployed (2026-07-29):** migrations 0000–0011 applied to the live
+project as the `recoveryos` schema; reference data seeded; PostgREST exposure
+configured; security advisors run (one warning fixed, deny-all/GraphQL-visibility
+notes documented). Live E2E validated in a real browser: register → person
+provisioning → check-in → consent → goal → resident-area denial, with all rows
+verified server-side and test data removed. Client (`packages/data-access`) now
+targets the `recoveryos` schema.
 
 ## Phase 2 — VRCC participant experience ✅ (initial)
 

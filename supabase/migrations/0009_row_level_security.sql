@@ -8,15 +8,17 @@
 
 -- Helpers -----------------------------------------------------------------
 
+set search_path = recoveryos, public;
+
 create or replace function current_person_id()
 returns bigint
-language sql stable security definer set search_path = public as $$
+language sql stable security definer set search_path = recoveryos, public as $$
   select id from people where auth_user_id = auth.uid();
 $$;
 
 create or replace function has_role(target_role role_key)
 returns boolean
-language sql stable security definer set search_path = public as $$
+language sql stable security definer set search_path = recoveryos, public as $$
   select exists (
     select 1 from role_assignments ra
     where ra.person_id = current_person_id()
@@ -29,7 +31,7 @@ $$;
 -- residence-scoped staff/manager role.
 create or replace function staff_residence_ids()
 returns setof bigint
-language sql stable security definer set search_path = public as $$
+language sql stable security definer set search_path = recoveryos, public as $$
   select ra.residence_id from role_assignments ra
   where ra.person_id = current_person_id()
     and ra.role_key in ('residence_staff', 'residence_manager')
@@ -42,7 +44,7 @@ create or replace function ensure_person_for_current_user(
   p_first_name text,
   p_last_name text
 ) returns people
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = recoveryos, public as $$
 declare
   result people;
 begin

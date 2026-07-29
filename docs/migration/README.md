@@ -11,9 +11,13 @@ across `public`, `gfa_ui`, `gfa_core`, `gfa_residence` (see
 (`kmvlkvfxrjqrfxsljvxl` — Grace House, `yqonwnzqtgmnoiymkefk` — GFA Connection) hold
 additional data.
 
-**Decision (pending live-DB verification):** the canonical target schema in
-`supabase/migrations/0001–0009` is deployed into the live project as a new schema
-(working name `recoveryos`) rather than dropped onto `public`. ETL views then map:
+**Decision (EXECUTED 2026-07-29):** the canonical target schema in
+`supabase/migrations/0000–0011` is deployed into the live project as the
+**`recoveryos` schema** (verified live: all migrations applied, reference data
+seeded, PostgREST exposure added to the existing `pgrst.db_schemas` list, RLS
+verified end-to-end by a browser test that registered, provisioned, checked in,
+consented, created a goal, and was correctly denied the resident area; test data
+then removed). The legacy schemas were not touched. ETL mappings to run in Phase 8:
 
 | Live source | Canonical target |
 | --- | --- |
@@ -43,8 +47,21 @@ until the canonical read path is validated.
    `virtualrecovery` to the platform deployment; workers.dev URLs remain as read-only
    archives; rollback = re-point the domain back (DNS-level, minutes).
 
-## Blockers to execute (not to prepare)
+## Auth configuration (verified live)
 
-- Supabase MCP/CLI authorization for `ykykeioydvtxpyreshhs` (and the two satellite
-  projects) — required for live-DB verification and ETL.
+- Email confirmation is **required** on signup; unconfirmed accounts cannot sign in.
+- Default email rate limit (2/hour) applies — custom SMTP is a launch requirement.
+- Undeliverable domains (e.g. example.com) are rejected with `email_address_invalid`.
+
+## Satellite projects (verified via account listing)
+
+The account's `GFAVRCC's Project` (`giloyvmjpyqrnbqbkxim`) and
+`contact-connect-dashboard` (`vlsxjkqyaexcxwkbovlq`) are both INACTIVE. The project
+refs found in the grace-harbor-16 and contact-connect-dashboard source code
+(`kmvlkvfxrjqrfxsljvxl`, `yqonwnzqtgmnoiymkefk`) are not in this account — restore
+the inactive projects and reconcile before assuming any satellite data must migrate.
+
+## Remaining blockers
+
 - Cloudflare Pages create/deploy access for the staging project.
+- Custom SMTP + email templates before real registrations.

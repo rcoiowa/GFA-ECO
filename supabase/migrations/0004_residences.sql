@@ -2,6 +2,8 @@
 -- Residency is a relationship between a person and a residence with its own
 -- lifecycle. It never replaces or merges with VRCC participation.
 
+set search_path = recoveryos, public;
+
 create table residences (
   id bigint generated always as identity primary key,
   organization_id bigint not null references organizations (id),

@@ -2,6 +2,8 @@
 -- Consent is granular, revocable, time-aware, append-only, and auditable.
 -- Declining an optional consent never blocks unrelated services.
 
+set search_path = recoveryos, public;
+
 create table consent_types (
   id bigint generated always as identity primary key,
   key text not null unique,

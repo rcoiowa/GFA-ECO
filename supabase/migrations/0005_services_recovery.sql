@@ -3,6 +3,8 @@
 -- records who, what, where (delivery_context + program/residence), and by
 -- whom — preventing double counting across VRCC and residence contexts.
 
+set search_path = recoveryos, public;
+
 create table service_types (
   id bigint generated always as identity primary key,
   key text not null unique,

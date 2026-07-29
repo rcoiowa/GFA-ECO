@@ -2,6 +2,8 @@
 -- Roles are scoped assignments (org / program / residence), never a single
 -- column on the user. Participation is an enrollment record, never a flag.
 
+set search_path = recoveryos, public;
+
 create table role_assignments (
   id bigint generated always as identity primary key,
   person_id bigint not null references people (id) on delete cascade,
