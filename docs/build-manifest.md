@@ -91,11 +91,34 @@ needed), goals→service-event linkage, Walls of Honor.
 - **Compliance**: `docs/compliance/narr-3.0-level-2-mapping.md` (4 domains /
   10 principles / 31 standards → evidence) and
   `docs/compliance/iowa-hhs-recovery-residence-checklist.md` (470-0025).
-  Clause-level verification against the affiliate workbook + org rules
-  upload still pending (noted in both docs).
+
+**Reconciled with canonical rules (2026-07-30):** the uploaded Grace House
+operational document set (v2 — 19 .docx, stored at
+`docs/source-documents/grace-house/`) is now the authoritative source; the
+library was re-imported verbatim via `scripts/import-grace-house-docs.py`
+(19 documents: Participant Agreement, Code of Conduct, Resident Handbook,
+Fee Schedule & Financial Agreement, Screening Policy & Consent,
+Medication & MAT/MOUD, Curfew & Pass, Return-to-Use Response, Grievance,
+Incident Report System, Emergency Response Protocols, Good Neighbor,
+Exit & Transition, Code of Ethics, Change Course Leaders, NARR II
+Self-Assessment, Application & Pre-Screening, Intake Forms Package,
+Complete Operational System). Key canonical facts: women's residence at
+1311 9th St; phase-based curfew (GH-CURFEW-001 v3.0) and recovery
+activities 4/3/2 (GH-RECOVERY-001 v2.0); fees $175/$650 shared,
+$200/$700 single (GH-FEES-001); IRP within 72 hours; coach at intake with
+daily VRCC check-ins; MCRSP as certifying affiliate; the real 7-item Iowa
+HHS checklist. Compliance mappings rewritten against the Integration
+Plan's clause-level table (`docs/source-documents/`). EJWRH (men's, 1414
+12th St) added to the residence seed. The RecoveryResidence.org directory
+prototype with the staged Grace House application process lives at
+`sites/recoveryresidence-directory/` (its online-application submit is
+the integration point for the VRCC intake API).
+
 - **Pending**: apply migration 0013 + documents_seed.sql to the live project
   (Supabase MCP needs re-auth); staff-side assignment/countersign tooling
-  (Phase 5); per-residence config for fill-in facts (fees, times).
+  (Phase 5); VRCC Recovery Residence Provider Hub build per the Integration
+  Plan (operator dashboard, bed management, compliance tracker, referral
+  portal, public directory backend).
 
 ## Phases 5–8 ⬜
 

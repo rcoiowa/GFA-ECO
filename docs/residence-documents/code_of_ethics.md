@@ -1,73 +1,45 @@
 <!-- GENERATED from packages/residence-content — do not edit by hand. -->
 
-# Staff & Leadership Code of Ethics
+# Code of Ethics — Staff, House Leads, Peer Mentors & Volunteers
 
-**Grace For Addictions — Grace House**
+Grace House · Grace For Addictions 1311 9th Street, Des Moines, Iowa 50314 · Office: 515-220-8771 · Warmline: 515-310-DIAL (3425) · gracehouse@graceforaddictions.org
 
-Every employee, house manager, senior resident in a leadership role, and
-volunteer signs this code before serving, and annually after. It is
-aligned with the NARR Code of Ethics and posted in the home — residents
-are entitled to know exactly what they can hold us to.
+Print-ready and fillable: complete on paper or type directly into this document. Version 2.0.
 
-## As a person serving this house, I commit to:
+Required of every person serving Grace House in any capacity. (NARR core requirement.)
 
-1. **Serve the resident's recovery, not my convenience.** Assess honestly
-   whether our level of support fits each person's needs, and help them
-   find the right fit — inside this residence or beyond it.
-2. **Value every pathway.** Honor each resident's chosen recovery
-   pathway, including medication for addiction treatment, without
-   ranking, pressure, or proselytizing — of any kind, in any direction.
-3. **Person-first, grace-based language,** in conversation, in records,
-   and when residents can't hear me. How we speak about people when
-   they're absent is who we are.
-4. **Maintain the alcohol-free, illicit-drug-free home,** and model the
-   prosocial, honest, conflict-capable behavior the Social Model runs on.
-5. **No exploitation — none.**
-   - Never a romantic or sexual relationship with any current resident,
-     or with a former resident within 2 years of their residency.
-   - Never borrowing, lending, buying, selling, or accepting gifts of
-     more than token value with residents.
-   - Never using residents for personal labor or benefit.
-   - Never requiring a resident to attend my faith community, sign over
-     benefits, or serve my interests as a condition of anything.
-6. **Protect confidentiality** per the Confidentiality & Privacy Policy —
-   including from my own family and friends. Resident stories are not
-   anecdotes.
-7. **Uphold rights and due process** — the Resident Rights statement
-   binds me personally; I follow the written policies even when a
-   shortcut would be easier, because residents can only trust rules that
-   bind both directions.
-8. **Stay within my competence and role.** I am not a clinician (unless
-   licensed and acting as one); I refer rather than diagnose, and I
-   pursue the training my role requires.
-9. **Report honestly** — incidents, medication concerns, grievances, my
-   own mistakes. A house that hides small failures grows large ones.
-10. **Care for my own recovery and wellness.** If I am in recovery, I
-    protect it with the same seriousness I ask of residents; if my
-    capacity to serve safely is compromised, I say so and step back.
+I commit to:
 
-## Accountability
+- Primacy of residents’ interests. Every decision serves residents’ recovery, safety, and dignity first.
 
-Concerns about staff conduct go to the program director (or executive
-director, if the concern involves the program director) and may be raised
-by any resident through the Grievance Policy with full protection from
-retaliation. Violations result in corrective action up to removal, and
-background checks are completed for all staff and volunteers before
-service per organizational policy.
+- Scope of role. I provide peer and operational support only. I do not diagnose, prescribe, counsel clinically, or give legal or medical advice. I connect residents to qualified providers of their choice.
 
-| | |
-| --- | --- |
-| Name / role | ______________________ |
-| Signature | ______________________ Date ________ |
+- No exploitation. I will never exploit residents financially, sexually, emotionally, or for labor. I will not lend to, borrow from, sell to, or buy from residents, nor accept gifts beyond token value.
 
-*Version 2026.07 — Grace For Addictions. Aligned with the NARR Code of Ethics.*
+- Boundaries. No romantic or sexual relationships with residents. No dual relationships that compromise judgment. If a prior relationship exists, I disclose it immediately.
+
+- Confidentiality. Resident information is shared only with signed consent or as required by law (mandatory reporting, imminent danger, court order). Residency itself is confidential.
+
+- Medication respect. I affirm all FDA-approved medications and every legitimate recovery pathway. I never disparage MAT/MOUD or any resident’s chosen path.
+
+- Honesty in records. I document truthfully, completely, and on time. I never falsify, backdate, or omit.
+
+- Cultural humility & fair housing. I serve without discrimination and honor each person’s culture, faith, identity, and story.
+
+- My own wellness. If I am in recovery, I maintain my own program. I model what I ask of others.
+
+- Accountability. I report ethical concerns — including my own mistakes — promptly to the Executive Director. Retaliation for good-faith reports is itself an ethics violation.
+
+Name: ______________________________ Role: ______________________
+
+Signature: ______________________________ Date: ____/____/______
+
+Executive Director: ______________________________ Date: ____/____/______
 
 ---
 
 *Compliance references — verify clause codes against the certifying
 affiliate's current NARR 3.0 workbook and Iowa HHS form 470-0025:*
 
-- NARR 3.0: 1.A.2 — code of ethics attested by all staff and volunteers
-- NARR 3.0: 3.H.26 — prosocial modeling by leadership
-- Iowa HHS checklist: Staff code of ethics on file
-- Iowa HHS checklist: Background check policy
+- NARR 3.0: 1.A.2.i — code of ethics signed by all staff and volunteers
+- Iowa HHS checklist: Staff ethics signatures on file

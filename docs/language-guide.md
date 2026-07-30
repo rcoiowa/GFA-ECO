@@ -6,9 +6,14 @@ form label in RecoveryOS. This guide is the canonical rule set; the
 residence document library (`packages/residence-content`) and the app UI
 are written to it, and code review checks against it.
 
-> **Reconciliation note:** the organization refines these rules in ongoing
-> working conversations. When an updated rules document is provided, this
-> guide is updated first and the document library re-versioned to match.
+> **Reconciled (2026-07-30):** the canonical Grace House operational
+> document set (v2, `docs/source-documents/grace-house/`) is now the
+> authoritative rules source and confirms this guide's commitments —
+> including the explicit rejection of "relapse" as a moral verdict
+> (Handbook §Return-to-Use), "prescription-consistent" screening
+> language, grace-based accountability, and trauma-informed principles
+> (safety, trust, choice, collaboration, empowerment). Where any wording
+> here differs from the operational set, the operational set governs.
 
 ## The four commitments
 

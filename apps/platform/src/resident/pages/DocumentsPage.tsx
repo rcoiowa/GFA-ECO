@@ -11,12 +11,12 @@ import { Alert, Card, CardTitle, LoadingState, PageHeader } from '@recoveryos/ui
 
 const CATEGORY_LABELS: Record<DocumentCategory, string> = {
   agreement: 'Your agreements',
-  rights: 'Your rights',
+  handbook: 'Resident Handbook',
   policy: 'House policies',
   form: 'Forms',
 };
 
-const CATEGORY_ORDER: DocumentCategory[] = ['agreement', 'rights', 'policy', 'form'];
+const CATEGORY_ORDER: DocumentCategory[] = ['handbook', 'agreement', 'policy', 'form'];
 
 /**
  * The resident document center: everything waiting for a signature up top,

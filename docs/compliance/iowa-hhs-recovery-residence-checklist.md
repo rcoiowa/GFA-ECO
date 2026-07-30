@@ -1,55 +1,41 @@
-# Iowa HHS Recovery Housing Protocol & Checklist — Mapping
+# Iowa HHS Recovery Housing Eligibility Checklist (Form 470-0025) — Mapping
 
-Iowa HHS publishes the **Recovery Housing Protocol & Checklist (form
-470-0025, rev. 06/2025)**, built on the NARR standards and levels. It
-governs eligibility for Iowa HHS recovery-housing reimbursement and the
-state's recognition of certified residences (certification via the
-NARR-affiliate pathway).
+Iowa HHS's Recovery Housing Protocol & Checklist (form 470-0025, June 2025) is a **7-item eligibility checklist** built on the NARR standards.
+This mapping follows the organization's canonical alignment table (the
+_NARR Level II Self-Assessment & Iowa HHS Alignment_ document in
+`docs/source-documents/grace-house/`). Contact:
+recoveryhousing@hhs.iowa.gov.
 
-> **Sourcing note:** hhs.iowa.gov could not be fetched from this build
-> environment, so this mapping is organized around the checklist's known
-> NARR basis plus Iowa-specific requirements. Before submission, walk the
-> actual 470-0025 form line-by-line against this document — and reconcile
-> with the organization's uploaded rules document when provided.
+## The seven checklist items
 
-## NARR-based core (see full mapping)
+| #   | Checklist item                                                          | Grace House answer                                              | Evidence                                                                                   |
+| --- | ----------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 1   | In operation as a recovery house ≥ 3 months                             | Yes / in progress toward                                        | Operations log, resident census **[operational]**                                          |
+| 2   | Family-like shared living centered on peer support & service connection | Yes                                                             | Handbook §Program Philosophy; peer-led model; weekly house meeting                         |
+| 3   | Different address/location than clinical SUD/MH treatment provider      | Yes                                                             | 1311 9th Street — no co-located clinical services                                          |
+| 4   | Residents seek clinical treatment from provider of their choice         | Yes                                                             | Handbook §No Coerced Affiliation; Participant Agreement; Code of Conduct §Treatment Choice |
+| 5   | Faith-based elements allow services of choice in lieu                   | Yes                                                             | Multiple-pathways policy; church/Bible study count as _chosen_ activities, never mandated  |
+| 6   | All FDA-approved medications for SUD & MH allowed                       | Yes                                                             | Medication & MAT/MOUD Policy; prescription-consistent screening                            |
+| 7   | Eligible residents have history of substance misuse                     | Yes (recovery pathway), with documented family-pathway addendum | Application Part B (two eligibility pathways)                                              |
 
-The bulk of 470-0025 tracks NARR 3.0. Every item in
-`docs/compliance/narr-3.0-level-2-mapping.md` applies; that file maps each
-domain/standard to its evidencing document or platform feature.
+## Iowa-specific practices beyond the checklist
 
-## Iowa-specific and emphasized items
-
-| Checklist area                                            | Where it's met                                                                                                                                   |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| NARR level declared                                       | Level II (monitored) — Resident Agreement §6                                                                                                     |
-| Fire safety: detectors, CO, extinguishers, egress, drills | Emergency Procedures §Fire (monthly tests, 2×/year drills, logs) **[operational: inspection records]**                                           |
-| Naloxone on site + trained personnel                      | Overdose Prevention & Naloxone Policy (locations, monthly checks, staff training required, resident training offered; Iowa standing order noted) |
-| Iowa Good Samaritan / 911 protection                      | Overdose policy §The promise (house protection stated as broader than statute)                                                                   |
-| Emergency numbers + procedures posted                     | Emergency Procedures (posted locations listed; Your Life Iowa + 988 included)                                                                    |
-| Severe weather plan (tornado/winter)                      | Emergency Procedures §Severe weather (Iowa-specific)                                                                                             |
-| Written resident agreement                                | Resident Agreement (signed, copy to resident)                                                                                                    |
-| Fee transparency + refund policy                          | Fee Schedule & Refund Policy (before-signing attestation)                                                                                        |
-| No benefit signover                                       | Fee policy + Resident Rights §8                                                                                                                  |
-| Drug/alcohol screening policy + consent                   | Screening Policy & Consent (signed)                                                                                                              |
-| Return-to-use response, safe exits                        | Return-to-Use Support Policy (no street discharges; documented safe landing)                                                                     |
-| MOUD/MAT nondiscrimination                                | Medication Policy (explicit welcome section); Resident Rights §4                                                                                 |
-| Medication storage                                        | Medication Policy §Storage (personal lockboxes, logged emergency access)                                                                         |
-| Grievance procedure incl. state contact                   | Grievance Policy (Iowa HHS and affiliate listed as external contacts)                                                                            |
-| Confidentiality, 42 CFR Part 2 awareness                  | Confidentiality & Privacy Policy; ROI form (Part 2 notice)                                                                                       |
-| Mandatory reporting (Iowa Code chs. 232/235B)             | Confidentiality Policy §Exceptions                                                                                                               |
-| Good neighbor practices                                   | Good Neighbor Policy                                                                                                                             |
-| Occupancy within capacity                                 | `residences.capacity` = 12; bed-level tracking in schema **[operational: local occupancy/zoning compliance]**                                    |
-| Incident documentation                                    | Incident Report Form + `incidents` table + quarterly review                                                                                      |
-| House rules in writing                                    | House Guidelines                                                                                                                                 |
-| Background checks for staff                               | Code of Ethics §Accountability **[operational]**                                                                                                 |
-| Data/outcomes reporting capability                        | `service_events` spine + analytics views (people-served dedup)                                                                                   |
+| Area                                                      | Where it's met                                                                                                                                              |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Naloxone + training                                       | Handbook §Naloxone Policy (available in medication cabinet + near front door; all residents trained within 7 days of intake); Emergency Response Protocol 1 |
+| Iowa Good Samaritan protection                            | Participant Agreement Part 10; Handbook §Naloxone Policy                                                                                                    |
+| Mandatory reporting (Iowa Code ch. 232; dependent adults) | Handbook §Mandatory Reporting; Code of Ethics §Confidentiality                                                                                              |
+| Crisis lines posted                                       | 988; Iowa Substance Use Crisis Line 1-844-775-5837; Your Life Iowa; GFA Warmline 515-310-DIAL (3425)                                                        |
+| External grievance contacts                               | Iowa Civil Rights Commission 1-800-457-4416; Iowa Protection & Advocacy 1-800-779-2502; HUD Fair Housing 1-800-669-9777; Iowa HHS 1-800-362-2178            |
+| Fair Housing Act compliance                               | Application Part F; Handbook §Eligibility; Code of Ethics §Cultural humility & fair housing                                                                 |
+| Severe weather / fire safety                              | Emergency Response Protocols **[operational: inspection + drill logs]**                                                                                     |
 
 ## Registry/reimbursement workflow
 
-1. Complete NARR-affiliate Level II certification (binder checklist at the
-   end of the NARR mapping doc).
-2. Submit 470-0025 with certification evidence to Iowa HHS.
-3. Keep logs current (detector/naloxone checks, drills, meetings,
-   screenings, incidents) — the platform's tables are the system of
-   record; exports serve audits.
+1. Complete NARR Level II certification via MCRSP (see
+   `narr-3.0-level-2-mapping.md` and the Self-Assessment punch list).
+2. Submit 470-0025 evidence to Iowa HHS (recoveryhousing@hhs.iowa.gov).
+   Certification is required for Iowa HHS recovery-housing reimbursement.
+3. Keep operational logs current (screenings, meetings, naloxone checks,
+   incidents) — the platform's tables are the system of record, and the
+   Hub roadmap auto-generates compliance evidence from daily workflow.

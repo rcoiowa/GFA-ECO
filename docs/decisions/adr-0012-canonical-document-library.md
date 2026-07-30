@@ -15,9 +15,14 @@ neuro-informed, grace-based — `docs/language-guide.md`).
 
 ## Decision
 
-The documents are **authored once, as versioned TypeScript modules** in
-`packages/residence-content` (typed metadata + markdown body + NARR/Iowa
-compliance references). Everything else is generated:
+The authoritative rules are the **Grace House operational document set**
+(v2, 2026) authored by the organization, stored verbatim at
+`docs/source-documents/grace-house/` (.docx). The library in
+`packages/residence-content` carries that content as versioned
+TypeScript modules (typed metadata + markdown body + NARR/Iowa
+compliance references), imported via `scripts/import-grace-house-docs.py`
+— when the organization revises a document, re-run the import and bump
+the version. Everything else is generated:
 
 - `pnpm generate:residence-docs` emits `supabase/seed/documents_seed.sql`
   (idempotent upserts into `document_templates`/`document_versions`) and

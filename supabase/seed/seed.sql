@@ -24,6 +24,14 @@ from organizations o
 where o.name = 'Grace For Addictions'
   and not exists (select 1 from residences where name = 'Grace House');
 
+-- Men's residence at 1414 12th Street; GFA is the contracted program
+-- operator under a professional services agreement (Iowa DOC approved).
+insert into residences (organization_id, name, address_city, address_state, capacity)
+select o.id, 'Ernest & Johnnie White Recovery House', 'Des Moines', 'IA', null
+from organizations o
+where o.name = 'Grace For Addictions'
+  and not exists (select 1 from residences where name = 'Ernest & Johnnie White Recovery House');
+
 insert into service_types (key, name, category) values
   ('coaching_session', 'Recovery coaching session', 'coaching'),
   ('peer_support', 'Peer support conversation', 'peer_support'),

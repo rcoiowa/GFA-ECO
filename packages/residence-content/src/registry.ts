@@ -1,63 +1,49 @@
 import type { ResidenceDocument } from './types';
-import { residentAgreement } from './documents/residentAgreement';
-import { residentRights } from './documents/residentRights';
-import { houseGuidelines } from './documents/houseGuidelines';
-import { feeAgreement } from './documents/feeAgreement';
-import { grievancePolicy } from './documents/grievancePolicy';
-import { screeningPolicy } from './documents/screeningPolicy';
-import { returnToUsePolicy } from './documents/returnToUsePolicy';
-import { medicationPolicy } from './documents/medicationPolicy';
-import { overdosePreventionPolicy } from './documents/overdosePreventionPolicy';
-import { emergencyProcedures } from './documents/emergencyProcedures';
-import { guestPolicy } from './documents/guestPolicy';
+import { participantAgreement } from './documents/participantAgreement';
+import { codeOfConduct } from './documents/codeOfConduct';
+import { residentHandbook } from './documents/residentHandbook';
+import { feeScheduleFinancialAgreement } from './documents/feeScheduleFinancialAgreement';
+import { screeningPolicyConsent } from './documents/screeningPolicyConsent';
+import { medicationMatMoudPolicy } from './documents/medicationMatMoudPolicy';
+import { curfewPassPolicy } from './documents/curfewPassPolicy';
+import { returnToUseResponsePolicy } from './documents/returnToUseResponsePolicy';
+import { grievancePolicyForm } from './documents/grievancePolicyForm';
+import { incidentReportSystem } from './documents/incidentReportSystem';
+import { emergencyResponseProtocols } from './documents/emergencyResponseProtocols';
 import { goodNeighborPolicy } from './documents/goodNeighborPolicy';
-import { confidentialityPolicy } from './documents/confidentialityPolicy';
-import { propertyPolicy } from './documents/propertyPolicy';
-import { transitionPolicy } from './documents/transitionPolicy';
+import { exitTransitionPolicy } from './documents/exitTransitionPolicy';
 import { codeOfEthics } from './documents/codeOfEthics';
-import {
-  emergencyContactForm,
-  grievanceForm,
-  incidentReportForm,
-  intakeApplication,
-  medicationDisclosureForm,
-  moveInInventoryForm,
-  overnightPassForm,
-  releaseOfInformationForm,
-} from './forms';
+import { changeCourseLeadersPolicy } from './documents/changeCourseLeadersPolicy';
+import { narrIiSelfAssessment } from './documents/narrIiSelfAssessment';
+import { applicationPrescreeningForm } from './documents/applicationPrescreeningForm';
+import { intakeFormsPackage } from './documents/intakeFormsPackage';
+import { completeOperationalSystem } from './documents/completeOperationalSystem';
 
 /**
- * The complete document library, in the order it appears in the move-in
- * packet and the app's Documents area.
+ * The complete Grace House document library — imported verbatim from the
+ * canonical operational document set (v2, 2026), in the order used by the
+ * application process and the app's Documents area.
  */
 export const allDocuments: ResidenceDocument[] = [
-  // Agreements — signed at move-in
-  residentAgreement,
-  residentRights,
-  houseGuidelines,
-  feeAgreement,
-  screeningPolicy,
-  // Policies — provided at move-in, posted in the home
-  grievancePolicy,
-  returnToUsePolicy,
-  medicationPolicy,
-  overdosePreventionPolicy,
-  emergencyProcedures,
-  guestPolicy,
+  participantAgreement,
+  codeOfConduct,
+  residentHandbook,
+  feeScheduleFinancialAgreement,
+  screeningPolicyConsent,
+  medicationMatMoudPolicy,
+  curfewPassPolicy,
+  returnToUseResponsePolicy,
+  grievancePolicyForm,
+  incidentReportSystem,
+  emergencyResponseProtocols,
   goodNeighborPolicy,
-  confidentialityPolicy,
-  propertyPolicy,
-  transitionPolicy,
+  exitTransitionPolicy,
   codeOfEthics,
-  // Forms
-  intakeApplication,
-  emergencyContactForm,
-  releaseOfInformationForm,
-  medicationDisclosureForm,
-  moveInInventoryForm,
-  overnightPassForm,
-  grievanceForm,
-  incidentReportForm,
+  changeCourseLeadersPolicy,
+  narrIiSelfAssessment,
+  applicationPrescreeningForm,
+  intakeFormsPackage,
+  completeOperationalSystem,
 ];
 
 const byKey = new Map(allDocuments.map((d) => [d.key, d]));
@@ -66,7 +52,7 @@ export function getDocument(key: string): ResidenceDocument | undefined {
   return byKey.get(key);
 }
 
-/** Documents every resident signs at move-in, in signing order. */
+/** Documents every participant signs/acknowledges at intake, in order. */
 export const moveInSignatureSet: ResidenceDocument[] = allDocuments.filter(
   (d) => d.requiresSignature,
 );

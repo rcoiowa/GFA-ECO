@@ -1,10 +1,11 @@
 /**
  * The canonical residence document library.
  *
- * Every policy, agreement, rights statement, and paper form the residence
- * uses is authored here — one source of truth, versioned, and written in
- * person-first, trauma-aware, neuro-informed, grace-based language
- * (see docs/language-guide.md).
+ * The bodies are imported verbatim from the Grace House operational
+ * document set (docs/source-documents/grace-house/, v2 2026) — the
+ * authoritative rules — via scripts/import-grace-house-docs. All content
+ * follows the person-first, trauma-aware, neuro-informed, grace-based
+ * language standard (docs/language-guide.md).
  *
  * From this package we generate:
  *  - the database seed (document_templates / document_versions) so residents
@@ -14,10 +15,10 @@
  */
 
 export type DocumentCategory =
-  | 'agreement' // requires the resident's signature
-  | 'rights' // statements of what residents are entitled to
+  | 'agreement' // signed/acknowledged by the participant
+  | 'handbook' // the resident handbook (acknowledged at orientation)
   | 'policy' // how the residence operates
-  | 'form'; // fillable paper forms (digital equivalents live in the app)
+  | 'form'; // fillable forms (digital equivalents live in the app)
 
 export interface ResidenceDocument {
   /** Stable key; matches document_templates.key. */
