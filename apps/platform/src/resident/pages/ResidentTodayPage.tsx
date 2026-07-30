@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
-import { getMyActiveResidency } from '@recoveryos/data-access';
-import type { Residence, Residency } from '@recoveryos/domain';
+import {
+  getCurfewSchedule,
+  getMyActiveResidency,
+  listMyChoreAssignments,
+  type ChoreAssignmentWithChore,
+} from '@recoveryos/data-access';
+import type { CurfewSchedule, Residence, Residency } from '@recoveryos/domain';
 import { Alert, Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -20,13 +25,25 @@ export function ResidentTodayPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [residency, setResidency] = useState<(Residency & { residence: Residence }) | null>(null);
+  const [todaysChores, setTodaysChores] = useState<ChoreAssignmentWithChore[]>([]);
+  const [tonightsCurfew, setTonightsCurfew] = useState<CurfewSchedule | null>(null);
 
   const load = useCallback(async () => {
     if (!person) return;
     setLoading(true);
     setError(false);
     try {
-      setResidency(await getMyActiveResidency(person.id));
+      const res = await getMyActiveResidency(person.id);
+      setResidency(res);
+      if (res) {
+        const today = new Date().toISOString().slice(0, 10);
+        const [choreRows, curfewRows] = await Promise.all([
+          listMyChoreAssignments(res.id, today, today),
+          getCurfewSchedule(res.residence_id),
+        ]);
+        setTodaysChores(choreRows);
+        setTonightsCurfew(curfewRows.find((c) => c.day_of_week === new Date().getDay()) ?? null);
+      }
     } catch {
       setError(true);
     } finally {
@@ -50,8 +67,8 @@ export function ResidentTodayPage() {
         <ErrorState onRetry={() => void load()} />
       ) : !residency ? (
         <Alert tone="attention">
-          We couldn't find an active residency for your account. If this seems wrong, please
-          talk with your residence staff.
+          We couldn't find an active residency for your account. If this seems wrong, please talk
+          with your residence staff.
         </Alert>
       ) : (
         <div className="flex flex-col gap-5">
@@ -79,10 +96,38 @@ export function ResidentTodayPage() {
 
           <Card>
             <CardTitle>Residence responsibilities today</CardTitle>
-            <p className="text-ink-muted">
-              Chores, curfew, and required meetings will appear here as residence operations come
-              online in Phase 4.
-            </p>
+            {todaysChores.length === 0 ? (
+              <p className="text-ink-muted">
+                No chores due today — check the weekly view for what's ahead.
+              </p>
+            ) : (
+              <ul className="mb-2 flex flex-col gap-1.5">
+                {todaysChores.map((c) => (
+                  <li key={c.id} className="flex items-center justify-between text-ink">
+                    <span className="font-medium">{c.chore.name}</span>
+                    {c.completed_at ? (
+                      <span className="text-sm font-medium text-positive-700">Done ✓</span>
+                    ) : (
+                      <span className="text-sm text-ink-muted">Due today</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {tonightsCurfew ? (
+              <p className="text-sm text-ink-muted">
+                Curfew tonight:{' '}
+                <span className="font-medium text-ink">
+                  {(() => {
+                    const [h, m] = tonightsCurfew.curfew_time.split(':').map(Number);
+                    const d = new Date();
+                    d.setHours(h ?? 0, m ?? 0);
+                    return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+                  })()}
+                </span>{' '}
+                — need an exception? Request a pass from Schedule.
+              </p>
+            ) : null}
             <Link
               to="/residence/house"
               className="mt-2 inline-block font-medium text-experience-700 underline underline-offset-2"

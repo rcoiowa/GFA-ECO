@@ -155,6 +155,90 @@ export interface Goal {
   updated_at: string;
 }
 
+export interface DocumentTemplate {
+  id: number;
+  organization_id: number;
+  key: string;
+  name: string;
+  requires_signature: boolean;
+  is_active: boolean;
+}
+
+export interface DocumentVersion {
+  id: number;
+  template_id: number;
+  version: string;
+  body_markdown: string;
+  published_at: string | null;
+}
+
+export interface DocumentAssignment {
+  id: number;
+  document_version_id: number;
+  person_id: number;
+  residency_id: number | null;
+  assigned_at: string;
+  acknowledged_at: string | null;
+  signature_name: string | null;
+}
+
+export interface ResidenceChore {
+  id: number;
+  residence_id: number;
+  name: string;
+  description: string | null;
+  is_active: boolean;
+}
+
+export interface ChoreAssignment {
+  id: number;
+  chore_id: number;
+  residency_id: number;
+  due_on: string;
+  completed_at: string | null;
+  verified_by_person_id: number | null;
+}
+
+export interface CurfewSchedule {
+  id: number;
+  residence_id: number;
+  day_of_week: number;
+  curfew_time: string;
+}
+
+export interface Pass {
+  id: number;
+  residency_id: number;
+  starts_at: string;
+  ends_at: string;
+  destination: string | null;
+  status: 'requested' | 'approved' | 'denied' | 'active' | 'returned' | 'overdue';
+  decided_by_person_id: number | null;
+  created_at: string;
+}
+
+export interface Meeting {
+  id: number;
+  organization_id: number;
+  residence_id: number | null;
+  title: string;
+  description: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  is_required_for_residents: boolean;
+  created_at: string;
+}
+
+export interface Grievance {
+  id: number;
+  residence_id: number;
+  filed_by_person_id: number;
+  summary: string;
+  status: 'open' | 'in_review' | 'resolved' | 'closed';
+  filed_at: string;
+  resolved_at: string | null;
+}
+
 export interface CheckIn {
   id: number;
   person_id: number;

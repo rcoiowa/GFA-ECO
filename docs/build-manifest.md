@@ -66,11 +66,36 @@ assessment saved (score 44 → Thorny Soil), two vrcc-context service events rec
 the Mind, Training the Mind, Tapes We Carry, 59 slogans — canonical content intake
 needed), goals→service-event linkage, Walls of Honor.
 
-## Phase 4 — Resident experience ⬜ (shell built)
+## Phase 4 — Resident experience ✅ (2026-07-30; DB push of 0013+seed pending)
 
-`/residence` area with 7-area nav, residence identity/status live; responsibilities,
-chores, curfew, passes, documents pending — Residence OS source workflows
-(`source-builds/recovery-residence-os`) are the primary input.
+- **Canonical document library** (`packages/residence-content`): 24 versioned
+  documents — Resident Agreement, Rights & Responsibilities, House Guidelines,
+  Fee Schedule & Refund Policy, Screening Policy & Consent (the 5-document
+  move-in signature set), plus 11 policies (grievance, return-to-use,
+  medication/MAT, naloxone/overdose, emergency, guests, good neighbor,
+  confidentiality/42 CFR Part 2, property, transition/move-out, code of
+  ethics) and 8 forms (intake, emergency contact, ROI, medication disclosure,
+  move-in inventory, pass request, grievance, incident report). All
+  person-first / trauma-aware / neuro-informed / grace-based per
+  `docs/language-guide.md`.
+- **Generation**: `pnpm generate:residence-docs` → `supabase/seed/documents_seed.sql`
+  (templates + versions) and printable `docs/residence-documents/` (ADR-0012).
+- **Signing flow**: migration 0013 (`requires_signature`, read policies,
+  self-acknowledge policy, `ensure_my_document_assignments()` RPC);
+  Documents page lists pending signatures, full library, signed history;
+  DocumentDetail renders markdown + typed-name e-signature.
+- **Residence operations wired**: Today (chores due today, tonight's curfew),
+  My Residence (weekly chores, curfew table, rights links), Schedule
+  (meetings, curfew, pass request + history), grievance filing (digital +
+  paper parity).
+- **Compliance**: `docs/compliance/narr-3.0-level-2-mapping.md` (4 domains /
+  10 principles / 31 standards → evidence) and
+  `docs/compliance/iowa-hhs-recovery-residence-checklist.md` (470-0025).
+  Clause-level verification against the affiliate workbook + org rules
+  upload still pending (noted in both docs).
+- **Pending**: apply migration 0013 + documents_seed.sql to the live project
+  (Supabase MCP needs re-auth); staff-side assignment/countersign tooling
+  (Phase 5); per-residence config for fill-in facts (fees, times).
 
 ## Phases 5–8 ⬜
 

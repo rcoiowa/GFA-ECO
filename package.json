@@ -9,18 +9,24 @@
   },
   "packageManager": "pnpm@10.34.5",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "workerd"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "workerd"
+    ]
   },
   "scripts": {
     "dev": "pnpm --filter @recoveryos/platform dev",
+    "generate:residence-docs": "tsx scripts/generate-residence-docs.ts",
     "build": "pnpm -r --filter './apps/*' build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r --if-present test",
-    "format": "prettier --write \"**/*.{ts,tsx,css,md,json,sql}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,css,md,json,sql}\""
+    "format": "prettier --write \"**/*.{ts,tsx,css,md,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,css,md,json}\""
   },
   "devDependencies": {
+    "@recoveryos/residence-content": "workspace:*",
     "prettier": "^3.5.0",
+    "tsx": "^4.19.0",
     "typescript": "^5.8.0"
   }
 }

@@ -4,6 +4,10 @@ import { GroundingPage } from '@recoveryos/safety';
 import { ResidentShell } from './ResidentShell';
 import { ResidentTodayPage } from './pages/ResidentTodayPage';
 import { MyResidencePage } from './pages/MyResidencePage';
+import { SchedulePage } from './pages/SchedulePage';
+import { DocumentsPage } from './pages/DocumentsPage';
+import { DocumentDetailPage } from './pages/DocumentDetailPage';
+import { GrievancePage } from './pages/GrievancePage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/StatusPages';
 
@@ -39,26 +43,10 @@ export function ResidentArea() {
               />
             }
           />
-          <Route
-            path="schedule"
-            element={
-              <PlaceholderPage
-                title="Schedule"
-                lede="House meetings, appointments, and commitments in one calendar."
-                note="Scheduling arrives with residence operations."
-              />
-            }
-          />
-          <Route
-            path="documents"
-            element={
-              <PlaceholderPage
-                title="Documents"
-                lede="Your agreements, rights, and anything waiting for your signature."
-                note="Document workflows arrive with residence operations."
-              />
-            }
-          />
+          <Route path="schedule" element={<SchedulePage />} />
+          <Route path="documents" element={<DocumentsPage />} />
+          <Route path="documents/grievance" element={<GrievancePage />} />
+          <Route path="documents/:key" element={<DocumentDetailPage />} />
           <Route
             path="journey"
             element={
