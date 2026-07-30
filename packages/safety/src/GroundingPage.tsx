@@ -15,12 +15,15 @@ export function GroundingPage() {
     <div className="mx-auto max-w-xl">
       <h1 className="text-2xl font-semibold text-ink">A grounding moment</h1>
       <p className="mt-2 text-ink-muted">
-        Take a slow breath in through your nose, hold it gently, and let it out through your
-        mouth. Then move through these five steps at your own pace.
+        Take a slow breath in through your nose, hold it gently, and let it out through your mouth.
+        Then move through these five steps at your own pace.
       </p>
       <ol className="mt-6 flex flex-col gap-4">
         {STEPS.map((step) => (
-          <li key={step.count} className="flex gap-4 rounded-lg border border-line bg-surface-raised p-4">
+          <li
+            key={step.count}
+            className="flex gap-4 rounded-lg border border-line bg-surface-raised p-4"
+          >
             <span
               aria-hidden
               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-support-600/10 text-lg font-bold text-support-700"

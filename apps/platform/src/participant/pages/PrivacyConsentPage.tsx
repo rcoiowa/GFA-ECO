@@ -25,10 +25,7 @@ export function PrivacyConsentPage() {
     setLoading(true);
     setError(false);
     try {
-      const [t, g] = await Promise.all([
-        listActiveConsentTypes(),
-        listMyConsentGrants(person.id),
-      ]);
+      const [t, g] = await Promise.all([listActiveConsentTypes(), listMyConsentGrants(person.id)]);
       setTypes(t);
       setGrants(g);
     } catch {

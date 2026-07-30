@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
-import {
-  createCheckIn,
-  listMyGoals,
-  listMyRecentCheckIns,
-} from '@recoveryos/data-access';
+import { createCheckIn, listMyGoals, listMyRecentCheckIns } from '@recoveryos/data-access';
 import type { CheckIn, Goal } from '@recoveryos/domain';
-import { Alert, Button, Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
+import {
+  Alert,
+  Button,
+  Card,
+  CardTitle,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+} from '@recoveryos/ui';
 
 const MOODS = [
   { value: 1, label: 'Struggling' },
@@ -78,10 +82,7 @@ export function TodayPage() {
 
   return (
     <>
-      <PageHeader
-        title={`Hello, ${displayName}`}
-        lede="Here's what may help you today."
-      />
+      <PageHeader title={`Hello, ${displayName}`} lede="Here's what may help you today." />
 
       {loading ? (
         <LoadingState label="Gathering your day…" />
@@ -108,7 +109,11 @@ export function TodayPage() {
                 </Link>
               </>
             ) : (
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Choose how you're feeling">
+              <div
+                className="flex flex-wrap gap-2"
+                role="group"
+                aria-label="Choose how you're feeling"
+              >
                 {MOODS.map((mood) => (
                   <Button
                     key={mood.value}
@@ -156,14 +161,19 @@ export function TodayPage() {
           <Card>
             <CardTitle>Suggested for today</CardTitle>
             <p className="text-ink-muted">
-              Take two quiet minutes with a grounding practice, or explore something new in
-              Learn.
+              Take two quiet minutes with a grounding practice, or explore something new in Learn.
             </p>
             <div className="mt-3 flex flex-wrap gap-4">
-              <Link to="/app/support/grounding" className="font-medium text-experience-700 underline underline-offset-2">
+              <Link
+                to="/app/support/grounding"
+                className="font-medium text-experience-700 underline underline-offset-2"
+              >
                 Grounding moment
               </Link>
-              <Link to="/app/learn" className="font-medium text-experience-700 underline underline-offset-2">
+              <Link
+                to="/app/learn"
+                className="font-medium text-experience-700 underline underline-offset-2"
+              >
                 Explore Learn
               </Link>
             </div>

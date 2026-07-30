@@ -162,7 +162,10 @@ export function MyRecoveryPage() {
               </h2>
               <ul className="flex flex-col gap-3">
                 {achieved.map((goal) => (
-                  <li key={goal.id} className="rounded-lg border border-positive-600/30 bg-positive-50 px-4 py-3">
+                  <li
+                    key={goal.id}
+                    className="rounded-lg border border-positive-600/30 bg-positive-50 px-4 py-3"
+                  >
                     <p className="font-medium text-positive-700">✓ {goal.title}</p>
                   </li>
                 ))}

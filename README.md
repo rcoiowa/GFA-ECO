@@ -10,12 +10,12 @@ platform composed of clearly separated user experiences running on shared infras
 `apps/platform` is the single frontend behind `vrcc.app` (ADR-0010). Experience shells
 are route-separated and lazy-loaded:
 
-| Route | Audience |
-| --- | --- |
-| `/` + `/recovery-residences/grace-house` | Public entrance and residence information |
-| `/app` | VRCC participants |
-| `/residence` | Recovery residence residents |
-| `/coach` · `/navigator` · `/staff` · `/admin` | Professional workspaces (Phase 7) |
+| Route                                         | Audience                                  |
+| --------------------------------------------- | ----------------------------------------- |
+| `/` + `/recovery-residences/grace-house`      | Public entrance and residence information |
+| `/app`                                        | VRCC participants                         |
+| `/residence`                                  | Recovery residence residents              |
+| `/coach` · `/navigator` · `/staff` · `/admin` | Professional workspaces (Phase 7)         |
 
 This repo is also the consolidation target for five legacy builds (vrcc.app,
 Recovery Residence OS, Grace House, Virtual Recovery, GFA Connection) — see
@@ -24,14 +24,14 @@ for intake clones.
 
 ## Shared packages
 
-| Package | Purpose |
-| --- | --- |
+| Package                     | Purpose                                                               |
+| --------------------------- | --------------------------------------------------------------------- |
 | `@recoveryos/design-tokens` | Canonical color, type, spacing, and theme tokens (Tailwind v4 themes) |
-| `@recoveryos/ui` | Accessible shared component library and app shell |
-| `@recoveryos/domain` | Canonical domain types, enums, and validation schemas |
-| `@recoveryos/data-access` | Supabase client factory and typed repositories |
-| `@recoveryos/auth` | Auth provider, session context, role/relationship guards |
-| `@recoveryos/safety` | Support Now escalation ladder and safety routing |
+| `@recoveryos/ui`            | Accessible shared component library and app shell                     |
+| `@recoveryos/domain`        | Canonical domain types, enums, and validation schemas                 |
+| `@recoveryos/data-access`   | Supabase client factory and typed repositories                        |
+| `@recoveryos/auth`          | Auth provider, session context, role/relationship guards              |
+| `@recoveryos/safety`        | Support Now escalation ladder and safety routing                      |
 
 ## Infrastructure
 

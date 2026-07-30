@@ -28,7 +28,10 @@ export function PageHeader({
           <ol className="flex flex-wrap items-center gap-1.5">
             {crumbs.map((c) => (
               <li key={c.to} className="flex items-center gap-1.5">
-                <Link to={c.to} className="hover:text-experience-700 underline-offset-2 hover:underline">
+                <Link
+                  to={c.to}
+                  className="hover:text-experience-700 underline-offset-2 hover:underline"
+                >
                   {c.label}
                 </Link>
                 <span aria-hidden>/</span>

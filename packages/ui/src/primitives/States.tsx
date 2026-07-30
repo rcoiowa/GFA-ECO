@@ -22,8 +22,15 @@ export function EmptyState({
 
 export function LoadingState({ label = 'Loading…' }: { label?: string }) {
   return (
-    <div role="status" aria-live="polite" className="flex items-center gap-3 px-4 py-8 text-ink-muted">
-      <span className="inline-block size-5 animate-spin rounded-full border-2 border-line border-t-experience-600" aria-hidden />
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex items-center gap-3 px-4 py-8 text-ink-muted"
+    >
+      <span
+        className="inline-block size-5 animate-spin rounded-full border-2 border-line border-t-experience-600"
+        aria-hidden
+      />
       <span>{label}</span>
     </div>
   );

@@ -3,10 +3,7 @@ import { getSupabase } from '../client';
 
 /** The current user's person record, or null if not yet provisioned. */
 export async function getMyPerson(): Promise<Person | null> {
-  const { data, error } = await getSupabase()
-    .from('people')
-    .select('*')
-    .maybeSingle();
+  const { data, error } = await getSupabase().from('people').select('*').maybeSingle();
   if (error) throw error;
   return data;
 }

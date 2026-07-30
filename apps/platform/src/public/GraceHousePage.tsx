@@ -38,9 +38,8 @@ export function GraceHousePage() {
 
         <h1 className="text-3xl font-semibold text-ink">Grace House</h1>
         <p className="mt-2 max-w-2xl text-lg text-ink-muted">
-          A women's recovery residence in Des Moines, Iowa, operated by Grace For
-          Addictions — a safe, structured, recovery-supportive home for women building
-          their lives in recovery.
+          A women's recovery residence in Des Moines, Iowa, operated by Grace For Addictions — a
+          safe, structured, recovery-supportive home for women building their lives in recovery.
         </p>
 
         <section aria-labelledby="gh-about" className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -58,10 +57,9 @@ export function GraceHousePage() {
           <div className="rounded-lg border border-line bg-surface-raised p-5">
             <h2 className="font-semibold text-ink">Who Grace House serves</h2>
             <p className="mt-2 text-ink-muted">
-              Women in recovery seeking structured recovery housing. Grace House is
-              preparing for NARR Level II certification and follows recognized recovery
-              residence standards, including resident rights and a fair grievance
-              process.
+              Women in recovery seeking structured recovery housing. Grace House is preparing for
+              NARR Level II certification and follows recognized recovery residence standards,
+              including resident rights and a fair grievance process.
             </p>
           </div>
         </section>
@@ -71,9 +69,8 @@ export function GraceHousePage() {
             Interested in applying?
           </h2>
           <p className="mt-2 max-w-2xl text-ink">
-            Reach out to Grace For Addictions to talk about availability, eligibility,
-            and referrals — for yourself or someone you support. Exploring is not a
-            commitment.
+            Reach out to Grace For Addictions to talk about availability, eligibility, and referrals
+            — for yourself or someone you support. Exploring is not a commitment.
           </p>
           <Link
             to="/register"
@@ -84,16 +81,16 @@ export function GraceHousePage() {
         </section>
 
         <p className="mt-8 text-sm text-ink-muted">
-          Grace House does not discriminate on any basis protected by law. Detailed
-          program, eligibility, and contact information is being finalized with Grace
-          For Addictions and will appear here.
+          Grace House does not discriminate on any basis protected by law. Detailed program,
+          eligibility, and contact information is being finalized with Grace For Addictions and will
+          appear here.
         </p>
       </main>
 
       <footer className="border-t border-line py-6">
         <p className="mx-auto max-w-4xl px-4 text-sm text-ink-muted">
-          Grace For Addictions · No shame. No stigma. Just grace. · In immediate danger,
-          call 911. For crisis support, call or text 988.
+          Grace For Addictions · No shame. No stigma. Just grace. · In immediate danger, call 911.
+          For crisis support, call or text 988.
         </p>
       </footer>
     </div>

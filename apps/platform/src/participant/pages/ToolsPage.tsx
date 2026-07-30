@@ -14,7 +14,10 @@ export function ToolsPage() {
         <Card>
           <h2 className="text-lg font-semibold text-ink">Daily check-in</h2>
           <p className="mt-1 text-ink-muted">A ten-second honest moment with yourself.</p>
-          <Link to="/app/today" className="mt-2 inline-block font-medium text-experience-700 underline underline-offset-2">
+          <Link
+            to="/app/today"
+            className="mt-2 inline-block font-medium text-experience-700 underline underline-offset-2"
+          >
             Check in on Today
           </Link>
         </Card>

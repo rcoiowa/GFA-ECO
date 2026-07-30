@@ -24,14 +24,12 @@ export function ExperienceSwitcher({ current }: { current: 'vrcc' | 'residence' 
   return (
     <div className="rounded-md border border-line bg-surface-sunken/60 px-3 py-2 text-sm">
       <p className="text-ink-faint">
-        You're viewing <span className="font-medium text-ink-muted">{
-          options.find((o) => o.key === current)?.label
-        }</span>
+        You're viewing{' '}
+        <span className="font-medium text-ink-muted">
+          {options.find((o) => o.key === current)?.label}
+        </span>
       </p>
-      <Link
-        to={target.to}
-        className="font-medium text-experience-700 underline underline-offset-2"
-      >
+      <Link to={target.to} className="font-medium text-experience-700 underline underline-offset-2">
         Switch to {target.label}
       </Link>
     </div>

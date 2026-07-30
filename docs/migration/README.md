@@ -19,15 +19,15 @@ verified end-to-end by a browser test that registered, provisioned, checked in,
 consented, created a goal, and was correctly denied the resident area; test data
 then removed). The legacy schemas were not touched. ETL mappings to run in Phase 8:
 
-| Live source | Canonical target |
-| --- | --- |
+| Live source                                                                  | Canonical target                                                                     |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | `gfa_ui.participant_profiles` + `gfa_core.participants` + `public.app_users` | `people` / `person_profiles` / `role_assignments` (deduplicated, provenance columns) |
-| `public.program_enrollments`, `public.programs` | `program_enrollments`, `programs` |
-| `gfa_residence.residences/beds/waitlist/...` | `residences`, `residence_beds`, `residencies`, operations tables |
-| `gfa_ui.consent_records` | `consent_grants` (append-only history preserved verbatim) |
-| `gfa_ui` check-ins / journey_events | `check_ins` / `service_events` |
-| `public` recovery capital, slogans, ICARE | `recovery_capital_assessments`, content tables |
-| Grace House + GFA Connection projects | person-matched imports with provenance |
+| `public.program_enrollments`, `public.programs`                              | `program_enrollments`, `programs`                                                    |
+| `gfa_residence.residences/beds/waitlist/...`                                 | `residences`, `residence_beds`, `residencies`, operations tables                     |
+| `gfa_ui.consent_records`                                                     | `consent_grants` (append-only history preserved verbatim)                            |
+| `gfa_ui` check-ins / journey_events                                          | `check_ins` / `service_events`                                                       |
+| `public` recovery capital, slogans, ICARE                                    | `recovery_capital_assessments`, content tables                                       |
+| Grace House + GFA Connection projects                                        | person-matched imports with provenance                                               |
 
 Rules: map old identifiers in `*_legacy_ref` columns; deduplicate people by verified
 contact + human review queue, never by name alone; nothing is deleted at the source

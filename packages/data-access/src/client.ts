@@ -34,9 +34,7 @@ export function configureSupabase(config: SupabaseConfig): RecoveryOSClient {
 
 export function getSupabase(): RecoveryOSClient {
   if (!client) {
-    throw new Error(
-      'Supabase client not configured. Call configureSupabase() at app bootstrap.',
-    );
+    throw new Error('Supabase client not configured. Call configureSupabase() at app bootstrap.');
   }
   return client;
 }

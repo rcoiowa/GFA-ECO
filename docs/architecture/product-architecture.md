@@ -29,14 +29,14 @@ navigation, page composition, and theming. No engine is ever duplicated per shel
 One frontend deployment — `apps/platform` behind `vrcc.app` — with route-separated,
 lazy-loaded experience shells ("one platform with several intentional front doors"):
 
-| Surface | Route | Status |
-| --- | --- | --- |
-| Public entrance + Grace House info | `/`, `/recovery-residences/grace-house` | Built |
-| VRCC participant | `/app` | Built |
-| Resident | `/residence` | Shell built |
-| Coach / Navigator / Staff / Admin | `/coach` `/navigator` `/staff` `/admin` | Phase 7 |
-| API gateway | `api.vrcc.app` — Cloudflare Worker (`workers/api`), never a frontend | Skeleton |
-| Data | Supabase `ykykeioydvtxpyreshhs` — PostgreSQL + Auth + Storage + RLS | Target model in repo |
+| Surface                            | Route                                                                | Status               |
+| ---------------------------------- | -------------------------------------------------------------------- | -------------------- |
+| Public entrance + Grace House info | `/`, `/recovery-residences/grace-house`                              | Built                |
+| VRCC participant                   | `/app`                                                               | Built                |
+| Resident                           | `/residence`                                                         | Shell built          |
+| Coach / Navigator / Staff / Admin  | `/coach` `/navigator` `/staff` `/admin`                              | Phase 7              |
+| API gateway                        | `api.vrcc.app` — Cloudflare Worker (`workers/api`), never a frontend | Skeleton             |
+| Data                               | Supabase `ykykeioydvtxpyreshhs` — PostgreSQL + Auth + Storage + RLS  | Target model in repo |
 
 Each front door downloads only its own lazy chunk; guards shape navigation and RLS
 enforces access. Consolidation of the five legacy source builds into this platform is

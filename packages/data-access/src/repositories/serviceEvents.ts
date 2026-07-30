@@ -28,7 +28,9 @@ export async function getServiceContext(): Promise<ServiceContextCache> {
   cache = {
     organizationId: orgRes.data.id,
     vrccProgramId: programRes.data?.id ?? null,
-    serviceTypeIdsByKey: new Map((typesRes.data ?? []).map((t) => [t.key as string, t.id as number])),
+    serviceTypeIdsByKey: new Map(
+      (typesRes.data ?? []).map((t) => [t.key as string, t.id as number]),
+    ),
   };
   return cache;
 }

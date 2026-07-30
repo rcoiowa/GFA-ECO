@@ -75,7 +75,10 @@ export function SignInPage() {
           </form>
           <p className="mt-5 text-ink-muted">
             New here?{' '}
-            <Link to="/register" className="font-medium text-experience-700 underline underline-offset-2">
+            <Link
+              to="/register"
+              className="font-medium text-experience-700 underline underline-offset-2"
+            >
               Create your account
             </Link>
           </p>

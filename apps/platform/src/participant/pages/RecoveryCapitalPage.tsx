@@ -74,9 +74,9 @@ export function RecoveryCapitalPage() {
         />
         <Card>
           <p className="text-ink-muted">
-            Recovery capital is everything you can draw on to build your recovery — people,
-            energy, meaning, belonging. Answering takes about two minutes, and you can take it
-            again anytime to see how things grow.
+            Recovery capital is everything you can draw on to build your recovery — people, energy,
+            meaning, belonging. Answering takes about two minutes, and you can take it again anytime
+            to see how things grow.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Button size="lg" onClick={() => setStage('questions')}>
@@ -145,10 +145,7 @@ export function RecoveryCapitalPage() {
         </div>
       ) : null}
       <Card>
-        <div
-          aria-hidden
-          className="mb-4 h-1.5 overflow-hidden rounded-full bg-surface-sunken"
-        >
+        <div aria-hidden className="mb-4 h-1.5 overflow-hidden rounded-full bg-surface-sunken">
           <div
             className="h-full rounded-full bg-experience-500 transition-all"
             style={{ width: `${(idx / BARC10_ITEMS.length) * 100}%` }}

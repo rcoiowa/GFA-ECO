@@ -58,7 +58,10 @@ export function LandingPage() {
           <ul className="mt-4 grid gap-4 sm:grid-cols-2">
             {[
               ['Work with a recovery coach', 'One-on-one support for building the life you want.'],
-              ['Find resources', 'Housing, employment, benefits, transportation, and more — with a navigator beside you.'],
+              [
+                'Find resources',
+                'Housing, employment, benefits, transportation, and more — with a navigator beside you.',
+              ],
               ['Join recovery circles', 'Connect with people who understand, online or in person.'],
               ['Build recovery capital', 'Track your strengths, set goals, and watch them grow.'],
             ].map(([title, body]) => (
@@ -73,9 +76,9 @@ export function LandingPage() {
         <section className="mt-14 rounded-lg bg-experience-soft p-6">
           <h2 className="text-xl font-semibold text-experience-700">Who is this for?</h2>
           <p className="mt-2 max-w-2xl text-ink">
-            Anyone exploring recovery, actively building it, or supporting someone who is. If
-            you're curious whether this is for you, it probably is — and registering takes about
-            two minutes.
+            Anyone exploring recovery, actively building it, or supporting someone who is. If you're
+            curious whether this is for you, it probably is — and registering takes about two
+            minutes.
           </p>
         </section>
 
@@ -84,8 +87,8 @@ export function LandingPage() {
             Recovery residences
           </h2>
           <p className="mt-2 max-w-2xl text-ink-muted">
-            Grace For Addictions also operates recovery housing, including Grace House — a
-            women's recovery residence in Des Moines.
+            Grace For Addictions also operates recovery housing, including Grace House — a women's
+            recovery residence in Des Moines.
           </p>
           <Link
             to="/recovery-residences/grace-house"
@@ -99,8 +102,8 @@ export function LandingPage() {
       <footer className="border-t border-line py-6">
         <p className="mx-auto max-w-4xl px-4 text-sm text-ink-muted">
           Grace For Addictions · Connection prevents crisis · No shame. No stigma. Just grace. ·
-          Your information is private and protected. VRCC is not an emergency service — in
-          immediate danger, call 911.
+          Your information is private and protected. VRCC is not an emergency service — in immediate
+          danger, call 911.
         </p>
       </footer>
     </div>

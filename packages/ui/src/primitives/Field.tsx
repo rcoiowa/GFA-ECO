@@ -28,7 +28,9 @@ export function TextField({
       ) : null}
       <input
         id={id}
-        aria-describedby={[hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ') || undefined}
+        aria-describedby={
+          [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ') || undefined
+        }
         aria-invalid={error ? true : undefined}
         className={`min-h-11 rounded-md border bg-surface-raised px-3 text-base text-ink placeholder:text-ink-faint ${
           error ? 'border-critical-600' : 'border-line'

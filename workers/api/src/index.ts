@@ -23,10 +23,9 @@ export default {
     }
 
     if (url.pathname === '/version') {
-      return new Response(
-        JSON.stringify({ name: 'recoveryos-api', version: '0.1.0', phase: 1 }),
-        { headers: JSON_HEADERS },
-      );
+      return new Response(JSON.stringify({ name: 'recoveryos-api', version: '0.1.0', phase: 1 }), {
+        headers: JSON_HEADERS,
+      });
     }
 
     return new Response(JSON.stringify({ error: 'not_found' }), {

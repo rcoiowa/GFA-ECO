@@ -67,9 +67,28 @@ export function RegisterPage() {
             </div>
           ) : null}
           <form onSubmit={onSubmit} className="mt-5 flex flex-col gap-4" noValidate>
-            <TextField label="First name" name="firstName" autoComplete="given-name" required error={errors.firstName} />
-            <TextField label="Last name" name="lastName" autoComplete="family-name" required error={errors.lastName} />
-            <TextField label="Email" name="email" type="email" autoComplete="email" required error={errors.email} />
+            <TextField
+              label="First name"
+              name="firstName"
+              autoComplete="given-name"
+              required
+              error={errors.firstName}
+            />
+            <TextField
+              label="Last name"
+              name="lastName"
+              autoComplete="family-name"
+              required
+              error={errors.lastName}
+            />
+            <TextField
+              label="Email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              error={errors.email}
+            />
             <TextField
               label="Password"
               name="password"
@@ -85,7 +104,10 @@ export function RegisterPage() {
           </form>
           <p className="mt-5 text-ink-muted">
             Already have an account?{' '}
-            <Link to="/sign-in" className="font-medium text-experience-700 underline underline-offset-2">
+            <Link
+              to="/sign-in"
+              className="font-medium text-experience-700 underline underline-offset-2"
+            >
               Sign in
             </Link>
           </p>

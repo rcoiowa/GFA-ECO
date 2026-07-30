@@ -25,8 +25,8 @@ export function NotAuthorizedPage() {
       <div className="mx-auto max-w-md text-center">
         <h1 className="text-2xl font-semibold text-ink">That area isn't available</h1>
         <p className="mt-2 text-ink-muted">
-          Your account doesn't have access to that part of RecoveryOS. If you think it should,
-          reach out to the Grace For Addictions team.
+          Your account doesn't have access to that part of RecoveryOS. If you think it should, reach
+          out to the Grace For Addictions team.
         </p>
         <Link
           to="/app/today"

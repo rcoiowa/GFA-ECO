@@ -56,7 +56,12 @@ export function soilForScore(total: number): SoilType {
       emoji: '🌒',
       description: 'Struggling to find roots',
     };
-  return { code: 'path', label: 'Path Soil', emoji: '🌑', description: 'Hard and exposed right now' };
+  return {
+    code: 'path',
+    label: 'Path Soil',
+    emoji: '🌑',
+    description: 'Hard and exposed right now',
+  };
 }
 
 export function barc10Insight(total: number): string {

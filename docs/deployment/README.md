@@ -4,11 +4,11 @@ Legacy source deployments: `docs/source-inventory/deployment-registry.md`.
 
 ## Targets
 
-| Component | Cloudflare project | Domain | Build command | Output |
-| --- | --- | --- | --- | --- |
-| Platform (staging) | Worker `recoveryos-staging` (static assets; config in `apps/platform/wrangler.jsonc`) | `recoveryos-staging.<account>.workers.dev` | `pnpm --filter @recoveryos/platform build` then `wrangler deploy` | `apps/platform/dist` |
-| Platform (prod, Phase 9) | takes over `vrcc.app` custom domain | `vrcc.app` | same | same |
-| API gateway | Worker `recoveryos-api` | `api.vrcc.app` | `wrangler deploy` (from `workers/api`) | — |
+| Component                | Cloudflare project                                                                    | Domain                                     | Build command                                                     | Output               |
+| ------------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------- | -------------------- |
+| Platform (staging)       | Worker `recoveryos-staging` (static assets; config in `apps/platform/wrangler.jsonc`) | `recoveryos-staging.<account>.workers.dev` | `pnpm --filter @recoveryos/platform build` then `wrangler deploy` | `apps/platform/dist` |
+| Platform (prod, Phase 9) | takes over `vrcc.app` custom domain                                                   | `vrcc.app`                                 | same                                                              | same                 |
+| API gateway              | Worker `recoveryos-api`                                                               | `api.vrcc.app`                             | `wrangler deploy` (from `workers/api`)                            | —                    |
 
 Staging deploy needs a `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit) available to
 wrangler — the account's MCP connector is read-only and cannot deploy. Env vars are
@@ -18,10 +18,10 @@ SPA routing: single-page-application fallback (`/* → /index.html`).
 
 ## Environment variables (Pages project)
 
-| Variable | Notes |
-| --- | --- |
-| `VITE_SUPABASE_URL` | `https://ykykeioydvtxpyreshhs.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | Publishable anon key (RLS protects data) |
+| Variable                 | Notes                                      |
+| ------------------------ | ------------------------------------------ |
+| `VITE_SUPABASE_URL`      | `https://ykykeioydvtxpyreshhs.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | Publishable anon key (RLS protects data)   |
 
 Worker secrets via `wrangler secret put` (none required yet).
 
