@@ -20,6 +20,7 @@ const ParticipantArea = lazy(() =>
 const ResidentArea = lazy(() =>
   import('./resident/ResidentArea').then((m) => ({ default: m.ResidentArea })),
 );
+const StaffArea = lazy(() => import('./staff/StaffArea').then((m) => ({ default: m.StaffArea })));
 
 export function App() {
   return (
@@ -54,6 +55,14 @@ export function App() {
         element={
           <Suspense fallback={<LoadingState label="Opening your residence…" />}>
             <ResidentArea />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/staff/*"
+        element={
+          <Suspense fallback={<LoadingState label="Opening residence operations…" />}>
+            <StaffArea />
           </Suspense>
         }
       />

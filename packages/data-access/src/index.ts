@@ -8,3 +8,4 @@ export * from './repositories/serviceEvents';
 export * from './repositories/recoveryCapital';
 export * from './repositories/residenceDocuments';
 export * from './repositories/residenceOperations';
+export * from './repositories/staffOperations';

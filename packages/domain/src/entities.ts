@@ -80,10 +80,146 @@ export interface Residence {
   id: number;
   organization_id: number;
   name: string;
+  address_street: string | null;
   address_city: string | null;
   address_state: string | null;
+  postal_code: string | null;
+  phone: string | null;
+  email: string | null;
+  population_served: string | null;
+  narr_level: string | null;
+  narr_certification_status: 'certified' | 'pending' | 'in_preparation' | 'not_certified';
+  narr_affiliate: string | null;
+  shared_room_fee_weekly: number | null;
+  private_room_fee_weekly: number | null;
+  shared_room_fee_monthly: number | null;
+  private_room_fee_monthly: number | null;
+  accepts_mat: boolean;
+  accepts_supervision: boolean;
+  public_description: string | null;
   capacity: number | null;
   is_active: boolean;
+}
+
+export interface ResidenceUnit {
+  id: number;
+  residence_id: number;
+  name: string;
+}
+
+export interface ResidenceRoom {
+  id: number;
+  unit_id: number;
+  name: string;
+}
+
+export interface ResidenceBed {
+  id: number;
+  room_id: number;
+  name: string;
+  is_active: boolean;
+}
+
+export interface BedAssignment {
+  id: number;
+  residency_id: number;
+  bed_id: number;
+  assigned_at: string;
+  released_at: string | null;
+}
+
+export interface ResidenceApplication {
+  id: number;
+  person_id: number;
+  residence_id: number;
+  status: 'submitted' | 'in_review' | 'approved' | 'waitlisted' | 'declined' | 'withdrawn';
+  submitted_at: string;
+  decided_at: string | null;
+  decided_by_person_id: number | null;
+  notes: string | null;
+}
+
+export interface Screening {
+  id: number;
+  residency_id: number;
+  screening_type: string;
+  collected_at: string;
+  result: string | null;
+  recorded_by_person_id: number | null;
+}
+
+export interface Incident {
+  id: number;
+  residence_id: number;
+  residency_id: number | null;
+  occurred_at: string;
+  category: string;
+  severity: number | null;
+  summary: string;
+  follow_up: string | null;
+  reported_by_person_id: number | null;
+  reviewed_by_person_id: number | null;
+  reviewed_at: string | null;
+  created_at: string;
+}
+
+export interface ResidencyPhase {
+  id: number;
+  residency_id: number;
+  phase: number;
+  started_on: string;
+  note: string | null;
+  recorded_by_person_id: number | null;
+  created_at: string;
+}
+
+export interface FeeLedgerEntry {
+  id: number;
+  residency_id: number;
+  entry_type: 'charge' | 'payment' | 'adjustment' | 'refund';
+  amount: number;
+  method: string | null;
+  period_start: string | null;
+  period_end: string | null;
+  receipt_number: string | null;
+  note: string | null;
+  recorded_by_person_id: number | null;
+  created_at: string;
+}
+
+export interface NarrStandard {
+  id: number;
+  code: string;
+  domain: number;
+  title: string;
+  sort: number;
+}
+
+export interface NarrCompliance {
+  id: number;
+  residence_id: number;
+  standard_id: number;
+  status: 'met' | 'in_progress' | 'not_met' | 'not_applicable';
+  evidence: string | null;
+  verified_by_person_id: number | null;
+  verified_at: string | null;
+  next_review_on: string | null;
+}
+
+export interface IowaChecklistItem {
+  id: number;
+  item_no: number;
+  title: string;
+}
+
+export interface IowaChecklistStatus {
+  id: number;
+  residence_id: number;
+  item_id: number;
+  status: 'yes' | 'in_progress' | 'no';
+  evidence: string | null;
+  verified_by_person_id: number | null;
+  verified_at: string | null;
 }
 
 export interface Residency {

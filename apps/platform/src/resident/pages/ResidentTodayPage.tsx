@@ -3,10 +3,12 @@ import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import {
   getCurfewSchedule,
+  getLatestPhaseOverride,
   getMyActiveResidency,
   listMyChoreAssignments,
   type ChoreAssignmentWithChore,
 } from '@recoveryos/data-access';
+import { getPhaseInfo, type Phase, type PhaseInfo } from '@recoveryos/domain';
 import type { CurfewSchedule, Residence, Residency } from '@recoveryos/domain';
 import { Alert, Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
 
@@ -27,6 +29,7 @@ export function ResidentTodayPage() {
   const [residency, setResidency] = useState<(Residency & { residence: Residence }) | null>(null);
   const [todaysChores, setTodaysChores] = useState<ChoreAssignmentWithChore[]>([]);
   const [tonightsCurfew, setTonightsCurfew] = useState<CurfewSchedule | null>(null);
+  const [phaseInfo, setPhaseInfo] = useState<PhaseInfo | null>(null);
 
   const load = useCallback(async () => {
     if (!person) return;
@@ -37,12 +40,18 @@ export function ResidentTodayPage() {
       setResidency(res);
       if (res) {
         const today = new Date().toISOString().slice(0, 10);
-        const [choreRows, curfewRows] = await Promise.all([
+        const [choreRows, curfewRows, phaseOverride] = await Promise.all([
           listMyChoreAssignments(res.id, today, today),
           getCurfewSchedule(res.residence_id),
+          getLatestPhaseOverride(res.id),
         ]);
         setTodaysChores(choreRows);
         setTonightsCurfew(curfewRows.find((c) => c.day_of_week === new Date().getDay()) ?? null);
+        if (res.admission_date) {
+          setPhaseInfo(
+            getPhaseInfo(res.admission_date, (phaseOverride?.phase as Phase | undefined) ?? null),
+          );
+        }
       }
     } catch {
       setError(true);
@@ -93,6 +102,32 @@ export function ResidentTodayPage() {
               </p>
             ) : null}
           </Card>
+
+          {phaseInfo ? (
+            <Card>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle>
+                  {phaseInfo.label} — day {phaseInfo.dayInResidence}
+                </CardTitle>
+                <span className="rounded-full bg-experience-soft px-3 py-1 text-sm font-medium text-experience-700">
+                  {phaseInfo.activitiesPerWeek} recovery activities / week
+                </span>
+              </div>
+              <p className="text-sm text-ink-muted">
+                Curfew tonight:{' '}
+                <span className="font-medium text-ink">{phaseInfo.curfewTonight}</span>
+                {' · '}coaching {phaseInfo.coachingCadence}
+                {phaseInfo.nextPhaseOn
+                  ? ` · Phase ${phaseInfo.phase + 1} begins ${new Date(
+                      `${phaseInfo.nextPhaseOn}T12:00:00`,
+                    ).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}`
+                  : ''}
+              </p>
+              <p className="mt-1 text-sm text-ink-faint">
+                You are here — and here is what comes next. Daily check-ins live in My Recovery.
+              </p>
+            </Card>
+          ) : null}
 
           <Card>
             <CardTitle>Residence responsibilities today</CardTitle>

@@ -126,6 +126,37 @@ clean of new findings.
   directory backend); optional CLI sync of full bodies for non-signature
   document versions.
 
-## Phases 5–8 ⬜
+## Phase 5 — Staff workspace / Provider Hub Room 1 ✅ initial (2026-07-30)
 
-Staff workspace, coach/navigator workspaces, admin + analytics, hardening/deployment.
+- **Migration 0014 (applied live):** residence public-profile fields
+  (address, contact, population, NARR level/status/affiliate MCRSP, room
+  fees, MAT/supervision flags), `residency_phases` (override of the derived
+  1–30/31–90/91+ phase), `fee_ledger`, incident 4-level `severity`,
+  `narr_standards` (82 Level II rules seeded from the Integration Plan) +
+  `narr_compliance`, `iowa_checklist_items` (the 7 470-0025 items) +
+  `iowa_checklist_status`, and the full staff RLS layer
+  (staff_residence_ids scope: people, residencies, applications,
+  units/rooms/beds, bed_assignments, passes, chores, meetings, curfew,
+  phases, fees, compliance). Both residence profiles seeded live.
+- **Domain:** `packages/domain/src/phases.ts` — GH-CURFEW-001 v3.0 and
+  GH-RECOVERY-001 v2.0 as code (phase, curfew tonight, activities/week,
+  coaching cadence, next-phase date).
+- **Staff app** (`/staff`, professional theme, lazy shell, roles
+  residence_staff/residence_manager, multi-residence picker): Today
+  (occupancy stats, open applications, pass approvals), Bed Board (live
+  bed grid, assign/release), Applications (review → approve opens the
+  residency; waitlist; refer-elsewhere framing), Screenings (log +
+  prescription-consistent vocabulary + return-to-use prompt), Incidents
+  (4-level classification, facts-only guidance), Compliance (Iowa 7-item
+  - NARR 82-rule trackers with per-domain progress), Fees (ledger,
+    balance, hardship-first framing).
+- **Room 2 upgrades:** resident Today shows the phase card ("You are
+  here — here is what comes next": phase, day, curfew tonight,
+  activities/week, next phase date); My Residence shows the fee balance
+  and recent ledger with the hardship-plan promise.
+
+## Phases 6–8 ⬜
+
+Coach/navigator workspaces, referral partner portal (Hub Room 4),
+supervision compliance reports + Iowa HHS export, admin + analytics,
+house community board, hardening/deployment.

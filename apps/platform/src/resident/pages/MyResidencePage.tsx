@@ -2,12 +2,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import {
+  feeBalance,
   getCurfewSchedule,
   getMyActiveResidency,
+  listFeeLedger,
   listMyChoreAssignments,
   type ChoreAssignmentWithChore,
 } from '@recoveryos/data-access';
-import type { CurfewSchedule, Residence, Residency } from '@recoveryos/domain';
+import type { CurfewSchedule, FeeLedgerEntry, Residence, Residency } from '@recoveryos/domain';
 import { Alert, Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -30,6 +32,7 @@ export function MyResidencePage() {
   const [residency, setResidency] = useState<(Residency & { residence: Residence }) | null>(null);
   const [chores, setChores] = useState<ChoreAssignmentWithChore[]>([]);
   const [curfew, setCurfew] = useState<CurfewSchedule[]>([]);
+  const [ledger, setLedger] = useState<FeeLedgerEntry[]>([]);
 
   const load = useCallback(async () => {
     if (!person) return;
@@ -42,12 +45,14 @@ export function MyResidencePage() {
         const today = new Date();
         const weekOut = new Date();
         weekOut.setDate(today.getDate() + 7);
-        const [choreRows, curfewRows] = await Promise.all([
+        const [choreRows, curfewRows, ledgerRows] = await Promise.all([
           listMyChoreAssignments(res.id, isoDate(today), isoDate(weekOut)),
           getCurfewSchedule(res.residence_id),
+          listFeeLedger(res.id),
         ]);
         setChores(choreRows);
         setCurfew(curfewRows);
+        setLedger(ledgerRows);
       }
     } catch {
       setError(true);
@@ -170,6 +175,50 @@ export function MyResidencePage() {
                     Schedule
                   </Link>{' '}
                   page — requests are honored whenever safety allows.
+                </p>
+              </>
+            )}
+          </Card>
+
+          <Card>
+            <CardTitle>Your program fees</CardTitle>
+            {ledger.length === 0 ? (
+              <p className="text-ink-muted">
+                No fee activity on record yet. Your fee schedule is in the Fee Schedule &amp;
+                Financial Agreement (Documents), and receipts are issued for every payment.
+              </p>
+            ) : (
+              <>
+                <p className="text-2xl font-semibold text-ink">
+                  ${Math.abs(feeBalance(ledger)).toFixed(2)}{' '}
+                  <span className="text-base font-normal text-ink-muted">
+                    {feeBalance(ledger) > 0
+                      ? 'currently owed'
+                      : feeBalance(ledger) < 0
+                        ? 'credit'
+                        : '— all settled'}
+                  </span>
+                </p>
+                <ul className="mt-2 flex flex-col gap-1">
+                  {ledger.slice(0, 6).map((e) => (
+                    <li
+                      key={e.id}
+                      className="flex justify-between border-b border-line py-1 text-sm"
+                    >
+                      <span className="text-ink">
+                        {e.entry_type}
+                        {e.note ? ` · ${e.note}` : ''}
+                      </span>
+                      <span className="text-ink-muted">
+                        {e.entry_type === 'charge' ? '+' : '−'}${Number(e.amount).toFixed(2)} ·{' '}
+                        {new Date(e.created_at).toLocaleDateString()}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-sm text-ink-faint">
+                  Money getting hard? Talk with the House Manager before the due date — hardship
+                  payment plans are always available and never punitive.
                 </p>
               </>
             )}

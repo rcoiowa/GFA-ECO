@@ -32,6 +32,44 @@ from organizations o
 where o.name = 'Grace For Addictions'
   and not exists (select 1 from residences where name = 'Ernest & Johnnie White Recovery House');
 
+-- Public-profile facts from the canonical operational documents (safe to
+-- re-run; requires migration 0014).
+update residences set
+  address_street = '1311 9th Street',
+  postal_code = '50314',
+  phone = '515-220-8771',
+  email = 'gracehouse@graceforaddictions.org',
+  population_served = 'Women',
+  narr_level = 'II',
+  narr_certification_status = 'in_preparation',
+  narr_affiliate = 'MCRSP',
+  shared_room_fee_weekly = 175,
+  private_room_fee_weekly = 200,
+  shared_room_fee_monthly = 650,
+  private_room_fee_monthly = 700,
+  accepts_mat = true,
+  accepts_supervision = true,
+  public_description = 'Women''s recovery residence operated by Grace For Addictions. Phased program, life & recovery coaching, MAT/MOUD-affirming, all pathways honored.'
+where name = 'Grace House';
+
+update residences set
+  address_street = '1414 12th Street',
+  postal_code = '50314',
+  phone = '515-220-8771',
+  email = 'ejwrh@rcoiowa.org',
+  population_served = 'Men',
+  narr_level = 'II',
+  narr_certification_status = 'in_preparation',
+  narr_affiliate = 'MCRSP',
+  shared_room_fee_weekly = 175,
+  private_room_fee_weekly = 200,
+  shared_room_fee_monthly = 660,
+  private_room_fee_monthly = 760,
+  accepts_mat = true,
+  accepts_supervision = true,
+  public_description = 'Men''s recovery residence with wraparound recovery support services from Grace For Addictions; Iowa DOC approved placement.'
+where name = 'Ernest & Johnnie White Recovery House';
+
 insert into service_types (key, name, category) values
   ('coaching_session', 'Recovery coaching session', 'coaching'),
   ('peer_support', 'Peer support conversation', 'peer_support'),
