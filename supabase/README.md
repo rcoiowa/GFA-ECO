@@ -2,11 +2,18 @@
 
 Live project: `ykykeioydvtxpyreshhs` ("Grace For Addictions", us-west-2, PG17).
 
-**Status: DEPLOYED.** Migrations 0000–0011 are applied to the live project as the
-**`recoveryos` schema** (2026-07-29), alongside the untouched legacy schemas
-(`public`, `gfa_ui`, `gfa_core`, `gfa_community`, `gfa_residence`). The app client
-targets `recoveryos` via `db: { schema: 'recoveryos' }`. Reference data
-(org, programs, Grace House, service/consent taxonomies) is seeded.
+**Status: DEPLOYED.** Migrations 0000–0013 are applied to the live project as the
+**`recoveryos` schema** (0000–0012 on 2026-07-29; 0013 on 2026-07-30), alongside
+the untouched legacy schemas (`public`, `gfa_ui`, `gfa_core`, `gfa_community`,
+`gfa_residence`). The app client targets `recoveryos` via
+`db: { schema: 'recoveryos' }`. Reference data is seeded: org, programs, both
+residences (Grace House + EJWRH), service/consent taxonomies, and all 19
+canonical document templates/versions (8 signature documents carry their full
+bodies in `document_versions.body_markdown`; the 11 non-signature documents
+carry version-pinning pointer bodies — the app renders those from the bundled
+package. To sync full bodies later, apply `seed/documents_seed.sql` via the
+CLI as UPDATEs). Security advisors re-run 2026-07-30: no new findings beyond
+the documented pre-existing GraphQL-visibility/deny-all notes.
 
 ## Applying migrations
 

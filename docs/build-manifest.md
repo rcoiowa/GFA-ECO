@@ -114,11 +114,17 @@ prototype with the staged Grace House application process lives at
 `sites/recoveryresidence-directory/` (its online-application submit is
 the integration point for the VRCC intake API).
 
-- **Pending**: apply migration 0013 + documents_seed.sql to the live project
-  (Supabase MCP needs re-auth); staff-side assignment/countersign tooling
-  (Phase 5); VRCC Recovery Residence Provider Hub build per the Integration
-  Plan (operator dashboard, bed management, compliance tracker, referral
-  portal, public directory backend).
+**Database deployed (2026-07-30):** migration 0013 applied live; all 19
+document templates + published versions seeded (full bodies for the 8
+signature documents; version-pinning pointer bodies for the rest — app
+renders those from the bundle); EJWRH residence seeded; security advisors
+clean of new findings.
+
+- **Pending**: staff-side assignment/countersign tooling (Phase 5); VRCC
+  Recovery Residence Provider Hub build per the Integration Plan (operator
+  dashboard, bed management, compliance tracker, referral portal, public
+  directory backend); optional CLI sync of full bodies for non-signature
+  document versions.
 
 ## Phases 5–8 ⬜
 
