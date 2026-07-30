@@ -155,8 +155,23 @@ clean of new findings.
   activities/week, next phase date); My Residence shows the fee balance
   and recent ledger with the hardship-plan promise.
 
-## Phases 6–8 ⬜
+## Phase 6 — House board + supervision reports ✅ initial (2026-07-30)
 
-Coach/navigator workspaces, referral partner portal (Hub Room 4),
-supervision compliance reports + Iowa HHS export, admin + analytics,
-house community board, hardening/deployment.
+- **Migration 0015 (applied live):** `house_posts` (announcements, meeting
+  notes, milestones, gratitude; pinning; residents may post
+  milestone/gratitude, staff post all categories) + staff read policies on
+  `service_events` and `check_ins` scoped to their residences.
+- **Room 2 complete:** the resident Connect area is the house community
+  board — "feels like belonging, not a bulletin board" — with resident
+  milestone/gratitude posting. Staff manage the board from /staff/board.
+- **Room 4 seed:** /staff/reports compiles the 90-day supervision
+  compliance report from live participation data (phase, check-in
+  engagement, house-meeting attendance, documented service events,
+  screenings with prescription-consistent vocabulary, fee status) with an
+  ROI attestation gate before printing.
+
+## Phases 7–8 ⬜
+
+Coach/navigator workspaces, credentialed referral-partner portal (Room 4
+full: referral submission + partner logins), Iowa HHS data export, admin +
+analytics, hardening/deployment.

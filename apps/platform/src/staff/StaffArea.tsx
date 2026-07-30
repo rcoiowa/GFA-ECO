@@ -9,6 +9,8 @@ import { ScreeningsPage } from './pages/ScreeningsPage';
 import { IncidentsPage } from './pages/IncidentsPage';
 import { CompliancePage } from './pages/CompliancePage';
 import { FeesPage } from './pages/FeesPage';
+import { BoardPage } from './pages/BoardPage';
+import { ReportsPage } from './pages/ReportsPage';
 import { NotFoundPage } from '../pages/StatusPages';
 
 /**
@@ -29,6 +31,8 @@ export function StaffArea() {
             <Route path="incidents" element={<IncidentsPage />} />
             <Route path="compliance" element={<CompliancePage />} />
             <Route path="fees" element={<FeesPage />} />
+            <Route path="board" element={<BoardPage />} />
+            <Route path="reports" element={<ReportsPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

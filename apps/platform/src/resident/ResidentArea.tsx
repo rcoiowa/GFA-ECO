@@ -5,6 +5,7 @@ import { ResidentShell } from './ResidentShell';
 import { ResidentTodayPage } from './pages/ResidentTodayPage';
 import { MyResidencePage } from './pages/MyResidencePage';
 import { SchedulePage } from './pages/SchedulePage';
+import { HouseBoardPage } from './pages/HouseBoardPage';
 import { DocumentsPage } from './pages/DocumentsPage';
 import { DocumentDetailPage } from './pages/DocumentDetailPage';
 import { GrievancePage } from './pages/GrievancePage';
@@ -33,16 +34,7 @@ export function ResidentArea() {
               />
             }
           />
-          <Route
-            path="connect"
-            element={
-              <PlaceholderPage
-                title="Connect"
-                lede="Your support team, housemates, and community."
-                note="Connection features arrive with the shared engines."
-              />
-            }
-          />
+          <Route path="connect" element={<HouseBoardPage />} />
           <Route path="schedule" element={<SchedulePage />} />
           <Route path="documents" element={<DocumentsPage />} />
           <Route path="documents/grievance" element={<GrievancePage />} />
