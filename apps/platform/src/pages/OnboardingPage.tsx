@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import { ensureMyPerson } from '@recoveryos/data-access';
 import { Button, Card, ErrorState, LoadingState } from '@recoveryos/ui';
@@ -11,12 +11,17 @@ import { Button, Card, ErrorState, LoadingState } from '@recoveryos/ui';
 export function OnboardingPage() {
   const { session, person, refreshIdentity } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  // Internal-only return path (e.g. back to a residence application).
+  const rawNext = searchParams.get('next');
+  const destination =
+    rawNext?.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/app/today';
 
   useEffect(() => {
     if (person) {
-      navigate('/app/today', { replace: true });
+      navigate(destination, { replace: true });
       return;
     }
     if (!session) return;
@@ -29,7 +34,7 @@ export function OnboardingPage() {
           lastName: typeof meta.last_name === 'string' ? meta.last_name : '',
         });
         await refreshIdentity();
-        if (!cancelled) navigate('/app/today', { replace: true });
+        if (!cancelled) navigate(destination, { replace: true });
       } catch {
         if (!cancelled) setFailed(true);
       }
@@ -37,7 +42,7 @@ export function OnboardingPage() {
     return () => {
       cancelled = true;
     };
-  }, [session, person, attempt, navigate, refreshIdentity]);
+  }, [session, person, attempt, navigate, refreshIdentity, destination]);
 
   return (
     <div className="min-h-dvh bg-surface px-4 py-12">

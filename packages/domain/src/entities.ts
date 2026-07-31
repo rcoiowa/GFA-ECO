@@ -137,6 +137,7 @@ export interface ResidenceApplication {
   decided_at: string | null;
   decided_by_person_id: number | null;
   notes: string | null;
+  answers: Record<string, string>;
 }
 
 export interface Screening {

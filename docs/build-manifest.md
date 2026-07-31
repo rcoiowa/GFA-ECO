@@ -205,6 +205,45 @@ clean of new findings.
   breakdown and grant-upload CSV export. Aggregate counts only (42 CFR
   Part 2 / minimum-necessary).
 
+## Phase 8.5 — Residence application flow ✅ code complete (2026-07-31; DB push of 0018 pending)
+
+The full front door → resident-account pipeline the landing page promises:
+
+- **Landing nav:** "Center" and "Residence" links at the top of vrcc.app's
+  landing page; Residence opens `/recovery-residences`.
+- **`/recovery-residences` directory:** recovery housing options — GFA
+  residences first (Grace House links to its application site at
+  https://gracehouse4.pages.dev/, profile at
+  `/recovery-residences/grace-house`) plus the searchable statewide Iowa
+  list (county/population/text filters) ported from the RecoveryResidenceOS
+  public directory.
+- **Online application** (`/recovery-residences/grace-house/apply`):
+  documents-first flow (read the Grace House document set, then apply);
+  account-required so submitting creates the resident account — register/
+  sign-in round-trips back via `?next=`; answers stored as jsonb on
+  `residence_applications` (migration 0018: `answers` column + applicant
+  self-insert/self-select RLS).
+- **Applicant status** (`/recovery-residences/my-application`): submitted →
+  review → waitlist/bed narrative, the 2-business-day and every-2-weeks
+  commitments, "referred elsewhere is a service" framing, and the VRCC
+  onboarding prompt (strongest once approved).
+- **Staff workflow:** applications land in the existing `/staff/applications`
+  queue (counted on staff Today); the queue now renders the structured
+  application answers, and approving prompts bed placement on the Bed board
+  (or the applicant holds at the top of the waitlist).
+- **External intake API** (`workers/api`):
+  `POST /public/residence-applications` with CORS for the Grace House site,
+  vrcc.app, and recoveryresidence.app — creates the resident account
+  server-side (auth invite email, person record, application row under the
+  residence applied to) using `SUPABASE_SERVICE_ROLE_KEY` (wrangler
+  secret). This is the hook the gracehouse4.pages.dev application form
+  posts to once it goes live.
+
+**Pending to go live:** apply migration 0018 (Supabase MCP was
+unauthenticated this session), deploy `workers/api` + set the service-role
+secret, deploy the platform, and point the Grace House site's form at the
+gateway (its repo/deployment is separate — see docs/deployment/README.md).
+
 ## Phase 9 ⬜
 
 Coach/navigator workspaces, credentialed partner logins, alert system

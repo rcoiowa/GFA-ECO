@@ -1,11 +1,14 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { registrationSchema } from '@recoveryos/domain';
 import { getSupabase } from '@recoveryos/data-access';
 import { Alert, Button, Card, TextField } from '@recoveryos/ui';
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Where to land after account setup (e.g. back to a residence application).
+  const next = searchParams.get('next');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -47,7 +50,7 @@ export function RegisterPage() {
       );
       return;
     }
-    navigate('/onboarding');
+    navigate(next ? `/onboarding?next=${encodeURIComponent(next)}` : '/onboarding');
   }
 
   return (

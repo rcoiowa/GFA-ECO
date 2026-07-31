@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import {
   decideApplication,
@@ -39,6 +40,7 @@ export function ApplicationsPage() {
   const [error, setError] = useState(false);
   const [applications, setApplications] = useState<ApplicationWithPerson[]>([]);
   const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [justApproved, setJustApproved] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!residence) return;
@@ -69,6 +71,11 @@ export function ApplicationsPage() {
     if (!person) return;
     try {
       await decideApplication({ application, status, decidedByPersonId: person.id });
+      if (status === 'approved') {
+        setJustApproved(
+          `${application.person.preferred_name || application.person.first_name} ${application.person.last_name}`,
+        );
+      }
       await load();
     } catch {
       setError(true);
@@ -108,6 +115,15 @@ export function ApplicationsPage() {
         <ErrorState onRetry={() => void load()} />
       ) : (
         <div className="flex flex-col gap-5">
+          {justApproved ? (
+            <Alert tone="positive">
+              {justApproved} is approved and their residency is open. Next step:{' '}
+              <Link to="/staff/beds" className="font-medium underline underline-offset-2">
+                place them in a bed on the Bed board
+              </Link>{' '}
+              — or they hold their spot at the top of the waitlist until one opens.
+            </Alert>
+          ) : null}
           <Card>
             <CardTitle>Partner referrals ({openReferrals.length})</CardTitle>
             {openReferrals.length === 0 ? (
@@ -204,6 +220,25 @@ export function ApplicationsPage() {
                       </div>
                     </div>
                     {a.notes ? <p className="mt-2 text-sm text-ink">{a.notes}</p> : null}
+                    {a.answers && Object.keys(a.answers).length > 0 ? (
+                      <details className="mt-2 text-sm">
+                        <summary className="cursor-pointer font-medium text-experience-700">
+                          Application details
+                        </summary>
+                        <dl className="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+                          {Object.entries(a.answers).map(([key, value]) => (
+                            <div key={key}>
+                              <dt className="font-medium text-ink">
+                                {key
+                                  .replace(/([A-Z])/g, ' $1')
+                                  .replace(/^./, (c) => c.toUpperCase())}
+                              </dt>
+                              <dd className="text-ink-muted">{value}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </details>
+                    ) : null}
                   </li>
                 ))}
               </ul>

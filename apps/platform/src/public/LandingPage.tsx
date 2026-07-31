@@ -11,6 +11,18 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
           <p className="text-xl font-semibold text-experience-700">VRCC</p>
           <nav className="flex items-center gap-3">
+            <a
+              href="#what-you-can-do"
+              className="min-h-11 rounded-md px-4 py-2 font-medium text-ink hover:bg-surface-sunken"
+            >
+              Center
+            </a>
+            <Link
+              to="/recovery-residences"
+              className="min-h-11 rounded-md px-4 py-2 font-medium text-ink hover:bg-surface-sunken"
+            >
+              Residence
+            </Link>
             <Link
               to="/sign-in"
               className="min-h-11 rounded-md px-4 py-2 font-medium text-ink hover:bg-surface-sunken"
@@ -88,14 +100,22 @@ export function LandingPage() {
           </h2>
           <p className="mt-2 max-w-2xl text-ink-muted">
             Grace For Addictions also operates recovery housing, including Grace House — a women's
-            recovery residence in Des Moines.
+            recovery residence in Des Moines. Browse every option and apply from the residence page.
           </p>
-          <Link
-            to="/recovery-residences/grace-house"
-            className="mt-2 inline-block font-medium text-experience-700 underline underline-offset-2"
-          >
-            Learn about Grace House
-          </Link>
+          <div className="mt-2 flex flex-wrap gap-4">
+            <Link
+              to="/recovery-residences"
+              className="inline-block font-medium text-experience-700 underline underline-offset-2"
+            >
+              See recovery housing options
+            </Link>
+            <Link
+              to="/recovery-residences/grace-house"
+              className="inline-block font-medium text-experience-700 underline underline-offset-2"
+            >
+              Learn about Grace House
+            </Link>
+          </div>
         </section>
       </main>
 
