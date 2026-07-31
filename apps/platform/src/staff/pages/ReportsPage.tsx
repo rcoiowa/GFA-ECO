@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
+  compileExhibitEReport,
   compileSupervisionReport,
+  exhibitEReportCsv,
+  EXHIBIT_E_CATEGORY_CITATIONS,
   listResidenceRoster,
+  type ExhibitEReportData,
   type RosterEntry,
   type SupervisionReportData,
 } from '@recoveryos/data-access';
@@ -32,6 +36,8 @@ export function ReportsPage() {
   const [report, setReport] = useState<SupervisionReportData | null>(null);
   const [compiling, setCompiling] = useState(false);
   const [roiConfirmed, setRoiConfirmed] = useState(false);
+  const [exhibitE, setExhibitE] = useState<ExhibitEReportData | null>(null);
+  const [compilingExhibitE, setCompilingExhibitE] = useState(false);
 
   const load = useCallback(async () => {
     if (!residence) return;
@@ -63,6 +69,29 @@ export function ReportsPage() {
     } finally {
       setCompiling(false);
     }
+  };
+
+  const compileExhibitE = async () => {
+    if (!residence) return;
+    setCompilingExhibitE(true);
+    try {
+      setExhibitE(await compileExhibitEReport(residence.id, residence.name));
+    } catch {
+      setError(true);
+    } finally {
+      setCompilingExhibitE(false);
+    }
+  };
+
+  const downloadExhibitECsv = () => {
+    if (!exhibitE) return;
+    const blob = new Blob([exhibitEReportCsv(exhibitE)], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `exhibit-e-outcomes-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   if (!residence) return <Alert tone="attention">Select a residence to compile reports.</Alert>;
@@ -114,6 +143,79 @@ export function ReportsPage() {
               A signed, unexpired ROI naming the supervision partner must be on file before this
               report leaves the building — check the resident's Intake Forms Package.
             </p>
+          </Card>
+
+          <Card>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <CardTitle>Iowa HHS / Exhibit E Outcomes Report</CardTitle>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => void compileExhibitE()}
+                  disabled={compilingExhibitE}
+                >
+                  {compilingExhibitE ? 'Compiling…' : 'Compile 90-day outcomes'}
+                </Button>
+                {exhibitE ? (
+                  <Button variant="ghost" onClick={downloadExhibitECsv}>
+                    Download CSV
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+            <p className="text-sm text-ink-faint">
+              Aggregate counts only — no participant-identifying information. Each metric cites the
+              Exhibit E Schedule A/B use it evidences (opioid settlement / HF 1038 reporting), per
+              the GFA Exhibit E Alignment Analysis.
+            </p>
+            {exhibitE ? (
+              <div className="mt-3 flex flex-col gap-4">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-line text-left text-ink-muted">
+                        <th className="py-1.5 pr-3 font-medium">Metric</th>
+                        <th className="py-1.5 pr-3 font-medium">Value</th>
+                        <th className="py-1.5 font-medium">Exhibit E citation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {exhibitE.blocks.map((b) => (
+                        <tr key={b.metric} className="border-b border-line">
+                          <td className="py-1.5 pr-3 text-ink">
+                            {b.metric}
+                            <span className="block text-ink-faint">{b.note}</span>
+                          </td>
+                          <td className="py-1.5 pr-3 text-lg font-semibold text-ink">{b.value}</td>
+                          <td className="py-1.5 font-mono text-ink-muted">{b.exhibitE}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {exhibitE.serviceBreakdown.length > 0 ? (
+                  <div>
+                    <p className="mb-1 font-medium text-ink">Service events by category</p>
+                    <ul className="flex flex-col gap-1">
+                      {exhibitE.serviceBreakdown.map((s) => (
+                        <li
+                          key={s.category}
+                          className="flex justify-between border-b border-line py-1 text-sm"
+                        >
+                          <span className="text-ink">{s.category}</span>
+                          <span className="text-ink-muted">
+                            {s.count}
+                            {EXHIBIT_E_CATEGORY_CITATIONS[s.category]
+                              ? ` · ${EXHIBIT_E_CATEGORY_CITATIONS[s.category]}`
+                              : ''}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </Card>
 
           {report && selected ? (

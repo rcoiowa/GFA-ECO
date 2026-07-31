@@ -186,9 +186,28 @@ clean of new findings.
   queue — mark contacted, convert to application, or close; a
   non-attested consent flag warns before information flows back.
 
-## Phase 8 ⬜
+## Phase 8 — Self-recording compliance + Exhibit E reporting ✅ initial (2026-07-31)
 
-Coach/navigator workspaces, credentialed partner logins (referral status
-visibility with consent), Iowa HHS data export, admin + analytics,
-hardening/deployment. Directory-site online application → intake API is
-the remaining public-site integration point.
+- **Migration 0017 (applied live):** NARR auto-evidence triggers — logging
+  a screening marks 2.F.16.c met; meetings → 3.G.23.a; attendance →
+  3.G.23.b + 3.I.27; chore completion → 3.I.27; incidents → 1.A.4.a; fee
+  entries → 1.A.3.b; board posts → 1.C.7.e / 1.C.8.c; document signatures →
+  their mapped standards (1.B.5.a, 1.A.3.a/c, 2.F.16.a/d, 1.C.7.c,
+  1.B.6.c, 1.A.2.d, 4.J.30.c); recovery plans → 3.G.21.a. Each writes a
+  timestamped evidence line + 1-year review horizon; manual overrides on
+  the Compliance page still win. Live-verified in a rollback transaction.
+- **Iowa HHS / Exhibit E outcomes report** (staff Reports): 90-day
+  aggregates — people served, residents housed, admissions, service
+  events, screenings, meetings — each citing its Exhibit E Schedule A/B
+  use per the GFA Exhibit E Alignment Analysis
+  (docs/source-documents/GFA_ExhibitEAlignmentAnalysis.pdf, mapped in
+  docs/compliance/exhibit-e-alignment.md), plus a service-category
+  breakdown and grant-upload CSV export. Aggregate counts only (42 CFR
+  Part 2 / minimum-necessary).
+
+## Phase 9 ⬜
+
+Coach/navigator workspaces, credentialed partner logins, alert system
+(missed check-ins, overdue screens, review calendar), public bed
+availability endpoint, admin + analytics, production hosting/deployment
+(Cloudflare credentials needed), hardening.
