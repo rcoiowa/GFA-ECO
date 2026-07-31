@@ -1,0 +1,16 @@
+{
+  // Canonical Worker config for the RecoveryOS platform (static-assets
+  // Worker, same pattern as the legacy builds). Lives at the repo root so
+  // a plain `npx wrangler deploy` works — including Cloudflare dashboard
+  // Git builds with default settings. Build first: `pnpm build`.
+  // The name matches the Worker created from the Cloudflare dashboard so
+  // deploys converge on one Worker (docs/deployment/consolidation-2026-07-31.md).
+  // Phase 9 cutover re-points the vrcc.app custom domain to this Worker.
+  "$schema": "https://esm.sh/wrangler/config-schema.json",
+  "name": "gfa-eco-recovery-residence-os",
+  "compatibility_date": "2026-07-01",
+  "assets": {
+    "directory": "./apps/platform/dist",
+    "not_found_handling": "single-page-application"
+  }
+}

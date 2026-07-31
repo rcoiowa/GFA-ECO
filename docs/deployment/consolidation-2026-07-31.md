@@ -59,29 +59,38 @@ source — applies this:
 When the directory content changes, re-copy the file — or retire this mount
 at cutover, when the canonical platform takes the domain.
 
-## Deploying the canonical platform to the stub Worker
+## Deploying the canonical platform Worker
 
-`apps/platform/wrangler.jsonc` is now named `gfa-eco-recovery-residence-os`,
-matching the Worker created in the dashboard on 2026-07-30. Two ways to ship:
+The Worker config lives at the **repo root** (`wrangler.jsonc`, name
+`gfa-eco-recovery-residence-os`), so Cloudflare's default dashboard settings
+work. The app also carries client-safe Supabase fallbacks, so no build
+variables are required. Two ways to ship:
 
 **A. Dashboard Git build (recommended — no local token):** In Cloudflare →
-Workers & Pages → `gfa-eco-recovery-residence-os` → Settings → Build, connect
-`rcoiowa/GFA-ECO`, branch `claude/recoveryos-greenfield-build-8pns7n`, and set:
+Workers & Pages → import/connect `rcoiowa/GFA-ECO` and set:
 
-- Build command: `corepack enable && pnpm install --frozen-lockfile && pnpm --filter @recoveryos/platform build`
-- Deploy command: `npx wrangler deploy --config apps/platform/wrangler.jsonc`
+- Production branch: `claude/recoveryos-greenfield-build-8pns7n` — **this is
+  the one setting that must not stay on the default**; the repo's default
+  branch does not contain the platform
+- Build command: `pnpm build` (Cloudflare auto-installs with pnpm from the
+  lockfile; the root script builds `apps/platform`, including the
+  `/residence/directory/` copy step)
+- Deploy command: `npx wrangler deploy`
 - Root directory: `/` (repo root — the monorepo needs the workspace)
-- Build variables: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
-  (values in `docs/deployment/README.md`)
+- Build variables: none required (optional `VITE_SUPABASE_URL`,
+  `VITE_SUPABASE_ANON_KEY` override the built-in canonical values)
 
-**B. CLI:** with `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit) exported:
+**B. CLI:** with `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit) exported, from
+the repo root:
 
-    pnpm --filter @recoveryos/platform build
-    npx wrangler deploy --config apps/platform/wrangler.jsonc
+    pnpm build
+    npx wrangler deploy
 
-Either way the "Hello world" stub is replaced by the real platform at
+Either way the platform serves at
 `gfa-eco-recovery-residence-os.<account>.workers.dev`, including
-`/residence/directory/`.
+`/residence/directory/`. (The 2026-07-30 "Hello world" stub Worker of the
+same name was deleted during GFA's 2026-07-31 dashboard connect attempt; the
+first successful deploy simply recreates it under the same name.)
 
 ## Nothing-lost checklist
 
