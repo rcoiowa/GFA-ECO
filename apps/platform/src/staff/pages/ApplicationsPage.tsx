@@ -3,7 +3,10 @@ import { useAuth } from '@recoveryos/auth';
 import {
   decideApplication,
   listApplications,
+  listReferrals,
+  updateReferralStatus,
   type ApplicationWithPerson,
+  type Referral,
 } from '@recoveryos/data-access';
 import {
   Alert,
@@ -35,13 +38,19 @@ export function ApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [applications, setApplications] = useState<ApplicationWithPerson[]>([]);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
 
   const load = useCallback(async () => {
     if (!residence) return;
     setLoading(true);
     setError(false);
     try {
-      setApplications(await listApplications(residence.id));
+      const [apps, refs] = await Promise.all([
+        listApplications(residence.id),
+        listReferrals(residence.id),
+      ]);
+      setApplications(apps);
+      setReferrals(refs);
     } catch {
       setError(true);
     } finally {
@@ -66,8 +75,19 @@ export function ApplicationsPage() {
     }
   };
 
+  const triageReferral = async (referralId: number, status: Referral['status']) => {
+    if (!person) return;
+    try {
+      await updateReferralStatus({ referralId, status, handledByPersonId: person.id });
+      await load();
+    } catch {
+      setError(true);
+    }
+  };
+
   if (!residence) return <Alert tone="attention">Select a residence to see applications.</Alert>;
 
+  const openReferrals = referrals.filter((r) => ['received', 'contacted'].includes(r.status));
   const open = applications.filter((a) =>
     ['submitted', 'in_review', 'waitlisted'].includes(a.status),
   );
@@ -88,6 +108,68 @@ export function ApplicationsPage() {
         <ErrorState onRetry={() => void load()} />
       ) : (
         <div className="flex flex-col gap-5">
+          <Card>
+            <CardTitle>Partner referrals ({openReferrals.length})</CardTitle>
+            {openReferrals.length === 0 ? (
+              <p className="text-ink-muted">
+                No open referrals. Partner submissions from the public directory land here the
+                moment they're sent.
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-3">
+                {openReferrals.map((r) => (
+                  <li key={r.id} className="rounded-md border border-line bg-surface-raised p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="font-medium text-ink">{r.participant_name}</p>
+                        <p className="text-sm text-ink-muted">
+                          Referred by {r.referrer_name}
+                          {r.referrer_organization ? ` (${r.referrer_organization})` : ''}
+                          {' · '}
+                          {new Date(r.created_at).toLocaleString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })}
+                          {r.status === 'contacted' ? ' · contacted' : ''}
+                        </p>
+                        <p className="text-sm text-ink-muted">
+                          {[r.referrer_phone, r.referrer_email, r.participant_phone]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {r.status === 'received' ? (
+                          <Button
+                            variant="secondary"
+                            onClick={() => void triageReferral(r.id, 'contacted')}
+                          >
+                            Mark contacted
+                          </Button>
+                        ) : null}
+                        <Button onClick={() => void triageReferral(r.id, 'converted')}>
+                          Became an application
+                        </Button>
+                        <Button variant="ghost" onClick={() => void triageReferral(r.id, 'closed')}>
+                          Close
+                        </Button>
+                      </div>
+                    </div>
+                    {r.notes ? <p className="mt-2 text-sm text-ink">{r.notes}</p> : null}
+                    {!r.consent_attested ? (
+                      <p className="mt-1 text-sm text-attention-700">
+                        Referrer did not attest participant consent — confirm with the participant
+                        before any information flows back to the referrer.
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
           <Card>
             <CardTitle>Open ({open.length})</CardTitle>
             {open.length === 0 ? (

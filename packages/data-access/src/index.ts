@@ -10,4 +10,5 @@ export * from './repositories/residenceDocuments';
 export * from './repositories/residenceOperations';
 export * from './repositories/staffOperations';
 export * from './repositories/houseBoard';
+export * from './repositories/referrals';
 export * from './repositories/supervisionReport';

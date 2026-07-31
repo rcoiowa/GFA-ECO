@@ -170,8 +170,25 @@ clean of new findings.
   screenings with prescription-consistent vocabulary, fee status) with an
   ROI attestation gate before printing.
 
-## Phases 7–8 ⬜
+## Phase 7 — Referral intake loop ✅ initial (2026-07-30)
 
-Coach/navigator workspaces, credentialed referral-partner portal (Room 4
-full: referral submission + partner logins), Iowa HHS data export, admin +
-analytics, hardening/deployment.
+- **Migration 0016/0016b (applied live):** `referrals` table with public
+  (anon) insert restricted to status='received', staff-scoped triage
+  read/update, and the anon grants the public form needs. Validated live
+  with an anon-role insert (rolled back).
+- **Directory site wired to the database:** "Partner Referral" buttons on
+  the Grace House and EJWRH pages open a form that POSTs straight to
+  PostgREST (publishable key) — a probation officer submits at 4:45 PM on
+  a Friday and it is in the intake queue before they leave their desk,
+  with a mail/phone fallback if the network fails. Includes a
+  participant-consent attestation flag.
+- **Staff triage:** the Applications page opens with the partner referral
+  queue — mark contacted, convert to application, or close; a
+  non-attested consent flag warns before information flows back.
+
+## Phase 8 ⬜
+
+Coach/navigator workspaces, credentialed partner logins (referral status
+visibility with consent), Iowa HHS data export, admin + analytics,
+hardening/deployment. Directory-site online application → intake API is
+the remaining public-site integration point.
