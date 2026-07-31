@@ -185,7 +185,26 @@ export function ResidenceDirectoryPage() {
           )}
         </section>
 
-        <section className="mt-12 rounded-lg bg-experience-soft p-6">
+        <section
+          aria-labelledby="operators"
+          className="mt-12 rounded-lg border border-line bg-surface-raised p-6"
+        >
+          <h2 id="operators" className="text-xl font-semibold text-ink">
+            Run a recovery house?
+          </h2>
+          <p className="mt-2 max-w-2xl text-ink-muted">
+            Every recovery house deserves great operations. Create a residence profile and get bed
+            management, waitlists, applications, check-ins, fees, and grievance workflows — free.
+          </p>
+          <Link
+            to="/recovery-residences/list-your-residence"
+            className="mt-4 inline-flex min-h-11 items-center rounded-md border border-experience-600 px-5 font-semibold text-experience-700 hover:bg-surface-sunken"
+          >
+            List your residence
+          </Link>
+        </section>
+
+        <section className="mt-6 rounded-lg bg-experience-soft p-6">
           <h2 className="text-xl font-semibold text-experience-700">Not sure where to start?</h2>
           <p className="mt-2 max-w-2xl text-ink">
             The VRCC is free for everyone — housed or not. A resource navigator can help you sort

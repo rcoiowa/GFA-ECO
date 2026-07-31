@@ -244,6 +244,38 @@ unauthenticated this session), deploy `workers/api` + set the service-role
 secret, deploy the platform, and point the Grace House site's form at the
 gateway (its repo/deployment is separate — see docs/deployment/README.md).
 
+## Phase 8.6 — Universal residence onboarding ✅ code complete (2026-07-31; DB push of 0019 pending)
+
+From the "Recovery Residence — Universal Recovery Housing Platform"
+prototype (claude.ai artifact b98557db): any operator can self-serve a
+residence and get the same operations workspace Grace House runs on —
+the recoveryresidence.app product layer.
+
+- **Migration 0019:** `residences.level_of_support` (NARR I–IV),
+  `residences.commitments text[]` (practice commitments shown to residents
+  and referral partners), `residences.curfew_weeknight`;
+  `organizations.structure` (501c3 / LLC / faith-based / government /
+  other); `create_residence_for_current_user()` RPC — organization +
+  residence + residence_manager role + audit in one security-definer call.
+- **`/recovery-residences/list-your-residence`:** operator pitch (feature
+  list mirrors the prototype's "what every residence profile includes")
+  and the three-step wizard — Your organization → The residence (name,
+  population, capacity, weekly fee, level of support, city/state) → House
+  standards (commitments, weeknight curfew) → Launch residence → lands in
+  `/staff/today` with the new residence active (staffContext picks it up
+  from the manager role).
+- **Directory:** "Run a recovery house?" section on
+  `/recovery-residences` links operators into the wizard.
+- **Prototype features already covered by existing rooms:** beds/waitlist
+  (Bed board, Applications), daily check-ins (participant + resident
+  Today), payments (Fees ledger), furloughs (passes), messages
+  (House board), grievances (resident grievance flow), house profile
+  (0014 public-profile columns). Not yet built from the prototype:
+  staff-facing check-in flagging/acknowledge queue, per-house public
+  profile pages for self-serve residences in the directory (they exist in
+  the DB but the public directory is still static data), payment
+  receipts.
+
 ## Phase 9 ⬜
 
 Coach/navigator workspaces, credentialed partner logins, alert system

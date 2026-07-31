@@ -10,6 +10,7 @@ export * from './repositories/residenceDocuments';
 export * from './repositories/residenceOperations';
 export * from './repositories/staffOperations';
 export * from './repositories/applications';
+export * from './repositories/providerOnboarding';
 export * from './repositories/houseBoard';
 export * from './repositories/referrals';
 export * from './repositories/exhibitEReport';

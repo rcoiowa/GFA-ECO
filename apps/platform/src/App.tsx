@@ -8,6 +8,7 @@ import { GraceHousePage } from './public/GraceHousePage';
 import { ResidenceDirectoryPage } from './public/ResidenceDirectoryPage';
 import { ResidenceApplyPage } from './public/ResidenceApplyPage';
 import { MyApplicationPage } from './public/MyApplicationPage';
+import { ListYourResidencePage } from './public/ListYourResidencePage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { NotAuthorizedPage, NotFoundPage } from './pages/StatusPages';
 import { RequireAuth } from '@recoveryos/auth';
@@ -33,6 +34,7 @@ export function App() {
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/recovery-residences" element={<ResidenceDirectoryPage />} />
+      <Route path="/recovery-residences/list-your-residence" element={<ListYourResidencePage />} />
       <Route path="/recovery-residences/grace-house" element={<GraceHousePage />} />
       <Route path="/recovery-residences/grace-house/apply" element={<ResidenceApplyPage />} />
       <Route
