@@ -13,3 +13,6 @@ supabase/.temp/
 # Source-build intake clones (audit material, never production code)
 source-builds/*
 !source-builds/README.md
+
+# Generated copy of sites/recoveryresidence-directory (see scripts/sync-directory-site.mjs)
+apps/platform/public/residence/directory/

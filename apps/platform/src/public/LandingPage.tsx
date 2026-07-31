@@ -90,12 +90,22 @@ export function LandingPage() {
             Grace For Addictions also operates recovery housing, including Grace House — a women's
             recovery residence in Des Moines.
           </p>
-          <Link
-            to="/recovery-residences/grace-house"
-            className="mt-2 inline-block font-medium text-experience-700 underline underline-offset-2"
-          >
-            Learn about Grace House
-          </Link>
+          <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1">
+            <Link
+              to="/recovery-residences/grace-house"
+              className="inline-block font-medium text-experience-700 underline underline-offset-2"
+            >
+              Learn about Grace House
+            </Link>
+            {/* Plain anchor: the directory is a static page served by the
+                Worker at this path, not a client-side route. */}
+            <a
+              href="/residence/directory/"
+              className="inline-block font-medium text-experience-700 underline underline-offset-2"
+            >
+              Browse the RecoveryResidence.org directory
+            </a>
+          </div>
         </section>
       </main>
 

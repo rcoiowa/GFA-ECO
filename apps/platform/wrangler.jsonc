@@ -2,9 +2,12 @@
   // Staging deployment for the RecoveryOS platform (same static-assets Worker
   // pattern the legacy builds use). Deploy: pnpm build && npx wrangler deploy
   // (requires CLOUDFLARE_API_TOKEN with Workers Scripts:Edit).
+  // The name matches the Worker created in the Cloudflare dashboard on
+  // 2026-07-30 so dashboard Git builds and CLI deploys converge on one
+  // Worker instead of minting duplicates (docs/deployment/README.md).
   // Phase 9 cutover re-points the vrcc.app custom domain to this Worker.
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "recoveryos-staging",
+  "name": "gfa-eco-recovery-residence-os",
   "compatibility_date": "2026-07-01",
   "assets": {
     "directory": "./dist",

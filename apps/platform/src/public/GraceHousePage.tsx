@@ -72,12 +72,22 @@ export function GraceHousePage() {
             Reach out to Grace For Addictions to talk about availability, eligibility, and referrals
             — for yourself or someone you support. Exploring is not a commitment.
           </p>
-          <Link
-            to="/register"
-            className="mt-4 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
-          >
-            Start with a free VRCC account
-          </Link>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Link
+              to="/register"
+              className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+            >
+              Start with a free VRCC account
+            </Link>
+            {/* Plain anchor: the directory is a static page served by the
+                Worker, not a client-side route. */}
+            <a
+              href="/residence/directory/"
+              className="inline-flex min-h-11 items-center rounded-md border border-experience-600 px-5 font-semibold text-experience-700 hover:bg-surface-raised"
+            >
+              See all residences &amp; apply on RecoveryResidence.org
+            </a>
+          </div>
         </section>
 
         <p className="mt-8 text-sm text-ink-muted">
