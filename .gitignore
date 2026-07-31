@@ -16,3 +16,6 @@ source-builds/*
 
 # Generated copy of sites/recoveryresidence-directory (see scripts/sync-directory-site.mjs)
 apps/platform/public/residence/directory/
+
+# Drag-and-drop deploy package (scripts/package-pages-upload.mjs)
+recoveryos-pages-upload.zip
