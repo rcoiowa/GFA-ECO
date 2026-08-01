@@ -7,6 +7,13 @@ account_id = "499272c2f0336cc60207bad24edd0e14"
 PLATFORM = "GFA Recovery OS"
 VERSION = "6.0"
 
-[[routes]]
-pattern = "vrcc.app/*"
-zone_name = "vrcc.app"
+# vrcc.app route intentionally omitted for staged rollout.
+# The route currently belongs to the live "virtualrecovery" worker
+# (see docs/source-inventory/deployment-registry.md on the
+# claude/recoveryos-greenfield-build-ka6992 branch). Do not add the
+# [[routes]] block back until the deploy has been reviewed at its
+# workers.dev URL and the cutover is explicitly confirmed:
+#
+# [[routes]]
+# pattern = "vrcc.app/*"
+# zone_name = "vrcc.app"
