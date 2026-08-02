@@ -1,8 +1,7 @@
 # Deploys the RecoveryOS platform to the recoveryos-staging Worker on every
-# push to the build branch. Requires the CLOUDFLARE_API_TOKEN repository
-# secret (Cloudflare dashboard -> My Profile -> API Tokens -> "Edit
-# Cloudflare Workers" template; add under GitHub repo Settings -> Secrets
-# and variables -> Actions).
+# push to the build branch. Requires a Cloudflare API token ("Edit Cloudflare
+# Workers" template) named CLOUDFLARE_API_TOKEN, provided as a repository
+# secret, a repository variable, or a secret on the "production" environment.
 name: Deploy staging
 
 on:
@@ -15,7 +14,18 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_API_TOKEN || vars.CLOUDFLARE_API_TOKEN }}
     steps:
+      - name: Check token is present
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is empty. Add it on github.com/rcoiowa/GFA-ECO under Settings -> Secrets and variables -> Actions -> 'Repository secrets' (New repository secret), named exactly CLOUDFLARE_API_TOKEN. The Variables tab and a 'production' environment secret also work; Codespaces/Dependabot secrets do not."
+            exit 1
+          fi
+          echo "Token present (length ${#CLOUDFLARE_API_TOKEN})."
+
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
@@ -37,5 +47,3 @@ jobs:
       - name: Deploy to Cloudflare
         working-directory: apps/platform
         run: npx wrangler@4 deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
