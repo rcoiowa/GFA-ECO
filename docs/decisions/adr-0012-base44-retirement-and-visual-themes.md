@@ -39,3 +39,12 @@ identical Wix palette with graceforaddictions.org, so the two themes differentia
 within that family: GFA anchors on the deep teal, RCOIA on the green (#2d8149) with
 the palette's gold as its attention hue. Both verified against the live sites'
 Wix theme variables (colors 11–35), both AA-contrast.
+
+## RCOIA correction (owner-provided spec, 2026-08-02)
+
+The owner supplied the authoritative RCO Iowa brand direction (a new site design,
+not the current Wix palette): cosmic deep-purple ground (#07041A/#160F38), purple
+primary (#6B3FBF/#9B6FEF), gold (#D4A843) and teal (#00CCA8) accents, lavender-white
+ink (#EDE8FF). The RCOIA theme now follows this spec — palette only, per the owner's
+instruction; no structural elements were taken from the supplied code. GFA Brand
+awaits the owner's screenshot before any further change.
