@@ -13,3 +13,4 @@
 | 0009 | Consent history is append-only; latest grant wins | Accepted |
 | 0010 | One platform app with route-separated, lazy-loaded experience shells | Accepted |
 | 0011 | Five source builds consolidate into the canonical platform | Accepted |
+| 0012 | Base44 fully retired; legacy look preserved as user-switchable visual themes | Accepted |

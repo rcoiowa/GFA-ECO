@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
-import { Button, Card, CardTitle, PageHeader } from '@recoveryos/ui';
+import { Button, Card, CardTitle, PageHeader, ThemeSwitcher } from '@recoveryos/ui';
 
 export function ProfilePage() {
   const { person, session, signOut } = useAuth();
@@ -31,6 +31,15 @@ export function ProfilePage() {
               <dd className="font-medium text-ink">{session?.user.email ?? '—'}</dd>
             </div>
           </dl>
+        </Card>
+        <Card>
+          <CardTitle>Appearance</CardTitle>
+          <p className="text-ink-muted">
+            Pick the look that feels right — it applies everywhere, on this device.
+          </p>
+          <div className="mt-3">
+            <ThemeSwitcher />
+          </div>
         </Card>
         <Card>
           <CardTitle>Privacy and consent</CardTitle>

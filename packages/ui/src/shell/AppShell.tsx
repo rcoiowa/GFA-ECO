@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router';
+import { ThemeSwitcher } from '../primitives/ThemeSwitcher';
 
 export interface NavItem {
   to: string;
@@ -74,6 +75,9 @@ export function AppShell({
           </ul>
         </nav>
         {utilities ? <div className="border-t border-line p-3">{utilities}</div> : null}
+        <div className="border-t border-line px-3 py-2.5">
+          <ThemeSwitcher />
+        </div>
       </header>
 
       {/* Mobile top bar */}

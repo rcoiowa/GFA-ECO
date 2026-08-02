@@ -3,7 +3,15 @@ import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import { getMyActiveResidency } from '@recoveryos/data-access';
 import type { Residence, Residency } from '@recoveryos/domain';
-import { Alert, Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
+import {
+  Alert,
+  Card,
+  CardTitle,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  ThemeSwitcher,
+} from '@recoveryos/ui';
 
 export function MyResidencePage() {
   const { person } = useAuth();
@@ -92,6 +100,14 @@ export function MyResidencePage() {
             >
               Open Documents
             </Link>
+          </Card>
+
+          <Card>
+            <CardTitle>Appearance</CardTitle>
+            <p className="text-ink-muted">Pick the look that feels right, on this device.</p>
+            <div className="mt-3">
+              <ThemeSwitcher />
+            </div>
           </Card>
 
           <Card>

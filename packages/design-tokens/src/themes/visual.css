@@ -1,0 +1,117 @@
+/*
+ * User-selectable visual themes: default · dark · space · sky · retro.
+ * Applied as [data-visual] on <html> (persisted in localStorage, pre-paint
+ * script in each app's index.html). Experience accents ([data-experience])
+ * still switch per area; combined selectors below keep them legible on
+ * dark grounds. Retro/Space port the legacy vrcc.app palettes ("70s sunrise
+ * · warm paper", "deep space") with contrast corrected to WCAG AA — the
+ * legacy retro task-bar readability issue is fixed here, not reproduced.
+ */
+
+/* ---------- Dark (green-tinted night) ---------- */
+[data-visual='dark'] {
+  color-scheme: dark;
+  --color-surface: #111917;
+  --color-surface-raised: #18211e;
+  --color-surface-sunken: #0c1311;
+  --color-ink: #e6ebe8;
+  --color-ink-muted: #a3b0aa;
+  --color-ink-faint: #6f7d76;
+  --color-line: #2a3531;
+  --color-experience-500: #52a48d;
+  --color-experience-600: #2e7d66;
+  --color-experience-700: #8fd0ba;
+  --color-experience-soft: #17332b;
+}
+
+/* ---------- Space (deep violet cosmos, from the legacy cosmic/landing themes) ---------- */
+[data-visual='space'] {
+  color-scheme: dark;
+  --color-surface: #0b0d1f;
+  --color-surface-raised: #151834;
+  --color-surface-sunken: #070812;
+  --color-ink: #e9e9f7;
+  --color-ink-muted: #a6a6c6;
+  --color-ink-faint: #6e6e92;
+  --color-line: #2a2c4e;
+  --color-experience-500: #9a7ff0;
+  --color-experience-600: #7b5ce0;
+  --color-experience-700: #b7a3f7;
+  --color-experience-soft: #1d1740;
+}
+
+/* Shared semantic adjustments for both dark grounds */
+[data-visual='dark'],
+[data-visual='space'] {
+  --color-accent-50: #141d2e;
+  --color-accent-500: #7fa4d9;
+  --color-accent-600: #5d84bd;
+  --color-accent-700: #a9c4e8;
+  --color-positive-50: #12291a;
+  --color-positive-600: #4caf6f;
+  --color-positive-700: #8fd6a4;
+  --color-attention-50: #2d2211;
+  --color-attention-600: #c9963d;
+  --color-attention-700: #e0b46a;
+  --color-critical-50: #331a16;
+  --color-critical-600: #c96a5c;
+  --color-critical-700: #e59a8c;
+  --color-support-500: #8b6fc0;
+  --color-support-600: #63498c;
+  --color-support-700: #7a5ea8;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.45), 0 2px 8px rgb(0 0 0 / 0.35);
+  --shadow-raised: 0 2px 6px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.45);
+}
+
+/* Residence-area accents stay legible on dark grounds */
+[data-visual='dark'] [data-experience='residence'],
+[data-visual='space'] [data-experience='residence'] {
+  --color-experience-500: #7fa4d9;
+  --color-experience-600: #46679f;
+  --color-experience-700: #a5c0ea;
+  --color-experience-soft: #16233a;
+}
+
+/* ---------- Sky (airy daylight blue) ---------- */
+[data-visual='sky'] {
+  color-scheme: light;
+  --color-surface: #eef5fb;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #e2edf6;
+  --color-ink: #1e2b38;
+  --color-ink-muted: #52677a;
+  --color-ink-faint: #8598a9;
+  --color-line: #cfdfec;
+  --color-experience-500: #3f7fb5;
+  --color-experience-600: #33689a;
+  --color-experience-700: #2a5580;
+  --color-experience-soft: #e3f0fa;
+}
+
+/* ---------- Retro (70s sunrise · warm paper — ported, contrast fixed) ---------- */
+[data-visual='retro'] {
+  color-scheme: light;
+  --color-surface: #efe3c8;
+  --color-surface-raised: #f8f1e0;
+  --color-surface-sunken: #e6d7b4;
+  --color-ink: #2b2012;
+  --color-ink-muted: #64522f;
+  --color-ink-faint: #8a7a55;
+  --color-line: #cdbc94;
+  --color-experience-500: #9c6a1a;
+  --color-experience-600: #7f5512;
+  --color-experience-700: #63430e;
+  --color-experience-soft: #f6ead0;
+  --color-accent-50: #ece5d2;
+  --color-support-500: #7a5ea8;
+  --color-support-600: #5f4180;
+  --color-support-700: #4e3569;
+}
+
+/* Residence accents on the warm paper ground */
+[data-visual='retro'] [data-experience='residence'] {
+  --color-experience-500: #59632c;
+  --color-experience-600: #475022;
+  --color-experience-700: #383f1b;
+  --color-experience-soft: #ecebcd;
+}

@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { ThemeSwitcher } from '@recoveryos/ui';
 
 /**
  * Public landing. Success test: "What is this?" in 5 seconds, "What can I do
@@ -11,6 +12,7 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
           <p className="text-xl font-semibold text-experience-700">VRCC</p>
           <nav className="flex items-center gap-3">
+            <ThemeSwitcher className="hidden sm:flex" />
             <Link
               to="/sign-in"
               className="min-h-11 rounded-md px-4 py-2 font-medium text-ink hover:bg-surface-sunken"
