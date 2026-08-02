@@ -19,6 +19,7 @@ runs confirmed the secret arrives empty; every other pipeline step is green.
 | Worker `vrcc-app` (created 2026-08-02) | DUPLICATE of vrcc.app build — safe to delete |
 | Workers `vite-react-template`…`template5` (Aug 1–2) | Stock starter pages — safe to delete |
 | `recoveryos-staging` (temp account `pastoral-ticket`) | TEMP preview — superseded once the secret lands |
+| Pages `gfa-vrcc` (gfa-vrcc.pages.dev, found 2026-08-02) | FOURTH copy of the rolled-back vrcc.app build (identical bundle); its dual route trees (/app + /vrcc/app) explain the mis-routed buttons. SOURCE for review; safe to delete after cutover |
 
 The Aug 1–2 additions came from Cloudflare "deploy a template" clicks and a
 repo-connect experiment (which also redeployed `virtualrecovery` and pushed
