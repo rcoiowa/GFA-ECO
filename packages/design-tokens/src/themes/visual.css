@@ -42,7 +42,8 @@
 
 /* Shared semantic adjustments for both dark grounds */
 [data-visual='dark'],
-[data-visual='space'] {
+[data-visual='space'],
+[data-visual='rcoia'] {
   --color-accent-50: #141d2e;
   --color-accent-500: #7fa4d9;
   --color-accent-600: #5d84bd;
@@ -65,7 +66,8 @@
 
 /* Residence-area accents stay legible on dark grounds */
 [data-visual='dark'] [data-experience='residence'],
-[data-visual='space'] [data-experience='residence'] {
+[data-visual='space'] [data-experience='residence'],
+[data-visual='rcoia'] [data-experience='residence'] {
   --color-experience-500: #7fa4d9;
   --color-experience-600: #46679f;
   --color-experience-700: #a5c0ea;
@@ -126,24 +128,28 @@
   --color-experience-soft: #e2f0ec;
 }
 
-/* ---------- RCOIA (rcoiowa.org — same verified org palette, anchored on its
-   green + gold rather than the deep teal so the two brands stay distinct) ---------- */
+/* ---------- RCOIA (owner-provided rcoiowa.org brand spec, 2026-08-02:
+   cosmic deep purple ground, gold + teal accents — supersedes the earlier
+   Wix-derived green; palette only, per the owner's instruction) ---------- */
 [data-visual='rcoia'] {
-  color-scheme: light;
-  --color-surface: #f7f8f3;
-  --color-surface-raised: #ffffff;
-  --color-surface-sunken: #ebeee2;
-  --color-ink: #1a2b1e;
-  --color-ink-muted: #4c5f50;
-  --color-ink-faint: #7f9280;
-  --color-line: #d4dcc9;
-  --color-experience-500: #2d8149;
-  --color-experience-600: #256b3d;
-  --color-experience-700: #1d5430;
-  --color-experience-soft: #e4f2e7;
-  --color-attention-50: #f8f3d8;
-  --color-attention-600: #94821b;
-  --color-attention-700: #6f6114;
+  color-scheme: dark;
+  --color-surface: #07041a;
+  --color-surface-raised: #160f38;
+  --color-surface-sunken: #03020a;
+  --color-ink: #ede8ff;
+  --color-ink-muted: #a89ec8;
+  --color-ink-faint: #7c72a3;
+  --color-line: #322a5e;
+  --color-experience-500: #9b6fef;
+  --color-experience-600: #6b3fbf;
+  --color-experience-700: #c9b4f7;
+  --color-experience-soft: #241b4d;
+  --color-attention-50: #2c2412;
+  --color-attention-600: #d4a843;
+  --color-attention-700: #f0c870;
+  --color-positive-50: #0d2a24;
+  --color-positive-600: #0aa98c;
+  --color-positive-700: #6fe3cb;
 }
 
 /* Residence accents on the warm paper ground */
