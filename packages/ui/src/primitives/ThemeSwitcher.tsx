@@ -6,6 +6,8 @@ export const VISUAL_THEMES = [
   { key: 'space', label: 'Space' },
   { key: 'sky', label: 'Sky' },
   { key: 'retro', label: 'Retro' },
+  { key: 'gfa', label: 'GFA Brand' },
+  { key: 'rcoia', label: 'RCOIA' },
 ] as const;
 export type VisualTheme = (typeof VISUAL_THEMES)[number]['key'];
 

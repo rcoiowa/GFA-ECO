@@ -14,7 +14,7 @@
       // Apply the saved visual theme before first paint (no flash).
       try {
         var v = localStorage.getItem('recoveryos-visual');
-        if (['dark', 'space', 'sky', 'retro'].indexOf(v) !== -1) {
+        if (['dark', 'space', 'sky', 'retro', 'gfa', 'rcoia'].indexOf(v) !== -1) {
           document.documentElement.dataset.visual = v;
         }
       } catch (e) {}

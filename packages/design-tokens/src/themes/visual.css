@@ -108,6 +108,44 @@
   --color-support-700: #4e3569;
 }
 
+/* ---------- GFA Brand (graceforaddictions.org — verified palette 2026-08-02:
+   deep teal #276156 / jade #389884 family; the legacy app's purple "GFA Brand"
+   did not match the actual site and is corrected here) ---------- */
+[data-visual='gfa'] {
+  color-scheme: light;
+  --color-surface: #f4f8f6;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #e6efeb;
+  --color-ink: #14322c;
+  --color-ink-muted: #43635b;
+  --color-ink-faint: #7a938c;
+  --color-line: #cfe0da;
+  --color-experience-500: #389884;
+  --color-experience-600: #276156;
+  --color-experience-700: #1d4a41;
+  --color-experience-soft: #e2f0ec;
+}
+
+/* ---------- RCOIA (rcoiowa.org — same verified org palette, anchored on its
+   green + gold rather than the deep teal so the two brands stay distinct) ---------- */
+[data-visual='rcoia'] {
+  color-scheme: light;
+  --color-surface: #f7f8f3;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #ebeee2;
+  --color-ink: #1a2b1e;
+  --color-ink-muted: #4c5f50;
+  --color-ink-faint: #7f9280;
+  --color-line: #d4dcc9;
+  --color-experience-500: #2d8149;
+  --color-experience-600: #256b3d;
+  --color-experience-700: #1d5430;
+  --color-experience-soft: #e4f2e7;
+  --color-attention-50: #f8f3d8;
+  --color-attention-600: #94821b;
+  --color-attention-700: #6f6114;
+}
+
 /* Residence accents on the warm paper ground */
 [data-visual='retro'] [data-experience='residence'] {
   --color-experience-500: #59632c;

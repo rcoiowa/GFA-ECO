@@ -28,3 +28,14 @@ Sky, Retro** (`[data-visual]` overrides in
 palettes ("70s sunrise · warm paper", deep-space violet) with contrast corrected to
 WCAG AA — the legacy retro nav-text readability problem is fixed in the port, not
 reproduced. Experience accents (VRCC/residence) remain distinct inside every theme.
+
+## Brand themes (added 2026-08-02, same day)
+
+Two organization-brand themes join the set: **GFA Brand** and **RCOIA**. Accuracy
+review of graceforaddictions.org found the legacy app's purple "GFA Brand" (#6B33D6)
+did not match the live site, which uses a deep teal/jade palette (#276156 / #389884)
+with terracotta and gold accents — the port corrects this. rcoiowa.org shares the
+identical Wix palette with graceforaddictions.org, so the two themes differentiate
+within that family: GFA anchors on the deep teal, RCOIA on the green (#2d8149) with
+the palette's gold as its attention hue. Both verified against the live sites'
+Wix theme variables (colors 11–35), both AA-contrast.
