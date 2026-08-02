@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import { getMyActiveResidency } from '@recoveryos/data-access';
 import type { Residence, Residency } from '@recoveryos/domain';
@@ -54,17 +55,56 @@ export function MyResidencePage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-sm text-ink-muted">Your status</dt>
-                <dd className="font-medium text-ink">{residency.residency_status}</dd>
+                <dt className="text-sm text-ink-muted">Home here since</dt>
+                <dd className="font-medium text-ink">
+                  {residency.admission_date
+                    ? new Date(residency.admission_date).toLocaleDateString(undefined, {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })
+                    : '—'}
+                </dd>
               </div>
             </dl>
           </Card>
+
           <Card>
-            <CardTitle>House expectations and your rights</CardTitle>
+            <CardTitle>Passes</CardTitle>
+            <p className="text-ink-muted">Request time away and see where requests stand.</p>
+            <Link
+              to="/residence/passes"
+              className="mt-2 inline-block font-medium text-experience-700 underline underline-offset-2"
+            >
+              Request or review passes
+            </Link>
+          </Card>
+
+          <Card>
+            <CardTitle>Your rights and agreements</CardTitle>
             <p className="text-ink-muted">
-              Your residence agreement, resident rights, house expectations, chores, curfew, and
-              pass requests will all live here as residence operations arrive in Phase 4.
+              Your residence agreement, resident rights, and house expectations live in
+              Documents. You can reread them any time.
             </p>
+            <Link
+              to="/residence/documents"
+              className="mt-2 inline-block font-medium text-experience-700 underline underline-offset-2"
+            >
+              Open Documents
+            </Link>
+          </Card>
+
+          <Card>
+            <CardTitle>Raise a concern</CardTitle>
+            <p className="text-ink-muted">
+              Filing a grievance is a protected right and will never be held against you.
+            </p>
+            <Link
+              to="/residence/grievance"
+              className="mt-2 inline-block font-medium text-experience-700 underline underline-offset-2"
+            >
+              File a grievance
+            </Link>
           </Card>
         </div>
       )}

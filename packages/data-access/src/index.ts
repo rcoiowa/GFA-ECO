@@ -5,4 +5,5 @@ export * from './repositories/checkIns';
 export * from './repositories/goals';
 export * from './repositories/residencies';
 export * from './repositories/serviceEvents';
+export * from './repositories/residenceOps';
 export * from './repositories/recoveryCapital';

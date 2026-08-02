@@ -37,12 +37,14 @@ Legacy source-build routes: `docs/source-inventory/route-registry-sources.md`.
 
 | Route | Page |
 | --- | --- |
-| `/residence` → `/residence/today` | Resident home |
-| `/residence/house` | My Residence |
+| `/residence` → `/residence/today` | Resident home (live: chores, curfew, next meeting, pending documents) |
+| `/residence/house` | My Residence (residency, rights, passes, grievance links) |
 | `/residence/recovery` | My Recovery (shared engines) |
 | `/residence/connect` | Connect |
-| `/residence/schedule` | Schedule |
-| `/residence/documents` | Documents |
+| `/residence/schedule` | Schedule (upcoming residence meetings) |
+| `/residence/documents` | Documents (read + typed-name sign) |
+| `/residence/passes` | Pass requests and history |
+| `/residence/grievance` | Grievance filing |
 | `/residence/journey` | My Journey |
 | `/residence/support/grounding` | Grounding practice |
 

@@ -66,11 +66,24 @@ assessment saved (score 44 → Thorny Soil), two vrcc-context service events rec
 the Mind, Training the Mind, Tapes We Carry, 59 slogans — canonical content intake
 needed), goals→service-event linkage, Walls of Honor.
 
-## Phase 4 — Resident experience ⬜ (shell built)
+## Phase 4 — Resident experience ◐ (core workflows live, 2026-08-02)
 
-`/residence` area with 7-area nav, residence identity/status live; responsibilities,
-chores, curfew, passes, documents pending — Residence OS source workflows
-(`source-builds/recovery-residence-os`) are the primary input.
+- Resident Today: live responsibilities — today's chores (mark done), curfew
+  tonight, next required meeting, pending-signature documents
+- Documents: read + typed-name acknowledgement (migrations 0013/0014; the 0014
+  security-definer helpers fix an RLS recursion found by live testing)
+- Passes: request + status history · Grievance: protected filing flow
+- Schedule: upcoming residence meetings · My Residence: rights/passes/grievance hub
+- Demo world seeded: `participant.demo@vrcc.app` (Dana, VRCC-only) and
+  `resident.demo@vrcc.app` (Rae, VRCC + active Grace House residency with chores,
+  curfew, meetings, and an assigned rights document)
+- Live E2E: Rae completed a chore, signed the rights document, and requested a
+  pass; Dana saw no switcher and was denied `/residence`
+- Staging deployed (temporary preview account):
+  https://recoveryos-staging.pastoral-ticket.workers.dev
+
+**Remaining:** wire `/residence/recovery`, `/residence/connect`, `/residence/journey`
+to the shared engines with residence-context service events; meeting attendance.
 
 ## Phases 5–8 ⬜
 
