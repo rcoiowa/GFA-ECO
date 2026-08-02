@@ -48,3 +48,12 @@ primary (#6B3FBF/#9B6FEF), gold (#D4A843) and teal (#00CCA8) accents, lavender-w
 ink (#EDE8FF). The RCOIA theme now follows this spec — palette only, per the owner's
 instruction; no structural elements were taken from the supplied code. GFA Brand
 awaits the owner's screenshot before any further change.
+
+## GFA Brand correction (owner-provided screenshot, 2026-08-02)
+
+The owner's screenshot of graceforaddictions.org shows the true brand feel: an
+airy sky/mist ground, charcoal ink, and the GFA compass logo's bright aqua-teal
+(banner band ~#5cb5b5) with the gold 501(c)(3) badge as a warm accent. The GFA
+Brand theme now follows the screenshot (light aqua surfaces, charcoal text,
+aqua-teal primary darkened to AA for buttons/links, gold attention hue),
+superseding the deep forest-teal derived from the Wix palette variables.

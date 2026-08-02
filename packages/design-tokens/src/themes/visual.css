@@ -110,22 +110,25 @@
   --color-support-700: #4e3569;
 }
 
-/* ---------- GFA Brand (graceforaddictions.org — verified palette 2026-08-02:
-   deep teal #276156 / jade #389884 family; the legacy app's purple "GFA Brand"
-   did not match the actual site and is corrected here) ---------- */
+/* ---------- GFA Brand (matched to the owner's graceforaddictions.org
+   screenshot, 2026-08-02: airy sky/mist ground, charcoal ink, the logo's
+   bright aqua-teal as primary — supersedes the earlier deep forest-teal) ---------- */
 [data-visual='gfa'] {
   color-scheme: light;
-  --color-surface: #f4f8f6;
+  --color-surface: #eef6f7;
   --color-surface-raised: #ffffff;
-  --color-surface-sunken: #e6efeb;
-  --color-ink: #14322c;
-  --color-ink-muted: #43635b;
-  --color-ink-faint: #7a938c;
-  --color-line: #cfe0da;
-  --color-experience-500: #389884;
-  --color-experience-600: #276156;
-  --color-experience-700: #1d4a41;
-  --color-experience-soft: #e2f0ec;
+  --color-surface-sunken: #dfeef0;
+  --color-ink: #232a2b;
+  --color-ink-muted: #4d6366;
+  --color-ink-faint: #7f9497;
+  --color-line: #cfe2e4;
+  --color-experience-500: #4fb3b3;
+  --color-experience-600: #226f6f;
+  --color-experience-700: #17514f;
+  --color-experience-soft: #e3f2f2;
+  --color-attention-50: #faf3df;
+  --color-attention-600: #9a7a1a;
+  --color-attention-700: #7a6115;
 }
 
 /* ---------- RCOIA (owner-provided rcoiowa.org brand spec, 2026-08-02:
