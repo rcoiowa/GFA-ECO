@@ -27,6 +27,19 @@ GitHub repository listing, live deployments, and cloned source trees in `source-
    data-source-registry.md). `ykykeioydvtxpyreshhs` is the shared/canonical one.
 4. `source-builds/` clones are gitignored intake material, not production code.
 
+## 2026-08-02 re-verification: account drift
+
+The Cloudflare account gained six Workers between 2026-07-29 and 2026-08-02, all
+verified live: `vrcc-app` (a duplicate deployment of the vrcc.app build, created by
+connecting the `Grace-For-Addictions/vrcc.app` repo to a Workers Build — the same
+action also redeployed `virtualrecovery`) and five `vite-react-template[2-5]` stock
+starter pages from dashboard template deploys, which also created three matching
+empty GitHub repos (`rcoiowa/vite-react-template2/3`,
+`Grace-For-Addictions/vite-react-template`). All are harmless duplicates/empties,
+recommended for deletion by the account owner; the MCP connector has no
+worker-delete capability. Production (`vrcc.app`) verified unaffected.
+Summary for the owner: `docs/STATE-OF-THE-SYSTEM.md`.
+
 ## Legacy status plan
 
 | Deployment | Now | After cutover |
