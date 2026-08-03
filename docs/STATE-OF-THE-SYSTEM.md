@@ -3,11 +3,12 @@
 Plain-language master status. Detailed registries: `docs/source-inventory/`,
 migration plan: `docs/migration/`, phase log: `docs/build-manifest.md`.
 
-## The one blocking action (user)
+## ~~The one blocking action~~ — RESOLVED 2026-08-02
 
-Add the `CLOUDFLARE_API_TOKEN` **repository secret** on `rcoiowa/GFA-ECO`
-(Settings → Secrets and variables → Actions → Repository secrets). Two workflow
-runs confirmed the secret arrives empty; every other pipeline step is green.
+The `CLOUDFLARE_API_TOKEN` secret landed and the pipeline is fully live:
+every push to the build branch now auto-deploys to the `recoveryos-staging`
+Worker on the GFA Cloudflare account.
+**Permanent staging URL: https://recoveryos-staging.thomas-499.workers.dev**
 
 ## Cloudflare account (8 Workers + 2 Pages, verified live)
 
@@ -18,7 +19,7 @@ runs confirmed the secret arrives empty; every other pipeline step is green.
 | Pages `gracehouse4`, `gfaconnection` | SOURCE — freeze until content harvested |
 | Worker `vrcc-app` (created 2026-08-02) | DUPLICATE of vrcc.app build — safe to delete |
 | Workers `vite-react-template`…`template5` (Aug 1–2) | Stock starter pages — safe to delete |
-| `recoveryos-staging` (temp account `pastoral-ticket`) | TEMP preview — superseded once the secret lands |
+| Worker `recoveryos-staging` (own account, auto-deployed by GitHub Actions) | **CANONICAL STAGING** — takes over vrcc.app at cutover |
 | Pages `gfa-vrcc` (gfa-vrcc.pages.dev, found 2026-08-02) | FOURTH copy of the rolled-back vrcc.app build (identical bundle); its dual route trees (/app + /vrcc/app) explain the mis-routed buttons. SOURCE for review; safe to delete after cutover |
 
 The Aug 1–2 additions came from Cloudflare "deploy a template" clicks and a

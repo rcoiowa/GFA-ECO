@@ -10,9 +10,10 @@ Legacy source deployments: `docs/source-inventory/deployment-registry.md`.
 | Platform (prod, Phase 9) | takes over `vrcc.app` custom domain | `vrcc.app` | same | same |
 | API gateway | Worker `recoveryos-api` | `api.vrcc.app` | `wrangler deploy` (from `workers/api`) | — |
 
-Staging deploy needs a `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit) available to
-wrangler — the account's MCP connector is read-only and cannot deploy. Env vars are
-baked at build time (`VITE_*`), so build with them set.
+**Live since 2026-08-02:** the `CLOUDFLARE_API_TOKEN` repository secret is set and
+`.github/workflows/deploy-staging.yml` auto-deploys every push to
+https://recoveryos-staging.thomas-499.workers.dev. Env vars are baked at build
+time (`VITE_*`) inside the workflow.
 
 SPA routing: single-page-application fallback (`/* → /index.html`).
 
