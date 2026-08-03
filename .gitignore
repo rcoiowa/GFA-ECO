@@ -13,3 +13,7 @@ supabase/.temp/
 # Source-build intake clones (audit material, never production code)
 source-builds/*
 !source-builds/README.md
+
+# Extracted policy text is reference material; originals live with GFA
+docs/content-intake/**/*.md
+!docs/content-intake/**/INDEX.md
