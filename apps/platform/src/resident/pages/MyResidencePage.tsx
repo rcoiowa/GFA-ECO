@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import { getMyActiveResidency } from '@recoveryos/data-access';
-import type { Residence, Residency } from '@recoveryos/domain';
+import { PHASES, curfewFor, formatCurfew, type Residence, type Residency } from '@recoveryos/domain';
 import {
   Alert,
   Card,
@@ -75,6 +75,31 @@ export function MyResidencePage() {
                 </dd>
               </div>
             </dl>
+          </Card>
+
+          <Card>
+            <CardTitle>Where you are in the program</CardTitle>
+            <p className="font-medium text-ink">
+              {PHASES[residency.phase].label} — {PHASES[residency.phase].dayRange}
+            </p>
+            <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div>
+                <dt className="text-sm text-ink-muted">Curfew tonight</dt>
+                <dd className="font-medium text-ink">
+                  {formatCurfew(curfewFor(residency.phase))}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm text-ink-muted">Screening in this phase</dt>
+                <dd className="font-medium text-ink">
+                  {PHASES[residency.phase].screeningCadence}
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-3 text-sm text-ink-muted">
+              Curfew never extends past midnight in any phase. Verified work schedules on file
+              with the House Manager adjust curfew for scheduled shifts.
+            </p>
           </Card>
 
           <Card>

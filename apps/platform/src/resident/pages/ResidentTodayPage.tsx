@@ -3,7 +3,6 @@ import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import {
   completeChore,
-  getCurfewSchedule,
   getMyActiveResidency,
   listMyChoresDue,
   listMyDocuments,
@@ -11,7 +10,7 @@ import {
   type ChoreAssignmentRow,
   type MeetingRow,
 } from '@recoveryos/data-access';
-import type { Residence, Residency } from '@recoveryos/domain';
+import { PHASES, curfewFor, formatCurfew, type Residence, type Residency } from '@recoveryos/domain';
 import {
   Alert,
   Button,
@@ -39,7 +38,8 @@ export function ResidentTodayPage() {
   const [error, setError] = useState(false);
   const [residency, setResidency] = useState<(Residency & { residence: Residence }) | null>(null);
   const [chores, setChores] = useState<ChoreAssignmentRow[]>([]);
-  const [curfewTonight, setCurfewTonight] = useState<string | null>(null);
+  // Curfew and screening come from the resident's phase (GH-CURFEW-001 v3.0),
+  // not a per-residence fixed schedule.
   const [nextMeeting, setNextMeeting] = useState<MeetingRow | null>(null);
   const [pendingDocs, setPendingDocs] = useState(0);
 
@@ -52,15 +52,12 @@ export function ResidentTodayPage() {
       setResidency(active);
       if (active) {
         const today = new Date().toISOString().slice(0, 10);
-        const [choreRows, curfews, meetings, docs] = await Promise.all([
+        const [choreRows, meetings, docs] = await Promise.all([
           listMyChoresDue(active.id, today),
-          getCurfewSchedule(active.residence_id),
           listUpcomingResidenceMeetings(active.residence_id, 1),
           listMyDocuments(person.id),
         ]);
         setChores(choreRows);
-        const tonight = curfews.find((c) => c.day_of_week === new Date().getDay());
-        setCurfewTonight(tonight?.curfew_time ?? null);
         setNextMeeting(meetings[0] ?? null);
         setPendingDocs(docs.filter((d) => !d.acknowledged_at).length);
       }
@@ -111,12 +108,17 @@ export function ResidentTodayPage() {
                 {STATUS_LABELS[residency.residency_status] ?? residency.residency_status}
               </span>
             </div>
-            {curfewTonight ? (
-              <p className="mt-2 text-sm text-ink-muted">
+            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-ink-muted">
+              <span>
+                {PHASES[residency.phase].label} · {PHASES[residency.phase].dayRange}
+              </span>
+              <span>
                 Curfew tonight:{' '}
-                <span className="font-medium text-ink">{curfewTonight.slice(0, 5)}</span>
-              </p>
-            ) : null}
+                <span className="font-medium text-ink">
+                  {formatCurfew(curfewFor(residency.phase))}
+                </span>
+              </span>
+            </div>
           </Card>
 
           <Card>

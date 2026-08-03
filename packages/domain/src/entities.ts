@@ -96,6 +96,9 @@ export interface Residency {
   discharge_date: string | null;
   residency_status: ResidencyStatus;
   bed_assignment_id: number | null;
+  /** Grace House phase 1/2/3 — drives curfew and screening cadence. */
+  phase: 1 | 2 | 3;
+  phase_started_at: string | null;
   created_at: string;
   updated_at: string;
 }

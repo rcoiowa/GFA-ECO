@@ -14,3 +14,4 @@
 | 0010 | One platform app with route-separated, lazy-loaded experience shells | Accepted |
 | 0011 | Five source builds consolidate into the canonical platform | Accepted |
 | 0012 | Base44 fully retired; legacy look preserved as user-switchable visual themes | Accepted |
+| 0013 | Grace House documents are the policy authority (phase model, rights, Support Now) | Accepted |

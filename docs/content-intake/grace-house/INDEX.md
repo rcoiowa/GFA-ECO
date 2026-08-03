@@ -70,7 +70,26 @@ gracehouse@graceforaddictions.org
 6. **Emergency protocols** — staff-facing quick reference; overdose response
    feeds the safety layer.
 
-## Still expected
+## Set complete (2026-08-02)
 
-The owner is uploading in batches of five. Additional documents will be appended
-here as they arrive; the build starts when the owner confirms the set is complete.
+All 20 documents received. Batch 4 added: NARR II Self-Assessment & HHS
+Alignment, Participant Agreement, Resident Handbook (5.7k words),
+Return-to-Use Response Policy, and the VRCC Recovery Residence Hub Integration
+Plan — the last **treated as a guide only** per the owner: its schema and
+current-state claims are not authoritative.
+
+### Built from these documents (ADR-0013)
+
+- ✅ Support Now now uses the verified GFA office and warmline numbers
+- ✅ Phase model live (migration 0016): curfew and screening cadence derive from
+  resident phase; employment exception modeled
+- ✅ Resident Rights & Responsibilities v2.0 seeded verbatim, assigned to
+  residents, with external advocacy contacts and the no-retaliation guarantee
+
+### Next from these documents
+
+Staff workspace: admissions pipeline (application Parts A–F → admit/waitlist/
+refer), incident reporting to the documented categories and timelines,
+grievance handling with policy timelines, screening logs by phase, fee ledger
+(program-fee framing), return-to-use response with individualized pathways,
+exit/transition records, and the NARR II / Iowa HHS evidence checklist.
