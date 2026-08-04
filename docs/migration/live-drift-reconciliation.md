@@ -51,6 +51,51 @@ records what drifted, what was recovered, and the rule that prevents a repeat.
   `/recovery-residences`, and the static RecoveryResidence.org page mounted at
   `/residence/directory/`. Both are linked from the landing page.
 
+## Round 2 (same day): two more branches found
+
+A sweep of every remote branch found two more with unique work.
+
+### `claude/recoveryos-greenfield-build-ka6992` — 14 commits, diverged at `e788f8d`
+
+It built its **own** Phase 4 resident area in parallel with this branch's. Its
+unique, non-duplicated work was cherry-picked in rather than merged wholesale,
+because a full merge would have collided two independent implementations of the
+same pages:
+
+**Taken:**
+
+- `packages/design-tokens/src/themes/visual.css` + `ThemeSwitcher` — seven
+  visual themes (Default, Dark, Space starfield, Sky, Retro, GFA Brand, RCOIA),
+  wired into `AppShell` with a no-flash pre-paint script in `index.html`.
+- **Verified Support Now contacts** — this branch was shipping a placeholder
+  phone number (`+1 515 000 0000`) on the crisis ladder. Replaced with the
+  canonical GFA warmline 515-310-DIAL (3425) and office 515-220-8771. The Iowa
+  Warm Line was kept as well (the other branch had dropped it).
+- `.github/workflows/deploy-staging.yml` — auto-deploy to Cloudflare on push,
+  retargeted to this branch and the root `wrangler.jsonc`.
+- `packages/data-access/src/repositories/sessions.ts` — coaching-session
+  requests, which pair with the already-applied `appointments_request_self`
+  policy.
+- Docs: `STATE-OF-THE-SYSTEM.md`, `content-intake/grace-house/INDEX.md`,
+  `operations/email-deliverability.md`, ADR-0013, and its ADR-0012 renamed to
+  **ADR-0014** (this repo's ADR-0012 is the document-library decision).
+
+**Deliberately not taken** (duplicates of live-verified work on this branch,
+which is aligned to the canonical v2 documents): its resident pages
+(`PassesPage`, `ResidentDocumentsPage`, `ResidentSchedulePage`, its
+`GrievancePage`/`MyResidencePage`/`ResidentTodayPage` variants),
+`repositories/residenceOps.ts`, `domain/src/residence/phases.ts`, and
+`0013_resident_operations_policies.sql` (superseded live by the recursion fix
+recovered as `0020`). The branch is preserved — nothing is deleted.
+
+### `claude/what-is-built-here-3co21c` — 2 commits
+
+A standalone Cloudflare Worker (`grace-vrcc`) holding four VRCC tools as
+base64-embedded HTML, with its own root `wrangler.toml`, `index.js`, and
+`deploy.sh`. **Not merged**: it is a deployment artifact, not monorepo code,
+and its root `wrangler.toml` would collide with this repo's `wrangler.jsonc`.
+It stays on its branch as a preserved SOURCE artifact.
+
 ## Rule going forward
 
 One session owns the live database at a time. Any session applying a migration

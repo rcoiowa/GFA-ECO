@@ -62,8 +62,12 @@ build a drag-and-drop zip for the user, or have them add
    anything: run `list_migrations`, compare to `supabase/migrations/`, use the
    next unused number, and commit the file in the same session. See
    `docs/migration/live-drift-reconciliation.md`.
-2. **Check for parallel branches** (`git branch -r`) before building a
-   feature — another session may already have built it. Merge, do not rebuild.
+2. **Check for parallel branches before building a feature** — another session
+   may already have built it. Merge or cherry-pick; do not rebuild. Sweep with:
+   `git fetch origin --prune && for b in $(git branch -r --format='%(refname:short)' | grep -v HEAD); do echo "$(git rev-list --count HEAD..$b) $b"; done`
+   Any branch with unique commits needs review before new work starts.
+   Known preserved-but-unmerged: `claude/what-is-built-here-3co21c` (standalone
+   `grace-vrcc` Worker artifact).
 3. **Nothing is deleted.** Legacy builds are labeled SOURCE and preserved.
 4. **Push to the active branch only.** No pull requests unless asked.
 5. **The uploaded Grace House documents are authoritative** — they override

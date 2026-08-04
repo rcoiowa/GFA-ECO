@@ -15,3 +15,4 @@ export * from './repositories/houseBoard';
 export * from './repositories/referrals';
 export * from './repositories/exhibitEReport';
 export * from './repositories/supervisionReport';
+export * from './repositories/sessions';

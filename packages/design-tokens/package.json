@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     "./tokens.css": "./src/tokens.css",
-    "./themes/platform.css": "./src/themes/platform.css"
+    "./themes/platform.css": "./src/themes/platform.css",
+    "./themes/visual.css": "./src/themes/visual.css"
   },
   "scripts": {
     "typecheck": "echo 'design-tokens: css only'"
