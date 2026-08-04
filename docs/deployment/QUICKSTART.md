@@ -1,5 +1,11 @@
 # Get RecoveryOS live — quick start
 
+**Automatic deployment is live (2026-08-04).** Pushing to
+`claude/recoveryos-greenfield-build-8pns7n` builds and deploys to the Worker
+`gfa-eco-recovery-residence-os` via `.github/workflows/deploy-staging.yml`,
+using the `CLOUDFLARE_API_TOKEN` repository secret. Nothing below is needed
+for a routine update — it is the manual fallback if the pipeline is down.
+
 Written for a non-developer. Three options, easiest first.
 
 ## Why the Git connection produced nothing (2026-07-31)

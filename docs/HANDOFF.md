@@ -49,10 +49,16 @@ The Cloudflare account has accumulated parallel deployments. As of 2026-08-04:
 - A Pages project created from the drag-and-drop zip serves the current
   platform (see `docs/deployment/QUICKSTART.md`).
 
-**Deploying:** there is no Cloudflare API token in the environment, so a
-session cannot deploy on its own. Use `scripts/package-pages-upload.mjs` to
-build a drag-and-drop zip for the user, or have them add
-`CLOUDFLARE_API_TOKEN` to the environment. Full instructions:
+**Deploying is automatic.** `.github/workflows/deploy-staging.yml` builds and
+deploys to the Worker `gfa-eco-recovery-residence-os` on every push to this
+branch, using the `CLOUDFLARE_API_TOKEN` repository secret (already
+configured — verified working 2026-08-04). Just push; then confirm with
+`workers_list` that `modified_on` advanced, or check the Actions run.
+
+A session still cannot deploy directly (no token in the session environment)
+and cannot load `*.workers.dev` / `*.pages.dev` (blocked by the sandbox
+network policy) — ask the user to confirm what they see. Manual fallback:
+`node scripts/package-pages-upload.mjs` builds a drag-and-drop zip. See
 `docs/deployment/QUICKSTART.md`.
 
 ## Ground rules learned the hard way
