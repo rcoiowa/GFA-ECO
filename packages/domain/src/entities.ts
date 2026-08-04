@@ -99,6 +99,9 @@ export interface Residence {
   public_description: string | null;
   capacity: number | null;
   is_active: boolean;
+  level_of_support: 'I' | 'II' | 'III' | 'IV' | null;
+  commitments: string[];
+  curfew_weeknight: string | null;
 }
 
 export interface ResidenceUnit {
@@ -137,6 +140,7 @@ export interface ResidenceApplication {
   decided_at: string | null;
   decided_by_person_id: number | null;
   notes: string | null;
+  answers: Record<string, string>;
 }
 
 export interface Screening {

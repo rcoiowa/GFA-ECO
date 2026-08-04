@@ -31,6 +31,13 @@ export function GraceHousePage() {
             Home
           </Link>
           <span aria-hidden> / </span>
+          <Link
+            to="/recovery-residences"
+            className="hover:text-experience-700 underline-offset-2 hover:underline"
+          >
+            Recovery residences
+          </Link>
+          <span aria-hidden> / </span>
           <span aria-current="page" className="text-ink">
             Grace House
           </span>
@@ -66,26 +73,33 @@ export function GraceHousePage() {
 
         <section aria-labelledby="gh-apply" className="mt-8 rounded-lg bg-experience-soft p-6">
           <h2 id="gh-apply" className="text-xl font-semibold text-experience-700">
-            Interested in applying?
+            Ready to apply?
           </h2>
           <p className="mt-2 max-w-2xl text-ink">
-            Reach out to Grace For Addictions to talk about availability, eligibility, and referrals
-            — for yourself or someone you support. Exploring is not a commitment.
+            The Grace House site walks you through every document and house rule, then the
+            application itself. Submitting creates your resident account, and staff respond within 2
+            business days — with a bed or a place on the waitlist. Exploring is not a commitment.
           </p>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="mt-4 flex flex-wrap gap-3">
             <Link
-              to="/register"
+              to="/recovery-residences/grace-house/apply"
               className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
             >
-              Start with a free VRCC account
+              Apply online here
             </Link>
-            {/* Plain anchor: the directory is a static page served by the
-                Worker, not a client-side route. */}
             <a
-              href="/residence/directory/"
+              href="https://gracehouse4.pages.dev/"
               className="inline-flex min-h-11 items-center rounded-md border border-experience-600 px-5 font-semibold text-experience-700 hover:bg-surface-raised"
             >
-              See all residences &amp; apply on RecoveryResidence.org
+              Visit the Grace House site
+            </a>
+            {/* Plain anchor: the RecoveryResidence.org directory is a static
+                page served at this path, not a client-side route. */}
+            <a
+              href="/residence/directory/"
+              className="inline-flex min-h-11 items-center rounded-md border border-line px-5 font-medium text-ink hover:bg-surface-raised"
+            >
+              See all residences
             </a>
           </div>
         </section>

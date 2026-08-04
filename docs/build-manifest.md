@@ -205,6 +205,77 @@ clean of new findings.
   breakdown and grant-upload CSV export. Aggregate counts only (42 CFR
   Part 2 / minimum-necessary).
 
+## Phase 8.5 — Residence application flow ✅ code complete (2026-07-31; DB push of 0018 pending)
+
+The full front door → resident-account pipeline the landing page promises:
+
+- **Landing nav:** "Center" and "Residence" links at the top of vrcc.app's
+  landing page; Residence opens `/recovery-residences`.
+- **`/recovery-residences` directory:** recovery housing options — GFA
+  residences first (Grace House links to its application site at
+  https://gracehouse4.pages.dev/, profile at
+  `/recovery-residences/grace-house`) plus the searchable statewide Iowa
+  list (county/population/text filters) ported from the RecoveryResidenceOS
+  public directory.
+- **Online application** (`/recovery-residences/grace-house/apply`):
+  documents-first flow (read the Grace House document set, then apply);
+  account-required so submitting creates the resident account — register/
+  sign-in round-trips back via `?next=`; answers stored as jsonb on
+  `residence_applications` (migration 0018: `answers` column + applicant
+  self-insert/self-select RLS).
+- **Applicant status** (`/recovery-residences/my-application`): submitted →
+  review → waitlist/bed narrative, the 2-business-day and every-2-weeks
+  commitments, "referred elsewhere is a service" framing, and the VRCC
+  onboarding prompt (strongest once approved).
+- **Staff workflow:** applications land in the existing `/staff/applications`
+  queue (counted on staff Today); the queue now renders the structured
+  application answers, and approving prompts bed placement on the Bed board
+  (or the applicant holds at the top of the waitlist).
+- **External intake API** (`workers/api`):
+  `POST /public/residence-applications` with CORS for the Grace House site,
+  vrcc.app, and recoveryresidence.app — creates the resident account
+  server-side (auth invite email, person record, application row under the
+  residence applied to) using `SUPABASE_SERVICE_ROLE_KEY` (wrangler
+  secret). This is the hook the gracehouse4.pages.dev application form
+  posts to once it goes live.
+
+**Pending to go live:** apply migration 0018 (Supabase MCP was
+unauthenticated this session), deploy `workers/api` + set the service-role
+secret, deploy the platform, and point the Grace House site's form at the
+gateway (its repo/deployment is separate — see docs/deployment/README.md).
+
+## Phase 8.6 — Universal residence onboarding ✅ code complete (2026-07-31; DB push of 0019 pending)
+
+From the "Recovery Residence — Universal Recovery Housing Platform"
+prototype (claude.ai artifact b98557db): any operator can self-serve a
+residence and get the same operations workspace Grace House runs on —
+the recoveryresidence.app product layer.
+
+- **Migration 0019:** `residences.level_of_support` (NARR I–IV),
+  `residences.commitments text[]` (practice commitments shown to residents
+  and referral partners), `residences.curfew_weeknight`;
+  `organizations.structure` (501c3 / LLC / faith-based / government /
+  other); `create_residence_for_current_user()` RPC — organization +
+  residence + residence_manager role + audit in one security-definer call.
+- **`/recovery-residences/list-your-residence`:** operator pitch (feature
+  list mirrors the prototype's "what every residence profile includes")
+  and the three-step wizard — Your organization → The residence (name,
+  population, capacity, weekly fee, level of support, city/state) → House
+  standards (commitments, weeknight curfew) → Launch residence → lands in
+  `/staff/today` with the new residence active (staffContext picks it up
+  from the manager role).
+- **Directory:** "Run a recovery house?" section on
+  `/recovery-residences` links operators into the wizard.
+- **Prototype features already covered by existing rooms:** beds/waitlist
+  (Bed board, Applications), daily check-ins (participant + resident
+  Today), payments (Fees ledger), furloughs (passes), messages
+  (House board), grievances (resident grievance flow), house profile
+  (0014 public-profile columns). Not yet built from the prototype:
+  staff-facing check-in flagging/acknowledge queue, per-house public
+  profile pages for self-serve residences in the directory (they exist in
+  the DB but the public directory is still static data), payment
+  receipts.
+
 ## Phase 9 ⬜
 
 Coach/navigator workspaces, credentialed partner logins, alert system

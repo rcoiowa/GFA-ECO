@@ -27,7 +27,31 @@ other `/residence/*` path).
 | `VITE_SUPABASE_URL`      | `https://ykykeioydvtxpyreshhs.supabase.co` |
 | `VITE_SUPABASE_ANON_KEY` | Publishable anon key (RLS protects data)   |
 
-Worker secrets via `wrangler secret put` (none required yet).
+Worker secrets via `wrangler secret put`:
+
+| Secret                      | Worker           | Purpose                                                          |
+| --------------------------- | ---------------- | ---------------------------------------------------------------- |
+| `SUPABASE_SERVICE_ROLE_KEY` | `recoveryos-api` | Public residence-application intake (creates resident accounts). |
+
+## External application intake (Grace House site)
+
+`POST https://api.vrcc.app/public/residence-applications` (also reachable at
+the worker's workers.dev URL until the custom domain is attached). CORS
+allows `gracehouse4.pages.dev`, `vrcc.app`, and `recoveryresidence.app`.
+
+```json
+{
+  "residence": "grace-house",
+  "applicant": { "first_name": "…", "last_name": "…", "email": "…" },
+  "answers": { "phone": "…", "currentSituation": "…" }
+}
+```
+
+The gateway invites the email (Supabase auth invite → resident account),
+creates the person record, and files the application under the residence —
+it lands in `/staff/applications` as `submitted`. Point the application form
+on gracehouse4.pages.dev at this endpoint once the worker is deployed with
+its secret.
 
 ## Cutover (Phase 9 — no-destructive-cutover rule)
 
