@@ -108,12 +108,15 @@ Open items:
 
 ## Starting a new session
 
-Paste this as the first message:
+A new session clones the **default** branch, which contains no app — so it
+must switch branches before it can see any of this. Paste this as the first
+message:
 
-> Read `docs/HANDOFF.md` in this repo, then `docs/build-manifest.md` for
-> current status. Work on branch `claude/recoveryos-greenfield-build-8pns7n`.
-> Before any database change, compare `list_migrations` against
-> `supabase/migrations/`. Then: <your task>
+> First run `git fetch origin claude/recoveryos-greenfield-build-8pns7n && git
+checkout claude/recoveryos-greenfield-build-8pns7n` — the default branch has
+> no app in it. Then read `docs/HANDOFF.md` and `docs/build-manifest.md`
+> before doing anything. Before any database change, compare `list_migrations`
+> against `supabase/migrations/`. Then: <your task>
 
 For a session on `Grace-For-Addictions/vrcc.app` (the legacy live site):
 
