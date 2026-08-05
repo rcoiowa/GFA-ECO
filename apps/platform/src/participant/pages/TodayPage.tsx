@@ -1,25 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
-import { createCheckIn, listMyGoals, listMyRecentCheckIns } from '@recoveryos/data-access';
+import { listMyGoals, listMyRecentCheckIns } from '@recoveryos/data-access';
 import type { CheckIn, Goal } from '@recoveryos/domain';
-import {
-  Alert,
-  Button,
-  Card,
-  CardTitle,
-  ErrorState,
-  LoadingState,
-  PageHeader,
-} from '@recoveryos/ui';
-
-const MOODS = [
-  { value: 1, label: 'Struggling' },
-  { value: 2, label: 'Low' },
-  { value: 3, label: 'Okay' },
-  { value: 4, label: 'Good' },
-  { value: 5, label: 'Strong' },
-] as const;
+import { Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
 
 /**
  * Today is a guidance layer, not a feature catalog: one check-in, the current
@@ -31,8 +15,6 @@ export function TodayPage() {
   const [error, setError] = useState(false);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
-  const [saving, setSaving] = useState(false);
-  const [savedNow, setSavedNow] = useState(false);
 
   const load = useCallback(async () => {
     if (!person) return;
@@ -56,25 +38,6 @@ export function TodayPage() {
     void load();
   }, [load]);
 
-  async function submitMood(value: number) {
-    if (!person || saving) return;
-    setSaving(true);
-    try {
-      const created = await createCheckIn({
-        personId: person.id,
-        moodRating: value,
-        cravingRating: null,
-        deliveryContext: 'vrcc',
-      });
-      setCheckIns((prev) => [created, ...prev]);
-      setSavedNow(true);
-    } catch {
-      setError(true);
-    } finally {
-      setSaving(false);
-    }
-  }
-
   const today = new Date().toDateString();
   const checkedInToday = checkIns.some((c) => new Date(c.created_at).toDateString() === today);
   const currentGoal = goals[0];
@@ -94,37 +57,37 @@ export function TodayPage() {
             <CardTitle>How are you arriving today?</CardTitle>
             {checkedInToday ? (
               <>
-                {savedNow ? (
-                  <Alert tone="positive">Thanks for checking in. It counts.</Alert>
-                ) : (
-                  <p className="text-ink-muted">
-                    You've already checked in today — well done showing up.
-                  </p>
-                )}
-                <Link
-                  to="/app/journey"
-                  className="mt-3 inline-block font-medium text-experience-700 underline underline-offset-2"
-                >
-                  See your recent check-ins
-                </Link>
+                <p className="text-ink-muted">
+                  You've checked in today — well done showing up. Evening check-in closes the day
+                  whenever you're ready.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-4">
+                  <Link
+                    to="/app/check-in"
+                    className="font-medium text-experience-700 underline underline-offset-2"
+                  >
+                    Open your check-in
+                  </Link>
+                  <Link
+                    to="/app/journey"
+                    className="font-medium text-experience-700 underline underline-offset-2"
+                  >
+                    See your recent check-ins
+                  </Link>
+                </div>
               </>
             ) : (
-              <div
-                className="flex flex-wrap gap-2"
-                role="group"
-                aria-label="Choose how you're feeling"
-              >
-                {MOODS.map((mood) => (
-                  <Button
-                    key={mood.value}
-                    variant="secondary"
-                    disabled={saving}
-                    onClick={() => void submitMood(mood.value)}
-                  >
-                    {mood.label}
-                  </Button>
-                ))}
-              </div>
+              <>
+                <p className="text-ink-muted">
+                  About a minute — how you're arriving, and one intention for the day.
+                </p>
+                <Link
+                  to="/app/check-in"
+                  className="mt-3 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+                >
+                  Start your check-in
+                </Link>
+              </>
             )}
           </Card>
 

@@ -3,6 +3,7 @@ import { RequirePerson } from '@recoveryos/auth';
 import { GroundingPage } from '@recoveryos/safety';
 import { ParticipantShell } from './ParticipantShell';
 import { TodayPage } from './pages/TodayPage';
+import { CheckInPage } from './pages/CheckInPage';
 import { MyRecoveryPage } from './pages/MyRecoveryPage';
 import { ConnectPage } from './pages/ConnectPage';
 import { LearnPage } from './pages/LearnPage';
@@ -22,6 +23,7 @@ export function ParticipantArea() {
         <Route element={<ParticipantShell />}>
           <Route index element={<Navigate to="today" replace />} />
           <Route path="today" element={<TodayPage />} />
+          <Route path="check-in" element={<CheckInPage />} />
           <Route path="recovery" element={<MyRecoveryPage />} />
           <Route path="connect" element={<ConnectPage />} />
           <Route path="learn" element={<LearnPage />} />
