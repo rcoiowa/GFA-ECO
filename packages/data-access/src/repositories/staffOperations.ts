@@ -75,9 +75,12 @@ export async function getBedBoard(residenceId: number): Promise<{
     .order('name');
   if (unitsError) throw unitsError;
 
+  // bed_assignments and residencies reference each other (residencies also
+  // carries bed_assignment_id), so the embed must name the foreign key or
+  // PostgREST rejects it as ambiguous.
   const { data: assignments, error: assignError } = await sb
     .from('bed_assignments')
-    .select('*, residency:residencies(*, person:people(*))')
+    .select('*, residency:residencies!bed_assignments_residency_id_fkey(*, person:people(*))')
     .is('released_at', null);
   if (assignError) throw assignError;
 
@@ -123,9 +126,11 @@ export async function releaseBed(assignmentId: number): Promise<void> {
 export type ApplicationWithPerson = ResidenceApplication & { person: Person };
 
 export async function listApplications(residenceId: number): Promise<ApplicationWithPerson[]> {
+  // residence_applications has two foreign keys to people (the applicant and
+  // the staff member who decided), so name the one we mean.
   const { data, error } = await getSupabase()
     .from('residence_applications')
-    .select('*, person:people(*)')
+    .select('*, person:people!residence_applications_person_id_fkey(*)')
     .eq('residence_id', residenceId)
     .order('submitted_at', { ascending: false });
   if (error) throw error;
