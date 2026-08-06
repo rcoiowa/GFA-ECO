@@ -12,6 +12,7 @@ export function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirmEmail, setConfirmEmail] = useState<string | null>(null);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,7 +34,7 @@ export function RegisterPage() {
     }
     setErrors({});
     setBusy(true);
-    const { error } = await getSupabase().auth.signUp({
+    const { data, error } = await getSupabase().auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
@@ -50,7 +51,36 @@ export function RegisterPage() {
       );
       return;
     }
+    // No session means the project requires email confirmation — going to
+    // onboarding now would just bounce to sign-in and read as a failure.
+    if (!data.session) {
+      setConfirmEmail(parsed.data.email);
+      return;
+    }
     navigate(next ? `/onboarding?next=${encodeURIComponent(next)}` : '/onboarding');
+  }
+
+  if (confirmEmail) {
+    return (
+      <div className="min-h-dvh bg-surface px-4 py-12">
+        <div className="mx-auto max-w-md">
+          <Card>
+            <h1 className="text-2xl font-semibold text-ink">One more step — check your email</h1>
+            <p className="mt-2 text-ink">
+              Your account is created. We sent a confirmation link to{' '}
+              <strong>{confirmEmail}</strong> — open it (check spam too), then sign in and
+              you&rsquo;re on your way.
+            </p>
+            <Button
+              className="mt-5"
+              onClick={() => navigate('/sign-in', next ? { state: { from: next } } : undefined)}
+            >
+              Go to sign in
+            </Button>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   return (

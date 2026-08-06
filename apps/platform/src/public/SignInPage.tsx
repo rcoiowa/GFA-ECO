@@ -32,7 +32,13 @@ export function SignInPage() {
     const { error } = await getSupabase().auth.signInWithPassword(parsed.data);
     setBusy(false);
     if (error) {
-      setFormError("That email and password didn't match. Please try again.");
+      // GoTrue rejects unconfirmed accounts with this exact message; without
+      // the distinction, a brand-new signup reads as a wrong password.
+      setFormError(
+        error.message === 'Email not confirmed'
+          ? 'Almost there — your account needs one click. Open the confirmation email we sent you (check spam too), then sign in here.'
+          : "That email and password didn't match. Please try again.",
+      );
       return;
     }
     navigate(location.state?.from ?? '/app/today', { replace: true });
