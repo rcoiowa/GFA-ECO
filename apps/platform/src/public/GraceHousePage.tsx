@@ -81,18 +81,26 @@ export function GraceHousePage() {
             business days — with a bed or a place on the waitlist. Exploring is not a commitment.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <a
-              href="https://gracehouse4.pages.dev/"
-              className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
-            >
-              Visit Grace House &amp; apply
-            </a>
             <Link
               to="/recovery-residences/grace-house/apply"
-              className="inline-flex min-h-11 items-center rounded-md border border-experience-600 px-5 font-semibold text-experience-700 hover:bg-surface-raised"
+              className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
             >
               Apply online here
             </Link>
+            <a
+              href="https://gracehouse4.pages.dev/"
+              className="inline-flex min-h-11 items-center rounded-md border border-experience-600 px-5 font-semibold text-experience-700 hover:bg-surface-raised"
+            >
+              Visit the Grace House site
+            </a>
+            {/* Plain anchor: the RecoveryResidence.org directory is a static
+                page served at this path, not a client-side route. */}
+            <a
+              href="/residence/directory/"
+              className="inline-flex min-h-11 items-center rounded-md border border-line px-5 font-medium text-ink hover:bg-surface-raised"
+            >
+              See all residences
+            </a>
           </div>
         </section>
 

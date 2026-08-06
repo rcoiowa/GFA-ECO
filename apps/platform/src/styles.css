@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import '@recoveryos/design-tokens/tokens.css';
 @import '@recoveryos/design-tokens/themes/platform.css';
+@import '@recoveryos/design-tokens/themes/visual.css';
 
 /* Tailwind v4 source scanning for workspace packages */
 @source '../../../packages/ui/src';

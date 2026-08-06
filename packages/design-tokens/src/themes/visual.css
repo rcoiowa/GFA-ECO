@@ -1,0 +1,193 @@
+/*
+ * User-selectable visual themes: default · dark · space · sky · retro.
+ * Applied as [data-visual] on <html> (persisted in localStorage, pre-paint
+ * script in each app's index.html). Experience accents ([data-experience])
+ * still switch per area; combined selectors below keep them legible on
+ * dark grounds. Retro/Space port the legacy vrcc.app palettes ("70s sunrise
+ * · warm paper", "deep space") with contrast corrected to WCAG AA — the
+ * legacy retro task-bar readability issue is fixed here, not reproduced.
+ */
+
+/* ---------- Dark (green-tinted night) ---------- */
+[data-visual='dark'] {
+  color-scheme: dark;
+  --color-surface: #111917;
+  --color-surface-raised: #18211e;
+  --color-surface-sunken: #0c1311;
+  --color-ink: #e6ebe8;
+  --color-ink-muted: #a3b0aa;
+  --color-ink-faint: #6f7d76;
+  --color-line: #2a3531;
+  --color-experience-500: #52a48d;
+  --color-experience-600: #2e7d66;
+  --color-experience-700: #8fd0ba;
+  --color-experience-soft: #17332b;
+}
+
+/* ---------- Space (deep violet cosmos, from the legacy cosmic/landing themes) ---------- */
+[data-visual='space'] {
+  color-scheme: dark;
+  --color-surface: #0b0d1f;
+  --color-surface-raised: #151834;
+  --color-surface-sunken: #070812;
+  --color-ink: #e9e9f7;
+  --color-ink-muted: #a6a6c6;
+  --color-ink-faint: #6e6e92;
+  --color-line: #2a2c4e;
+  --color-experience-500: #9a7ff0;
+  --color-experience-600: #7b5ce0;
+  --color-experience-700: #b7a3f7;
+  --color-experience-soft: #1d1740;
+}
+
+/* Shared semantic adjustments for both dark grounds */
+[data-visual='dark'],
+[data-visual='space'],
+[data-visual='rcoia'] {
+  --color-accent-50: #141d2e;
+  --color-accent-500: #7fa4d9;
+  --color-accent-600: #5d84bd;
+  --color-accent-700: #a9c4e8;
+  --color-positive-50: #12291a;
+  --color-positive-600: #4caf6f;
+  --color-positive-700: #8fd6a4;
+  --color-attention-50: #2d2211;
+  --color-attention-600: #c9963d;
+  --color-attention-700: #e0b46a;
+  --color-critical-50: #331a16;
+  --color-critical-600: #c96a5c;
+  --color-critical-700: #e59a8c;
+  --color-support-500: #8b6fc0;
+  --color-support-600: #63498c;
+  --color-support-700: #7a5ea8;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.45), 0 2px 8px rgb(0 0 0 / 0.35);
+  --shadow-raised: 0 2px 6px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.45);
+}
+
+/* Residence-area accents stay legible on dark grounds */
+[data-visual='dark'] [data-experience='residence'],
+[data-visual='space'] [data-experience='residence'],
+[data-visual='rcoia'] [data-experience='residence'] {
+  --color-experience-500: #7fa4d9;
+  --color-experience-600: #46679f;
+  --color-experience-700: #a5c0ea;
+  --color-experience-soft: #16233a;
+}
+
+/* ---------- Sky (airy daylight blue) ---------- */
+[data-visual='sky'] {
+  color-scheme: light;
+  --color-surface: #eef5fb;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #e2edf6;
+  --color-ink: #1e2b38;
+  --color-ink-muted: #52677a;
+  --color-ink-faint: #8598a9;
+  --color-line: #cfdfec;
+  --color-experience-500: #3f7fb5;
+  --color-experience-600: #33689a;
+  --color-experience-700: #2a5580;
+  --color-experience-soft: #e3f0fa;
+}
+
+/* ---------- Retro (70s sunrise · warm paper — ported, contrast fixed) ---------- */
+[data-visual='retro'] {
+  color-scheme: light;
+  --color-surface: #efe3c8;
+  --color-surface-raised: #f8f1e0;
+  --color-surface-sunken: #e6d7b4;
+  --color-ink: #2b2012;
+  --color-ink-muted: #64522f;
+  --color-ink-faint: #8a7a55;
+  --color-line: #cdbc94;
+  --color-experience-500: #9c6a1a;
+  --color-experience-600: #7f5512;
+  --color-experience-700: #63430e;
+  --color-experience-soft: #f6ead0;
+  --color-accent-50: #ece5d2;
+  --color-support-500: #7a5ea8;
+  --color-support-600: #5f4180;
+  --color-support-700: #4e3569;
+}
+
+/* ---------- GFA Brand (matched to the owner's graceforaddictions.org
+   screenshot, 2026-08-02: airy sky/mist ground, charcoal ink, the logo's
+   bright aqua-teal as primary — supersedes the earlier deep forest-teal) ---------- */
+[data-visual='gfa'] {
+  color-scheme: light;
+  --color-surface: #eef6f7;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #dfeef0;
+  --color-ink: #232a2b;
+  --color-ink-muted: #4d6366;
+  --color-ink-faint: #7f9497;
+  --color-line: #cfe2e4;
+  --color-experience-500: #4fb3b3;
+  --color-experience-600: #226f6f;
+  --color-experience-700: #17514f;
+  --color-experience-soft: #e3f2f2;
+  --color-attention-50: #faf3df;
+  --color-attention-600: #9a7a1a;
+  --color-attention-700: #7a6115;
+}
+
+/* ---------- RCOIA (owner-provided rcoiowa.org brand spec, 2026-08-02:
+   cosmic deep purple ground, gold + teal accents — supersedes the earlier
+   Wix-derived green; palette only, per the owner's instruction) ---------- */
+[data-visual='rcoia'] {
+  color-scheme: dark;
+  --color-surface: #07041a;
+  --color-surface-raised: #160f38;
+  --color-surface-sunken: #03020a;
+  --color-ink: #ede8ff;
+  --color-ink-muted: #a89ec8;
+  --color-ink-faint: #7c72a3;
+  --color-line: #322a5e;
+  --color-experience-500: #9b6fef;
+  --color-experience-600: #6b3fbf;
+  --color-experience-700: #c9b4f7;
+  --color-experience-soft: #241b4d;
+  --color-attention-50: #2c2412;
+  --color-attention-600: #d4a843;
+  --color-attention-700: #f0c870;
+  --color-positive-50: #0d2a24;
+  --color-positive-600: #0aa98c;
+  --color-positive-700: #6fe3cb;
+}
+
+/* Residence accents on the warm paper ground */
+[data-visual='retro'] [data-experience='residence'] {
+  --color-experience-500: #59632c;
+  --color-experience-600: #475022;
+  --color-experience-700: #383f1b;
+  --color-experience-soft: #ecebcd;
+}
+
+/* ---------- Space starfield (constellation layer) ----------
+   Pure CSS: an SVG constellation tile (stars joined by faint lines) over
+   radial-gradient star specks and violet nebula glows. Static imagery -
+   no scripts; the global reduced-motion rules are unaffected. Applied to
+   body and to opaque .bg-surface page grounds so every screen gets sky. */
+[data-visual='space'] body,
+[data-visual='space'] .bg-surface {
+  background-color: #0b0d1f;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cg fill='none' stroke='%23a5b0ff' stroke-width='.7'%3E%3Cpath stroke-opacity='.16' d='M40 60 L120 90 L180 40'/%3E%3Cpath stroke-opacity='.13' d='M260 300 L330 260 L390 320'/%3E%3Cpath stroke-opacity='.14' d='M300 90 L360 140 L330 210'/%3E%3Cpath stroke-opacity='.12' d='M90 300 L60 380'/%3E%3C/g%3E%3Cg fill='%23ccd4ff'%3E%3Ccircle cx='40' cy='60' r='1.4' fill-opacity='.9'/%3E%3Ccircle cx='120' cy='90' r='1.1' fill-opacity='.7'/%3E%3Ccircle cx='180' cy='40' r='1.6' fill-opacity='.95'/%3E%3Ccircle cx='260' cy='300' r='1.2' fill-opacity='.75'/%3E%3Ccircle cx='330' cy='260' r='1.5' fill-opacity='.9'/%3E%3Ccircle cx='390' cy='320' r='1' fill-opacity='.6'/%3E%3Ccircle cx='90' cy='300' r='1.3' fill-opacity='.8'/%3E%3Ccircle cx='60' cy='380' r='1' fill-opacity='.6'/%3E%3Ccircle cx='300' cy='90' r='1.5' fill-opacity='.9'/%3E%3Ccircle cx='360' cy='140' r='1' fill-opacity='.65'/%3E%3Ccircle cx='330' cy='210' r='1.2' fill-opacity='.75'/%3E%3Ccircle cx='210' cy='180' r='.8' fill-opacity='.5'/%3E%3Ccircle cx='150' cy='240' r='.7' fill-opacity='.45'/%3E%3Ccircle cx='20' cy='160' r='.9' fill-opacity='.55'/%3E%3Ccircle cx='380' cy='30' r='.8' fill-opacity='.5'/%3E%3Ccircle cx='240' cy='30' r='.7' fill-opacity='.45'/%3E%3Ccircle cx='400' cy='210' r='.7' fill-opacity='.4'/%3E%3Ccircle cx='110' cy='410' r='.8' fill-opacity='.5'/%3E%3Ccircle cx='280' cy='400' r='.9' fill-opacity='.55'/%3E%3Ccircle cx='10' cy='330' r='.7' fill-opacity='.4'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(1px 1px at 33% 47%, rgba(220, 226, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 71% 23%, rgba(220, 226, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 87% 67%, rgba(220, 226, 255, 0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 13% 83%, rgba(220, 226, 255, 0.35) 50%, transparent 100%),
+    radial-gradient(ellipse 70% 50% at 18% 20%, rgba(123, 92, 224, 0.16) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 45% at 85% 75%, rgba(154, 127, 240, 0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(42, 30, 92, 0.35) 0%, transparent 70%);
+  background-size:
+    420px 420px,
+    260px 260px,
+    310px 310px,
+    360px 360px,
+    290px 290px,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  background-attachment: fixed;
+}

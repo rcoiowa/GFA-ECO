@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import { ensureMyPerson } from '@recoveryos/data-access';
@@ -14,6 +14,8 @@ export function OnboardingPage() {
   const [searchParams] = useSearchParams();
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  // Provisioning rounds this mount — the loop-breaker below reads it.
+  const rounds = useRef(0);
   // Internal-only return path (e.g. back to a residence application).
   const rawNext = searchParams.get('next');
   const destination =
@@ -25,6 +27,14 @@ export function OnboardingPage() {
       return;
     }
     if (!session) return;
+    // Provisioning is idempotent, so a second pass is harmless — but a third
+    // means identity still is not loading, and navigating on would bounce the
+    // guard straight back here. Surface the problem instead of flickering.
+    if (rounds.current >= 2) {
+      setFailed(true);
+      return;
+    }
+    rounds.current += 1;
     let cancelled = false;
     (async () => {
       try {
@@ -55,6 +65,7 @@ export function OnboardingPage() {
                 message="We couldn't finish setting up your space. Nothing is lost — please try again."
                 onRetry={() => {
                   setFailed(false);
+                  rounds.current = 0;
                   setAttempt((n) => n + 1);
                 }}
               />

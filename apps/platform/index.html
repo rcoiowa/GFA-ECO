@@ -8,6 +8,15 @@
       content="The Virtual Recovery Community Center — recovery support that meets you where you are. Connection prevents crisis."
     />
     <title>VRCC — Virtual Recovery Community Center</title>
+    <script>
+      // Apply the saved visual theme before first paint (no flash).
+      try {
+        var v = localStorage.getItem('recoveryos-visual');
+        if (['dark', 'space', 'sky', 'retro', 'gfa', 'rcoia'].indexOf(v) !== -1) {
+          document.documentElement.dataset.visual = v;
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

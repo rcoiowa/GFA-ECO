@@ -31,15 +31,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [person, setPerson] = useState<Person | null>(null);
   const [roleAssignments, setRoleAssignments] = useState<RoleAssignment[]>([]);
 
-  const loadIdentity = useCallback(async () => {
+  const loadIdentity = useCallback(async (authUserId: string) => {
+    let me: Person | null = null;
     try {
-      const me = await getMyPerson();
+      me = await getMyPerson(authUserId);
       setPerson(me);
-      setRoleAssignments(me ? await getMyRoleAssignments(me.id) : []);
     } catch {
       // Identity load failures leave the user signed in but unprovisioned;
       // route guards send them to onboarding rather than crashing the shell.
       setPerson(null);
+      setRoleAssignments([]);
+      return;
+    }
+    try {
+      setRoleAssignments(me ? await getMyRoleAssignments(me.id) : []);
+    } catch {
+      // A roles failure must not erase a person we successfully loaded —
+      // doing so bounces a provisioned user back into onboarding.
       setRoleAssignments([]);
     }
   }, []);
@@ -51,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(async ({ data }) => {
       if (cancelled) return;
       setSession(data.session);
-      if (data.session) await loadIdentity();
+      if (data.session) await loadIdentity(data.session.user.id);
       setReady(true);
     });
 
@@ -59,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
       setSession(next);
       if (next) {
-        await loadIdentity();
+        await loadIdentity(next.user.id);
       } else {
         setPerson(null);
         setRoleAssignments([]);
@@ -83,7 +91,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       person,
       roles: [...new Set(roleAssignments.map((r) => r.role_key))],
       roleAssignments,
-      refreshIdentity: loadIdentity,
+      refreshIdentity: async () => {
+        if (session) await loadIdentity(session.user.id);
+      },
       signOut,
     }),
     [ready, session, person, roleAssignments, loadIdentity, signOut],

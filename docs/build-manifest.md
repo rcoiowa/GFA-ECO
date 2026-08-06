@@ -282,3 +282,11 @@ Coach/navigator workspaces, credentialed partner logins, alert system
 (missed check-ins, overdue screens, review calendar), public bed
 availability endpoint, admin + analytics, production hosting/deployment
 (Cloudflare credentials needed), hardening.
+
+Deployment consolidation started 2026-07-31: the public
+RecoveryResidence.org directory is mounted at `/residence/directory/`
+(build-time copy from `sites/recoveryresidence-directory/`), the staging
+Worker config adopts the `gfa-eco-recovery-residence-os` dashboard stub,
+and the stale `gfa-vrcc.pages.dev` Pages project is documented as an
+archivable duplicate of the live `virtualrecovery` Worker — see
+`docs/deployment/consolidation-2026-07-31.md`.

@@ -4,17 +4,21 @@ Legacy source deployments: `docs/source-inventory/deployment-registry.md`.
 
 ## Targets
 
-| Component                | Cloudflare project                                                                    | Domain                                     | Build command                                                     | Output               |
-| ------------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------- | -------------------- |
-| Platform (staging)       | Worker `recoveryos-staging` (static assets; config in `apps/platform/wrangler.jsonc`) | `recoveryos-staging.<account>.workers.dev` | `pnpm --filter @recoveryos/platform build` then `wrangler deploy` | `apps/platform/dist` |
-| Platform (prod, Phase 9) | takes over `vrcc.app` custom domain                                                   | `vrcc.app`                                 | same                                                              | same                 |
-| API gateway              | Worker `recoveryos-api`                                                               | `api.vrcc.app`                             | `wrangler deploy` (from `workers/api`)                            | —                    |
+| Component                | Cloudflare project                                                                                                          | Domain                                                | Build command                                       | Output               |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------- | -------------------- |
+| Platform (staging)       | Worker `gfa-eco-recovery-residence-os` (static assets; config in root `wrangler.jsonc` — see `consolidation-2026-07-31.md`) | `gfa-eco-recovery-residence-os.<account>.workers.dev` | `pnpm build` then `npx wrangler deploy` (repo root) | `apps/platform/dist` |
+| Platform (prod, Phase 9) | takes over `vrcc.app` custom domain                                                                                         | `vrcc.app`                                            | same                                                | same                 |
+| API gateway              | Worker `recoveryos-api`                                                                                                     | `api.vrcc.app`                                        | `wrangler deploy` (from `workers/api`)              | —                    |
 
 Staging deploy needs a `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit) available to
 wrangler — the account's MCP connector is read-only and cannot deploy. Env vars are
 baked at build time (`VITE_*`), so build with them set.
 
-SPA routing: single-page-application fallback (`/* → /index.html`).
+SPA routing: single-page-application fallback (`/* → /index.html`). Exception:
+`/residence/directory/` is a real static asset — the public RecoveryResidence.org
+directory, copied at build time from `sites/recoveryresidence-directory/` by
+`scripts/sync-directory-site.mjs` (the authenticated resident portal keeps every
+other `/residence/*` path).
 
 ## Environment variables (Pages project)
 

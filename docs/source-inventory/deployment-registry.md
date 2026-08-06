@@ -2,6 +2,8 @@
 
 Verified 2026-07-29 by direct inspection of the Cloudflare account (Workers list),
 GitHub repository listing, live deployments, and cloned source trees in `source-builds/`.
+Amended 2026-07-31 — see "2026-07-31 findings" below for the `gfa-vrcc.pages.dev`
+Pages project and the new `gfa-eco-recovery-residence-os` Worker.
 
 | Build                 | Repository                                                        | Branch                                      | Cloudflare Project                                                                   | Type                              | Domain(s)                                             | Data Source                                                          | Status                 |
 | --------------------- | ----------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------- | ---------------------- |
@@ -27,11 +29,41 @@ GitHub repository listing, live deployments, and cloned source trees in `source-
    data-source-registry.md). `ykykeioydvtxpyreshhs` is the shared/canonical one.
 4. `source-builds/` clones are gitignored intake material, not production code.
 
+## 2026-07-31 findings (the "two separate builds" question, answered)
+
+Verified via the Cloudflare Workers list and the account's dashboard information
+supplied by GFA:
+
+1. **Pages project `gfa-vrcc` (`gfa-vrcc.pages.dev`) is a stale, superseded
+   deployment of the same legacy VRCC app** — production branch `main`, last
+   deployment ~2026-07-08 (23 days before this note), last commit
+   `fix(coach-notes): surface save failures in CoachNoteForm (Gate 20c-3)`
+   (Base44 code — `base44.auth.me()`). The Worker `virtualrecovery` was created
+   2026-07-20 and took over serving `vrcc.app` from the same repository
+   (`Grace-For-Addictions/vrcc.app`); the Pages project simply stopped receiving
+   deploys. **Nothing is lost by archiving it**: its source of truth is the same
+   Git repository that feeds the Worker. So yes — two deployments existed, but
+   of one build; the live one is the Worker, and `gfa-vrcc.pages.dev` should be
+   treated as ARCHIVED (leave it read-only or delete the Pages project once GFA
+   confirms no bookmarks depend on it).
+2. **A third Worker now exists: `gfa-eco-recovery-residence-os`** (created
+   2026-07-30, dashboard "Hello world" starter — no real build ever deployed).
+   Its name matches this repository (`rcoiowa/GFA-ECO`). The canonical platform's
+   `apps/platform/wrangler.jsonc` has been renamed to match it, so the first real
+   deploy (CLI or dashboard Git build) replaces the stub instead of minting a
+   fourth deployment. Setup steps: `docs/deployment/consolidation-2026-07-31.md`.
+3. The account therefore has exactly three Workers (`virtualrecovery`,
+   `recovery-residence-os`, `gfa-eco-recovery-residence-os`) plus the legacy
+   Pages projects. The consolidation end-state is unchanged: one canonical
+   platform (this repo) serving `vrcc.app`, everything else ARCHIVED.
+
 ## Legacy status plan
 
-| Deployment                          | Now                    | After cutover                                               |
-| ----------------------------------- | ---------------------- | ----------------------------------------------------------- |
-| Worker `virtualrecovery` (vrcc.app) | SOURCE — do not modify | ARCHIVED (workers.dev URL retained read-only until retired) |
-| Worker `recovery-residence-os`      | SOURCE — do not modify | ARCHIVED                                                    |
-| Pages `gracehouse4`                 | SOURCE                 | ARCHIVED                                                    |
-| Pages `gfaconnection`               | SOURCE                 | ARCHIVED (experiential concepts mined)                      |
+| Deployment                             | Now                                      | After cutover                                               |
+| -------------------------------------- | ---------------------------------------- | ----------------------------------------------------------- |
+| Worker `virtualrecovery` (vrcc.app)    | SOURCE — do not modify                   | ARCHIVED (workers.dev URL retained read-only until retired) |
+| Worker `recovery-residence-os`         | SOURCE — do not modify                   | ARCHIVED                                                    |
+| Worker `gfa-eco-recovery-residence-os` | CANONICAL staging target (stub, replace) | serves `vrcc.app` (Phase 9)                                 |
+| Pages `gfa-vrcc`                       | ARCHIVED (stale duplicate of vrcc.app)   | retire after confirming no bookmarks                        |
+| Pages `gracehouse4`                    | SOURCE                                   | ARCHIVED                                                    |
+| Pages `gfaconnection`                  | SOURCE                                   | ARCHIVED (experiential concepts mined)                      |

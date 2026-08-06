@@ -55,7 +55,10 @@ export function StaffTodayPage() {
         ).length,
       });
       setPendingPasses(passes);
-    } catch {
+    } catch (e) {
+      // Surface the real cause in the console — a blank card with no detail
+      // is what made the ambiguous-embed failure hard to diagnose.
+      console.error('Staff Today failed to load', e);
       setError(true);
     } finally {
       setLoading(false);
