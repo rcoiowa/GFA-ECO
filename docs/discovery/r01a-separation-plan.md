@@ -1,4 +1,8 @@
-# R-01(a) Separation Plan — Recovery Residence as its own platform
+# R-01(a) Separation Plan — SUPERSEDED by ADR-0014 (2026-08-04)
+
+> Kept for the record. The owner revised R-01: one platform with
+> domain-scoped front doors; the RR-3 engine list survives as the
+> in-platform residence-experience backlog. Do not execute these gates.
 
 Owner-approved 2026-08-04 (ADR-0013). Gate-based per directive §13: each
 gate is the smallest safe slice, additive only, with rollback. Nothing in

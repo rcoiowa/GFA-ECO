@@ -1,6 +1,10 @@
 # ADR-0013: Recovery Residence is a separate housing platform (R-01a)
 
-**Status:** Accepted · **Date:** 2026-08-04 · **Amends scope of:** ADR-0010/0011 phases 4–8
+**Status:** Superseded by ADR-0014 (same day) · **Date:** 2026-08-04 · **Amends scope of:** ADR-0010/0011 phases 4–8
+
+> Superseded: the owner clarified that §4.6's separation requirement was
+> generated text, not a settled decision, and chose one platform with
+> domain-scoped front doors. See ADR-0014.
 
 ## Context
 

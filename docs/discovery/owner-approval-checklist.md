@@ -6,12 +6,12 @@ or a successor).
 
 ## Structural decisions
 
-- [x] **R-01 — HousingOps boundary. DECIDED: (a)** — owner approval,
-      2026-08-04 working session. Recovery Residence becomes the separate
-      universal housing platform; this repo keeps only the §4.6 bridge.
-      Recorded in ADR-0013; execution plan in `r01a-separation-plan.md`.
-      Follow-on owner actions now needed: create the Recovery Residence
-      repo and its own Supabase project (see plan, "blocked on owner").
+- [x] **R-01 — HousingOps boundary. REVISED SAME DAY → ADR-0014**: one
+      platform, Recovery Residence as a bounded in-platform experience
+      with domain-scoped front doors (vrcc.app hub; recoveryresidence.org
+      directory; recoveryresidence.app operator entrance). §4.6's
+      separation clause confirmed by owner as generated/not settled; its
+      data rules remain policy. Migrations 0018–0019 cleared to apply.
 - [ ] **R-02 — Privacy gate.** Confirm gate status. If closed, approve the
       compliance-remediation stance for data production already collects.
 - [ ] **R-05 — Master Spec.** Provide `claude/RecoveryOS-Master-Spec.md` or

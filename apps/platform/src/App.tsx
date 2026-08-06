@@ -14,10 +14,25 @@ import { NotAuthorizedPage, NotFoundPage } from './pages/StatusPages';
 import { RequireAuth } from '@recoveryos/auth';
 
 /**
- * One platform, several intentional front doors (ADR-0010).
- * Experience areas are lazy-loaded so each front door only downloads its own
- * shell; the public entrance stays light.
+ * One platform, several intentional front doors (ADR-0010), now also
+ * domain-scoped (ADR-0014): the same deployment answers every domain, and
+ * the hostname picks the front door — vrcc.app is the community-center hub,
+ * recoveryresidence.org opens the housing directory, recoveryresidence.app
+ * opens the operator entrance, and Grace House vanity hosts open the Grace
+ * House page. Every route stays reachable on every domain; only `/` differs.
  */
+const HOST_HOMES: Record<string, string> = {
+  'recoveryresidence.org': '/recovery-residences',
+  'www.recoveryresidence.org': '/recovery-residences',
+  'recoveryresidence.app': '/recovery-residences/list-your-residence',
+  'www.recoveryresidence.app': '/recovery-residences/list-your-residence',
+  'gracehouse.graceforaddictions.org': '/recovery-residences/grace-house',
+};
+
+function HostHome() {
+  const home = HOST_HOMES[window.location.hostname.toLowerCase()];
+  return home ? <Navigate to={home} replace /> : <LandingPage />;
+}
 const ParticipantArea = lazy(() =>
   import('./participant/ParticipantArea').then((m) => ({ default: m.ParticipantArea })),
 );
@@ -29,8 +44,8 @@ const StaffArea = lazy(() => import('./staff/StaffArea').then((m) => ({ default:
 export function App() {
   return (
     <Routes>
-      {/* Public entrance */}
-      <Route path="/" element={<LandingPage />} />
+      {/* Public entrance — front door chosen by domain (ADR-0014) */}
+      <Route path="/" element={<HostHome />} />
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/recovery-residences" element={<ResidenceDirectoryPage />} />
