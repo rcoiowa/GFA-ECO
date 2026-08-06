@@ -1,6 +1,7 @@
 # ADR-0016: _Recovering the Mind_ is the canonical slogan source
 
-Status: Accepted (2026-08-05). Open question on tagging — see below.
+Status: Accepted (2026-08-05). **Tagging question resolved 2026-08-05** by
+the master source document — see the amendment at the end.
 
 ## Context
 
@@ -84,3 +85,30 @@ map directly onto the check-in's challenge chips.
 - The book's faith framing is GFA's own. The legacy database already carries an
   `add_faith_reframe_column` migration, indicating an intended toggle; honor it
   rather than stripping or hard-coding either framing.
+
+## Amendment (2026-08-05): the master source settles it
+
+`GFA_59_Slogans_Final.md` arrived and describes itself as "the master source
+document for GFA's 59 Recovery Slogans... simultaneously the published book,
+the peer coach training curriculum, and the VRCC database seed specification."
+It supersedes both the print book and the earlier SQL seed, and it states the
+tagging decision outright: **ICARE phases "rebalanced across all five phases"**
+— Identify 12, Connect 12, Assess 12, Respond 12, Empower 11.
+
+That is the functional tagging the engine needs, authored deliberately. The
+importer now reads this document and **asserts the distribution**, so a source
+edit cannot silently reintroduce the skew.
+
+It also supplies what the book did not: a condensed, Grace Companion-ready
+commentary per slogan, and **177 VIA character-strength mappings with
+rationale** — matching the count the seed specification predicted.
+
+The Enneagram layer (`GFA_Enneagram_Slogan_Map.pdf`) adds **180 slogan↔type
+mappings** with relevance weights and contexts, covering all 59 slogans across
+all 9 types. Together these form the chain documented in
+`docs/architecture/slogan-chain.md`.
+
+Two content findings are recorded rather than silently patched: no slogan is
+tagged `Financial` (so the "Finances" barrier chip matches nothing), and slogan
+17's own entry disagrees with the trailing seed table on its domain. Both are
+content decisions for the author.

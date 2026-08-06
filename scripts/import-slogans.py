@@ -1,65 +1,59 @@
 #!/usr/bin/env python3
-"""Import the 59 slogans from *Recovering the Mind* into the content package.
+"""Import the 59 slogans from the GFA master source document.
 
-The book (docs/source-documents/recovering-the-mind/) is the canonical source:
-it carries the full commentary and practice for every slogan, plus the ICARE
-phase, wellness domain, and theme on a metadata line under each heading, and it
-agrees with its own appendix.
+`GFA_59_Slogans_Final.md` describes itself as "the master source document for
+GFA's 59 Recovery Slogans... the published book, the peer coach training
+curriculum, and the VRCC database seed specification." It supersedes both the
+print book and the earlier SQL seed, and it settles the tagging question: its
+ICARE phases are explicitly "rebalanced across all five phases" (12/12/12/12/11)
+rather than inherited from the book's narrative arc.
 
-Chapter shape:
-
-    POINT ONE: The Foundations of Recovery          (section header, optional)
-    ICARE Phase: Identify · The beginning ...       (section subtitle)
-    Slogan 1: First, embrace the four foundations
-    ICARE Phase: Identify · Domain: Spiritual · Theme: Foundations
-    <optional lead-in lines>
-    Commentary:
-    <one or more paragraphs>
-    Practice:  <one paragraph>
+Per slogan it carries: ICARE phase (+ id), wellness domain, condensed
+commentary (Grace Companion-ready), full commentary, VIA strengths with
+rationale, and a practice. The trailing seed-reference table supplies the
+stable theme key.
 
 Run: python3 scripts/import-slogans.py
 """
 
-import html
 import json
 import re
-import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-BOOK = ROOT / 'docs/source-documents/recovering-the-mind/RecoveringTheMind_PRINT_6x9.docx'
-SEED_VIEWER = ROOT / 'docs/source-documents/recovering-the-mind/gfa_slogans_seed_viewer.html'
+SOURCE = ROOT / 'docs/source-documents/recovering-the-mind/GFA_59_Slogans_Final.md'
 OUT_TS = ROOT / 'packages/recovery-content/src/slogans.generated.ts'
-OUT_REPORT = ROOT / 'docs/content/slogan-tagging-comparison.md'
 
-SLOGAN_RE = re.compile(r'^Slogan (\d+):\s*(.+)$')
-META_RE = re.compile(
-    r'^ICARE Phase:\s*(\w+)\s*·\s*Domain:\s*(\w+)\s*·\s*Theme:\s*(.+)$'
-)
-POINT_RE = re.compile(r'^POINT ([A-Z]+):\s*(.+)$')
+SLOGAN_RE = re.compile(r'^### Slogan (\d+):\s*(.+?)\s*$')
+POINT_RE = re.compile(r'^## POINT ([A-Z]+):\s*(.+?)\s*$')
+PHASE_RE = re.compile(r'^\*\*ICARE Phase:\*\*\s*(\w+)\s*\((\d)\)')
+DOMAIN_RE = re.compile(r'^\*\*Wellness Domain:\*\*\s*(.+?)\s*$')
+PRACTICE_RE = re.compile(r'^\*\*Practice:\*\*\s*(.+?)\s*$')
+VIA_RE = re.compile(r'^-\s*\*\*(.+?):\*\*\s*(.+?)\s*$')
+SEED_ROW_RE = re.compile(r'^\|\s*(\d+)\s*\|\s*(\d)\s*\|\s*(\w+)\s*\|\s*(\w+)\s*\|')
 
-
-def docx_paragraphs(path: Path) -> list[str]:
-    xml = zipfile.ZipFile(path).read('word/document.xml').decode('utf-8')
-    paras = re.findall(r'<w:p[ >].*?</w:p>', xml, re.S)
-    out = []
-    for p in paras:
-        # <w:br/> is a line break inside a paragraph.
-        p = re.sub(r'<w:br\s*/>', '\n', p)
-        text = ''.join(re.findall(r'<w:t[^>]*>(.*?)</w:t>', p, re.S))
-        text = html.unescape(re.sub(r'<[^>]+>', '', text))
-        # The book uses non-breaking spaces around the · separators.
-        text = text.replace(' ', ' ')
-        out.append(re.sub(r'[ \t]+', ' ', text).strip())
-    return out
+FIELD = '**'
 
 
-def parse_book(paras: list[str]) -> list[dict]:
+def parse_themes(lines: list[str]) -> dict[int, str]:
+    """Theme keys from the trailing `recovery_slogans` seed table."""
+    themes: dict[int, str] = {}
+    for line in lines:
+        m = SEED_ROW_RE.match(line.strip())
+        if m:
+            themes[int(m.group(1))] = m.group(4)
+    return themes
+
+
+def parse(text: str) -> list[dict]:
+    lines = text.split('\n')
+    themes = parse_themes(lines)
     slogans: list[dict] = []
-    current_point: str | None = None
+    current_point = ''
     i = 0
-    while i < len(paras):
-        line = paras[i]
+
+    while i < len(lines):
+        line = lines[i].rstrip()
 
         point = POINT_RE.match(line)
         if point:
@@ -72,76 +66,78 @@ def parse_book(paras: list[str]) -> list[dict]:
             i += 1
             continue
 
-        number = int(m.group(1))
-        text = m.group(2).strip()
-        phase = domain = theme = None
-        lead_in: list[str] = []
-        commentary: list[str] = []
-        practice = ''
-        seen_commentary = False
+        number, text_ = int(m.group(1)), m.group(2)
+        entry = {
+            'number': number,
+            'text': text_,
+            'icarePhase': '',
+            'icarePhaseId': 0,
+            'wellnessDomain': '',
+            'theme': themes.get(number, ''),
+            'point': current_point,
+            'condensedCommentary': '',
+            'commentary': [],
+            'viaStrengths': [],
+            'practice': '',
+        }
+        section = None
 
         j = i + 1
-        while j < len(paras):
-            nxt = paras[j]
-            if SLOGAN_RE.match(nxt) or POINT_RE.match(nxt):
+        while j < len(lines) and not SLOGAN_RE.match(lines[j].rstrip()):
+            if POINT_RE.match(lines[j].rstrip()):
                 break
-            meta = META_RE.match(nxt)
-            if meta and phase is None:
-                phase, domain, theme = (g.strip() for g in meta.groups())
-            elif nxt.startswith('Practice:'):
-                practice = nxt[len('Practice:'):].strip()
-                j += 1
-                break
-            elif nxt.startswith('Commentary:'):
-                seen_commentary = True
-                tail = nxt[len('Commentary:'):].strip()
-                if tail:
-                    commentary.append(tail)
-            elif nxt:
-                (commentary if seen_commentary else lead_in).append(nxt)
+            raw = lines[j].rstrip()
+            stripped = raw.strip()
+
+            phase = PHASE_RE.match(stripped)
+            domain = DOMAIN_RE.match(stripped)
+            practice = PRACTICE_RE.match(stripped)
+
+            if phase:
+                entry['icarePhase'] = phase.group(1)
+                entry['icarePhaseId'] = int(phase.group(2))
+            elif domain:
+                entry['wellnessDomain'] = domain.group(1)
+            elif practice:
+                entry['practice'] = practice.group(1)
+                section = None
+            elif stripped.startswith('**Condensed Commentary:**'):
+                section = 'condensed'
+            elif stripped.startswith('**Full Commentary:**'):
+                section = 'full'
+            elif stripped.startswith('**VIA Strengths:**'):
+                section = 'via'
+            elif stripped in ('---', ''):
+                pass
+            elif section == 'condensed':
+                entry['condensedCommentary'] = (
+                    entry['condensedCommentary'] + ' ' + stripped
+                ).strip()
+            elif section == 'full':
+                entry['commentary'].append(stripped)
+            elif section == 'via':
+                via = VIA_RE.match(stripped)
+                if via:
+                    entry['viaStrengths'].append(
+                        {'strength': via.group(1), 'rationale': via.group(2)}
+                    )
             j += 1
 
-        slogans.append({
-            'number': number,
-            'text': text,
-            'icarePhase': phase,
-            'wellnessDomain': domain,
-            'theme': theme,
-            'point': current_point,
-            'leadIn': lead_in,
-            'commentary': commentary,
-            'practice': practice,
-        })
+        slogans.append(entry)
         i = j
 
     return slogans
 
 
-def parse_seed_viewer(path: Path) -> dict[int, tuple[str, str]]:
-    """The prior SQL seed's tagging, for comparison only."""
-    if not path.exists():
-        return {}
-    raw = html.unescape(re.sub(r'<[^>]+>', '\n', path.read_text(encoding='utf-8')))
-    lines = [l.strip() for l in raw.split('\n') if l.strip()]
-    phases = {'Identify', 'Connect', 'Assess', 'Respond', 'Empower'}
-    out: dict[int, tuple[str, str]] = {}
-    for i, l in enumerate(lines):
-        if l.isdigit() and 1 <= int(l) <= 59 and i + 4 < len(lines):
-            # number, text, commentary, phase, domain, theme
-            if lines[i + 3] in phases:
-                out.setdefault(int(l), (lines[i + 3], lines[i + 4]))
-    return out
-
-
-def ts_string(value: str) -> str:
+def ts(value) -> str:
     return json.dumps(value, ensure_ascii=False)
 
 
-def emit_ts(slogans: list[dict]) -> str:
-    lines = [
+def emit(slogans: list[dict]) -> str:
+    out = [
         '// GENERATED by scripts/import-slogans.py — do not edit by hand.',
-        '// Source: Recovering the Mind: 59 Practices for Hope, Healing, and',
-        '// Transformation © 2026 Thomas DeGarmeaux and Grace For Addictions.',
+        '// Source: GFA_59_Slogans_Final.md, the master source document for',
+        '// Recovering the Mind © 2026 Thomas DeGarmeaux and Grace For Addictions.',
         '// Used within the GFA platform by the author. Attribution must remain',
         '// visible wherever slogans are displayed.',
         '',
@@ -150,102 +146,62 @@ def emit_ts(slogans: list[dict]) -> str:
         'export const SLOGANS: Slogan[] = [',
     ]
     for s in slogans:
-        lines.append('  {')
-        lines.append(f'    number: {s["number"]},')
-        lines.append(f'    text: {ts_string(s["text"])},')
-        lines.append(f'    icarePhase: {ts_string(s["icarePhase"] or "")},')
-        lines.append(f'    wellnessDomain: {ts_string(s["wellnessDomain"] or "")},')
-        lines.append(f'    theme: {ts_string(s["theme"] or "")},')
-        lines.append(f'    point: {ts_string(s["point"] or "")},')
-        if s['leadIn']:
-            lines.append('    leadIn: [')
-            for l in s['leadIn']:
-                lines.append(f'      {ts_string(l)},')
-            lines.append('    ],')
-        else:
-            lines.append('    leadIn: [],')
-        lines.append('    commentary: [')
+        out.append('  {')
+        out.append(f'    number: {s["number"]},')
+        out.append(f'    text: {ts(s["text"])},')
+        out.append(f'    icarePhase: {ts(s["icarePhase"])},')
+        out.append(f'    icarePhaseId: {s["icarePhaseId"]},')
+        out.append(f'    wellnessDomain: {ts(s["wellnessDomain"])},')
+        out.append(f'    theme: {ts(s["theme"])},')
+        out.append(f'    point: {ts(s["point"])},')
+        out.append(f'    condensedCommentary: {ts(s["condensedCommentary"])},')
+        out.append('    commentary: [')
         for c in s['commentary']:
-            lines.append(f'      {ts_string(c)},')
-        lines.append('    ],')
-        lines.append(f'    practice: {ts_string(s["practice"])},')
-        lines.append('  },')
-    lines.append('];')
-    lines.append('')
-    return '\n'.join(lines)
-
-
-def emit_report(slogans: list[dict], seed: dict[int, tuple[str, str]]) -> str:
-    diffs = []
-    for s in slogans:
-        prior = seed.get(s['number'])
-        if not prior:
-            continue
-        if prior[0] != s['icarePhase'] or prior[1] != s['wellnessDomain']:
-            diffs.append((s, prior))
-
-    from collections import Counter
-    book_phases = Counter(s['icarePhase'] for s in slogans)
-    seed_phases = Counter(v[0] for v in seed.values())
-
-    out = [
-        '# Slogan tagging — book vs. prior SQL seed',
-        '',
-        'GENERATED by `scripts/import-slogans.py`. The book is canonical for',
-        'slogan text, commentary, and practice (ADR-0016). Its **tagging**, by',
-        'contrast, is inherited from the seven-movement arc of the book, so it',
-        'is Empower-heavy by construction. The prior seed is evenly balanced.',
-        'Neither is wrong — they answer different questions. Which one governs',
-        'ICARE-stage matching is an open product decision (ADR-0016).',
-        '',
-        '## Phase distribution',
-        '',
-        '| Phase | Book | Prior seed |',
-        '| ----- | ---- | ---------- |',
-    ]
-    for phase in ['Identify', 'Connect', 'Assess', 'Respond', 'Empower']:
-        out.append(f'| {phase} | {book_phases.get(phase, 0)} | {seed_phases.get(phase, 0)} |')
-    out += [
-        '',
-        f'The prior seed was evenly balanced (12/12/12/12/11); the book is not.',
-        f'**{len(diffs)} of 59 slogans differ** in ICARE phase and/or wellness domain.',
-        '',
-        '## Differences',
-        '',
-        '| # | Slogan | Book phase / domain | Seed phase / domain |',
-        '| - | ------ | ------------------- | ------------------- |',
-    ]
-    for s, prior in diffs:
-        text = s['text'][:60] + ('…' if len(s['text']) > 60 else '')
-        out.append(
-            f'| {s["number"]} | {text} | {s["icarePhase"]} / {s["wellnessDomain"]} '
-            f'| {prior[0]} / {prior[1]} |'
-        )
+            out.append(f'      {ts(c)},')
+        out.append('    ],')
+        out.append('    viaStrengths: [')
+        for v in s['viaStrengths']:
+            out.append(
+                f'      {{ strength: {ts(v["strength"])}, rationale: {ts(v["rationale"])} }},'
+            )
+        out.append('    ],')
+        out.append(f'    practice: {ts(s["practice"])},')
+        out.append('  },')
+    out.append('];')
     out.append('')
     return '\n'.join(out)
 
 
 def main() -> None:
-    paras = docx_paragraphs(BOOK)
-    slogans = parse_book(paras)
+    slogans = parse(SOURCE.read_text(encoding='utf-8'))
 
     assert len(slogans) == 59, f'expected 59 slogans, parsed {len(slogans)}'
+    assert sorted(s['number'] for s in slogans) == list(range(1, 60)), 'numbering gap'
     for s in slogans:
-        assert s['icarePhase'], f'slogan {s["number"]} missing ICARE phase'
-        assert s['practice'], f'slogan {s["number"]} missing practice'
-        assert s['commentary'], f'slogan {s["number"]} missing commentary'
-    numbers = sorted(s['number'] for s in slogans)
-    assert numbers == list(range(1, 60)), f'non-contiguous numbering: {numbers}'
+        n = s['number']
+        assert s['icarePhase'], f'slogan {n}: missing ICARE phase'
+        assert s['wellnessDomain'], f'slogan {n}: missing wellness domain'
+        assert s['condensedCommentary'], f'slogan {n}: missing condensed commentary'
+        assert s['commentary'], f'slogan {n}: missing full commentary'
+        assert s['practice'], f'slogan {n}: missing practice'
+        assert s['viaStrengths'], f'slogan {n}: missing VIA strengths'
+        assert s['theme'], f'slogan {n}: missing theme key'
+
+    # The master document states the rebalanced distribution explicitly; hold
+    # the import to it so a source edit cannot silently skew the engine.
+    from collections import Counter
+    dist = Counter(s['icarePhase'] for s in slogans)
+    expected = {'Identify': 12, 'Connect': 12, 'Assess': 12, 'Respond': 12, 'Empower': 11}
+    assert dist == Counter(expected), f'phase distribution drifted: {dict(dist)}'
 
     OUT_TS.parent.mkdir(parents=True, exist_ok=True)
-    OUT_TS.write_text(emit_ts(slogans), encoding='utf-8')
-
-    OUT_REPORT.parent.mkdir(parents=True, exist_ok=True)
-    OUT_REPORT.write_text(emit_report(slogans, parse_seed_viewer(SEED_VIEWER)), encoding='utf-8')
+    OUT_TS.write_text(emit(slogans), encoding='utf-8')
 
     words = sum(len(' '.join(s['commentary']).split()) for s in slogans)
-    print(f'Imported {len(slogans)} slogans ({words:,} words of commentary) → {OUT_TS}')
-    print(f'Tagging comparison → {OUT_REPORT}')
+    via = sum(len(s['viaStrengths']) for s in slogans)
+    print(f'Imported {len(slogans)} slogans → {OUT_TS}')
+    print(f'  {words:,} words of full commentary, {via} VIA strength mappings')
+    print(f'  phase distribution: {dict(dist)}')
 
 
 if __name__ == '__main__':

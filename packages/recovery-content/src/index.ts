@@ -5,8 +5,28 @@
  * Attribution must stay visible wherever slogans are displayed.
  */
 
-export type { IcarePhase, Slogan, WellnessDomain } from './types';
+export type {
+  EnneagramContext,
+  EnneagramMapping,
+  EnneagramType,
+  IcarePhase,
+  Slogan,
+  ViaStrengthLink,
+  WellnessDomain,
+} from './types';
 export { SLOGANS } from './slogans.generated';
+export { ENNEAGRAM_MAPPINGS, ENNEAGRAM_TYPES } from './enneagram.generated';
+export {
+  bestSlogan,
+  CHALLENGE_DOMAIN_MAP,
+  domainCoverage,
+  recommendSlogans,
+  slogansForStrength,
+  slogansForType,
+  viaStrengths,
+  type SloganMatch,
+  type SloganMatchInput,
+} from './recommend';
 
 import { SLOGANS } from './slogans.generated';
 import type { Slogan } from './types';
