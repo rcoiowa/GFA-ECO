@@ -6,12 +6,12 @@ or a successor).
 
 ## Structural decisions
 
-- [ ] **R-01 — HousingOps boundary.** Choose one:
-  - (a) Housing operations move out of RecoveryOS: this repo keeps only the
-    §4.6 bridge (discovery, referral, consent, limited status). Existing
-    housing tables/pages are carved out under a governed migration plan.
-  - (b) Amend §4.6: this repo/Supabase project remains the housing system of
-    record (status quo of phases 4–8).
+- [x] **R-01 — HousingOps boundary. DECIDED: (a)** — owner approval,
+      2026-08-04 working session. Recovery Residence becomes the separate
+      universal housing platform; this repo keeps only the §4.6 bridge.
+      Recorded in ADR-0013; execution plan in `r01a-separation-plan.md`.
+      Follow-on owner actions now needed: create the Recovery Residence
+      repo and its own Supabase project (see plan, "blocked on owner").
 - [ ] **R-02 — Privacy gate.** Confirm gate status. If closed, approve the
       compliance-remediation stance for data production already collects.
 - [ ] **R-05 — Master Spec.** Provide `claude/RecoveryOS-Master-Spec.md` or
