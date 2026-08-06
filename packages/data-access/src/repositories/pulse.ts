@@ -35,6 +35,8 @@ export interface PulseCheckIn {
   prompt_skips: number;
   paired_check_in_id: number | null;
   response_rule_ids: string[];
+  /** The slogan surfaced at Connect/Respond, if any. */
+  slogan_number: number | null;
   note: string | null;
   created_at: string;
 }
@@ -43,7 +45,7 @@ const COLUMNS =
   'id, person_id, period, local_date, mood_rating, craving_rating, hope_rating, ' +
   'confidence_rating, purpose_rating, connection_level, intention, reflection, ' +
   'carry_forward, challenge_tags, prompt_quadrant, prompt_response, prompt_skips, ' +
-  'paired_check_in_id, response_rule_ids, note, created_at';
+  'paired_check_in_id, response_rule_ids, slogan_number, note, created_at';
 
 export interface PulseDayState {
   routing: PulseRouting;
@@ -53,6 +55,8 @@ export interface PulseDayState {
   /** Most recent entry before today, for the adaptive rules. */
   previous: PulseCheckIn | null;
   previousConnection: ConnectionAnswer | null;
+  /** Slogans seen recently — feeds the chain's repeat penalty. */
+  recentSloganNumbers: number[];
 }
 
 /** Everything the check-in screen needs to decide what to ask. */
@@ -89,6 +93,9 @@ export async function getPulseDayState(
     evening,
     previous,
     previousConnection,
+    recentSloganNumbers: rows
+      .map((r) => r.slogan_number)
+      .filter((n): n is number => typeof n === 'number'),
   };
 }
 
@@ -124,6 +131,7 @@ export interface SubmitPulseInput {
   promptSkips?: number;
   pairedCheckInId?: number | null;
   responseRuleIds?: string[];
+  sloganNumber?: number | null;
 }
 
 export async function submitPulseCheckIn(input: SubmitPulseInput): Promise<PulseCheckIn> {
@@ -148,6 +156,7 @@ export async function submitPulseCheckIn(input: SubmitPulseInput): Promise<Pulse
       prompt_skips: input.promptSkips ?? 0,
       paired_check_in_id: input.pairedCheckInId ?? null,
       response_rule_ids: input.responseRuleIds ?? [],
+      slogan_number: input.sloganNumber ?? null,
       delivery_context: 'vrcc',
     })
     .select(COLUMNS)

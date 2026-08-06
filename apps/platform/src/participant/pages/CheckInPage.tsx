@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
+import { SloganCard } from '../../components/SloganCard';
 import {
   getPulseDayState,
   readingsOf,
@@ -25,6 +26,7 @@ import {
   type LabeledScale,
   type PulseResponse,
 } from '@recoveryos/domain';
+import { bestSlogan, dailySlogan, type SloganMatch } from '@recoveryos/recovery-content';
 import {
   Alert,
   Button,
@@ -106,6 +108,26 @@ export function CheckInPage() {
     [mood, craving, hope, confidence, purpose, connection, state],
   );
 
+  // ICARE Connect: while the form is open we are offering a practice. The
+  // chain matches on what has been named so far; when nothing matches (a
+  // barrier with no slogans behind it), fall back to the day's slogan rather
+  // than showing nothing.
+  const sloganMatch: SloganMatch | null = useMemo(() => {
+    if (!person || !state) return null;
+    const matched = bestSlogan({
+      challengeTags: isMorning ? challenges : [],
+      icarePhase: done ? 'Respond' : 'Connect',
+      recentSloganNumbers: state.recentSloganNumbers,
+    });
+    if (matched) return matched;
+    const slogan = dailySlogan(person.id, state.routing.localDate);
+    return {
+      slogan,
+      score: 0,
+      reasons: ['This is your slogan for today — one of the 59, in order, so nothing repeats.'],
+    };
+  }, [person, state, challenges, isMorning, done]);
+
   const submit = async () => {
     if (!person || !state || !mode) return;
     setSaving(true);
@@ -130,6 +152,7 @@ export function CheckInPage() {
         promptSkips: skips,
         pairedCheckInId: isEvening ? (state.morning?.id ?? null) : null,
         responseRuleIds: responses.map((r) => r.id),
+        sloganNumber: sloganMatch?.slogan.number ?? null,
       });
       setDone(responses);
     } catch {
@@ -199,6 +222,10 @@ export function CheckInPage() {
               </p>
             </Card>
           )}
+
+          {!needsSupport && sloganMatch ? (
+            <SloganCard match={sloganMatch} heading="Something to carry with you" />
+          ) : null}
 
           <Card>
             <CardTitle>Where to go next</CardTitle>
@@ -360,6 +387,11 @@ export function CheckInPage() {
               </div>
             </fieldset>
           </Card>
+        ) : null}
+
+        {/* --- Connect: a practice matched to what was just named --- */}
+        {sloganMatch && (challenges.length > 0 || mood != null) ? (
+          <SloganCard match={sloganMatch} heading="A practice for today" compact />
         ) : null}
 
         {/* --- The 2x2 prompt, paired morning to evening --- */}

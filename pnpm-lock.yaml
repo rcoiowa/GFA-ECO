@@ -35,6 +35,9 @@ importers:
       '@recoveryos/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@recoveryos/recovery-content':
+        specifier: workspace:*
+        version: link:../../packages/recovery-content
       '@recoveryos/residence-content':
         specifier: workspace:*
         version: link:../../packages/residence-content

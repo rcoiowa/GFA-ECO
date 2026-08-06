@@ -14,6 +14,7 @@
     "@recoveryos/data-access": "workspace:*",
     "@recoveryos/design-tokens": "workspace:*",
     "@recoveryos/domain": "workspace:*",
+    "@recoveryos/recovery-content": "workspace:*",
     "@recoveryos/residence-content": "workspace:*",
     "@recoveryos/safety": "workspace:*",
     "@recoveryos/ui": "workspace:*",

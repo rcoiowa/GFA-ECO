@@ -83,13 +83,39 @@ in the trailing seed table. The per-entry tag wins on import.
 `domainCoverage()` returns these counts at runtime, and a test asserts them, so
 content changes that close the gap are noticed immediately.
 
-## Where it plugs in
+## Wired into the check-in (2026-08-05)
 
-Connect and Respond in the Recovery Pulse are the natural mounting points
-(`docs/architecture/recovery-pulse.md`): the check-in already collects the
-challenge chips and knows which ICARE stage it is in. Enneagram type is
-optional and only used when a participant has chosen to share it.
+The chain runs at two points in the Recovery Pulse
+(`docs/architecture/recovery-pulse.md`):
 
-Still to build: the slogan UI (library, flashcards, daily card) rebuilt on
-`@recoveryos/ui`, persistence of slogan practice and resonance, and the
-"sit with this for 7 days" active-slogan behavior.
+- **Connect — while the form is open.** Once the participant has named a mood
+  or tapped a challenge chip, a matched practice appears inline ("A practice
+  for today"), with the practice itself behind a disclosure so the check-in
+  stays short.
+- **Respond — after submitting.** The matched slogan is shown in full
+  ("Something to carry with you"), commentary and practice together.
+
+**Suppressed on elevated risk.** When the rules surface the Support Now
+pathway, no slogan is shown. Someone reporting crisis-level state needs a
+person, not a reading, and a second card would dilute the one thing that
+matters on that screen.
+
+**Fallback, never silence.** When nothing matches — a barrier chip whose domain
+has no slogans, e.g. Finances — the chain falls back to `dailySlogan(personId,
+localDate)`, a stable per-person walk through all 59. The participant always
+gets something; it simply isn't claimed to be matched.
+
+**What is stored.** `check_ins.slogan_number` (migration 0024, applied live)
+records which slogan was surfaced. Two reasons: the recommendation stays stable
+for the person who saw it even if content changes later, and the repeat penalty
+needs to know what they have actually been shown. Staff see the slogan number
+via `check_ins_staff_view` — which practice was offered — and still never see
+reflection text.
+
+Enneagram type is accepted by the engine but not yet collected anywhere in the
+product, so it currently contributes nothing at runtime. It activates the
+moment a participant can share a type.
+
+Still to build: the slogan library and flashcard experiences on
+`@recoveryos/ui`, resonance capture, and the "sit with this for 7 days"
+active-slogan behavior.
