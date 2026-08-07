@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import { listMyGoals, listMyRecentCheckIns } from '@recoveryos/data-access';
+import { dailySlogan } from '@recoveryos/recovery-content';
 import type { CheckIn, Goal } from '@recoveryos/domain';
 import { Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
 
@@ -42,10 +43,19 @@ export function TodayPage() {
   const checkedInToday = checkIns.some((c) => new Date(c.created_at).toDateString() === today);
   const currentGoal = goals[0];
   const displayName = person?.preferred_name || person?.first_name || 'Friend';
+  // Ambient, not modal: the same slogan the check-in works with, greeting
+  // the person on arrival (deterministic per person per day).
+  const slogan = person ? dailySlogan(person.id, new Date().toISOString().slice(0, 10)) : null;
 
   return (
     <>
       <PageHeader title={`Hello, ${displayName}`} lede="Here's what may help you today." />
+      {slogan ? (
+        <p className="-mt-3 mb-5 max-w-2xl text-ink-muted">
+          <em>&ldquo;{slogan.text}&rdquo;</em>
+          <span className="text-ink-faint"> — today&rsquo;s slogan, walking with you</span>
+        </p>
+      ) : null}
 
       {loading ? (
         <LoadingState label="Gathering your day…" />
