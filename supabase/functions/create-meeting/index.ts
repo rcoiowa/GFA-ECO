@@ -1,17 +1,21 @@
-// create-meeting — returns the right video link for a GFA session.
+// create-meeting — server-authoritative meeting-link provisioning for a GFA
+// coaching session. HARDENED (P1-C):
+//   * Caller identity comes ONLY from the authenticated JWT — never from a
+//     body-supplied coachEmail/coach_id.
+//   * Authorization, session-state, and idempotency are enforced inside the
+//     SECURITY DEFINER RPC `provision_session_meeting`, which sets meeting_url
+//     transactionally. The client cannot set a link, pick another coach's room,
+//     or target an arbitrary request it doesn't own.
+//   * No public/guessable fallback room. If the coach has no registered room we
+//     return a controlled 409, we do NOT downgrade to an open jit.si room.
 //
-// Primary provider: OOMA OFFICE. Ooma Meetings rooms are reusable personal
-// rooms (no public ad-hoc creation API), so each coach registers their room
-// once in `coach_meeting_rooms` and this function hands it out per session.
-// One room serves every purpose: 1:1 coaching, group coaching, recovery
-// meetings, workshops, trainings, resource navigation, needs assessments.
+// Request body: { session_request_id: uuid, provider?: 'ooma'|'zoom' }
+// Response:     { url, provider } | { error, code }
 //
-// Optional secondary: ZOOM (only if ZOOM_ACCOUNT_ID/CLIENT_ID/CLIENT_SECRET
-// secrets are configured) — creates a real scheduled meeting with waiting room.
-//
-// Request body: { provider?: 'ooma'|'zoom', coachEmail?: string, topic?: string,
-//                 startsAt?: string, durationMin?: number }
-// Response:     { url, provider, roomLabel? } or { error, needsRoomSetup? }
+// Supported meeting modes: 'ooma' (the coach's registered Ooma Office room, the
+// default and only configured provider) and 'zoom' (only when ZOOM_* secrets are
+// present; creates a real scheduled meeting with a waiting room). Phone/in-person
+// sessions carry no URL and never call this function.
 
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'jsr:@supabase/supabase-js@2';
@@ -23,12 +27,16 @@ const cors = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
+const CODE_STATUS: Record<string, number> = {
+  unauthenticated: 401, not_authorized: 403, not_found: 404,
+  no_coach: 409, bad_state: 409, needs_room_setup: 409,
+};
+
 async function zoomMeeting(topic?: string, startsAt?: string, durationMin = 50) {
   const accountId = Deno.env.get('ZOOM_ACCOUNT_ID');
   const clientId = Deno.env.get('ZOOM_CLIENT_ID');
   const clientSecret = Deno.env.get('ZOOM_CLIENT_SECRET');
   if (!accountId || !clientId || !clientSecret) return null;
-
   const tokenRes = await fetch(
     `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${accountId}`,
     { method: 'POST', headers: { Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}` } },
@@ -43,50 +51,61 @@ async function zoomMeeting(topic?: string, startsAt?: string, durationMin = 50) 
     }),
   });
   const m = await res.json();
-  return m.join_url ? { url: m.join_url, provider: 'zoom' } : null;
+  return m.join_url ? { url: m.join_url as string } : null;
 }
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   try {
-    const { provider = 'ooma', coachEmail, topic, startsAt, durationMin } = await req.json().catch(() => ({}));
+    const auth = req.headers.get('Authorization');
+    if (!auth) return json({ error: 'Sign in required', code: 'unauthenticated' }, 401);
 
-    // Caller-scoped client: RLS applies exactly as it does in the app.
+    const body = await req.json().catch(() => ({}));
+    const sessionRequestId = body?.session_request_id;
+    const provider = body?.provider ?? 'ooma';
+    if (!sessionRequestId || typeof sessionRequestId !== 'string') {
+      return json({ error: 'session_request_id is required', code: 'bad_request' }, 400);
+    }
+
+    // Caller-scoped client: every read/RPC runs as the caller, RLS applies, and
+    // the RPC's auth.uid() is the caller — the sole source of identity.
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } },
+      { global: { headers: { Authorization: auth } } },
     );
 
+    let explicitUrl: string | null = null;
+    let explicitProvider: string | null = null;
+
     if (provider === 'zoom') {
-      const zoom = await zoomMeeting(topic, startsAt, durationMin);
-      if (zoom) return json(zoom);
-      // fall through to the coach's Ooma room if Zoom is not configured
-    }
-
-    // Whose room? Explicit coachEmail (participant-side calls) or the caller (coach-side calls).
-    let email = coachEmail;
-    if (!email) {
+      // Only spend a Zoom API call if the caller can even see this request as its
+      // coach (cheap RLS-gated pre-check); the RPC still does the authoritative
+      // ownership + state check before persisting the URL.
       const { data: { user } } = await supabase.auth.getUser();
-      email = user?.email ?? undefined;
+      const { data: row } = await supabase
+        .from('v2_session_requests').select('coach_id, status').eq('id', sessionRequestId).maybeSingle();
+      if (!row || !user || row.coach_id !== user.id) {
+        return json({ error: 'Only the assigned coach can create this meeting link', code: 'not_authorized' }, 403);
+      }
+      const zoom = await zoomMeeting(`GFA session`, undefined, 50);
+      if (zoom) { explicitUrl = zoom.url; explicitProvider = 'zoom'; }
+      // If Zoom isn't configured, fall through to the coach's Ooma room via the RPC.
     }
-    if (!email) return json({ error: 'No coach email available' }, 400);
 
-    const { data: room } = await supabase
-      .from('coach_meeting_rooms')
-      .select('room_url, room_label, provider')
-      .ilike('coach_email', email)
-      .eq('is_active', true)
-      .maybeSingle();
-
-    if (room?.room_url) return json({ url: room.room_url, provider: room.provider, roomLabel: room.room_label });
-
-    return json({
-      error: `No meeting room registered for ${email} yet.`,
-      needsRoomSetup: true,
-      hint: 'The coach can add their Ooma Office room link on the Coach dashboard (My meeting room).',
-    }, 404);
-  } catch (e) {
-    return json({ error: String(e) }, 500);
+    const { data, error } = await supabase.rpc('provision_session_meeting', {
+      p_request_id: sessionRequestId,
+      p_explicit_url: explicitUrl,
+      p_explicit_provider: explicitProvider,
+    });
+    if (error) return json({ error: 'Could not create the meeting link', code: 'rpc_error' }, 500);
+    if (!data?.ok) {
+      return json({ error: data?.message ?? 'Unavailable', code: data?.code ?? 'error' },
+        CODE_STATUS[data?.code] ?? 400);
+    }
+    return json({ url: data.url, provider: data.provider });
+  } catch (_e) {
+    // Never leak internals.
+    return json({ error: 'Unexpected error creating the meeting link', code: 'internal' }, 500);
   }
 });
