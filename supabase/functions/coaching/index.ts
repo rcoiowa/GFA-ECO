@@ -240,8 +240,9 @@ function wireSessionActions(container, reload){
     b.onclick = async function(){
       var card = b.closest(".card"), id = card.dataset.id, act = b.dataset.act;
       if(act==="accept"){
-        var r = await sb.from("v2_session_requests").update({ status:"confirmed", scheduled_at:b.dataset.t, confirmed_by:me.id, last_actor:me.id }).eq("id",id);
+        var r = await sb.rpc("accept_session_proposal", { p_request_id:id, p_selected_time:b.dataset.t });
         if(r.error){ toast(r.error.message); return; }
+        if(!r.data || !r.data.ok){ toast((r.data&&r.data.message)||"That time is no longer available"); reload(); return; }
         toast("Session confirmed"); reload();
       }
       if(act==="counter"||act==="propose"){
@@ -398,11 +399,10 @@ async function vPool(){
 function wirePool(){
   document.querySelectorAll(".pickup").forEach(function(b){
     b.onclick = async function(){
-      var card=b.closest(".card"), id=card.dataset.id, pid=card.dataset.p;
-      var r = await sb.from("v2_session_requests").update({ coach_id:me.id, claimed_at:new Date().toISOString(), last_actor:me.id }).eq("id",id).is("coach_id",null).select();
-      if(r.error||!(r.data||[]).length){ toast("Another coach just picked this up"); render(); return; }
-      var a = await sb.from("v2_coach_assignments").insert({ participant_id:pid, coach_id:me.id, assigned_by:me.id, method:"request_pickup" });
-      if(a.error && a.error.code!=="23505") console.warn(a.error);
+      var card=b.closest(".card"), id=card.dataset.id;
+      var r = await sb.rpc("claim_coaching_request", { p_request_id:id });
+      if(r.error){ toast(r.error.message); render(); return; }
+      if(!r.data || !r.data.ok){ toast((r.data&&r.data.message)||"Another coach just picked this up"); render(); return; }
       toast("They're with you now"); render();
     };
   });
@@ -447,8 +447,8 @@ async function vRoster(){
 }
 function wireRoster(){
   document.querySelectorAll(".claim").forEach(function(b){ b.onclick=async function(){
-    var r=await sb.from("v2_coach_assignments").insert({participant_id:b.dataset.p,coach_id:me.id,assigned_by:me.id,method:"self_claim"});
-    if(r.error){ toast(r.error.code==="23505"?"They were just assigned":r.error.message); } else toast("They're with you now");
+    var r=await sb.rpc("assign_participant_to_coach",{p_participant_id:b.dataset.p,p_coach_id:me.id});
+    if(r.error){ toast(r.error.message); } else if(!r.data||!r.data.ok){ toast((r.data&&r.data.message)||"They were just assigned"); } else toast("They're with you now");
     render(); };});
   document.querySelectorAll(".gomsg").forEach(function(b){ b.onclick=function(){ threadWith=b.dataset.p; view="messages"; render(); };});
   document.querySelectorAll(".newsess").forEach(function(b){ b.onclick=async function(){
@@ -471,9 +471,10 @@ function wireRoster(){
     card.insertAdjacentHTML("beforeend",'<div class="row" style="margin-top:10px"><select class="pickcoach" style="flex:1">'+opts+'</select><button class="btn sm doassign">Assign</button></div>');
     card.querySelector(".doassign").onclick=async function(){
       var cid=card.querySelector(".pickcoach").value;
-      await sb.from("v2_coach_assignments").update({is_active:false,ended_at:new Date().toISOString()}).eq("participant_id",b.dataset.p).eq("is_active",true);
-      var r=await sb.from("v2_coach_assignments").insert({participant_id:b.dataset.p,coach_id:cid,assigned_by:me.id,method:"admin_assign"});
-      if(r.error){ toast(r.error.message); return; } toast("Assigned"); render();
+      var r=await sb.rpc("assign_participant_to_coach",{p_participant_id:b.dataset.p,p_coach_id:cid});
+      if(r.error){ toast(r.error.message); return; }
+      if(!r.data||!r.data.ok){ toast((r.data&&r.data.message)||"Could not assign"); return; }
+      toast("Assigned"); render();
     };
   };});
 }
