@@ -6,9 +6,25 @@ existed only in the deployed environment).
 
 | Function | Deployed version captured | verify_jwt | Notes |
 | --- | --- | --- | --- |
-| `coaching` | v1 (2026-08-07 09:13 UTC) | **false** | The Grace Coaching prototype — a self-contained HTML/JS app served as one response. `verify_jwt=false` is intentional (the page must load pre-auth); the app itself authenticates with the publishable key and RLS is the boundary. |
-| `create-meeting` | v4 (2026-07-23) | true | Caller-scoped anon client (RLS applies); Zoom S2S if secrets configured, else the coach's registered Ooma room from `coach_meeting_rooms`. |
-| `notify-fanout` | v3 (2026-07-22) | true | Meant to be wired to a DB webhook on INSERT into `v2_notifications`. **Do not configure RESEND/TWILIO secrets until this function checks a shared webhook secret** — `verify_jwt` alone accepts any valid project JWT, so with secrets set it would act as a notification relay for any authenticated caller. No webhook is currently configured. |
+| `coaching` | v2 (2026-08-07, P0) | **false** | The Grace Coaching prototype — a self-contained HTML/JS app served as one response. `verify_jwt=false` is intentional (the page must load pre-auth); the app authenticates with the publishable key, RLS is the boundary, and all privileged mutations go through the P0 transactional RPCs (`claim_coaching_request`, `assign_participant_to_coach`, `accept_session_proposal`). |
+| `create-meeting` | v5 (2026-08-07, P1-hardened) | true | Server-authoritative. Takes `{ session_request_id, provider? }`; derives caller identity from the JWT (never a body-supplied coach id) and delegates to the `provision_session_meeting` SECURITY DEFINER RPC, which enforces coach-ownership, session state, and idempotency. **No public jit.si fallback** — a coach without a registered room gets a controlled 409. |
+| `notify-fanout` | v4 (2026-08-07, P1-hardened) | **false** | DB-webhook target on INSERT into `v2_notifications`. Fail-closed: requires a matching `x-webhook-secret` (`NOTIFY_WEBHOOK_SECRET`) or it sends nothing external; validates payload; records per-channel deliveries in `v2_notification_deliveries` (unique per `(notification_id, channel)` = idempotent); consent-gated; safe-fail. `verify_jwt=false` because the shared secret is the authentication (a DB webhook carries no user JWT). |
+
+### Enabling external notification channels (email/SMS) — required before turning on
+
+External channels are OFF by design. To enable, ALL of the following must be true:
+
+1. Set function secret `NOTIFY_WEBHOOK_SECRET` to a long random value.
+2. Create a Supabase **Database Webhook** on `INSERT` into `public.v2_notifications`
+   pointing at `notify-fanout`, with a custom header `x-webhook-secret: <same value>`.
+3. Set the provider secrets you want: `RESEND_API_KEY` (+ `NOTIFY_FROM_EMAIL`, `APP_URL`)
+   for email; `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_FROM_NUMBER` for SMS.
+4. External sends still require the recipient's per-user consent flags
+   (`notify_email` / `notify_sms` = true in auth metadata) and, for SMS, a phone on file.
+
+Until step 1+2 are done, any call without the correct secret is answered
+`skipped_unverified` and no email/SMS is sent — an unsigned or forged call can never
+trigger a delivery.
 
 Also live but owned elsewhere (not coaching-scope, not captured here):
 `grace-companion`, `grace-companion-v6`, `vrcc-api-gateway`, `vrcc-api-gateway-v6`,

@@ -115,6 +115,9 @@ async function boot(){
   var s = await sb.auth.getSession();
   if(!s.data.session){ renderAuth(); return; }
   me = s.data.session.user;
+  // NOTE (P1): v2_profiles.phone is column-revoked from `authenticated`. PostgREST
+  // expands select("*") to privilege-accessible columns only, so this is safe and
+  // omits phone; phone is read solely via the get_my_participants() RPC.
   var p = await sb.from("v2_profiles").select("*").eq("id", me.id).maybeSingle();
   if(!p.data){
     var name = (me.user_metadata && me.user_metadata.full_name) || me.email.split("@")[0];
