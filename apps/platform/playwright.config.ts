@@ -42,10 +42,12 @@ export default defineConfig({
   webServer: EXTERNAL_BASE
     ? undefined
     : {
-        command: 'pnpm preview --port 4173 --strictPort',
+        // Pin IPv4: CI runners resolve `localhost` to ::1 first, which makes
+        // the 127.0.0.1 readiness probe time out against vite's default bind.
+        command: 'pnpm preview --host 127.0.0.1 --port 4173 --strictPort',
         url: 'http://127.0.0.1:4173',
         reuseExistingServer: true,
-        timeout: 30_000,
+        timeout: 60_000,
       },
   projects: [
     {
