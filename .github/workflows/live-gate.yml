@@ -41,6 +41,9 @@ concurrency:
 jobs:
   live-gate:
     runs-on: ubuntu-latest
+    # Secrets (SUPABASE_SERVICE_ROLE_KEY, optional P4H_E2E_PASSWORD) live on
+    # this GitHub environment.
+    environment: p4h-live-gate
     timeout-minutes: 45
     env:
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_URL || 'https://cqcxvwoukyhxyokfwnjm.supabase.co' }}
