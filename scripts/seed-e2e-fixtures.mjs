@@ -40,7 +40,9 @@ async function rest(path, init = {}) {
     headers: { ...restHeaders, ...(init.headers ?? {}) },
   });
   if (!res.ok) throw new Error(`REST ${path}: ${res.status} ${await res.text()}`);
-  return res.status === 204 ? null : res.json();
+  // PostgREST answers 201/204 with an empty body unless return=representation.
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
 async function listAllUsers() {
