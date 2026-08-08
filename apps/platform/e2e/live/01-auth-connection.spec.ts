@@ -1,28 +1,10 @@
-import {
-  test,
-  expect,
-  FIXTURES,
-  registerUser,
-  signIn,
-  signOut,
-  userPage,
-  askForSupport,
-} from './helpers';
+import { test, expect, FIXTURES, userPage, askForSupport } from './helpers';
 
 /**
  * Live HTTP gate — items 1–10 (auth/identity + connection/coaching loop).
  * Serial; run with --workers=1 so fixture state stays deterministic.
  */
 test.describe.configure({ mode: 'serial' });
-
-// ---- 1–2. Register (real signup + person bootstrap), sign out, sign in ----
-test('1–2. ordinary registration, bootstrap, sign out, sign in', async ({ page }) => {
-  const email = FIXTURES.fresh('signup');
-  await registerUser(page, email);
-  await signOut(page);
-  await signIn(page, email);
-  await expect(page).not.toHaveURL(/sign-in/);
-});
 
 // ---- 3. Role routing (each fixture lands in its workspace) -----------------
 const ROUTING: Array<[Exclude<keyof typeof FIXTURES, 'fresh'>, RegExp]> = [

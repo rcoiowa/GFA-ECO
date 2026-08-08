@@ -99,12 +99,27 @@ export async function registerUser(
   await page.getByLabel(/last name/i).fill(last);
   await page.getByLabel(/email/i).fill(email);
   await page.getByLabel(/password/i).fill(password());
+  // Capture the raw signup response so a server-side rejection (signups
+  // disabled, email-domain validation, rate limit) is self-diagnosing
+  // instead of hiding behind the page's gentle error copy.
+  const signupResponse = page.waitForResponse(
+    (r) => r.url().includes('/auth/v1/signup'),
+    { timeout: 20_000 },
+  );
   await page.getByRole('button', { name: /create account/i }).click();
   const confirmCard = page.getByText(/check your email/i);
-  await Promise.race([
-    page.waitForURL(/onboarding|home|vrcc/, { timeout: 20_000 }),
-    confirmCard.waitFor({ state: 'visible', timeout: 20_000 }),
-  ]);
+  try {
+    await Promise.race([
+      page.waitForURL(/onboarding|home|vrcc/, { timeout: 20_000 }),
+      confirmCard.waitFor({ state: 'visible', timeout: 20_000 }),
+    ]);
+  } catch (err) {
+    const res = await signupResponse.catch(() => null);
+    const body = res ? await res.text().catch(() => '') : 'no /auth/v1/signup request observed';
+    throw new Error(
+      `registration did not complete for ${email}: signup ${res?.status() ?? '-'} ${body.slice(0, 400)}`,
+    );
+  }
   if (await confirmCard.isVisible().catch(() => false)) {
     await adminConfirmEmail(email);
     await signIn(page, email);

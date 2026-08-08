@@ -93,6 +93,15 @@ jobs:
           P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
         run: node scripts/seed-e2e-fixtures.mjs
 
+      - name: Probe signup posture (raw GoTrue response, throwaway identity)
+        run: |
+          RESP=$(curl -s -o /tmp/signup.json -w "%{http_code}" \
+            -X POST "$VITE_SUPABASE_URL/auth/v1/signup" \
+            -H "apikey: $VITE_SUPABASE_ANON_KEY" -H "content-type: application/json" \
+            -d "{\"email\":\"p4h-probe-$(date +%s)@fixtures.recoveryos.test\",\"password\":\"${{ steps.pw.outputs.value }}\"}")
+          echo "signup HTTP $RESP"
+          cat /tmp/signup.json | head -c 600; echo
+
       - name: Build platform (RecoveryOS-Launch publishable config)
         if: ${{ inputs.base_url == '' }}
         run: pnpm build
