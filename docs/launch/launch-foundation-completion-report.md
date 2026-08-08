@@ -19,7 +19,15 @@ Private Google Drive folder **`RecoveryOS Pre-Launch Archive 2026-08-07`** (fold
 export (the mid-phase pause, it turns out, happened **after** all uploads had landed — nothing
 was lost; re-verified against the restored project):
 
-- `auth_users_inventory.json` — 26 auth users with full canonical/v2 correlation.
+- `auth_users_inventory_v2.json` (**authoritative**, Drive id `1tuiKQs0E75Dhj2pOEjrpMTrV-iQp5NBK`) —
+  **27** auth users with full canonical/v2 correlation, fresh re-export, byte-verified.
+  The original `auth_users_inventory.json` is retained for audit but **SUPERSEDED**.
+  *Discrepancy resolution (acceptance-gate item):* the earlier manifest said "26 rows"; a
+  re-export and bidirectional diff proved the original file always held all 27 rows with
+  identical identity triples — the "26" was a manual tally error in the exporter's progress
+  notes, not a dropped row. Live DB re-verified: 27 users, zero deleted. Final count **27/27**;
+  no real or potentially-real identity is missing; the 11-contact outreach file was independently
+  verified 11/11.
 - `outside_signup_contacts.json` — all 11 outside-signup profile rows (the outreach dataset).
 - `reference_data` (3 parts) — 17 tables incl. slogans 59, resources 34, crisis 8, v2 resources
   5, service_types 12, consent_types 8, NARR 82, Iowa 7, doc templates 20 + versions 21, org/
@@ -71,17 +79,32 @@ domain triggers present (`trg_appointment_notify`, `trg_appointment_reminders`,
 `trg_relationship_notify`, `trg_lead_notify`, touch triggers), auth provisioning trigger
 (`trg_recoveryos_new_auth_user`) installed. Subsequently applied: `0105`, `0106`.
 
-## E. Seed inventory and counts — PARTIAL (blocked by §R)
+## E. Seed inventory and counts — COMPLETE (acceptance gate PASSED)
 
-Applied: `0203` staff preauthorization (1 row). Already present from base migrations:
-`narr_standards` 82, `iowa_checklist_items` 7. **Blocked pending dev-project restore** (source
-unreachable; the seed agent correctly refused to fabricate data): organizations, programs,
-residences, `service_types` (**empty — a genuine launch blocker discovered by verification: the
-dev rows were data-seeded outside the launch set**), `consent_types` (same), curfew/chores,
-document templates+versions (83KB), 59 slogans, unified resources (34+8+5 across three
-generations, deduped). Seed requirement recorded: org/program/service_type seeds MUST pin ids
-1/1/1 (`overriding system value` + `setval`) because canonical RPCs default to org 1 / program 1 /
-service_type 1.
+Seed package `supabase/launch/seed/0200–0203` committed and applied. **Three-way chain verified
+for every dataset (dev source → committed seed → launch target), applied twice (idempotency
+proof — identical counts, no duplicates, sequences aligned via `setval`, all 21 document bodies
+md5-identical to source after both passes), zero orphans:**
+
+| Dataset | source → seed → target |
+| --- | --- |
+| organizations / programs / residences | 1→1→1 · 2→2→2 · 2→2→2 |
+| service_types / consent_types | 12→12→12 · 8→8→8 (were empty pre-seed — dev rows had been data-seeded outside the migration set; now seeded with dev ids preserved) |
+| curfew / chores | 7→7→7 · 2→2→2 (residence FKs resolved by name, not id) |
+| document templates / versions | 20→20→20 · 21→21→21 (bodies checksum-verified) |
+| slogans | 59→59→59 (distinct slogan_text = 59) |
+| unified resources | **47→47→46** — reconciliation decision: one exact lower(name) collision ("SAMHSA National Helpline", gen1 vs crisis) deduped in favor of gen1; the two differently-named 988 entries were deliberately both kept (exact-key policy, no fuzzy matching). Breakdown: gen1 34 + crisis 7 + v2 5; is_crisis=true 7 |
+| NARR / Iowa checklist | 82 · 7 (from base migrations; matched source, not re-seeded) |
+| staff_preauthorizations | 1 (owner admin) |
+
+**Pinned identifiers verified verbatim (gate item 2):** org 1 = "Grace For Addictions"
+(recovery_support) · program 1 = `vrcc` "Virtual Recovery Community Center" (program 2 =
+`anchor`) · service_type 1 = `coaching_session` (full 12-key list recorded) · consent_types
+1–8 = terms_of_use…analytics. Recorded as **technical debt** (not changed now): canonical RPCs
+default to org 1 / program 1 / service_type 1 — parameterize post-launch rather than relying on
+magic ids. Apply-detail note: the five largest document bodies (~80KB) exceeded a single
+migration-call payload and were applied via `execute_sql` using the exact statements from the
+committed file (checksummed); the committed file is the complete canonical seed.
 
 ## F. Initial production identities
 
@@ -187,21 +210,30 @@ launch-project URL/anon key into `packages/data-access` env config. 6. Then buil
 components may only use the canonical service layer; `mvp_*`/`v2_*`/`gfa_*`/scaffolding do not
 exist in this project, so the constraint is structural, not conventional.
 
-## R. Remaining cutover blockers (and the two ACTIVE blockers)
+## R. Blocker status — RESOLVED / CURRENT / PENDING
 
-**Active blocker 1 — dev project is PAUSED.** The slot freed to create RecoveryOS-Launch was the
-dev project itself. Consequences: (a) archive export interrupted (§A); (b) reference seeds
-blocked (§E); (c) **any live legacy surface that talks to that database — the vrcc.app mvp app,
-the v2 coaching SPA, the Wix lead intake — is DOWN while it is paused.** The user's own directive
-(§13) said not to pause it yet for exactly this reason.
-**Active blocker 2 — free-plan limit prevents restoring it.** Restore was refused three times
-("2 project limit"). Unblock options (user decision): delete one of the two old paused projects
-(`GFAVRCC's Project`, `contact-connect-dashboard`) / upgrade the org / whatever frees a slot;
-then restore the dev project, which simultaneously restores vrcc.app + Wix service and unblocks
-archive + seeds.
-**Standing cutover blockers:** harness not yet run (K); seeds incomplete (E); reminder cron not
-yet scheduled (G); vrcc.app repoint not done (S). ~~Wix repoint~~ — removed as a blocker (§T
-revised: the live inquiry flow is the native Wix form, independent of both projects).
+**RESOLVED (history preserved for the record):**
+- ~~Dev project paused mid-phase~~ → owner restored it (2026-08-08); it is ACTIVE_HEALTHY, legacy
+  surfaces (vrcc.app mvp, coaching SPA) are back online, and it remains the live archive source.
+- ~~Free-plan limit blocking restore~~ → mooted by the restore.
+- ~~Archive incomplete~~ → verified complete, 20 files incl. authoritative
+  `auth_users_inventory_v2.json` 27/27 (§A).
+- ~~Reference seeds blocked~~ → complete and acceptance-verified (§E).
+- ~~Auth 27-vs-26 discrepancy~~ → tally error in exporter notes; no row was ever missing (§A).
+- ~~Wix repoint~~ → not a dependency; native Wix form + its multi-email notifications stay (§T).
+
+**CURRENT (accurate as of this verdict):** launch backend seeded + acceptance-passed; dev
+project ACTIVE as the pre-launch archive and legacy runtime; no cutover action taken.
+
+**PENDING — these gate SOFT LAUNCH / PUBLIC CUTOVER (not P4 development):**
+1. HTTP harness green against the launch project (K) — DB-VERIFIED is sufficient to build;
+   HTTP-VERIFIED is required before cutover.
+2. Reminder cron activation (`0104`) — ENGINE VERIFIED · CRON READY, NOT YET ACTIVATED
+   (deliberately held for the deployment/HTTP-validation gate).
+3. apps/platform built + staged (P4 outcome).
+4. vrcc.app repoint (S) — explicit authorization required.
+5. Deliberate dev-project freeze at cutover (U) and legacy-worker retirement after the
+   observation window (V) — explicit authorization required.
 
 ## S. vrcc.app cutover runbook (DO NOT EXECUTE without authorization)
 
@@ -254,12 +286,24 @@ legacy edge functions with the dev project itself (§U). Extract Grace-Companion
 
 ---
 
-# VERDICT: **NO-GO — LAUNCH FOUNDATION BLOCKED**
+# VERDICT: **GO — READY TO BUILD/FINISH APPS/PLATFORM**
 
-Blocked **only** by §R's two active blockers (premature dev pause + plan limit), which gate the
-archive and the reference seeds. Everything else is green: bootstrap proven 33/33 from empty,
-scheduling/reminders/notifications/identity verified with zero residue, security advisors clean,
-canonical edge functions deployed (gated), one deliberate admin identity, no scaffolding, no
-legacy. **Once the dev project is restored:** finish archive → finish seeds → run harness → apply
-0104 → the verdict flips to GO — READY TO BUILD/FINISH APPS/PLATFORM. No cutover action will be
-taken without explicit authorization.
+The Launch Foundation Acceptance Gate passed in full on 2026-08-08:
+bootstrap proven **33/33 from an empty database**; seeds complete with **three-way chain
+verification, double-apply idempotency, checksummed document bodies, zero orphans**; pinned
+identifiers proven verbatim (org 1 / vrcc program 1 / coaching_session 1); launch project
+re-verified **fully legacy-free** (0 public tables, 0 scaffolding, 0 legacy schemas/functions/
+triggers); archive complete + authoritative (27/27); the **full rolled-back acceptance chain**
+passed against the seeded project (auth → person → role → support request claim → one active
+primary relationship → booking → proposal → one appointment with idempotent double-accept →
+reminder seeding/reschedule/suppression → deduped notifications → cancellation) with **zero
+residue**; security advisors clean; one deliberate admin identity.
+
+**This verdict authorizes exactly one thing: P4 product development** — building the unified
+`apps/platform` experience (/vrcc /coach /navigator /residences /admin) against the
+RecoveryOS-Launch backend, canonical services only.
+
+**It does NOT authorize:** public cutover · vrcc.app DNS repoint · pausing/deleting the
+archive/dev project · retiring legacy workers · reminder-cron activation · treating HTTP
+verification as complete (it is the soft-launch gate, §R-PENDING). The backend-migration track
+STOPS here; the next directive is P4 — RECOVERYOS PRODUCTION EXPERIENCE.
