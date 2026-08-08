@@ -12,6 +12,7 @@ import {
 } from '@recoveryos/domain';
 import { useCancelSupportRequest, useConnection, useCreateSupportRequest } from '../hooks/useConnection';
 import { NextAppointmentCard, SupportPersonCard } from '../components/ConnectionCards';
+import { NavigationStatusCard } from '../components/NavigationStatusCard';
 import { track } from '../../lib/analytics';
 
 /**
@@ -252,6 +253,8 @@ function ConnectedMode({ state }: { state: ConnectionState }) {
           Message
         </Link>
       </Card>
+
+      <NavigationStatusCard />
 
       {state.nextAppointment ? (
         <Card>

@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Alert, Button, EmptyState, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
-import { formatElapsed, requestTypeLabel, type OpenPoolRow } from '@recoveryos/domain';
+import {
+  formatElapsed,
+  isNavigationRequest,
+  requestTypeLabel,
+  type OpenPoolRow,
+} from '@recoveryos/domain';
 import { useCoachWorkspace, useClaimRequest, type ClaimOutcome } from '../hooks/useCoachWorkspace';
 import { track } from '../../lib/analytics';
 import { useEffect } from 'react';
@@ -14,7 +19,10 @@ import { useEffect } from 'react';
  * exists. Claiming is "Connect", and the server decides who won.
  */
 export function RequestsPage() {
-  const { pool, isLoading, hasError, refetch } = useCoachWorkspace();
+  const { pool: fullPool, isLoading, hasError, refetch } = useCoachWorkspace();
+  // Coaching-domain requests only — navigation requests belong to the Navigator
+  // Workspace, and the server enforces domain eligibility at claim regardless.
+  const pool = fullPool.filter((row) => !isNavigationRequest(row.request_type));
   const claim = useClaimRequest();
   const navigate = useNavigate();
   const [outcome, setOutcome] = useState<{ id: number; result: ClaimOutcome } | null>(null);

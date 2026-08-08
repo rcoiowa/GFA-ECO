@@ -21,3 +21,4 @@ export * from './repositories/coachingReads';
 export * from './repositories/coachingWrites';
 export * from './repositories/coachWorkspace';
 export * from './repositories/messaging';
+export * from './repositories/navigation';

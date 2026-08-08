@@ -26,11 +26,15 @@ import { track } from '../lib/analytics';
  * answer (no relationship), not flakiness — it renders as a gentle explanation,
  * never a retry loop.
  */
-export function useEnsureConversation(otherPersonId: number | null, enabled = true) {
+export function useEnsureConversation(
+  otherPersonId: number | null,
+  enabled = true,
+  context?: 'coaching' | 'navigation',
+) {
   const { person } = useAuth();
   return useQuery({
-    queryKey: messageKeys.ensure(otherPersonId),
-    queryFn: () => ensureRelationshipConversation(otherPersonId ?? undefined),
+    queryKey: [...messageKeys.ensure(otherPersonId), context ?? 'default'],
+    queryFn: () => ensureRelationshipConversation(otherPersonId ?? undefined, context),
     enabled: enabled && Boolean(person),
     staleTime: 5 * 60_000,
     retry: false,

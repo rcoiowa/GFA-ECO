@@ -12,6 +12,11 @@ const mocks = vi.hoisted(() => ({
   useCreateSupportRequest: vi.fn(),
   useCancelSupportRequest: vi.fn(),
 }));
+// Navigation status has its own data needs (auth + queries); it is exercised
+// in its own test — stub it here so Connect stays focused on connection modes.
+vi.mock('../components/NavigationStatusCard', () => ({
+  NavigationStatusCard: () => null,
+}));
 vi.mock('../hooks/useConnection', () => ({
   useConnection: mocks.useConnection,
   useCreateSupportRequest: mocks.useCreateSupportRequest,
@@ -137,6 +142,7 @@ describe('ConnectPage — Mode C (connected)', () => {
           display_name: 'Jordan B.',
           role_label: 'Recovery Coach',
           relationship_type: 'coach',
+          context: 'coaching',
           is_primary: true,
           started_at: '2026-08-01',
         },

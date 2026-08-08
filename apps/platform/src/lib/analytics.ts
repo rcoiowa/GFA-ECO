@@ -31,7 +31,19 @@ export type AnalyticsEvent =
   | 'proposal_accepted'
   | 'times_countered'
   | 'session_rescheduled'
-  | 'session_cancelled';
+  | 'session_cancelled'
+  | 'navigator_workspace_viewed'
+  | 'navigation_request_viewed'
+  | 'navigation_request_claimed'
+  | 'navigation_relationship_established'
+  | 'need_identified'
+  | 'referral_created'
+  | 'warm_handoff_recorded'
+  | 'connection_confirmed'
+  | 'connection_not_confirmed'
+  | 'navigation_follow_up_completed'
+  | 'navigation_service_event_recorded'
+  | 'session_completed_recorded';
 
 type Sink = (event: AnalyticsEvent, props?: Record<string, string | number | boolean>) => void;
 

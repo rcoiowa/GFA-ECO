@@ -1,26 +1,26 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router';
 import { ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
+import { useAuth } from '@recoveryos/auth';
 import { MessageThread } from '../../messaging/MessageThread';
 import {
   useConversationThread,
   useEnsureConversation,
   useSendMessage,
 } from '../../messaging/useMessaging';
-import { useCoachWorkspace } from '../hooks/useCoachWorkspace';
-import { useAuth } from '@recoveryos/auth';
+import { useNavigatorWorkspace } from '../hooks/useNavigatorWorkspace';
 import { track } from '../../lib/analytics';
 
-/** One participant conversation, coach side (P4D-1). */
-export function CoachThreadPage() {
+/** One participant conversation, navigation context — never a pretend coaching thread. */
+export function NavThreadPage() {
   const { personId: raw } = useParams();
   const participantPersonId = Number(raw);
   const { person } = useAuth();
   const myPersonId = person?.id ?? 0;
-  const { roster } = useCoachWorkspace();
+  const { roster } = useNavigatorWorkspace();
   const entry = roster.find((r) => r.participant_person_id === participantPersonId);
 
-  const ensure = useEnsureConversation(participantPersonId, participantPersonId > 0, 'coaching');
+  const ensure = useEnsureConversation(participantPersonId, participantPersonId > 0, 'navigation');
   const conversationId = ensure.data?.ok ? ensure.data.conversationId : null;
   const thread = useConversationThread(conversationId);
   const send = useSendMessage(conversationId, { role: 'coach', messages: thread.messages });
@@ -31,9 +31,7 @@ export function CoachThreadPage() {
 
   if (ensure.isPending) return <LoadingState label="Opening the conversation…" />;
   if (ensure.data && !ensure.data.ok) {
-    return (
-      <ErrorState message="Messaging is available for your own active participants." />
-    );
+    return <ErrorState message="Messaging is available for your own active people." />;
   }
   if (thread.hasError) {
     return (
@@ -46,7 +44,7 @@ export function CoachThreadPage() {
     <div className="flex h-[calc(100dvh-12rem)] min-h-[24rem] flex-col space-y-4">
       <PageHeader
         title={`Messages — ${entry?.display_name ?? 'Participant'}`}
-        crumbs={[{ label: 'Messages', to: '/coach/messages' }]}
+        crumbs={[{ label: 'Messages', to: '/navigator/messages' }]}
       />
       {thread.isLoading ? (
         <LoadingState label="Loading the conversation…" />

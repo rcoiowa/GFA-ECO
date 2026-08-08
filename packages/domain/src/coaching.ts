@@ -36,6 +36,8 @@ export interface SupportTeamMember {
   display_name: string;
   role_label: string;
   relationship_type: string;
+  /** 'coaching' | 'navigation' — which relationship domain this member belongs to (P4E). */
+  context: string;
   is_primary: boolean;
   started_at: string | null;
 }
@@ -86,13 +88,17 @@ export interface NotificationRow {
   created_at: string;
 }
 
+/**
+ * Open pool projection — decision fields only. Participant free-text `focus`
+ * was removed from the SERVER projection in 0112 (P4E defense-in-depth):
+ * pre-claim disclosure is now structurally impossible, not just unrendered.
+ */
 export interface OpenPoolRow {
   support_request_id: number;
   participant_person_id: number;
   participant_name: string;
   request_type: string;
   preferred_modality: string;
-  focus: string | null;
   created_at: string;
 }
 

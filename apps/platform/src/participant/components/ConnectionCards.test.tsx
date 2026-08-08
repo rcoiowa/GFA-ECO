@@ -15,6 +15,7 @@ const member: SupportTeamMember = {
   display_name: 'Jordan B.',
   role_label: 'Recovery Coach',
   relationship_type: 'coach',
+  context: 'coaching',
   is_primary: true,
   started_at: '2026-08-01',
 };

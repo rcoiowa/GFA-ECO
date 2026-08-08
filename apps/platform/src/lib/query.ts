@@ -60,3 +60,13 @@ export const coachKeys = {
   followUps: (personId: number) => ['coach', personId, 'followUps'] as const,
   bookings: (personId: number) => ['coach', personId, 'bookings'] as const,
 };
+
+/** Query-key factory — navigator workspace domain (P4E). */
+export const navigatorKeys = {
+  all: ['navigator'] as const,
+  pool: ['navigator', 'pool'] as const,
+  roster: ['navigator', 'roster'] as const,
+  needs: ['navigator', 'needs'] as const,
+  referrals: ['navigator', 'referrals'] as const,
+  followUps: (personId: number) => ['navigator', personId, 'followUps'] as const,
+};

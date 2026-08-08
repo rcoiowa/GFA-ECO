@@ -25,7 +25,7 @@ const pool = (id: number): OpenPoolRow => ({
   participant_name: `Person ${id}`,
   request_type: 'recovery_coach',
   preferred_modality: 'video',
-  focus: null,
+
   created_at: '2026-08-08T10:00:00Z',
 });
 

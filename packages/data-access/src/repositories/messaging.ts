@@ -12,25 +12,38 @@ export interface EnsureConversationResult {
   ok: boolean;
   code: 'ready' | 'not_authorized' | 'no_person' | string;
   conversationId: number | null;
+  context: string | null;
 }
+
+export type ConversationContext = 'coaching' | 'navigation';
 
 /**
  * Server-authoritative, idempotent conversation resolution for an active
- * coaching relationship. Participants may omit the counterpart (their primary
- * active coach is implied); coaches must name which participant.
+ * relationship — coaching or navigation (P4E). Participants may omit the
+ * counterpart; staff name which participant. The server validates the
+ * relationship for the requested context; a navigator thread is never a
+ * pretend coaching thread.
  */
 export async function ensureRelationshipConversation(
   otherPersonId?: number,
+  context?: ConversationContext,
 ): Promise<EnsureConversationResult> {
   const { data, error } = await getSupabase().rpc('ensure_relationship_conversation', {
     p_other_person_id: otherPersonId ?? null,
+    p_context: context ?? null,
   });
-  if (error) return { ok: false, code: 'rpc_error', conversationId: null };
-  const result = (data ?? {}) as { ok?: boolean; code?: string; conversation_id?: number };
+  if (error) return { ok: false, code: 'rpc_error', conversationId: null, context: null };
+  const result = (data ?? {}) as {
+    ok?: boolean;
+    code?: string;
+    conversation_id?: number;
+    context?: string;
+  };
   return {
     ok: Boolean(result.ok),
     code: result.code ?? 'unknown',
     conversationId: result.conversation_id ?? null,
+    context: result.context ?? null,
   };
 }
 

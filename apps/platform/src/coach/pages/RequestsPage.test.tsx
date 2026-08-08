@@ -19,13 +19,15 @@ vi.mock('react-router', async (orig) => ({
   useNavigate: () => navigate,
 }));
 
+// Since 0112 the pool projection carries NO participant free text at all —
+// the OpenPoolRow type has no `focus` field, so pre-claim disclosure is
+// impossible at the type level, not merely unrendered.
 const row: OpenPoolRow = {
   support_request_id: 1,
   participant_person_id: 101,
   participant_name: 'Casey',
   request_type: 'recovery_coach',
   preferred_modality: 'video',
-  focus: 'private context that must not render pre-claim',
   created_at: '2026-08-08T10:00:00Z',
 };
 
@@ -51,15 +53,19 @@ const wrap = () => render(<MemoryRouter><RequestsPage /></MemoryRouter>);
 beforeEach(() => vi.clearAllMocks());
 
 describe('RequestsPage — progressive disclosure', () => {
-  it('shows only decision-necessary fields; participant free text never renders pre-claim', () => {
+  it('shows only decision-necessary fields (the projection has no free text at all)', () => {
     setup([row]);
     wrap();
     expect(screen.getByText('Casey')).toBeInTheDocument();
     expect(screen.getByText('Talk with a recovery coach')).toBeInTheDocument();
     expect(screen.getByText(/Prefers video · waiting/)).toBeInTheDocument();
-    expect(
-      screen.queryByText(/private context that must not render pre-claim/),
-    ).not.toBeInTheDocument();
+  });
+
+  it('navigation requests are the Navigator Workspace’s, not the coach pool’s', () => {
+    setup([row, { ...row, support_request_id: 2, request_type: 'navigation', participant_name: 'Nav Person' }]);
+    wrap();
+    expect(screen.getByText('Casey')).toBeInTheDocument();
+    expect(screen.queryByText('Nav Person')).not.toBeInTheDocument();
   });
 
   it('no database vocabulary anywhere', () => {

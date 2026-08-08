@@ -69,6 +69,7 @@ describe('MessagesPage — participant', () => {
         display_name: 'Jordan',
         role_label: 'Recovery Coach',
         relationship_type: 'coach',
+        context: 'coaching',
         is_primary: true,
         started_at: '2026-08-01',
       },

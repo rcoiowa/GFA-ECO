@@ -16,7 +16,6 @@ import { ForgotPasswordPage } from './public/ForgotPasswordPage';
 import {
   AdminWorkspaceShell,
   LegacyAppRedirect,
-  NavigatorWorkspaceShell,
   ResidencesDispatcher,
 } from './pages/WorkspaceShells';
 import { RequireAuth } from '@recoveryos/auth';
@@ -49,6 +48,9 @@ const ResidentArea = lazy(() =>
 );
 const StaffArea = lazy(() => import('./staff/StaffArea').then((m) => ({ default: m.StaffArea })));
 const CoachArea = lazy(() => import('./coach/CoachArea').then((m) => ({ default: m.CoachArea })));
+const NavigatorArea = lazy(() =>
+  import('./navigator/NavigatorArea').then((m) => ({ default: m.NavigatorArea })),
+);
 
 export function App() {
   return (
@@ -113,7 +115,14 @@ export function App() {
           </Suspense>
         }
       />
-      <Route path="/navigator/*" element={<NavigatorWorkspaceShell />} />
+      <Route
+        path="/navigator/*"
+        element={
+          <Suspense fallback={<LoadingState label="Opening your workspace…" />}>
+            <NavigatorArea />
+          </Suspense>
+        }
+      />
       <Route path="/admin/*" element={<AdminWorkspaceShell />} />
       <Route path="/residences" element={<ResidencesDispatcher />} />
 
