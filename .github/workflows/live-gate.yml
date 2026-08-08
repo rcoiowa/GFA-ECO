@@ -105,11 +105,14 @@ jobs:
           RECOVERYOS_E2E_LIVE: '1'
           P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
           P4H_E2E_BASE_URL: ${{ inputs.base_url }}
+          # Node-side only (confirm-email fallback in the harness); the key
+          # never reaches the browser or the built artifact.
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           if [ -n "${{ inputs.grep }}" ]; then
-            pnpm exec playwright test --project=live --grep "${{ inputs.grep }}"
+            pnpm exec playwright test --project=live --workers=1 --grep "${{ inputs.grep }}"
           else
-            pnpm exec playwright test --project=live
+            pnpm exec playwright test --project=live --workers=1
           fi
 
       - name: Upload traces & report
