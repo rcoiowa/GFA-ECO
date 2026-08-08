@@ -12,20 +12,30 @@ project is built, applied, and verified.
 
 ---
 
-## A. Archive/export manifest — INCOMPLETE (blocked mid-phase)
+## A. Archive/export manifest — COMPLETE (verified after dev-project restore)
 
-The archive export agent was launched first, targeting a private Google Drive folder
-(`RecoveryOS Pre-Launch Archive 2026-08-07`). **During the export window the dev project was
-paused** (it was the project paused to free the slot for creating RecoveryOS-Launch), cutting off
-the source. Status: the archive is **not verified complete**; it must be re-run after the dev
-project is restored (§R). No data is lost — a paused Supabase project retains all data — but the
-directive's "archive before anything else" ordering was broken by the pause and must be repaired
-before any destructive step is ever considered. Planned archive contents (unchanged): auth-user
-inventory, the 11 outside-signup contact rows, reference datasets, transactional datasets, the
-full legacy migration DDL history (752KB, chunked), runtime manifest (edge functions, cron,
-storage, PostgREST config), plus operator-run `supabase db dump` and the single storage
-voice-note. Git commits that reconstruct the canonical system: `fd52e44` (launch set) and the
-P0–P3C history on `claude/grace-coaching-audit-b0fyhq`.
+Private Google Drive folder **`RecoveryOS Pre-Launch Archive 2026-08-07`** (folder id
+`1UlaQh1b6O8l1rKOXJCHJ9q5BcschLEsd`), 19 files, every upload byte-verified against the staged
+export (the mid-phase pause, it turns out, happened **after** all uploads had landed — nothing
+was lost; re-verified against the restored project):
+
+- `auth_users_inventory.json` — 26 auth users with full canonical/v2 correlation.
+- `outside_signup_contacts.json` — all 11 outside-signup profile rows (the outreach dataset).
+- `reference_data` (3 parts) — 17 tables incl. slogans 59, resources 34, crisis 8, v2 resources
+  5, service_types 12, consent_types 8, NARR 82, Iowa 7, doc templates 20 + versions 21, org/
+  programs/residences/curfew/chores.
+- `transactional_data` (2 parts) — 36 tables, the complete transactional universe (check-ins,
+  appointments, consents, service events, identity/role/crosswalk/migration-state records).
+- `legacy_migration_ddl_history` (11 parts) — all **158** dev migrations with full SQL
+  statements: the entire legacy DDL lineage (gravrcc/gfa/v2/grace_house/recoveryos) is preserved
+  even though it never lived in git.
+- `runtime_manifest.json` — cron (1 job), storage (voice-notes bucket, 1 object metadata),
+  PostgREST schema exposure, telemetry counts (session_events 1548 / funnel_events 232 —
+  deliberately counts-only).
+
+Remaining operator steps (optional belt-and-braces): dashboard `supabase db dump` of the dev
+project; download of the single voice-note object. Git commits that reconstruct the canonical
+system: `fd52e44`/`5f34364` on `claude/grace-coaching-audit-b0fyhq`.
 
 ## B. Sensitive-data storage confirmation
 
@@ -189,8 +199,9 @@ the v2 coaching SPA, the Wix lead intake — is DOWN while it is paused.** The u
 (`GFAVRCC's Project`, `contact-connect-dashboard`) / upgrade the org / whatever frees a slot;
 then restore the dev project, which simultaneously restores vrcc.app + Wix service and unblocks
 archive + seeds.
-**Standing cutover blockers (unchanged):** harness not yet run (K); seeds incomplete (E);
-reminder cron not yet scheduled (G); Wix repoint not done (T); vrcc.app repoint not done (S).
+**Standing cutover blockers:** harness not yet run (K); seeds incomplete (E); reminder cron not
+yet scheduled (G); vrcc.app repoint not done (S). ~~Wix repoint~~ — removed as a blocker (§T
+revised: the live inquiry flow is the native Wix form, independent of both projects).
 
 ## S. vrcc.app cutover runbook (DO NOT EXECUTE without authorization)
 
@@ -201,16 +212,30 @@ reminder cron not yet scheduled (G); Wix repoint not done (T); vrcc.app repoint 
    book → confirm → reminders → meeting → notifications, as the owner + one controlled account.
 5. Leave legacy workers up but unrouted for the observation window; then retire (§V).
 
-## T. Wix cutover runbook (DO NOT EXECUTE without authorization)
+## T. Wix continuity — REVISED per owner input (no longer a cutover blocker)
 
-1. In Wix: locate the automation/webhook that posts form submissions (legacy target: dev-project
-   PostgREST `wix_contact_submissions`; identify exact URL/token in Wix settings — dev project
-   must be restored to inspect its logs if needed). 2. Set `LEAD_INTAKE_SECRET` on the launch
-   project; optionally Resend secrets + `LEAD_ALERT_TO`. 3. Change the Wix automation to POST
-   `https://cqcxvwoukyhxyokfwnjm.functions.supabase.co/lead-intake` with header
-   `x-lead-secret: <secret>` and the JSON payload (legacy field `pathway_interest` accepted).
-4. Submit a test lead; verify `recoveryos.leads` row + staff in-app notification (+ email if
-   configured). 5. Only then disable the legacy path.
+Owner clarification (2026-08-08): the Supabase-posting form was **never actually embedded** in
+the Wix site — the live inquiry flow is the **native Wix form**, whose notifications already go
+to multiple staff emails, and the org also runs a **Wix members app** with an existing member
+base. Decisions that follow:
+
+1. **Keep the native Wix form as-is.** Its multi-email staff notifications continue working with
+   zero dependency on either Supabase project. The "Wix repoint" item is therefore REMOVED from
+   the cutover blockers — nothing breaks at cutover.
+2. **Optional enhancement (any time, not launch-gated):** add a Wix Automation "send via
+   webhook" step so submissions are ALSO posted to
+   `https://cqcxvwoukyhxyokfwnjm.functions.supabase.co/lead-intake` (header
+   `x-lead-secret: <secret>`; legacy field `pathway_interest` accepted). That lands each inquiry
+   in `recoveryos.leads` + in-app staff queue **alongside** the existing emails — additive, not a
+   replacement. Requires setting `LEAD_INTAKE_SECRET` first; test with one submission.
+3. **Wix app as "front door": yes for community, no for care.** Recommended split — Wix remains
+   the public front door (marketing, inquiry form, community/member engagement for the existing
+   Wix member base), with prominent links into the RecoveryOS platform (vrcc.app) where
+   participants register/sign in for the actual recovery workflows. Wix membership must NOT
+   become the identity system for recovery data: check-ins, coaching, consents, and residence
+   records need the `auth.users → people → role_assignments` chain, RLS, and consent boundaries
+   that a marketing platform cannot provide. Wix members who become participants simply register
+   in RecoveryOS (one extra sign-up); no SSO bridge is warranted at this stage.
 
 ## U. Dev-project freeze runbook
 
