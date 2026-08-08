@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+import { existsSync } from 'node:fs';
+
 /**
  * RecoveryOS browser verification harness (P4H).
  *
@@ -8,15 +10,23 @@ import { defineConfig, devices } from '@playwright/test';
  *               (vite preview). Covers accessibility, PWA, mobile reflow,
  *               and public-surface checks that need no backend egress.
  *  - `live`   — the P4G §AN 1–31 HTTP gate against RecoveryOS-Launch.
- *               Requires an environment whose egress policy allows
- *               *.supabase.co AND the RECOVERYOS_E2E_LIVE=1 opt-in; every
- *               spec self-skips otherwise, so CI without egress stays green
- *               and honest.
+ *               Requires egress to *.supabase.co AND RECOVERYOS_E2E_LIVE=1;
+ *               every spec self-skips otherwise, so CI without egress stays
+ *               green and honest.
  *
- * The preinstalled Chromium is pinned via executablePath — do not run
- * `playwright install` in this environment.
+ * Target modes for the live project (P4H-G1 §8):
+ *  - MODE A (default): local production build via `pnpm preview` on the
+ *    runner, talking to the real RecoveryOS-Launch backend.
+ *  - MODE B: set P4H_E2E_BASE_URL=<staging URL> to run the same specs
+ *    against the deployed Cloudflare artifact (no local server started).
+ *
+ * Browser: uses the sandbox-preinstalled Chromium when present (do not run
+ * `playwright install` there); on ordinary CI runners the default
+ * Playwright-managed Chromium is used (install it in the workflow).
  */
-const CHROMIUM = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? '/opt/pw-browsers/chromium';
+const PINNED = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? '/opt/pw-browsers/chromium';
+const launchOptions = existsSync(PINNED) ? { executablePath: PINNED } : {};
+const EXTERNAL_BASE = process.env.P4H_E2E_BASE_URL;
 
 export default defineConfig({
   testDir: './e2e',
@@ -24,27 +34,29 @@ export default defineConfig({
   retries: 0,
   reporter: [['list']],
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: EXTERNAL_BASE ?? 'http://127.0.0.1:4173',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    launchOptions: { executablePath: CHROMIUM },
+    launchOptions,
   },
-  webServer: {
-    command: 'pnpm preview --port 4173 --strictPort',
-    url: 'http://127.0.0.1:4173',
-    reuseExistingServer: true,
-    timeout: 30_000,
-  },
+  webServer: EXTERNAL_BASE
+    ? undefined
+    : {
+        command: 'pnpm preview --port 4173 --strictPort',
+        url: 'http://127.0.0.1:4173',
+        reuseExistingServer: true,
+        timeout: 30_000,
+      },
   projects: [
     {
       name: 'local',
       testIgnore: /live\//,
-      use: { ...devices['Desktop Chrome'], launchOptions: { executablePath: CHROMIUM } },
+      use: { ...devices['Desktop Chrome'], launchOptions },
     },
     {
       name: 'live',
       testMatch: /live\/.*\.spec\.ts/,
-      use: { ...devices['Desktop Chrome'], launchOptions: { executablePath: CHROMIUM } },
+      use: { ...devices['Desktop Chrome'], launchOptions },
     },
   ],
 });

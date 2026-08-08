@@ -1,0 +1,14 @@
+{
+  // NON-PRODUCTION staging Worker for P4H verification (P4H-G1 §4).
+  // Deploys the same static-assets pattern as the root wrangler.jsonc but to
+  // the pre-existing `recoveryos-staging` Worker, so staging can never
+  // clobber the production-candidate Worker (`gfa-eco-recovery-residence-os`)
+  // or vrcc.app. Deploy: `pnpm build && npx wrangler@4 deploy --config wrangler.staging.jsonc`.
+  "$schema": "https://esm.sh/wrangler/config-schema.json",
+  "name": "recoveryos-staging",
+  "compatibility_date": "2026-07-01",
+  "assets": {
+    "directory": "./apps/platform/dist",
+    "not_found_handling": "single-page-application"
+  }
+}
