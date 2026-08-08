@@ -13,7 +13,13 @@ export type AnalyticsEvent =
   | 'support_request_cancelled'
   | 'connection_established_viewed'
   | 'next_appointment_viewed'
-  | 'notification_opened';
+  | 'notification_opened'
+  | 'coach_workspace_viewed'
+  | 'open_request_viewed'
+  | 'support_request_claim_attempted'
+  | 'support_request_claimed'
+  | 'support_relationship_established'
+  | 'follow_up_completed';
 
 type Sink = (event: AnalyticsEvent, props?: Record<string, string | number | boolean>) => void;
 

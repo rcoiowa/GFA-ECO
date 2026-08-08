@@ -41,3 +41,12 @@ export const participantKeys = {
   notifications: (personId: number) => ['participant', personId, 'notifications'] as const,
   unreadCount: (personId: number) => ['participant', personId, 'notifications', 'unread'] as const,
 };
+
+/** Query-key factory — coach workspace domain. */
+export const coachKeys = {
+  all: ['coach'] as const,
+  openRequests: ['coach', 'openRequests'] as const,
+  roster: ['coach', 'roster'] as const,
+  todayAppointments: (personId: number) => ['coach', personId, 'todayAppointments'] as const,
+  followUps: (personId: number) => ['coach', personId, 'followUps'] as const,
+};

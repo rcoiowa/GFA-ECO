@@ -15,7 +15,6 @@ import { RoleHome } from './pages/RoleHome';
 import { ForgotPasswordPage } from './public/ForgotPasswordPage';
 import {
   AdminWorkspaceShell,
-  CoachWorkspaceShell,
   LegacyAppRedirect,
   NavigatorWorkspaceShell,
   ResidencesDispatcher,
@@ -49,6 +48,7 @@ const ResidentArea = lazy(() =>
   import('./resident/ResidentArea').then((m) => ({ default: m.ResidentArea })),
 );
 const StaffArea = lazy(() => import('./staff/StaffArea').then((m) => ({ default: m.StaffArea })));
+const CoachArea = lazy(() => import('./coach/CoachArea').then((m) => ({ default: m.CoachArea })));
 
 export function App() {
   return (
@@ -105,7 +105,14 @@ export function App() {
           </Suspense>
         }
       />
-      <Route path="/coach/*" element={<CoachWorkspaceShell />} />
+      <Route
+        path="/coach/*"
+        element={
+          <Suspense fallback={<LoadingState label="Opening your workspace…" />}>
+            <CoachArea />
+          </Suspense>
+        }
+      />
       <Route path="/navigator/*" element={<NavigatorWorkspaceShell />} />
       <Route path="/admin/*" element={<AdminWorkspaceShell />} />
       <Route path="/residences" element={<ResidencesDispatcher />} />

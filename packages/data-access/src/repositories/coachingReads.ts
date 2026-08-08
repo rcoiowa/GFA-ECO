@@ -219,18 +219,16 @@ export async function markAllNotificationsRead(personId: number): Promise<void> 
 // ---- support request cancel (P4B) --------------------------------------------
 
 /**
- * Participant withdraws their own still-open request. Guarded client-side to the
- * open/submitted window and enforced server-side by the sr_participant_cancel
- * RLS policy (own rows only). Claimed/assigned requests are not silently
- * cancellable from the client — that transition belongs to the support flow.
+ * Participant withdraws their own still-open request via the server-authoritative
+ * cancel_support_request RPC (0108): enumerated source statuses, lifecycle fields
+ * only, idempotent, event-logged. The broad own-row UPDATE policy was removed —
+ * this is the only cancellation path.
  */
 export async function cancelMySupportRequest(requestId: number): Promise<boolean> {
-  const { data, error } = await getSupabase()
-    .from('support_requests')
-    .update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
-    .eq('id', requestId)
-    .in('status', ['open', 'submitted'])
-    .select('id');
+  const { data, error } = await getSupabase().rpc('cancel_support_request', {
+    p_support_request_id: requestId,
+  });
   if (error) throw error;
-  return (data?.length ?? 0) > 0;
+  const result = data as { ok?: boolean; code?: string } | null;
+  return Boolean(result?.ok && (result.code === 'cancelled' || result.code === 'already_cancelled'));
 }

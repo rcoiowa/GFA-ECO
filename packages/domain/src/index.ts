@@ -7,3 +7,4 @@ export * from './pulse';
 export * from './routing';
 export * from './coaching';
 export * from './time';
+export * from './coach';
