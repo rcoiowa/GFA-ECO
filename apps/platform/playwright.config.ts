@@ -26,7 +26,9 @@ import { existsSync } from 'node:fs';
  */
 const PINNED = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? '/opt/pw-browsers/chromium';
 const launchOptions = existsSync(PINNED) ? { executablePath: PINNED } : {};
-const EXTERNAL_BASE = process.env.P4H_E2E_BASE_URL;
+// `||` not `??`: CI passes the input through as an empty string when unset,
+// and an empty baseURL turns every relative goto into "invalid URL".
+const EXTERNAL_BASE = process.env.P4H_E2E_BASE_URL || undefined;
 
 export default defineConfig({
   testDir: './e2e',
