@@ -82,18 +82,6 @@ export function NavigatorWorkspaceShell() {
   );
 }
 
-export function AdminWorkspaceShell() {
-  return (
-    <RequireRole anyOf={['administrator', 'executive', 'system_administrator']}>
-      <WorkspaceArrival
-        title="Administration"
-        lede="People waiting for support, staffing, residences, and system health."
-        arriving="the Admin release (P4G)"
-      />
-    </RequireRole>
-  );
-}
-
 /**
  * /residences — role-aware dispatcher for the residence umbrella. Residents go
  * to their residence experience, residence staff to operations; the full

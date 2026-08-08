@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import {
   decidePass,
   getBedBoard,
   listApplications,
+  listIncidents,
   listPendingPasses,
   listResidenceRoster,
 } from '@recoveryos/data-access';
+import { deriveResidenceStaffAttention, type ResidenceAttentionItem } from '@recoveryos/domain';
 import {
   Alert,
   Button,
@@ -30,17 +33,19 @@ export function StaffTodayPage() {
   const [pendingPasses, setPendingPasses] = useState<Awaited<ReturnType<typeof listPendingPasses>>>(
     [],
   );
+  const [attention, setAttention] = useState<ResidenceAttentionItem[]>([]);
 
   const load = useCallback(async () => {
     if (!residence) return;
     setLoading(true);
     setError(false);
     try {
-      const [board, roster, applications, passes] = await Promise.all([
+      const [board, roster, applications, passes, incidents] = await Promise.all([
         getBedBoard(residence.id),
         listResidenceRoster(residence.id),
         listApplications(residence.id),
         listPendingPasses(residence.id),
+        listIncidents(residence.id),
       ]);
       const bedCount = board.rooms.reduce(
         (n, r) => n + r.beds.filter((b) => b.is_active).length,
@@ -55,6 +60,22 @@ export function StaffTodayPage() {
         ).length,
       });
       setPendingPasses(passes);
+      const assignedResidencies = new Set(board.activeAssignments.map((a) => a.residency_id));
+      setAttention(
+        deriveResidenceStaffAttention({
+          unreviewedIncidents: incidents.filter((i) => !i.reviewed_at).length,
+          applicationsWaiting: applications.filter((a) =>
+            ['submitted', 'in_review'].includes(a.status),
+          ).length,
+          passesWaiting: passes.length,
+          unassignedActiveResidencies: roster.filter(
+            (r) =>
+              ['active', 'on_pass', 'transitioning'].includes(r.residency_status) &&
+              !assignedResidencies.has(r.id),
+          ).length,
+          followUpsDue: 0,
+        }),
+      );
     } catch (e) {
       // Surface the real cause in the console — a blank card with no detail
       // is what made the ambiguous-embed failure hard to diagnose.
@@ -100,6 +121,23 @@ export function StaffTodayPage() {
         <ErrorState onRetry={() => void load()} />
       ) : (
         <div className="flex flex-col gap-5">
+          {attention.length > 0 ? (
+            <Card>
+              <CardTitle>Needs attention</CardTitle>
+              <ul className="mt-2 space-y-1.5">
+                {attention.map((item) => (
+                  <li key={item.key}>
+                    <Link
+                      to={item.to}
+                      className="block rounded-md border border-line bg-surface-raised px-3 py-2.5 font-medium text-ink hover:bg-surface-sunken"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {

@@ -61,6 +61,17 @@ export const coachKeys = {
   bookings: (personId: number) => ['coach', personId, 'bookings'] as const,
 };
 
+/** Query-key factory — admin command center (P4G). Aggregates + governance surfaces. */
+export const adminKeys = {
+  all: ['admin'] as const,
+  operations: ['admin', 'operations'] as const,
+  evidence: ['admin', 'evidence'] as const,
+  people: ['admin', 'people'] as const,
+  invitations: ['admin', 'invitations'] as const,
+  residences: ['admin', 'residences'] as const,
+  audit: ['admin', 'audit'] as const,
+};
+
 /** Query-key factory — navigator workspace domain (P4E). */
 export const navigatorKeys = {
   all: ['navigator'] as const,

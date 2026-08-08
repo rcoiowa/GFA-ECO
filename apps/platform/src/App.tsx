@@ -13,11 +13,7 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { NotAuthorizedPage, NotFoundPage } from './pages/StatusPages';
 import { RoleHome } from './pages/RoleHome';
 import { ForgotPasswordPage } from './public/ForgotPasswordPage';
-import {
-  AdminWorkspaceShell,
-  LegacyAppRedirect,
-  ResidencesDispatcher,
-} from './pages/WorkspaceShells';
+import { LegacyAppRedirect, ResidencesDispatcher } from './pages/WorkspaceShells';
 import { RequireAuth } from '@recoveryos/auth';
 
 /**
@@ -51,6 +47,7 @@ const CoachArea = lazy(() => import('./coach/CoachArea').then((m) => ({ default:
 const NavigatorArea = lazy(() =>
   import('./navigator/NavigatorArea').then((m) => ({ default: m.NavigatorArea })),
 );
+const AdminArea = lazy(() => import('./admin/AdminArea').then((m) => ({ default: m.AdminArea })));
 
 export function App() {
   return (
@@ -123,7 +120,14 @@ export function App() {
           </Suspense>
         }
       />
-      <Route path="/admin/*" element={<AdminWorkspaceShell />} />
+      <Route
+        path="/admin/*"
+        element={
+          <Suspense fallback={<LoadingState label="Opening the command center…" />}>
+            <AdminArea />
+          </Suspense>
+        }
+      />
       <Route path="/residences" element={<ResidencesDispatcher />} />
 
       {/* Legacy aliases — safe redirects, removed only when nothing links to them. */}

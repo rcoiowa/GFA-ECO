@@ -19,6 +19,7 @@ import {
   PageHeader,
 } from '@recoveryos/ui';
 import { useStaff } from '../staffContext';
+import { track } from '../../lib/analytics';
 
 const STATUS_LABELS: Record<ApplicationWithPerson['status'], string> = {
   submitted: 'Submitted',
@@ -85,7 +86,8 @@ export function ApplicationsPage() {
   const triageReferral = async (referralId: number, status: Referral['status']) => {
     if (!person) return;
     try {
-      await updateReferralStatus({ referralId, status, handledByPersonId: person.id });
+      await updateReferralStatus({ referralId, status });
+      track('residence_referral_triaged');
       await load();
     } catch {
       setError(true);

@@ -50,7 +50,14 @@ export type AnalyticsEvent =
   | 'bed_assigned'
   | 'pass_requested'
   | 'pass_decided'
-  | 'residence_support_service_recorded';
+  | 'residence_support_service_recorded'
+  | 'admin_command_center_viewed'
+  | 'staff_invitation_created'
+  | 'staff_invitation_revoked'
+  | 'role_assignment_granted'
+  | 'role_assignment_revoked'
+  | 'residence_referral_triaged'
+  | 'admin_evidence_viewed';
 
 type Sink = (event: AnalyticsEvent, props?: Record<string, string | number | boolean>) => void;
 

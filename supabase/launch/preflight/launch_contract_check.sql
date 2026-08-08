@@ -98,6 +98,36 @@ begin
                  and tablename='grievances' and policyname='grievances_scoped_select') then
     raise exception 'LAUNCH-CONTRACT FAIL: grievances_scoped_select missing';
   end if;
+
+  -- 7) Access-governance regression guards (P4G).
+  --    Privileged surfaces are RPC-only; the deprecated is_admin_staff helper
+  --    must remain a pure alias of is_platform_admin; message bodies stay
+  --    member-only; referral triage stays RPC-only.
+  select string_agg(tablename || ':' || policyname, ', ') into missing
+  from pg_policies
+  where schemaname = 'recoveryos'
+    and tablename in ('staff_preauthorizations','role_assignments','audit_log')
+    and cmd in ('INSERT','UPDATE','DELETE','ALL');
+  if missing is not null then
+    raise exception 'LAUNCH-CONTRACT FAIL: privileged table has client write policy: %', missing;
+  end if;
+  select string_agg(policyname, ', ') into missing
+  from pg_policies
+  where schemaname = 'recoveryos' and tablename = 'referrals'
+    and cmd in ('UPDATE','DELETE','ALL');
+  if missing is not null then
+    raise exception 'LAUNCH-CONTRACT FAIL: referral triage write policy is back: %', missing;
+  end if;
+  if exists (select 1 from pg_policies
+             where schemaname = 'recoveryos' and tablename = 'messages'
+               and cmd = 'SELECT' and qual like '%admin%') then
+    raise exception 'LAUNCH-CONTRACT FAIL: message bodies are no longer member-only';
+  end if;
+  if not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+                 where n.nspname = 'recoveryos' and p.proname = 'is_admin_staff'
+                   and p.prosrc like '%is_platform_admin%') then
+    raise exception 'LAUNCH-CONTRACT FAIL: is_admin_staff is no longer a platform-admin alias';
+  end if;
 end $contract$;
 
 select 'LAUNCH CONTRACT PASS — schema usage, table privileges, anon scope, RLS posture verified' as result;

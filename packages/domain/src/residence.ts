@@ -98,7 +98,7 @@ export function deriveResidentAttention(input: {
     items.push({
       key: 'pass',
       label: 'There’s a response to your pass request.',
-      to: '/residence/passes',
+      to: '/residence/schedule',
     });
   }
   if (input.choresDueToday > 0) {
@@ -106,11 +106,11 @@ export function deriveResidentAttention(input: {
       key: 'chores',
       label:
         input.choresDueToday === 1 ? 'You have a chore due today.' : `${input.choresDueToday} chores due today.`,
-      to: '/residence/chores',
+      to: '/residence/schedule',
     });
   }
   if (input.meetingToday) {
-    items.push({ key: 'meeting', label: 'House meeting today.', to: '/residence/meetings' });
+    items.push({ key: 'meeting', label: 'House meeting today.', to: '/residence/schedule' });
   }
   return items.slice(0, 3);
 }
