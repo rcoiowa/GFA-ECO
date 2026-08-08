@@ -19,7 +19,19 @@ export type AnalyticsEvent =
   | 'support_request_claim_attempted'
   | 'support_request_claimed'
   | 'support_relationship_established'
-  | 'follow_up_completed';
+  | 'follow_up_completed'
+  | 'messages_page_viewed'
+  | 'conversation_opened'
+  | 'message_send_attempted'
+  | 'message_sent'
+  | 'first_human_response_observed'
+  | 'first_two_way_exchange_observed'
+  | 'scheduling_started'
+  | 'times_proposed'
+  | 'proposal_accepted'
+  | 'times_countered'
+  | 'session_rescheduled'
+  | 'session_cancelled';
 
 type Sink = (event: AnalyticsEvent, props?: Record<string, string | number | boolean>) => void;
 

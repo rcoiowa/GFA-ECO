@@ -136,7 +136,7 @@ export function NextConnectionCard({ state }: { state: ConnectionState }) {
         <CardTitle>Next Connection</CardTitle>
         <p className="mt-2 text-ink-muted">You and your coach are choosing a time.</p>
         <Link
-          to="/vrcc/connect"
+          to="/vrcc/sessions"
           className="mt-1 inline-block text-sm font-medium text-experience-700 underline underline-offset-2"
         >
           View scheduling
@@ -155,13 +155,27 @@ export interface AttentionItem {
 }
 
 /** Derive participant-actionable attention items — highest value first, max 3. */
-export function deriveAttentionItems(state: ConnectionState, unreadCount: number): AttentionItem[] {
+export function deriveAttentionItems(
+  state: ConnectionState,
+  unreadCount: number,
+  unreadMessages = 0,
+): AttentionItem[] {
   const items: AttentionItem[] = [];
+  if (unreadMessages > 0) {
+    items.push({
+      key: 'messages',
+      label:
+        unreadMessages === 1
+          ? 'A new message from your coach.'
+          : `${unreadMessages} new messages from your coach.`,
+      to: '/vrcc/messages',
+    });
+  }
   if (state.schedulingUnderway && !state.nextAppointment) {
     items.push({
       key: 'scheduling',
       label: 'A session time is being worked out — take a look.',
-      to: '/vrcc/connect',
+      to: '/vrcc/sessions',
     });
   }
   if (state.kind === 'REQUEST_CLAIMED') {

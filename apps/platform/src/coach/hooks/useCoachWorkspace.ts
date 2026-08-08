@@ -6,8 +6,10 @@ import {
   createFollowUp,
   getCoachUpcomingAppointments,
   getMyAssignedFollowUps,
+  getMyConversations,
   getMyParticipantsRoster,
   getOpenSupportRequestPool,
+  getUnreadMessageCounts,
 } from '@recoveryos/data-access';
 import {
   deriveCoachAttention,
@@ -18,7 +20,7 @@ import {
   type FollowUpRow,
   type OpenPoolRow,
 } from '@recoveryos/domain';
-import { coachKeys, participantKeys } from '../../lib/query';
+import { coachKeys, messageKeys, participantKeys } from '../../lib/query';
 import { track } from '../../lib/analytics';
 
 /**
@@ -59,10 +61,17 @@ export function useCoachWorkspace(): {
         queryFn: () => getMyAssignedFollowUps(personId),
         enabled,
       },
+      {
+        queryKey: messageKeys.unread(personId),
+        queryFn: () => getUnreadMessageCounts(personId),
+        enabled,
+        refetchInterval: 20_000,
+      },
+      { queryKey: messageKeys.conversations, queryFn: () => getMyConversations(), enabled },
     ],
   });
 
-  const [pool, roster, appointments, followUps] = results;
+  const [pool, roster, appointments, followUps, unreadMessages, conversations] = results;
   const isLoading = enabled && results.some((r) => r.isPending);
   const hasError = Boolean(pool.error && roster.error);
 
@@ -70,11 +79,26 @@ export function useCoachWorkspace(): {
   const rosterNames = new Map(
     (roster.data ?? []).map((r) => [r.participant_person_id, r.display_name]),
   );
+
+  // Unread incoming messages, with a name when it's a single thread.
+  const unreadCounts = unreadMessages.data ?? new Map<number, number>();
+  let unreadTotal = 0;
+  unreadCounts.forEach((count) => {
+    unreadTotal += count;
+  });
+  let unreadFrom: string | null = null;
+  if (unreadCounts.size === 1) {
+    const [conversationId] = [...unreadCounts.keys()];
+    const conversation = (conversations.data ?? []).find((c) => c.id === conversationId);
+    unreadFrom = conversation ? (rosterNames.get(conversation.participant_person_id) ?? null) : null;
+  }
+
   const attention = deriveCoachAttention({
     todayAppointments: todaySessions,
     openPool: pool.data ?? [],
     followUps: followUps.data ?? [],
     rosterNames,
+    unreadMessages: { count: unreadTotal, from: unreadFrom },
   });
 
   return {

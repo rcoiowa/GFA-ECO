@@ -1,4 +1,5 @@
 import { useConnection, useNotifications } from '../hooks/useConnection';
+import { useMyConversations } from '../../messaging/useMessaging';
 import {
   MySupportCard,
   NeedsAttentionCard,
@@ -15,10 +16,15 @@ import {
 export function TodayConnection() {
   const { state } = useConnection();
   const { unread } = useNotifications(1);
+  const { unreadByConversation } = useMyConversations();
 
   if (!state) return null;
 
-  const attention = deriveAttentionItems(state, unread);
+  let unreadMessages = 0;
+  unreadByConversation.forEach((count) => {
+    unreadMessages += count;
+  });
+  const attention = deriveAttentionItems(state, unread, unreadMessages);
 
   return (
     <div className="mt-5 flex flex-col gap-5">

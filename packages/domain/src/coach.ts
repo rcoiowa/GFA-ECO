@@ -39,14 +39,17 @@ export interface CoachAttentionItem {
 
 /**
  * Coach attention — short, actionable, priority-ordered:
- * 1) session imminent (next 2h) · 2) follow-up overdue · 3) people waiting ·
- * 4) follow-up due today. Derived, never stored; max 4.
+ * 1) session imminent (next 2h) · 2) unread participant messages ·
+ * 3) follow-up overdue · 4) people waiting · 5) follow-up due today.
+ * Derived, never stored; max 4. Unread is a quiet nudge, not an alarm —
+ * only actually-unread incoming messages count (§P4D-40).
  */
 export function deriveCoachAttention(input: {
   todayAppointments: CanonicalAppointmentRow[];
   openPool: OpenPoolRow[];
   followUps: FollowUpRow[];
   rosterNames?: Map<number, string>;
+  unreadMessages?: { count: number; from?: string | null };
   now?: Date;
 }): CoachAttentionItem[] {
   const now = input.now ?? new Date();
@@ -64,6 +67,20 @@ export function deriveCoachAttention(input: {
       key: `imminent-${imminent.id}`,
       label: who ? `Session with ${who} coming up soon.` : 'A session is coming up soon.',
       to: '/coach/sessions',
+    });
+  }
+
+  if (input.unreadMessages && input.unreadMessages.count > 0) {
+    const { count, from } = input.unreadMessages;
+    items.push({
+      key: 'messages-unread',
+      label:
+        count === 1 && from
+          ? `New message from ${from}${from.endsWith('.') ? '' : '.'}`
+          : count === 1
+            ? 'You have a new message.'
+            : `${count} unread messages.`,
+      to: '/coach/messages',
     });
   }
 

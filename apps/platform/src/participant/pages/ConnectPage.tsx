@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { Link } from 'react-router';
 import { PageHeader } from '@recoveryos/ui';
 import { Alert, Button, Card, CardTitle, ErrorState, LoadingState, TextAreaField } from '@recoveryos/ui';
 import {
@@ -244,8 +245,12 @@ function ConnectedMode({ state }: { state: ConnectionState }) {
             <SupportPersonCard key={member.relationship_id} member={member} />
           ))}
         </div>
-        {/* Messaging + interactive scheduling actions land with those slices —
-            no dead buttons rendered until their destinations genuinely work. */}
+        <Link
+          to="/vrcc/messages"
+          className="mt-3 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+        >
+          Message
+        </Link>
       </Card>
 
       {state.nextAppointment ? (
@@ -262,8 +267,27 @@ function ConnectedMode({ state }: { state: ConnectionState }) {
             You and your coach are choosing a time. When a session is confirmed, you’ll see it
             here.
           </p>
+          <Link
+            to="/vrcc/sessions"
+            className="mt-2 inline-block text-sm font-medium text-experience-700 underline underline-offset-2"
+          >
+            View times
+          </Link>
         </Card>
-      ) : null}
+      ) : (
+        <Card>
+          <CardTitle>Sessions</CardTitle>
+          <p className="mt-1 text-sm text-ink-muted">
+            When you and your coach schedule a session, it lives here.
+          </p>
+          <Link
+            to="/vrcc/sessions"
+            className="mt-2 inline-block text-sm font-medium text-experience-700 underline underline-offset-2"
+          >
+            Open Sessions
+          </Link>
+        </Card>
+      )}
 
       <Card>
         <CardTitle>Need something else?</CardTitle>

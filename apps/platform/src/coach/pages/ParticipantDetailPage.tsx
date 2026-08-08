@@ -4,6 +4,7 @@ import { Alert, Button, Card, CardTitle, ErrorState, LoadingState, PageHeader, T
 import { formatElapsed, requestTypeLabel } from '@recoveryos/domain';
 import { useCoachWorkspace, useCompleteFollowUp, useCreateFollowUp } from '../hooks/useCoachWorkspace';
 import { SessionRow } from '../components/SessionRow';
+import { SchedulingCard } from '../components/SchedulingCard';
 
 /**
  * Coach participant view — relationship-scoped support workspace. Shows only
@@ -87,13 +88,15 @@ export function ParticipantDetailPage() {
         </dl>
       </Card>
 
+      <SchedulingCard
+        participantPersonId={entry.participant_person_id}
+        participantName={entry.display_name}
+      />
+
       <Card>
         <CardTitle>Sessions</CardTitle>
         {sessions.length === 0 ? (
-          <p className="mt-2 text-sm text-ink-muted">
-            No session today.{' '}
-            <span className="text-ink-faint">(Scheduling tools arrive with the next release.)</span>
-          </p>
+          <p className="mt-2 text-sm text-ink-muted">No session today.</p>
         ) : (
           <ul className="mt-2 space-y-2">
             {sessions.map((a) => (
@@ -145,12 +148,17 @@ export function ParticipantDetailPage() {
         </form>
       </Card>
 
-      <p className="text-sm text-ink-faint">
-        Messaging with {entry.display_name} arrives with the next release.{' '}
-        <Link to="/coach/participants" className="underline underline-offset-2">
+      <div className="flex flex-wrap items-center gap-4">
+        <Link
+          to={`/coach/messages/${entry.participant_person_id}`}
+          className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+        >
+          Message {entry.display_name}
+        </Link>
+        <Link to="/coach/participants" className="text-sm text-ink-muted underline underline-offset-2">
           Back to My Participants
         </Link>
-      </p>
+      </div>
     </div>
   );
 }

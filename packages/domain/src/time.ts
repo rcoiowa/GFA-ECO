@@ -33,6 +33,24 @@ export function formatAppointmentTime(
   return { day, time, zone };
 }
 
+/**
+ * A proposed session time, rendered in the viewer's timezone (or an explicit
+ * one) WITH the zone label — the same instant must never read as contradictory
+ * times across the participant and coach workspaces, so the zone is always
+ * spelled out. Intl owns the DST math; we never do offset arithmetic.
+ */
+export function formatOfferedTime(iso: string, timeZone?: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+    ...(timeZone ? { timeZone } : {}),
+  }).format(new Date(iso));
+}
+
 /** "3 minutes ago" / "2 hours ago" / "Aug 8" — calm, no countdown pressure. */
 export function formatElapsed(sinceIso: string, now: Date = new Date()): string {
   const ms = now.getTime() - new Date(sinceIso).getTime();

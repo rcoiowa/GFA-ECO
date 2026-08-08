@@ -8,3 +8,5 @@ export * from './routing';
 export * from './coaching';
 export * from './time';
 export * from './coach';
+export * from './messaging';
+export * from './scheduling';

@@ -42,6 +42,15 @@ export const participantKeys = {
   unreadCount: (personId: number) => ['participant', personId, 'notifications', 'unread'] as const,
 };
 
+/** Query-key factory — messaging domain (shared by participant + coach surfaces). */
+export const messageKeys = {
+  all: ['messages'] as const,
+  conversations: ['messages', 'conversations'] as const,
+  conversation: (conversationId: number) => ['messages', 'conversation', conversationId] as const,
+  ensure: (otherPersonId: number | null) => ['messages', 'ensure', otherPersonId] as const,
+  unread: (personId: number) => ['messages', 'unread', personId] as const,
+};
+
 /** Query-key factory — coach workspace domain. */
 export const coachKeys = {
   all: ['coach'] as const,
@@ -49,4 +58,5 @@ export const coachKeys = {
   roster: ['coach', 'roster'] as const,
   todayAppointments: (personId: number) => ['coach', personId, 'todayAppointments'] as const,
   followUps: (personId: number) => ['coach', personId, 'followUps'] as const,
+  bookings: (personId: number) => ['coach', personId, 'bookings'] as const,
 };

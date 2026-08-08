@@ -184,6 +184,21 @@ export async function getMyBookingStates(participantPersonId: number): Promise<B
   return (data as unknown as BookingStateRow[]) ?? [];
 }
 
+/** A coach's booking negotiations (provider side) with active proposals (P4D). */
+export async function getCoachBookingStates(coachPersonId: number): Promise<BookingStateRow[]> {
+  const { data, error } = await getSupabase()
+    .from('booking_requests')
+    .select(
+      'id, support_request_id, participant_person_id, provider_person_id, status, appointment_id, created_at, proposals:booking_proposals(id, booking_request_id, proposed_by_person_id, proposed_start, proposed_end, round, is_active, accepted)',
+    )
+    .eq('provider_person_id', coachPersonId)
+    .in('status', ['open', 'confirmed'])
+    .order('created_at', { ascending: false })
+    .limit(25);
+  if (error) throw error;
+  return (data as unknown as BookingStateRow[]) ?? [];
+}
+
 // ---- notification writes (P4B) ----------------------------------------------
 
 export async function getUnreadNotificationCount(personId: number): Promise<number> {

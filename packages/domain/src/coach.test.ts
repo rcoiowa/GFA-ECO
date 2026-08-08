@@ -84,6 +84,33 @@ describe('deriveCoachAttention', () => {
   });
 });
 
+describe('deriveCoachAttention — unread messages', () => {
+  it('a single named unread message reads personally and sits below imminent sessions', () => {
+    const items = deriveCoachAttention({
+      todayAppointments: [appt()],
+      openPool: [],
+      followUps: [],
+      rosterNames: new Map([[10, 'Sam R.']]),
+      unreadMessages: { count: 1, from: 'Sam R.' },
+      now: NOW,
+    });
+    expect(items[0]?.key).toMatch(/^imminent/);
+    expect(items[1]?.label).toBe('New message from Sam R.');
+    expect(items[1]?.to).toBe('/coach/messages');
+  });
+
+  it('multiple unread messages summarize without urgency language', () => {
+    const items = deriveCoachAttention({
+      todayAppointments: [],
+      openPool: [],
+      followUps: [],
+      unreadMessages: { count: 3 },
+      now: NOW,
+    });
+    expect(items[0]?.label).toBe('3 unread messages.');
+  });
+});
+
 describe('todaysAppointments', () => {
   it('keeps only today, confirmed/scheduled, sorted', () => {
     const list = todaysAppointments(
