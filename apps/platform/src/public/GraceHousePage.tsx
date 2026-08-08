@@ -27,13 +27,13 @@ export function GraceHousePage() {
 
       <main className="mx-auto max-w-4xl px-4 py-12">
         <nav aria-label="Breadcrumb" className="mb-3 text-sm text-ink-muted">
-          <Link to="/" className="hover:text-experience-700 underline-offset-2 hover:underline">
+          <Link to="/" className="hover:text-experience-700 underline underline-offset-2">
             Home
           </Link>
           <span aria-hidden> / </span>
           <Link
             to="/recovery-residences"
-            className="hover:text-experience-700 underline-offset-2 hover:underline"
+            className="hover:text-experience-700 underline underline-offset-2"
           >
             Recovery residences
           </Link>

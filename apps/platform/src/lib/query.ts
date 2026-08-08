@@ -1,4 +1,5 @@
-import { QueryClient } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
+import { captureError } from './monitor';
 
 /**
  * Canonical server-state layer (P4B). One QueryClient at the root; intentional
@@ -16,6 +17,15 @@ function isTransient(error: unknown): boolean {
 }
 
 export const queryClient = new QueryClient({
+  // Operational failure capture (P4H §22): query keys are process metadata
+  // (our own key factories — never user content); errors pass through the
+  // monitor's structural redaction.
+  queryCache: new QueryCache({
+    onError: (error, query) => captureError(`query:${String(query.queryKey[0])}`, error),
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => captureError('mutation', error),
+  }),
   defaultOptions: {
     queries: {
       staleTime: 15_000,

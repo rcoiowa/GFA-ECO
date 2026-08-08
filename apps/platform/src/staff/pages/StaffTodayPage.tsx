@@ -20,6 +20,7 @@ import {
   PageHeader,
 } from '@recoveryos/ui';
 import { useStaff } from '../staffContext';
+import { captureError } from '../../lib/monitor';
 
 /**
  * The morning snapshot: occupancy, who's here, what needs a decision.
@@ -77,9 +78,9 @@ export function StaffTodayPage() {
         }),
       );
     } catch (e) {
-      // Surface the real cause in the console — a blank card with no detail
-      // is what made the ambiguous-embed failure hard to diagnose.
-      console.error('Staff Today failed to load', e);
+      // Redacted operational capture — a blank card with no detail is what
+      // made the ambiguous-embed failure hard to diagnose.
+      captureError('staff.today.load', e);
       setError(true);
     } finally {
       setLoading(false);

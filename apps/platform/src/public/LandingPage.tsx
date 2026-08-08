@@ -8,24 +8,24 @@ export function LandingPage() {
   return (
     <div className="min-h-dvh bg-surface">
       <header className="border-b border-line bg-surface-raised">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3">
           <p className="text-xl font-semibold text-experience-700">VRCC</p>
-          <nav className="flex items-center gap-3">
+          <nav className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
             <a
               href="#what-you-can-do"
-              className="min-h-11 rounded-md px-4 py-2 font-medium text-ink hover:bg-surface-sunken"
+              className="hidden min-h-11 rounded-md px-3 py-2 font-medium text-ink hover:bg-surface-sunken sm:block"
             >
               Center
             </a>
             <Link
               to="/recovery-residences"
-              className="min-h-11 rounded-md px-4 py-2 font-medium text-ink hover:bg-surface-sunken"
+              className="hidden min-h-11 rounded-md px-3 py-2 font-medium text-ink hover:bg-surface-sunken sm:block"
             >
               Residence
             </Link>
             <Link
               to="/sign-in"
-              className="min-h-11 rounded-md px-4 py-2 font-medium text-ink hover:bg-surface-sunken"
+              className="min-h-11 rounded-md px-3 py-2 font-medium text-ink hover:bg-surface-sunken"
             >
               Sign in
             </Link>

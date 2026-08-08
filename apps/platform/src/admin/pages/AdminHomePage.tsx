@@ -109,7 +109,7 @@ export function AdminHomePage() {
             { to: '/admin/audit', label: 'Audit trail' },
           ].map((l) => (
             <li key={l.to}>
-              <Link to={l.to} className="text-experience-700 underline-offset-2 hover:underline">
+              <Link to={l.to} className="text-experience-700 underline underline-offset-2">
                 {l.label}
               </Link>
             </li>

@@ -58,7 +58,7 @@ export function ResidenceDirectoryPage() {
 
       <main className="mx-auto max-w-4xl px-4 py-12">
         <nav aria-label="Breadcrumb" className="mb-3 text-sm text-ink-muted">
-          <Link to="/" className="hover:text-experience-700 underline-offset-2 hover:underline">
+          <Link to="/" className="hover:text-experience-700 underline underline-offset-2">
             Home
           </Link>
           <span aria-hidden> / </span>
@@ -81,14 +81,14 @@ export function ResidenceDirectoryPage() {
             {GFA_RESIDENCES.map((r) => (
               <li
                 key={r.name}
-                className="flex flex-col rounded-lg border border-line bg-surface-raised p-5"
+                className="flex min-w-0 flex-col rounded-lg border border-line bg-surface-raised p-5"
               >
                 <h3 className="text-lg font-semibold text-ink">{r.name}</h3>
                 <p className="text-sm text-ink-muted">
                   {r.city}, Iowa · {r.population} · {r.type}
                 </p>
                 <p className="mt-2 flex-1 text-ink-muted">{r.description}</p>
-                <p className="mt-2 text-sm text-ink-muted">{r.contact}</p>
+                <p className="mt-2 break-words text-sm text-ink-muted">{r.contact}</p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   {r.applyUrl ? (
                     <a

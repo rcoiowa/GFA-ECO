@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- RecoveryOS / VRCC Hearth mark: two presences settling together on the
+       Recovery Purple field — connection, not clinical iconography. -->
+  <rect width="512" height="512" rx="112" fill="#6540A5"/>
+  <circle cx="216" cy="268" r="118" fill="#F8F6F4"/>
+  <circle cx="330" cy="222" r="74" fill="#C98FB4"/>
+  <path d="M216 386c-64 0-116-52-116-118h232c0 66-52 118-116 118z" fill="#F8F6F4"/>
+  <circle cx="216" cy="268" r="118" fill="none" stroke="#533489" stroke-opacity=".18" stroke-width="8"/>
+</svg>
