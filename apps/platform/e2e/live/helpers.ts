@@ -87,6 +87,89 @@ async function adminConfirmEmail(email: string): Promise<void> {
   throw new Error(`adminConfirmEmail: no auth user for ${email}`);
 }
 
+export class EmailRateLimited extends Error {}
+
+const adminHeaders = () => ({
+  apikey: SERVICE_KEY,
+  authorization: `Bearer ${SERVICE_KEY}`,
+  'content-type': 'application/json',
+});
+
+async function adminCreateUser(email: string): Promise<void> {
+  if (!SERVICE_KEY) throw new Error('admin fallback needs SUPABASE_SERVICE_ROLE_KEY in the test env');
+  const res = await fetch(`${SUPA_URL}/auth/v1/admin/users`, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify({ email, password: password(), email_confirm: true }),
+  });
+  if (!res.ok) throw new Error(`adminCreateUser ${email}: ${res.status} ${await res.text()}`);
+}
+
+/**
+ * Fresh per-run identities are provisioned `production` by the signup
+ * trigger; reclassify them test_fixture immediately so (a) they never enter
+ * evidence and (b) classification-symmetric pools (0120) keep them visible
+ * to fixture staff and invisible to production staff. Node-side service key
+ * only.
+ */
+export async function classifyAsFixture(email: string): Promise<void> {
+  if (!SERVICE_KEY) return;
+  for (let page = 1; page <= 10; page++) {
+    const res = await fetch(`${SUPA_URL}/auth/v1/admin/users?page=${page}&per_page=100`, {
+      headers: adminHeaders(),
+    });
+    const body = (await res.json()) as { users?: Array<{ id: string; email?: string }> };
+    const users = body.users ?? [];
+    const hit = users.find((u) => (u.email ?? '').toLowerCase() === email.toLowerCase());
+    if (hit) {
+      const restHeaders = {
+        ...adminHeaders(),
+        'accept-profile': 'recoveryos',
+        'content-profile': 'recoveryos',
+      };
+      const people = await (
+        await fetch(`${SUPA_URL}/rest/v1/people?auth_user_id=eq.${hit.id}&select=id`, {
+          headers: restHeaders,
+        })
+      ).json();
+      if (people[0]) {
+        await fetch(`${SUPA_URL}/rest/v1/person_classification`, {
+          method: 'POST',
+          headers: { ...restHeaders, prefer: 'resolution=merge-duplicates' },
+          body: JSON.stringify({ person_id: people[0].id, classification: 'test_fixture' }),
+        });
+      }
+      return;
+    }
+    if (users.length < 100) return;
+  }
+}
+
+/**
+ * Fresh identity via the REAL signup path, degrading honestly: when the
+ * project's email budget is exhausted (429 over_email_send_rate_limit on
+ * the default SMTP), fall back to admin creation so the downstream flow can
+ * still verify — the signup path itself is judged only by 00-signup.
+ */
+export async function ensureFreshUser(
+  page: Page,
+  email: string,
+  first = 'P4H',
+  last = 'Signup',
+): Promise<'ui' | 'admin'> {
+  try {
+    await registerUser(page, email, first, last);
+    await classifyAsFixture(email);
+    return 'ui';
+  } catch (err) {
+    if (!(err instanceof EmailRateLimited)) throw err;
+    await adminCreateUser(email);
+    await classifyAsFixture(email);
+    await signIn(page, email);
+    return 'admin';
+  }
+}
+
 /** Real registration through the UI; handles both confirmation postures. */
 export async function registerUser(
   page: Page,
@@ -116,6 +199,7 @@ export async function registerUser(
   } catch (err) {
     const res = await signupResponse.catch(() => null);
     const body = res ? await res.text().catch(() => '') : 'no /auth/v1/signup request observed';
+    if (body.includes('over_email_send_rate_limit')) throw new EmailRateLimited(body);
     throw new Error(
       `registration did not complete for ${email}: signup ${res?.status() ?? '-'} ${body.slice(0, 400)}`,
     );

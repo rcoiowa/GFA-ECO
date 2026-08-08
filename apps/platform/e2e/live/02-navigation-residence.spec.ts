@@ -1,11 +1,4 @@
-import {
-  test,
-  expect,
-  FIXTURES,
-  registerUser,
-  userPage,
-  askForSupport,
-} from './helpers';
+import { test, expect, FIXTURES, ensureFreshUser, userPage, askForSupport } from './helpers';
 
 /** Live HTTP gate — items 11–23 (navigation loop + residence). Serial. */
 test.describe.configure({ mode: 'serial' });
@@ -18,7 +11,7 @@ test('11–16. navigation: claim → message → need → referral → confirmat
   const context = await browser.newContext();
   const participant = await context.newPage();
   const email = FIXTURES.fresh('nav-participant');
-  await registerUser(participant, email, 'P4H', 'NavSeeker');
+  await ensureFreshUser(participant, email, 'P4H', 'NavSeeker');
 
   // Participant raises a navigation-type request.
   await askForSupport(participant, /help navigating something/i);

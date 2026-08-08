@@ -1,4 +1,4 @@
-import { test, expect, FIXTURES, registerUser, userPage } from './helpers';
+import { test, expect, FIXTURES, ensureFreshUser, userPage } from './helpers';
 
 /** Live HTTP gate — items 24–30 (admin/governance) + denial matrix. Serial. */
 test.describe.configure({ mode: 'serial' });
@@ -18,7 +18,7 @@ test('24. staff invitation → real signup → scoped role', async ({ browser })
   // Invited email signs up through the REAL flow → scoped coach role.
   const context = await browser.newContext();
   const page = await context.newPage();
-  await registerUser(page, invitee, 'P4H', 'InvitedCoach');
+  await ensureFreshUser(page, invitee, 'P4H', 'InvitedCoach');
   await page.goto('/coach');
   await expect(page).toHaveURL(/\/coach/, { timeout: 20_000 });
   // No platform-admin authority came along for the ride.
@@ -42,7 +42,7 @@ test('25. operator invitation → signup → no premature authority', async ({ b
 
   const context = await browser.newContext();
   const page = await context.newPage();
-  await registerUser(page, operator, 'P4H', 'Operator');
+  await ensureFreshUser(page, operator, 'P4H', 'Operator');
   // Signup must NOT have granted residence authority (operator invitations
   // are consumed at provisioning, not signup).
   await page.goto('/staff/today');
