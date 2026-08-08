@@ -65,7 +65,7 @@ export function StaffMessagesPage() {
               >
                 <span className="font-medium text-ink">{name}</span>
                 {unread > 0 ? (
-                  <span className="rounded-full bg-experience-700 px-2.5 py-0.5 text-xs font-semibold text-white">
+                  <span className="rounded-full bg-experience-600 px-2.5 py-0.5 text-xs font-semibold text-white">
                     {unread} new
                   </span>
                 ) : null}

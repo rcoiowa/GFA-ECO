@@ -31,6 +31,11 @@ export function MessageThread({
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const nearBottom = useRef(true);
+  // Messages present at mount render still; only genuinely new arrivals get
+  // the settle motion (approved moment #4) — never the whole list (§47).
+  const initialCount = useRef(messages.length);
+  const lastId = messages.length > 0 ? messages[messages.length - 1]!.id : null;
+  const animateLast = messages.length > initialCount.current;
   const groups = groupMessagesByDay(messages);
 
   useEffect(() => {
@@ -75,15 +80,15 @@ export function MessageThread({
                   return (
                     <li key={m.id} className={mine ? 'flex justify-end' : 'flex justify-start'}>
                       <div
-                        className={
+                        className={`${
                           mine
-                            ? 'max-w-[85%] rounded-2xl rounded-br-md bg-experience-700 px-3.5 py-2 text-white'
+                            ? 'max-w-[85%] rounded-2xl rounded-br-md bg-experience-600 px-3.5 py-2 text-white'
                             : 'max-w-[85%] rounded-2xl rounded-bl-md border border-line bg-surface px-3.5 py-2 text-ink'
-                        }
+                        }${animateLast && m.id === lastId ? ' settle-in' : ''}`}
                       >
                         <p className="sr-only">{mine ? 'You' : otherName} said:</p>
                         <p className="whitespace-pre-wrap break-words text-sm">{m.body}</p>
-                        <p className={mine ? 'mt-1 text-right text-xs text-white/70' : 'mt-1 text-xs text-ink-faint'}>
+                        <p className={mine ? 'mt-1 text-right text-xs text-white/80' : 'mt-1 text-xs text-ink-faint'}>
                           {clock.format(new Date(m.created_at))}
                         </p>
                       </div>

@@ -113,7 +113,7 @@ export function RecoveryCapitalPage() {
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
               to="/app/connect"
-              className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+              className="inline-flex min-h-11 items-center rounded-full bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
             >
               Connect with support
             </Link>

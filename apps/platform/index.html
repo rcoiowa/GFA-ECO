@@ -9,12 +9,27 @@
     />
     <title>VRCC — Virtual Recovery Community Center</title>
     <script>
-      // Apply the saved visual theme before first paint (no flash).
+      // Resolve appearance + atmosphere before first paint (no flash).
+      // Mirrors AppearanceControls; migrates the retired 'recoveryos-visual'
+      // monolithic-theme preference (dark/space/rcoia → dark; space → cosmic).
       try {
-        var v = localStorage.getItem('recoveryos-visual');
-        if (['dark', 'space', 'sky', 'retro', 'gfa', 'rcoia'].indexOf(v) !== -1) {
-          document.documentElement.dataset.visual = v;
+        var pref = localStorage.getItem('recoveryos-appearance');
+        var atmo = localStorage.getItem('recoveryos-atmosphere');
+        var legacy = localStorage.getItem('recoveryos-visual');
+        if (['system', 'light', 'dark'].indexOf(pref) === -1) {
+          pref = ['dark', 'space', 'rcoia'].indexOf(legacy) !== -1 ? 'dark' : 'system';
         }
+        if (['hearth', 'cosmic'].indexOf(atmo) === -1) {
+          atmo = legacy === 'space' ? 'cosmic' : 'hearth';
+        }
+        var dark =
+          atmo === 'cosmic' ||
+          pref === 'dark' ||
+          (pref === 'system' &&
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.appearance = dark ? 'dark' : 'light';
+        if (atmo === 'cosmic') document.documentElement.dataset.atmosphere = 'cosmic';
       } catch (e) {}
     </script>
   </head>

@@ -184,7 +184,7 @@ export function CheckInPage() {
               <div className="mt-3 flex flex-wrap gap-3">
                 <a
                   href="tel:+15153103425"
-                  className="inline-flex min-h-11 items-center rounded-md bg-support-600 px-5 font-semibold text-white hover:bg-support-700"
+                  className="inline-flex min-h-11 items-center rounded-md bg-support-600 px-5 font-semibold text-white hover:bg-support-strong"
                 >
                   Call the Grace warmline
                 </a>
@@ -333,7 +333,7 @@ export function CheckInPage() {
             <div className="mt-3 flex flex-wrap gap-3">
               <a
                 href="tel:+15153103425"
-                className="inline-flex min-h-11 items-center rounded-md bg-support-600 px-5 font-semibold text-white hover:bg-support-700"
+                className="inline-flex min-h-11 items-center rounded-md bg-support-600 px-5 font-semibold text-white hover:bg-support-strong"
               >
                 Call the Grace warmline
               </a>

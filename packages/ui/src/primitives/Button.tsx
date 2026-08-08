@@ -3,13 +3,13 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 type Variant = 'primary' | 'secondary' | 'ghost' | 'support' | 'danger';
 
 const styles: Record<Variant, string> = {
-  primary: 'bg-experience-600 text-white hover:bg-experience-700 disabled:bg-ink-faint',
+  primary: 'bg-experience-600 text-white hover:bg-experience-strong disabled:bg-ink-faint',
   secondary:
     'bg-surface-raised text-ink border border-line hover:bg-surface-sunken disabled:text-ink-faint',
   ghost: 'bg-transparent text-experience-700 hover:bg-experience-soft disabled:text-ink-faint',
-  support: 'bg-support-600 text-white hover:bg-support-700',
+  support: 'bg-support-600 text-white hover:bg-support-strong',
   danger:
-    'bg-critical-50 text-critical-700 border border-critical-600/30 hover:bg-critical-600 hover:text-white',
+    'bg-critical-50 text-critical-700 border border-critical-600/30 hover:bg-critical-strong hover:text-white',
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

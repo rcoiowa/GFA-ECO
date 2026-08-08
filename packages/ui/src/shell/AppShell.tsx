@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router';
-import { ThemeSwitcher } from '../primitives/ThemeSwitcher';
+import { AppearanceControls } from '../primitives/ThemeSwitcher';
+import { OfflineNotice } from '../primitives/Offline';
 
 export interface NavItem {
   to: string;
@@ -84,7 +85,7 @@ export function AppShell({
         </nav>
         {utilities ? <div className="border-t border-line p-3">{utilities}</div> : null}
         <div className="border-t border-line px-3 py-2.5">
-          <ThemeSwitcher />
+          <AppearanceControls />
         </div>
       </header>
 
@@ -98,13 +99,15 @@ export function AppShell({
       </div>
 
       <main id="main-content" className="flex-1 pb-24 md:pb-8">
+        <OfflineNotice />
         <div className="mx-auto w-full max-w-3xl px-4 py-6 md:px-8">{children}</div>
       </main>
 
-      {/* Mobile bottom navigation */}
+      {/* Mobile bottom navigation — the one approved Veil surface (spec §7):
+          translucent only where backdrop-filter exists; solid fallback. */}
       <nav
         aria-label="Primary"
-        className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface-raised"
+        className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface-raised supports-[backdrop-filter]:bg-surface-raised/85 supports-[backdrop-filter]:backdrop-blur-md"
       >
         {moreOpen && overflowItems.length > 0 ? (
           <div className="border-b border-line bg-surface-raised px-2 py-2">

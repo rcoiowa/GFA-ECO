@@ -31,7 +31,7 @@ export function LandingPage() {
             </Link>
             <Link
               to="/register"
-              className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-4 font-semibold text-white hover:bg-experience-700"
+              className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-4 font-semibold text-white hover:bg-experience-strong"
             >
               Get started
             </Link>
@@ -51,13 +51,13 @@ export function LandingPage() {
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             to="/register"
-            className="inline-flex min-h-12 items-center rounded-md bg-experience-600 px-6 text-lg font-semibold text-white hover:bg-experience-700"
+            className="inline-flex min-h-12 items-center rounded-md bg-experience-600 px-6 text-lg font-semibold text-white hover:bg-experience-strong"
           >
             Begin here
           </Link>
           <a
             href="tel:988"
-            className="inline-flex min-h-12 items-center rounded-md bg-support-600 px-6 text-lg font-semibold text-white hover:bg-support-700"
+            className="inline-flex min-h-12 items-center rounded-md bg-support-600 px-6 text-lg font-semibold text-white hover:bg-support-strong"
           >
             Need help now? Call or text 988
           </a>

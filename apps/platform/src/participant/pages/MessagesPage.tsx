@@ -98,7 +98,7 @@ export function MessagesPage() {
                 aria-current={isActive ? 'true' : undefined}
                 className={
                   isActive
-                    ? 'rounded-full bg-experience-700 px-4 py-1.5 text-sm font-semibold text-white'
+                    ? 'rounded-full bg-experience-600 px-4 py-1.5 text-sm font-semibold text-white'
                     : 'rounded-full border border-line bg-surface px-4 py-1.5 text-sm text-ink hover:border-experience-500'
                 }
               >

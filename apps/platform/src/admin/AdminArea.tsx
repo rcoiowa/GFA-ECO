@@ -42,17 +42,21 @@ export function AdminArea() {
         navItems={NAV_ITEMS}
         utilities={<ExperienceSwitcher current="admin" />}
       >
-        <Routes>
-          <Route index element={<AdminHomePage />} />
-          <Route path="operations" element={<OperationsPage />} />
-          <Route path="access" element={<AccessPage />} />
-          <Route path="people" element={<PeoplePage />} />
-          <Route path="residences" element={<ResidencesPage />} />
-          <Route path="evidence" element={<EvidencePage />} />
-          <Route path="system" element={<SystemPage />} />
-          <Route path="audit" element={<AuditPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        {/* Crisp register (spec §3): tighter radii + tabular numerals via
+            token overrides — same components, sharper rendering. */}
+        <div data-register="crisp">
+          <Routes>
+            <Route index element={<AdminHomePage />} />
+            <Route path="operations" element={<OperationsPage />} />
+            <Route path="access" element={<AccessPage />} />
+            <Route path="people" element={<PeoplePage />} />
+            <Route path="residences" element={<ResidencesPage />} />
+            <Route path="evidence" element={<EvidencePage />} />
+            <Route path="system" element={<SystemPage />} />
+            <Route path="audit" element={<AuditPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </div>
       </AppShell>
     </RequireRole>
   );

@@ -189,7 +189,7 @@ export function SessionsPage() {
                 href={next.meeting_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+                className="inline-flex min-h-11 items-center rounded-full bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
               >
                 Join session
               </a>

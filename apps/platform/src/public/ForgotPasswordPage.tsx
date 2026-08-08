@@ -38,7 +38,7 @@ export function ForgotPasswordPage() {
               If an account exists for {email.trim()}, a reset link is on its way. Check your
               email.
             </Alert>
-            <Link className="text-experience-600 underline-offset-2 hover:underline" to="/sign-in">
+            <Link className="text-experience-700 underline-offset-2 hover:underline" to="/sign-in">
               Back to sign in
             </Link>
           </div>
@@ -57,7 +57,7 @@ export function ForgotPasswordPage() {
             </Button>
             <p className="text-sm text-ink-muted">
               Remembered it?{' '}
-              <Link className="text-experience-600 underline-offset-2 hover:underline" to="/sign-in">
+              <Link className="text-experience-700 underline-offset-2 hover:underline" to="/sign-in">
                 Sign in
               </Link>
             </p>

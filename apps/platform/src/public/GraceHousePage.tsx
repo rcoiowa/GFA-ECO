@@ -83,7 +83,7 @@ export function GraceHousePage() {
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
               to="/recovery-residences/grace-house/apply"
-              className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+              className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
             >
               Apply online here
             </Link>

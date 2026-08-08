@@ -151,7 +151,7 @@ export function ParticipantDetailPage() {
       <div className="flex flex-wrap items-center gap-4">
         <Link
           to={`/coach/messages/${entry.participant_person_id}`}
-          className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+          className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
         >
           Message {entry.display_name}
         </Link>

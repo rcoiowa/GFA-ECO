@@ -45,7 +45,7 @@ function WorkspaceArrival({
             <ul className="mt-2 space-y-1">
               {workspaces.map((w) => (
                 <li key={w.key}>
-                  <Link className="text-experience-600 underline-offset-2 hover:underline" to={w.path}>
+                  <Link className="text-experience-700 underline-offset-2 hover:underline" to={w.path}>
                     {w.label}
                   </Link>
                 </li>

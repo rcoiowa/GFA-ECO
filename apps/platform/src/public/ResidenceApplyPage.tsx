@@ -222,7 +222,7 @@ export function ResidenceApplyPage() {
               </p>
               <a
                 href="https://gracehouse4.pages.dev/"
-                className="mt-3 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+                className="mt-3 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
               >
                 Open the Grace House documents
               </a>

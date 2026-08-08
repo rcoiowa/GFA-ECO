@@ -168,7 +168,9 @@ function WaitingMode({ state }: { state: ConnectionState }) {
 
   return (
     <div className="space-y-4">
-      <Card>
+      {/* Acknowledgement settles in (approved motion moment #1/#2) — the
+          canonical state decides WHAT renders; motion only greets it. */}
+      <Card className="settle-in">
         <div role="status">
           <CardTitle>{claimed ? 'Someone is on it' : 'We’ve got your request'}</CardTitle>
           <p className="mt-1 text-ink-muted">
@@ -239,7 +241,9 @@ function ConnectedMode({ state }: { state: ConnectionState }) {
 
   return (
     <div className="space-y-4">
-      <Card>
+      {/* Relationship established: human identity settles into the surface
+          (approved motion moment #3 — presence + copy, no thread metaphor). */}
+      <Card className="settle-in">
         <CardTitle>Your Support</CardTitle>
         <div className="mt-2 space-y-2">
           {state.supportTeam.map((member) => (
@@ -248,7 +252,7 @@ function ConnectedMode({ state }: { state: ConnectionState }) {
         </div>
         <Link
           to="/vrcc/messages"
-          className="mt-3 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+          className="mt-3 inline-flex min-h-11 items-center rounded-full bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
         >
           Message
         </Link>
