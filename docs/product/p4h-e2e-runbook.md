@@ -4,6 +4,20 @@ The browser harness lives in `apps/platform/e2e/`. The `local` project runs anyw
 (accessibility, PWA, mobile — no backend egress needed). The `live` project is the
 P4G §AN / P4H §13 gate items 1–30 against RecoveryOS-Launch and **requires real egress**.
 
+## Running via GitHub Actions (P4H-G1 — preferred path)
+
+The **Live HTTP gate** workflow (`.github/workflows/live-gate.yml`) runs the whole procedure
+below automatically on an egress-capable runner: it seeds/refreshes the fixtures server-side,
+builds against RecoveryOS-Launch, and runs the live suite (MODE A: runner-local build;
+MODE B: pass `base_url` = the staging URL). Trigger it from the Actions tab (Run workflow on
+the build branch) or by pushing a `live-gate/<n>` branch. **Requires the repository secret
+`SUPABASE_SERVICE_ROLE_KEY`** (fixture seeding only — never in the browser); optional
+`P4H_E2E_PASSWORD` (else a per-run random password is generated and masked). Repository
+variables `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` may override the canonical fallbacks.
+With CI seeding in place, the manual SQL seeding section below is only needed for laptop runs
+without the service key. Staging deploys go to the non-production `recoveryos-staging` Worker
+(`wrangler.staging.jsonc`) — never the production-candidate Worker, never vrcc.app.
+
 ## Why the gate did not run in the P4H automation environment
 
 The execution container's organizational egress policy answers **403 to CONNECT** for

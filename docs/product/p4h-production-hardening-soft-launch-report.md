@@ -345,3 +345,72 @@ Non-environmental engineering blockers: **none** — every defect found by the e
 fixed and regression-guarded. Once items 1–2 run green (and 3–5 complete), the controlled
 soft-launch cohort in §AB can proceed without further build work, and the §AD cutover package
 becomes decision-ready.
+
+---
+
+# P4H-G1 addendum — CI live gate & Cloudflare staging (2026-08-08)
+
+The verification boundary was moved to GitHub Actions per the P4H-G1 directive. Status of each
+G1 concern:
+
+**Configuration drift (G1 §1–3) — CORRECTED.** `deploy-staging.yml` was building against the
+retired `ykykeioydvtxpyreshhs` project and triggering only on a dead branch. It now targets the
+current build branch, builds with repository-variable-driven publishable config whose fallback
+is the canonical RecoveryOS-Launch project (`cqcxvwoukyhxyokfwnjm`) — drift back to a retired
+project is no longer possible silently — and stamps `VITE_RELEASE` with the commit SHA.
+
+**Cloudflare target audit (G1 §4) — RESOLVED.** Account inventory: `gfa-eco-recovery-residence-os`
+is the production-candidate Worker (dashboard git builds converge there; future cutover target —
+untouched), and a pre-existing non-production **`recoveryos-staging`** Worker (created
+2026-08-02) is the staging target, addressed via the new `wrangler.staging.jsonc` so staging
+deploys can never clobber the production candidate. vrcc.app untouched.
+
+**Staging deployment (G1 §10, Phase B) — DEPLOYED.** Run 31283060679 (commit `92c649d`)
+built with RecoveryOS-Launch config and deployed to `recoveryos-staging` successfully
+(2026-08-08T23:02Z; exact workers.dev URL in that run's deploy step log; `CLOUDFLARE_API_TOKEN`
+already existed as repo config). **Protection posture — DOCUMENTED LIMITATION:** the Worker is
+reachable at an unlisted workers.dev URL with no Cloudflare Access policy; adding Access
+requires a human dashboard action (Zero Trust → Access → protect the workers.dev route). Per
+G1 §5 this does not block the backend gate (MODE A runs against a runner-local build).
+
+**Live gate workflow (G1 §6) — BUILT, EXECUTED, FAIL-FAST AS DESIGNED.**
+`.github/workflows/live-gate.yml`: manual-only (workflow_dispatch + a deliberate
+`live-gate/<n>` trigger-branch path, needed because workflow_dispatch registration requires the
+file on the repository default branch, which was deliberately not touched). It seeds `p4h-*`
+fixtures server-side (service key, per-run masked password — nothing committed), builds against
+RecoveryOS-Launch, serves the production build on the runner (MODE A) or targets
+`P4H_E2E_BASE_URL` (MODE B), runs the live suite, uploads traces. Supporting pieces: migration
+`0119_service_role_grants.sql` (applied live — standard server-only service_role table grants;
+client authorization unchanged), `scripts/seed-e2e-fixtures.mjs` (idempotent; classifies every
+synthetic identity `test_fixture`), Playwright config gains CI-runner browser fallback and the
+external-base-URL mode without touching the proven `local` project.
+
+**Execution evidence:** run 31283117272 (branch `live-gate/run-001`, commit `de764e5`) reached
+the egress-capable runner, resolved canonical config, and stopped exactly at the designed
+guard: **the `SUPABASE_SERVICE_ROLE_KEY` repository secret does not exist.** A follow-up
+workflow_dispatch (now registered) queued successfully — the dispatch path works too.
+
+**Chronic CI failure fixed (found during G1):** every CI run had failed for weeks on a
+pnpm version conflict (`pnpm/action-setup` pin vs `packageManager`); removed the pin — CI can
+go green again.
+
+**Items G1 §9 (gate items 1–30), §12 (realtime/polling), §13 (cron), §14 (authenticated
+accessibility), §11/Phase C (deployed-artifact verification):** NOT EXECUTED — all gated behind
+the single missing secret below. Cron remains READY — NOT ACTIVATED; polling retained; external
+delivery OFF; no DNS changes; human-device VoiceOver/NVDA items unchanged.
+
+## G1 verdict
+
+**P4H LIVE GATE NO-GO — [BLOCKER: missing `SUPABASE_SERVICE_ROLE_KEY` repository secret]**
+
+Exactly one human action unblocks the entire gate: add the launch project's service-role key as
+a GitHub Actions **repository secret** named `SUPABASE_SERVICE_ROLE_KEY`
+(github.com/rcoiowa/GFA-ECO → Settings → Secrets and variables → Actions → New repository
+secret; optionally also `P4H_E2E_PASSWORD` for a fixed fixture password — otherwise each run
+generates and masks its own). The key is used only by the server-side fixture seeder and never
+reaches the browser or the built artifact. After the secret exists, the gate runs via the
+Actions tab ("Live HTTP gate" → Run workflow on `claude/grace-coaching-audit-b0fyhq`) or by
+asking this session to dispatch it; first-run selector bring-up then proceeds per the runbook,
+followed by realtime→polling→cron→authenticated-accessibility→Phase C in the directive's order.
+The residual `live-gate/run-001` branch is an inert trigger artifact (identical history; the
+push credential cannot delete remote branches).
