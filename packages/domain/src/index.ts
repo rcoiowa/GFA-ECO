@@ -5,3 +5,5 @@ export * from './instruments/barc10';
 export * from './phases';
 export * from './pulse';
 export * from './routing';
+export * from './coaching';
+export * from './time';

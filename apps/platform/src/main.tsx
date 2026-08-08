@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { configureSupabase } from '@recoveryos/data-access';
 import { AuthProvider } from '@recoveryos/auth';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/query';
 import { App } from './App';
 import './styles.css';
 
@@ -25,7 +27,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

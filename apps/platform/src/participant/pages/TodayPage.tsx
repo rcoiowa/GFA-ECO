@@ -5,6 +5,7 @@ import { listMyGoals, listMyRecentCheckIns } from '@recoveryos/data-access';
 import { dailySlogan } from '@recoveryos/recovery-content';
 import type { CheckIn, Goal } from '@recoveryos/domain';
 import { Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
+import { TodayConnection } from '../components/TodayConnection';
 
 /**
  * Today is a guidance layer, not a feature catalog: one check-in, the current
@@ -50,6 +51,7 @@ export function TodayPage() {
   return (
     <>
       <PageHeader title={`Hello, ${displayName}`} lede="Here's what may help you today." />
+      <TodayConnection />
       {slogan ? (
         <p className="-mt-3 mb-5 max-w-2xl text-ink-muted">
           <em>&ldquo;{slogan.text}&rdquo;</em>

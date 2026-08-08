@@ -17,71 +17,30 @@ import { getSupabase } from '../client';
  * (test/demo identities are excluded from production surfaces).
  */
 
-// ---- DTOs (stable contracts; promotion into @recoveryos/domain tracked for P4B) ----
-export interface CoachRelationship {
-  id: number;
-  participant_person_id: number;
-  coach_person_id: number;
-  status: string;
-  relationship_type: string;
-  is_primary: boolean;
-  started_at: string | null;
-  ended_at: string | null;
-}
-export interface SupportRequestRow {
-  id: number;
-  person_id: number;
-  request_type: string;
-  focus: string | null;
-  preferred_modality: string;
-  status: string;
-  claimed_by_person_id: number | null;
-  created_at: string;
-}
-export interface OpenPoolRow {
-  support_request_id: number;
-  participant_person_id: number;
-  participant_name: string;
-  request_type: string;
-  preferred_modality: string;
-  focus: string | null;
-  created_at: string;
-}
-export interface CanonicalAppointmentRow {
-  id: number;
-  person_id: number;
-  provider_person_id: number | null;
-  status: string;
-  starts_at: string;
-  ends_at: string | null;
-  modality: string | null;
-  meeting_url: string | null;
-  timezone: string;
-  confirmed_at: string | null;
-}
-export interface NotificationRow {
-  id: number;
-  kind: string;
-  title: string;
-  body: string;
-  link_path: string | null;
-  read_at: string | null;
-  created_at: string;
-}
-export interface ConversationRow {
-  id: number;
-  participant_person_id: number;
-  coach_person_id: number;
-  context: string;
-}
-export interface MessageRow {
-  id: number;
-  conversation_id: number;
-  sender_person_id: number;
-  body: string;
-  read_at: string | null;
-  created_at: string;
-}
+// ---- contracts: promoted to @recoveryos/domain (P4B) — re-exported for consumers ----
+export type {
+  CoachRelationship,
+  SupportRequestRow,
+  OpenPoolRow,
+  CanonicalAppointmentRow,
+  NotificationRow,
+  ConversationRow,
+  MessageRow,
+  SupportTeamMember,
+  BookingStateRow,
+  BookingProposalRow,
+} from '@recoveryos/domain';
+import type {
+  CoachRelationship,
+  SupportRequestRow,
+  OpenPoolRow,
+  CanonicalAppointmentRow,
+  NotificationRow,
+  ConversationRow,
+  MessageRow,
+  SupportTeamMember,
+  BookingStateRow,
+} from '@recoveryos/domain';
 
 // ---- relationshipService ----------------------------------------------------
 
@@ -115,7 +74,7 @@ export async function getMyParticipants(coachPersonId: number): Promise<CoachRel
 export async function getMySupportRequests(personId: number): Promise<SupportRequestRow[]> {
   const { data, error } = await getSupabase()
     .from('support_requests')
-    .select('id, person_id, request_type, focus, preferred_modality, status, claimed_by_person_id, created_at')
+    .select('id, person_id, request_type, focus, preferred_modality, status, claimed_by_person_id, claimed_at, cancelled_at, created_at')
     .eq('person_id', personId)
     .order('created_at', { ascending: false });
   if (error) throw error;
@@ -193,4 +152,85 @@ export async function getConversationMessages(conversationId: number): Promise<M
     .limit(200);
   if (error) throw error;
   return data ?? [];
+}
+
+// ---- supportTeamService (P4B) ----------------------------------------------
+
+/** The caller's active support relationships with appropriate public identity (RPC, progressive disclosure). */
+export async function getMySupportTeam(): Promise<SupportTeamMember[]> {
+  const { data, error } = await getSupabase().rpc('get_my_support_team');
+  if (error) throw error;
+  return (data as SupportTeamMember[]) ?? [];
+}
+
+// ---- bookingReadService (P4B) ----------------------------------------------
+
+/**
+ * The participant's booking negotiations with their active proposal round —
+ * enough to explain "is scheduling underway / is a response waiting", not the
+ * full negotiation UI (that lands with the interactive scheduling slice).
+ */
+export async function getMyBookingStates(participantPersonId: number): Promise<BookingStateRow[]> {
+  const { data, error } = await getSupabase()
+    .from('booking_requests')
+    .select(
+      'id, support_request_id, participant_person_id, provider_person_id, status, appointment_id, created_at, proposals:booking_proposals(id, booking_request_id, proposed_by_person_id, proposed_start, proposed_end, round, is_active, accepted)',
+    )
+    .eq('participant_person_id', participantPersonId)
+    .in('status', ['open', 'confirmed'])
+    .order('created_at', { ascending: false })
+    .limit(10);
+  if (error) throw error;
+  return (data as unknown as BookingStateRow[]) ?? [];
+}
+
+// ---- notification writes (P4B) ----------------------------------------------
+
+export async function getUnreadNotificationCount(personId: number): Promise<number> {
+  const { count, error } = await getSupabase()
+    .from('notifications')
+    .select('id', { count: 'exact', head: true })
+    .eq('recipient_person_id', personId)
+    .is('read_at', null);
+  if (error) throw error;
+  return count ?? 0;
+}
+
+/** Mark one notification read (RLS: recipient-only update). */
+export async function markNotificationRead(notificationId: number): Promise<void> {
+  const { error } = await getSupabase()
+    .from('notifications')
+    .update({ read_at: new Date().toISOString() })
+    .eq('id', notificationId)
+    .is('read_at', null);
+  if (error) throw error;
+}
+
+/** Mark all of the caller's notifications read. */
+export async function markAllNotificationsRead(personId: number): Promise<void> {
+  const { error } = await getSupabase()
+    .from('notifications')
+    .update({ read_at: new Date().toISOString() })
+    .eq('recipient_person_id', personId)
+    .is('read_at', null);
+  if (error) throw error;
+}
+
+// ---- support request cancel (P4B) --------------------------------------------
+
+/**
+ * Participant withdraws their own still-open request. Guarded client-side to the
+ * open/submitted window and enforced server-side by the sr_participant_cancel
+ * RLS policy (own rows only). Claimed/assigned requests are not silently
+ * cancellable from the client — that transition belongs to the support flow.
+ */
+export async function cancelMySupportRequest(requestId: number): Promise<boolean> {
+  const { data, error } = await getSupabase()
+    .from('support_requests')
+    .update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
+    .eq('id', requestId)
+    .in('status', ['open', 'submitted'])
+    .select('id');
+  if (error) throw error;
+  return (data?.length ?? 0) > 0;
 }
