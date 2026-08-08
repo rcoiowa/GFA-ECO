@@ -11,6 +11,8 @@ import { CompliancePage } from './pages/CompliancePage';
 import { FeesPage } from './pages/FeesPage';
 import { BoardPage } from './pages/BoardPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { StaffMessagesPage } from './pages/StaffMessagesPage';
+import { StaffThreadPage } from './pages/StaffThreadPage';
 import { NotFoundPage } from '../pages/StatusPages';
 
 /**
@@ -33,6 +35,8 @@ export function StaffArea() {
             <Route path="fees" element={<FeesPage />} />
             <Route path="board" element={<BoardPage />} />
             <Route path="reports" element={<ReportsPage />} />
+            <Route path="messages" element={<StaffMessagesPage />} />
+            <Route path="messages/:personId" element={<StaffThreadPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

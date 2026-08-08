@@ -15,7 +15,7 @@ export interface EnsureConversationResult {
   context: string | null;
 }
 
-export type ConversationContext = 'coaching' | 'navigation';
+export type ConversationContext = 'coaching' | 'navigation' | 'residence';
 
 /**
  * Server-authoritative, idempotent conversation resolution for an active

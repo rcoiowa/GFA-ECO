@@ -22,3 +22,4 @@ export * from './repositories/coachingWrites';
 export * from './repositories/coachWorkspace';
 export * from './repositories/messaging';
 export * from './repositories/navigation';
+export * from './repositories/residenceSupport';

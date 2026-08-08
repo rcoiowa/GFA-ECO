@@ -37,7 +37,12 @@ export function MessagesPage() {
     members.find((m) => m.context === 'coaching') ??
     members[0];
 
-  const context = active?.context === 'navigation' ? 'navigation' : 'coaching';
+  const context =
+    active?.context === 'navigation'
+      ? ('navigation' as const)
+      : active?.context === 'residence'
+        ? ('residence' as const)
+        : ('coaching' as const);
   const ensure = useEnsureConversation(active?.support_person_id ?? null, Boolean(active), context);
   const conversationId = ensure.data?.ok ? ensure.data.conversationId : null;
   const thread = useConversationThread(conversationId);

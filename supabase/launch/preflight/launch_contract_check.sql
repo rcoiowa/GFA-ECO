@@ -69,6 +69,35 @@ begin
   if n <> 0 then
     raise exception 'LAUNCH-CONTRACT FAIL: unknown authenticated identity can read % people rows', n;
   end if;
+
+  -- 6) Residence hardening regression guards (P4F). High-impact lifecycle
+  --    tables must have NO generic client write policies — transitions are
+  --    RPC-only, and screenings/incidents are append-only.
+  select string_agg(distinct tablename, ', ') into missing
+  from pg_policies
+  where schemaname = 'recoveryos'
+    and tablename in ('screenings','incidents')
+    and cmd in ('UPDATE','DELETE','ALL');
+  if missing is not null then
+    raise exception 'LAUNCH-CONTRACT FAIL: append-only violated (UPDATE/DELETE/ALL policy) on: %', missing;
+  end if;
+  select string_agg(distinct tablename || ':' || policyname, ', ') into missing
+  from pg_policies
+  where schemaname = 'recoveryos'
+    and tablename in ('residence_applications','residencies','bed_assignments','passes')
+    and cmd in ('UPDATE','DELETE','ALL')
+    and policyname <> 'document_assignments_ack_self';
+  if missing is not null then
+    raise exception 'LAUNCH-CONTRACT FAIL: generic lifecycle write policy present: %', missing;
+  end if;
+  if exists (select 1 from pg_policies where schemaname='recoveryos'
+             and tablename='grievances' and policyname='grievances_involved') then
+    raise exception 'LAUNCH-CONTRACT FAIL: broad grievance read policy (grievances_involved) is back';
+  end if;
+  if not exists (select 1 from pg_policies where schemaname='recoveryos'
+                 and tablename='grievances' and policyname='grievances_scoped_select') then
+    raise exception 'LAUNCH-CONTRACT FAIL: grievances_scoped_select missing';
+  end if;
 end $contract$;
 
 select 'LAUNCH CONTRACT PASS — schema usage, table privileges, anon scope, RLS posture verified' as result;

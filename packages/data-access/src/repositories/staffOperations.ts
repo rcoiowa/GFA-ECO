@@ -98,27 +98,25 @@ export async function getBedBoard(residenceId: number): Promise<{
   };
 }
 
-export async function assignBed(input: {
-  residencyId: number;
-  bedId: number;
-}): Promise<BedAssignment> {
-  const sb = getSupabase();
-  const { data, error } = await sb
-    .from('bed_assignments')
-    .insert({ residency_id: input.residencyId, bed_id: input.bedId })
-    .select()
-    .single();
+/**
+ * P4F: bed operations are server-authoritative RPCs — residence-scoped staff,
+ * database uniqueness as the race arbiter, transfer history preserved, audited.
+ */
+export async function assignBed(input: { residencyId: number; bedId: number }): Promise<void> {
+  const { data, error } = await getSupabase().rpc('assign_bed', {
+    p_residency_id: input.residencyId,
+    p_bed_id: input.bedId,
+  });
   if (error) throw error;
-  await sb.from('residencies').update({ bed_assignment_id: data.id }).eq('id', input.residencyId);
-  return data;
+  const result = data as { ok?: boolean; code?: string; message?: string } | null;
+  if (!result?.ok) throw new Error(result?.message ?? String(result?.code ?? 'assign_failed'));
 }
 
 export async function releaseBed(assignmentId: number): Promise<void> {
-  const { error } = await getSupabase()
-    .from('bed_assignments')
-    .update({ released_at: new Date().toISOString() })
-    .eq('id', assignmentId);
+  const { data, error } = await getSupabase().rpc('release_bed', { p_assignment_id: assignmentId });
   if (error) throw error;
+  const result = data as { ok?: boolean; code?: string } | null;
+  if (!result?.ok) throw new Error(String(result?.code ?? 'release_failed'));
 }
 
 // Applications / waitlist --------------------------------------------------
@@ -137,32 +135,40 @@ export async function listApplications(residenceId: number): Promise<Application
   return data ?? [];
 }
 
-/** Decide an application; approving also opens the residency record. */
+/**
+ * P4F: decisions go through review_residence_application — the server derives
+ * the decider, enforces legal transitions, and requires residence-manager
+ * authority for terminal decisions. The staff UI's "Approve" action keeps its
+ * historical product meaning (approve AND open the residency) by chaining the
+ * admit RPC; waitlist/decline/in-review are review-only. `decidedByPersonId`
+ * is retained for signature compatibility but ignored — identity is never
+ * client-supplied.
+ */
 export async function decideApplication(input: {
   application: ResidenceApplication;
   status: 'in_review' | 'approved' | 'waitlisted' | 'declined';
-  decidedByPersonId: number;
+  decidedByPersonId?: number;
   notes?: string;
 }): Promise<void> {
   const sb = getSupabase();
-  const { error } = await sb
-    .from('residence_applications')
-    .update({
-      status: input.status,
-      decided_at: new Date().toISOString(),
-      decided_by_person_id: input.decidedByPersonId,
-      notes: input.notes ?? input.application.notes,
-    })
-    .eq('id', input.application.id);
+  const { data, error } = await sb.rpc('review_residence_application', {
+    p_application_id: input.application.id,
+    p_decision: input.status,
+    p_note: input.notes ?? null,
+  });
   if (error) throw error;
+  const result = data as { ok?: boolean; code?: string; message?: string } | null;
+  if (!result?.ok) throw new Error(result?.message ?? String(result?.code ?? 'review_failed'));
 
   if (input.status === 'approved') {
-    const { error: resError } = await sb.from('residencies').insert({
-      person_id: input.application.person_id,
-      residence_id: input.application.residence_id,
-      residency_status: 'approved',
+    const { data: admitData, error: admitError } = await sb.rpc('admit_applicant', {
+      p_application_id: input.application.id,
+      p_bed_id: null,
+      p_admission_date: new Date().toISOString().slice(0, 10),
     });
-    if (resError && resError.code !== '23505') throw resError; // ignore existing live residency
+    if (admitError) throw admitError;
+    const admit = admitData as { ok?: boolean; code?: string; message?: string } | null;
+    if (!admit?.ok) throw new Error(admit?.message ?? String(admit?.code ?? 'admit_failed'));
   }
 }
 
@@ -253,16 +259,19 @@ export async function listPendingPasses(
   return data ?? [];
 }
 
+/** P4F: pass decisions are RPC-only; the server derives the decider identity. */
 export async function decidePass(input: {
   passId: number;
   status: 'approved' | 'denied';
-  decidedByPersonId: number;
+  decidedByPersonId?: number;
 }): Promise<void> {
-  const { error } = await getSupabase()
-    .from('passes')
-    .update({ status: input.status, decided_by_person_id: input.decidedByPersonId })
-    .eq('id', input.passId);
+  const { data, error } = await getSupabase().rpc('decide_pass', {
+    p_pass_id: input.passId,
+    p_decision: input.status,
+  });
   if (error) throw error;
+  const result = data as { ok?: boolean; code?: string; message?: string } | null;
+  if (!result?.ok) throw new Error(result?.message ?? String(result?.code ?? 'decide_failed'));
 }
 
 // Compliance ---------------------------------------------------------------

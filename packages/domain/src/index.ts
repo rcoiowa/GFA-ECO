@@ -11,3 +11,4 @@ export * from './coach';
 export * from './messaging';
 export * from './scheduling';
 export * from './navigation';
+export * from './residence';

@@ -43,7 +43,14 @@ export type AnalyticsEvent =
   | 'connection_not_confirmed'
   | 'navigation_follow_up_completed'
   | 'navigation_service_event_recorded'
-  | 'session_completed_recorded';
+  | 'session_completed_recorded'
+  | 'residence_application_submitted'
+  | 'application_reviewed'
+  | 'residency_admitted'
+  | 'bed_assigned'
+  | 'pass_requested'
+  | 'pass_decided'
+  | 'residence_support_service_recorded';
 
 type Sink = (event: AnalyticsEvent, props?: Record<string, string | number | boolean>) => void;
 

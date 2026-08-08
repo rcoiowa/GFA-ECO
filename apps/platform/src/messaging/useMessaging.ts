@@ -29,7 +29,7 @@ import { track } from '../lib/analytics';
 export function useEnsureConversation(
   otherPersonId: number | null,
   enabled = true,
-  context?: 'coaching' | 'navigation',
+  context?: 'coaching' | 'navigation' | 'residence',
 ) {
   const { person } = useAuth();
   return useQuery({
