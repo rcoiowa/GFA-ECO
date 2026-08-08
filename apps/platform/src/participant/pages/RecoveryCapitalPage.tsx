@@ -60,8 +60,8 @@ export function RecoveryCapitalPage() {
   }
 
   const crumbs = [
-    { to: '/app/today', label: 'Today' },
-    { to: '/app/tools', label: 'Tools' },
+    { to: '/vrcc/today', label: 'Today' },
+    { to: '/vrcc/tools', label: 'Tools' },
   ];
 
   if (stage === 'intro') {

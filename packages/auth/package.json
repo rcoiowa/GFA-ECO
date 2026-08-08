@@ -12,7 +12,8 @@
   "dependencies": {
     "@recoveryos/data-access": "workspace:*",
     "@recoveryos/domain": "workspace:*",
-    "@supabase/supabase-js": "^2.49.0"
+    "@supabase/supabase-js": "^2.49.0",
+    "@recoveryos/ui": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.0.0",

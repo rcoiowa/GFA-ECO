@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { ThemeSwitcher } from '../primitives/ThemeSwitcher';
 
@@ -36,7 +36,15 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const location = useLocation();
-  const mobileItems = navItems.slice(0, 5);
+  const [moreOpen, setMoreOpen] = useState(false);
+  // Every destination stays reachable on mobile: when there are more than five,
+  // the fifth slot becomes a "More" sheet holding the rest (nothing silently drops).
+  const hasOverflow = navItems.length > 5;
+  const mobileItems = hasOverflow ? navItems.slice(0, 4) : navItems;
+  const overflowItems = hasOverflow ? navItems.slice(4) : [];
+  const isActive = (to: string) =>
+    location.pathname === to || location.pathname.startsWith(to.endsWith('/') ? to : `${to}/`);
+  const overflowActive = overflowItems.some((item) => isActive(item.to));
 
   return (
     <div data-experience={experience} className="min-h-dvh flex flex-col md:flex-row">
@@ -98,23 +106,61 @@ export function AppShell({
         aria-label="Primary"
         className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface-raised"
       >
-        <ul className="grid grid-cols-5">
-          {mobileItems.map((item) => {
-            const active = location.pathname.startsWith(item.to);
-            return (
-              <li key={item.to}>
-                <NavLink
-                  to={item.to}
-                  className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium ${
-                    active ? 'text-experience-700' : 'text-ink-muted'
-                  }`}
-                >
-                  {item.icon}
-                  <span>{item.shortLabel ?? item.label}</span>
-                </NavLink>
-              </li>
-            );
-          })}
+        {moreOpen && overflowItems.length > 0 ? (
+          <div className="border-b border-line bg-surface-raised px-2 py-2">
+            <ul className="flex flex-col">
+              {overflowItems.map((item) => (
+                <li key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    onClick={() => setMoreOpen(false)}
+                    className={`flex min-h-11 items-center gap-2 rounded-md px-3 font-medium ${
+                      isActive(item.to) ? 'bg-experience-soft text-experience-700' : 'text-ink-muted'
+                    }`}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        <ul
+          className="grid"
+          style={{
+            gridTemplateColumns: `repeat(${mobileItems.length + (hasOverflow ? 1 : 0)}, 1fr)`,
+          }}
+        >
+          {mobileItems.map((item) => (
+            <li key={item.to}>
+              <NavLink
+                to={item.to}
+                onClick={() => setMoreOpen(false)}
+                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium ${
+                  isActive(item.to) ? 'text-experience-700' : 'text-ink-muted'
+                }`}
+              >
+                {item.icon}
+                <span>{item.shortLabel ?? item.label}</span>
+              </NavLink>
+            </li>
+          ))}
+          {hasOverflow ? (
+            <li>
+              <button
+                type="button"
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen((v) => !v)}
+                className={`flex min-h-14 w-full flex-col items-center justify-center gap-0.5 text-xs font-medium ${
+                  overflowActive && !moreOpen ? 'text-experience-700' : moreOpen ? 'text-experience-700' : 'text-ink-muted'
+                }`}
+              >
+                <span aria-hidden="true">⋯</span>
+                <span>More</span>
+              </button>
+            </li>
+          ) : null}
         </ul>
       </nav>
     </div>

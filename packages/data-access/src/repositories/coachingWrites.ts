@@ -7,17 +7,14 @@ import { getSupabase } from '../client';
  * goes through a server-authoritative `recoveryos` SECURITY DEFINER RPC — the
  * client never mutates canonical tables directly, never supplies identity, and
  * never supplies a role. Authority is derived inside the RPC from the JWT →
- * people → role_assignments → active relationship. `v2_profiles.role`,
- * `body.coach_id`, and route names are never trusted.
+ * people → role_assignments → active relationship. Client-supplied
+ * identity, role claims, and route names are never trusted.
  *
  * Each function returns the RPC's `{ ok, code, message?, ...ids }` envelope
  * verbatim so callers map domain codes to UX and never see SQL internals.
  *
- * Cutover status is tracked per domain in `recoveryos.write_authority`. These
- * functions are the canonical write path; a domain only becomes production
- * write-authoritative when its `write_authority` row is flipped to 'canonical'
- * AND a real consumer calls these functions (P3C runbook). Until then the v2
- * path remains authoritative and these coexist as the prepared canonical writer.
+ * Canonical RecoveryOS is the only write path — there is no legacy write
+ * authority, no compatibility projection, and no transition state to consult.
  */
 
 export interface RpcResult {
@@ -144,9 +141,7 @@ export function rescheduleBooking(appointmentId: number, starts: string[]): Prom
   return callRpc('reschedule_booking', { p_appointment_id: appointmentId, p_starts: starts });
 }
 
-// NOTE: notification generation (notify_appointment_event / notify_relationship_assigned) and
-// follow-up creation are SERVER-INTERNAL canonical generators — they are invoked inside the
-// domain RPCs / a canonical scheduler, never called directly by a client, so they are not
-// exposed here. Meeting provisioning stays behind the hardened create-meeting Edge Function,
-// which validates against the canonical relationship + appointment when appointments reach
-// CANONICAL_WRITE (P3C-B runbook). These remain dormant until notifications/appointments flip.
+// NOTE: notification generation and reminder seeding are SERVER-INTERNAL — domain triggers
+// emit them when relationships/appointments change state; clients never call them directly.
+// Meeting provisioning goes through the create-meeting Edge Function, which validates the
+// caller against the canonical appointment via provision_appointment_meeting.

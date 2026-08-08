@@ -6,13 +6,13 @@ import { ExperienceSwitcher } from '../components/ExperienceSwitcher';
 
 /** The seven VRCC participant destinations. Do not add an eighth casually. */
 const NAV_ITEMS: NavItem[] = [
-  { to: '/app/today', label: 'Today' },
-  { to: '/app/recovery', label: 'My Recovery', shortLabel: 'Recovery' },
-  { to: '/app/connect', label: 'Connect' },
-  { to: '/app/learn', label: 'Learn' },
-  { to: '/app/tools', label: 'Tools' },
-  { to: '/app/resources', label: 'Resources' },
-  { to: '/app/journey', label: 'My Journey', shortLabel: 'Journey' },
+  { to: '/vrcc/today', label: 'Today' },
+  { to: '/vrcc/recovery', label: 'My Recovery', shortLabel: 'Recovery' },
+  { to: '/vrcc/connect', label: 'Connect' },
+  { to: '/vrcc/learn', label: 'Learn' },
+  { to: '/vrcc/tools', label: 'Tools' },
+  { to: '/vrcc/resources', label: 'Resources' },
+  { to: '/vrcc/journey', label: 'My Journey', shortLabel: 'Journey' },
 ];
 
 export function ParticipantShell() {

@@ -230,8 +230,8 @@ export function CheckInPage() {
           <Card>
             <CardTitle>Where to go next</CardTitle>
             <div className="flex flex-wrap gap-3">
-              <Button onClick={() => navigate('/app/journey')}>See your journey</Button>
-              <Button variant="secondary" onClick={() => navigate('/app')}>
+              <Button onClick={() => navigate('/vrcc/journey')}>See your journey</Button>
+              <Button variant="secondary" onClick={() => navigate('/vrcc')}>
                 Back to Today
               </Button>
             </div>

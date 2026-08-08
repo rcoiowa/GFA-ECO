@@ -7,7 +7,7 @@ export function ConnectPage() {
       <PageHeader
         title="Connect"
         lede="Your support team and your community."
-        crumbs={[{ to: '/app/today', label: 'Today' }]}
+        crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
       />
       <div className="flex flex-col gap-5">
         <Card>

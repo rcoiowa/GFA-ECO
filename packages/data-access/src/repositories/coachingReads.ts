@@ -7,18 +7,17 @@ import { getSupabase } from '../client';
  * (the future Coach Workspace, participant Connect, Navigator/Admin/Residence
  * projections) reads relationships, requests, bookings, appointments,
  * conversations, and notifications through these functions — from the
- * `recoveryos` canonical schema, never from the legacy v2 or mvp tables directly.
+ * `recoveryos` canonical schema, the platform's single source of truth.
  *
- * READ-ONLY by design. Write authority (claim / assign / accept / confirm)
- * remains on the v2 path during P3B; canonical write services land in P3C. Do
- * not add mutations here until that phase is authorized.
+ * READ-ONLY by design — mutations live in coachingWrites.ts behind
+ * server-authoritative RPCs.
  *
  * All access is RLS-scoped by the caller's JWT → person_id; identity is never
  * passed as a trust boundary. Pool/roster/coach-list reads are fixture-aware
  * (test/demo identities are excluded from production surfaces).
  */
 
-// ---- DTOs (stable contracts; mirror into @recoveryos/domain at P4) ----------
+// ---- DTOs (stable contracts; promotion into @recoveryos/domain tracked for P4B) ----
 export interface CoachRelationship {
   id: number;
   participant_person_id: number;

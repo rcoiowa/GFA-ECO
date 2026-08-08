@@ -19,7 +19,7 @@ export function OnboardingPage() {
   // Internal-only return path (e.g. back to a residence application).
   const rawNext = searchParams.get('next');
   const destination =
-    rawNext?.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/app/today';
+    rawNext?.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/home';
 
   useEffect(() => {
     if (person) {

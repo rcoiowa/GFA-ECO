@@ -4,3 +4,4 @@ export * from './schemas';
 export * from './instruments/barc10';
 export * from './phases';
 export * from './pulse';
+export * from './routing';

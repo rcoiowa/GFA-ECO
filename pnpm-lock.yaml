@@ -96,6 +96,9 @@ importers:
       '@recoveryos/domain':
         specifier: workspace:*
         version: link:../domain
+      '@recoveryos/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@supabase/supabase-js':
         specifier: ^2.49.0
         version: 2.111.0

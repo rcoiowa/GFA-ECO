@@ -11,6 +11,15 @@ import { MyApplicationPage } from './public/MyApplicationPage';
 import { ListYourResidencePage } from './public/ListYourResidencePage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { NotAuthorizedPage, NotFoundPage } from './pages/StatusPages';
+import { RoleHome } from './pages/RoleHome';
+import { ForgotPasswordPage } from './public/ForgotPasswordPage';
+import {
+  AdminWorkspaceShell,
+  CoachWorkspaceShell,
+  LegacyAppRedirect,
+  NavigatorWorkspaceShell,
+  ResidencesDispatcher,
+} from './pages/WorkspaceShells';
 import { RequireAuth } from '@recoveryos/auth';
 
 /**
@@ -71,9 +80,9 @@ export function App() {
         }
       />
 
-      {/* Experience shells */}
+      {/* Experience shells — canonical role-explicit routes (P4A). */}
       <Route
-        path="/app/*"
+        path="/vrcc/*"
         element={
           <Suspense fallback={<LoadingState label="Opening the VRCC…" />}>
             <ParticipantArea />
@@ -96,9 +105,17 @@ export function App() {
           </Suspense>
         }
       />
+      <Route path="/coach/*" element={<CoachWorkspaceShell />} />
+      <Route path="/navigator/*" element={<NavigatorWorkspaceShell />} />
+      <Route path="/admin/*" element={<AdminWorkspaceShell />} />
+      <Route path="/residences" element={<ResidencesDispatcher />} />
 
+      {/* Legacy aliases — safe redirects, removed only when nothing links to them. */}
+      <Route path="/app/*" element={<LegacyAppRedirect />} />
+
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/not-authorized" element={<NotAuthorizedPage />} />
-      <Route path="/home" element={<Navigate to="/app/today" replace />} />
+      <Route path="/home" element={<RoleHome />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
