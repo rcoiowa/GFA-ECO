@@ -36,23 +36,28 @@ test('4–10. support request → claim → messages → realtime → scheduling
   // 4. T0 — participant asks for a recovery coach (state-tolerant on rerun).
   const mode = await ensureSupportRequested(participant, /talk with a recovery coach/i);
   if (mode !== 'connected') {
-    // 5. T2 — coach claims; the waiting row leaves the pool.
+    // 5. T2 — coach claims THIS participant's row (not pool.first(), which
+    // grabs stale requests on reruns). Success is server-confirmed by the
+    // claim flow's own navigation to the participant page — asserting it
+    // also stops the test from navigating away while the RPC is in flight.
     await coach.goto('/coach/requests');
-    const claim = coach.getByRole('button', { name: /connect with this person/i }).first();
+    const row = coach.locator('li', { hasText: /p4h-participant/i }).first();
+    const claim = row.getByRole('button', { name: /connect with this person/i });
     await expect(claim).toBeVisible({ timeout: 20_000 });
     await claim.click();
-    await expect(
-      coach.getByRole('button', { name: /connect with this person/i }),
-    ).toHaveCount(0, { timeout: 20_000 });
+    await coach.waitForURL(/\/coach\/participants\/\d+/, { timeout: 20_000 });
+  } else {
+    await coach.goto('/coach/participants');
+    await coach.getByRole('link').filter({ hasText: /p4h-participant/i }).first().click();
+    await coach.waitForURL(/\/coach\/participants\/\d+/, { timeout: 20_000 });
   }
 
   // 6. T1/T4a — two-way messages over real PostgREST. The thread starts from
-  // the participant detail page ("Message {name}"); the messages list only
-  // shows conversations that already exist.
+  // the participant detail page's "Message {name}" link — anchored on the
+  // name so the sidebar "Messages" nav link (also /^message/i) can't win
+  // .first() and strand the test on the list page.
   const marker = `P4H live gate ${Date.now()}`;
-  await coach.goto('/coach/participants');
-  await coach.getByRole('link').filter({ hasText: /p4h/i }).first().click();
-  await coach.getByRole('link', { name: /^message/i }).first().click();
+  await coach.getByRole('link', { name: /^message p4h/i }).first().click();
   await coach.getByLabel(/message/i).fill(`Coach hello — ${marker}`);
   await coach.getByRole('button', { name: /^send$/i }).click();
   await expect(coach.getByText(`Coach hello — ${marker}`)).toBeVisible({ timeout: 15_000 });

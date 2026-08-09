@@ -11,24 +11,30 @@ test('11–16. navigation: claim → message → need → referral → confirmat
   const context = await browser.newContext();
   const participant = await context.newPage();
   const email = FIXTURES.fresh('nav-participant');
+  // Person names come from the email local-part (both signup paths), so the
+  // per-run timestamp in the email uniquely identifies THIS run's participant
+  // in pools and rosters — stale identities from earlier runs never match.
+  const tag = email.match(/(\d+)@/)![1];
   await ensureFreshUser(participant, email, 'P4H', 'NavSeeker');
 
   // Participant raises a navigation-type request.
   await ensureSupportRequested(participant, /help navigating something/i);
 
-  // 11. Navigator claims from the waiting pool.
+  // 11. Navigator claims THIS run's request from the waiting pool. Success is
+  // server-confirmed by the claim flow's own navigation to the person page —
+  // asserting it also stops the test from navigating away mid-RPC.
   const navigator = await userPage(browser, FIXTURES.navigator);
   await navigator.goto('/navigator/requests');
-  const claim = navigator.getByRole('button', { name: /connect with this person/i }).first();
+  const row = navigator.locator('li', { hasText: tag }).first();
+  const claim = row.getByRole('button', { name: /connect with this person/i });
   await expect(claim).toBeVisible({ timeout: 20_000 });
   await claim.click();
+  await navigator.waitForURL(/\/navigator\/people\/\d+/, { timeout: 20_000 });
 
-  // 12. Navigation-context message — the thread starts from the person page
-  // ("Message {name}"); the messages list only shows existing conversations.
+  // 12. Navigation-context message — the person page's "Message {name}" link,
+  // anchored on the name so the sidebar "Messages" nav link can't win .first().
   const marker = `P4H nav ${Date.now()}`;
-  await navigator.goto('/navigator/people');
-  await navigator.getByRole('link').filter({ hasText: /nav-participant/i }).first().click();
-  await navigator.getByRole('link', { name: /^message/i }).first().click();
+  await navigator.getByRole('link', { name: /^message p4h/i }).first().click();
   await navigator.getByLabel(/message/i).fill(`Navigator hello — ${marker}`);
   await navigator.getByRole('button', { name: /^send$/i }).click();
   await expect(navigator.getByText(`Navigator hello — ${marker}`)).toBeVisible({
@@ -39,7 +45,7 @@ test('11–16. navigation: claim → message → need → referral → confirmat
   // live on the person page — conditional so drift surfaces as a trace, and
   // the admin evidence checks in file 03 stay the hard gate).
   await navigator.goto('/navigator/people');
-  await navigator.getByRole('link').filter({ hasText: /nav-participant/i }).first().click();
+  await navigator.getByRole('link').filter({ hasText: tag }).first().click();
   const addNeed = navigator.getByRole('button', { name: /add.*need|identify.*need|need/i }).first();
   if (await addNeed.isVisible().catch(() => false)) {
     await addNeed.click();
@@ -73,7 +79,7 @@ test('11–16. navigation: claim → message → need → referral → confirmat
   // 16. Navigation service attestation — the real 'I provided navigation
   // support' flow on the person page.
   await navigator.goto('/navigator/people');
-  await navigator.getByRole('link').filter({ hasText: /nav-participant/i }).first().click();
+  await navigator.getByRole('link').filter({ hasText: tag }).first().click();
   const attest = navigator.getByRole('button', { name: /i provided navigation support/i }).first();
   await expect(attest).toBeVisible({ timeout: 15_000 });
   await attest.click();

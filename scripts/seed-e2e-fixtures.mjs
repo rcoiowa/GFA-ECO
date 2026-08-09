@@ -169,4 +169,24 @@ for (const u of strayUsers) {
   const rows = await rest(`people?auth_user_id=eq.${u.id}&select=id`);
   if (rows.length) await classifyFixture(rows[0].id);
 }
+
+// Deterministic waiting pools: cancel OPEN support requests left by earlier
+// gate runs (each run's participant raises a fresh one; stale rows would
+// otherwise accumulate and make pool rows ambiguous). Fixture-world only —
+// production requests are never touched.
+const fixturePeople = await rest(
+  'person_classification?classification=eq.test_fixture&select=person_id',
+);
+if (fixturePeople.length) {
+  const ids = fixturePeople.map((r) => r.person_id).join(',');
+  const stale = await rest(
+    `support_requests?status=eq.open&person_id=in.(${ids})&select=id`,
+    {
+      method: 'PATCH',
+      headers: { prefer: 'return=representation' },
+      body: JSON.stringify({ status: 'cancelled' }),
+    },
+  );
+  console.log(`cancelled ${stale?.length ?? 0} stale open fixture support request(s)`);
+}
 console.log(`seed complete — residence scope ${residenceId}; ${PLAN.length} stable fixtures.`);
