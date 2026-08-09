@@ -10,6 +10,7 @@ import { MessagesPage } from './pages/MessagesPage';
 import { SessionsPage } from './pages/SessionsPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { LearnPage } from './pages/LearnPage';
+import { GracePage } from './pages/GracePage';
 import { ToolsPage } from './pages/ToolsPage';
 import { RecoveryCapitalPage } from './pages/RecoveryCapitalPage';
 import { ResourcesPage } from './pages/ResourcesPage';
@@ -29,6 +30,7 @@ export function ParticipantArea() {
           <Route path="check-in" element={<CheckInPage />} />
           <Route path="recovery" element={<MyRecoveryPage />} />
           <Route path="connect" element={<ConnectPage />} />
+          <Route path="grace" element={<GracePage />} />
           <Route path="messages" element={<MessagesPage />} />
           <Route path="sessions" element={<SessionsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />

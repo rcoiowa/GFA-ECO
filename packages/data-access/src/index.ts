@@ -18,6 +18,7 @@ export * from './repositories/supervisionReport';
 export * from './repositories/sessions';
 export * from './repositories/pulse';
 export * from './repositories/coachingReads';
+export * from './repositories/grace';
 export * from './repositories/coachingWrites';
 export * from './repositories/coachWorkspace';
 export * from './repositories/messaging';

@@ -12,6 +12,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/vrcc/today', label: 'Today' },
   { to: '/vrcc/recovery', label: 'My Recovery', shortLabel: 'Recovery' },
   { to: '/vrcc/connect', label: 'Connect' },
+  { to: '/vrcc/grace', label: 'Grace' },
   { to: '/vrcc/messages', label: 'Messages' },
   { to: '/vrcc/learn', label: 'Learn' },
   { to: '/vrcc/tools', label: 'Tools' },

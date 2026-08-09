@@ -249,6 +249,104 @@ export async function userPage(browser: Browser, email: string): Promise<Page> {
   return page;
 }
 
+const restHeaders = () => ({
+  ...adminHeaders(),
+  'accept-profile': 'recoveryos',
+  'content-profile': 'recoveryos',
+});
+
+/** person id for a fixture email (via admin users → people). Node-side only. */
+export async function personIdForEmail(email: string): Promise<number | null> {
+  if (!SERVICE_KEY) return null;
+  for (let page = 1; page <= 10; page++) {
+    const res = await fetch(`${SUPA_URL}/auth/v1/admin/users?page=${page}&per_page=100`, {
+      headers: adminHeaders(),
+    });
+    const body = (await res.json()) as { users?: Array<{ id: string; email?: string }> };
+    const users = body.users ?? [];
+    const hit = users.find((u) => (u.email ?? '').toLowerCase() === email.toLowerCase());
+    if (hit) {
+      const people = await (
+        await fetch(`${SUPA_URL}/rest/v1/people?auth_user_id=eq.${hit.id}&select=id`, {
+          headers: restHeaders(),
+        })
+      ).json();
+      return people[0]?.id ?? null;
+    }
+    if (users.length < 100) return null;
+  }
+  return null;
+}
+
+/** Record an ai_features consent decision for a fixture (Node-side service key). */
+export async function setAiConsentFixture(
+  email: string,
+  status: 'granted' | 'revoked',
+): Promise<void> {
+  const personId = await personIdForEmail(email);
+  if (!personId) throw new Error(`no person for ${email}`);
+  const types = await (
+    await fetch(`${SUPA_URL}/rest/v1/consent_types?key=eq.ai_features&select=id`, {
+      headers: restHeaders(),
+    })
+  ).json();
+  const typeId = types[0]?.id;
+  if (!typeId) throw new Error('ai_features consent type missing');
+  await fetch(`${SUPA_URL}/rest/v1/consent_grants`, {
+    method: 'POST',
+    headers: restHeaders(),
+    body: JSON.stringify({
+      person_id: personId,
+      consent_type_id: typeId,
+      status,
+      method: 'in_app',
+      effective_at: new Date().toISOString(),
+      revoked_at: status === 'revoked' ? new Date().toISOString() : null,
+    }),
+  });
+}
+
+/** Count rows via service PostgREST (for no-side-effect assertions). */
+export async function countRows(path: string): Promise<number> {
+  const res = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
+    headers: { ...restHeaders(), prefer: 'count=exact', range: '0-0' },
+  });
+  const cr = res.headers.get('content-range') ?? '*/0';
+  return Number(cr.split('/')[1] || 0);
+}
+
+/** Call the deployed grace Edge Function directly with a page's session token. */
+export async function callGrace(
+  page: Page,
+  messages: Array<{ role: 'user' | 'assistant'; content: string }>,
+): Promise<{ status: number; body: Record<string, unknown> }> {
+  const token = await page.evaluate(() => {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.includes('auth-token')) {
+        try {
+          const v = JSON.parse(localStorage.getItem(k) as string);
+          if (v?.access_token) return v.access_token as string;
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    return '';
+  });
+  const res = await fetch(`${SUPA_URL}/functions/v1/grace`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      apikey: process.env.VITE_SUPABASE_ANON_KEY ?? '',
+      authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ messages }),
+  });
+  const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+  return { status: res.status, body };
+}
+
 /**
  * Participant asks for support via the real Connect flow, tolerant of the
  * canonical state already reached on reruns. Waits for the page to settle

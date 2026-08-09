@@ -25,7 +25,7 @@ async function expectNoSeriousViolations(page: Page, route: string) {
 }
 
 const WORKSPACES: Array<[Exclude<keyof typeof FIXTURES, 'fresh'>, string[]]> = [
-  ['participant', ['/vrcc', '/vrcc/connect', '/vrcc/messages', '/vrcc/sessions']],
+  ['participant', ['/vrcc', '/vrcc/connect', '/vrcc/grace', '/vrcc/messages', '/vrcc/sessions']],
   ['coach', ['/coach', '/coach/participants', '/coach/requests', '/coach/messages', '/coach/sessions']],
   ['navigator', ['/navigator', '/navigator/people', '/navigator/requests', '/navigator/messages']],
   ['residenceManager', ['/staff/today', '/staff/applications', '/staff/beds', '/staff/messages']],

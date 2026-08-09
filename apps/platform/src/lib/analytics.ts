@@ -7,6 +7,14 @@
  */
 
 export type AnalyticsEvent =
+  // Grace (process metadata only — never message/response bodies, §20)
+  | 'grace_opened'
+  | 'grace_consent_granted'
+  | 'grace_message_sent'
+  | 'grace_provider_ok'
+  | 'grace_provider_failed'
+  | 'grace_support_now_surfaced'
+  | 'grace_human_connection_offered'
   | 'connect_page_viewed'
   | 'support_request_started'
   | 'support_request_submitted'
