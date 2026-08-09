@@ -46,10 +46,13 @@ test('4–10. support request → claim → messages → realtime → scheduling
     ).toHaveCount(0, { timeout: 20_000 });
   }
 
-  // 6. T1/T4a — two-way messages over real PostgREST.
+  // 6. T1/T4a — two-way messages over real PostgREST. The thread starts from
+  // the participant detail page ("Message {name}"); the messages list only
+  // shows conversations that already exist.
   const marker = `P4H live gate ${Date.now()}`;
-  await coach.goto('/coach/messages');
+  await coach.goto('/coach/participants');
   await coach.getByRole('link').filter({ hasText: /p4h/i }).first().click();
+  await coach.getByRole('link', { name: /^message/i }).first().click();
   await coach.getByLabel(/message/i).fill(`Coach hello — ${marker}`);
   await coach.getByRole('button', { name: /^send$/i }).click();
   await expect(coach.getByText(`Coach hello — ${marker}`)).toBeVisible({ timeout: 15_000 });

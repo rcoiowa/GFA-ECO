@@ -27,7 +27,7 @@ test('11–16. navigation: claim → message → need → referral → confirmat
   // ("Message {name}"); the messages list only shows existing conversations.
   const marker = `P4H nav ${Date.now()}`;
   await navigator.goto('/navigator/people');
-  await navigator.getByRole('link').filter({ hasText: /navseeker/i }).first().click();
+  await navigator.getByRole('link').filter({ hasText: /nav-participant/i }).first().click();
   await navigator.getByRole('link', { name: /^message/i }).first().click();
   await navigator.getByLabel(/message/i).fill(`Navigator hello — ${marker}`);
   await navigator.getByRole('button', { name: /^send$/i }).click();
@@ -39,7 +39,7 @@ test('11–16. navigation: claim → message → need → referral → confirmat
   // live on the person page — conditional so drift surfaces as a trace, and
   // the admin evidence checks in file 03 stay the hard gate).
   await navigator.goto('/navigator/people');
-  await navigator.getByRole('link').filter({ hasText: /navseeker/i }).first().click();
+  await navigator.getByRole('link').filter({ hasText: /nav-participant/i }).first().click();
   const addNeed = navigator.getByRole('button', { name: /add.*need|identify.*need|need/i }).first();
   if (await addNeed.isVisible().catch(() => false)) {
     await addNeed.click();
@@ -73,7 +73,7 @@ test('11–16. navigation: claim → message → need → referral → confirmat
   // 16. Navigation service attestation — the real 'I provided navigation
   // support' flow on the person page.
   await navigator.goto('/navigator/people');
-  await navigator.getByRole('link').filter({ hasText: /navseeker/i }).first().click();
+  await navigator.getByRole('link').filter({ hasText: /nav-participant/i }).first().click();
   const attest = navigator.getByRole('button', { name: /i provided navigation support/i }).first();
   await expect(attest).toBeVisible({ timeout: 15_000 });
   await attest.click();
