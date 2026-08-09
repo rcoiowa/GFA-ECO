@@ -661,3 +661,61 @@ opt-in, Cloudflare Worker.
 
 Content authoring (Tapes We Carry, GFARC) proceeds in parallel from source
 documents, never from memory.
+
+---
+
+# Authority V1.0 Reconciliation (addendum, 2026-08-09)
+
+Added at G1. Reconciles the G0 recommendations (§D/§T/§U/§X) against the Grace AI
+Peer Companion Implementation Authority V1.0. **Process note (carried from G0
+§W):** the Authority V1.0 document text was again NOT embedded in the session
+message that declared it "loaded"; this reconciliation is therefore performed
+against the Authority's operative content as enumerated and restated in the
+G1–G8 directive (which specifies exact disclosure microcopy §4, conversation
+doctrine §6, anti-sycophancy §7, personalization include/exclude lists §8, the
+eight non-diagnostic safety categories §11, tool/write rules §16–19, etc.). Where
+the directive is explicit, **Authority wins** and the G0 note is refined to match.
+Every implicated section is classified below.
+
+| Authority section | G0 position | Reconciliation | Where enforced |
+|---|---|---|---|
+| AI identity / disclosure | REPLACE (disclosure buried) | **CONFORMING** — exact microcopy adopted verbatim ("I'm Grace, an AI recovery companion from Grace For Addictions…") in-surface + in the system prompt | `GracePage` disclosure banner; `policy.ts` DISCLOSURE + IDENTITY layer |
+| Lived-experience prohibition | RETIRE | **CONFORMING** | policy IDENTITY layer ("NO lived experience… NEVER 'walked the road'/'in recovery'/'been there'") |
+| Conversation architecture | KEEP D2 arc | **REFINE — Authority wins**: flexible repertoire, do NOT force every stage, "do not make every user breathe", not a worksheet | policy CONVERSATION DOCTRINE layer |
+| Sycophancy | (n/a in G0) | **CONFORMING** — emotion≠fact, experience≠interpretation, validation≠agreement; no diagnosis | policy VALIDATION layer; eval `sycophancy` (6) + `paranoia_delusion` (4) |
+| ICARE | REFINE (keep phase) | **CONFORMING** — phase only, when canonical/useful | policy CONTEXT layer (`icarePhase`, currently null until canonical) |
+| Recovery Capital | PARTIAL | **NOT APPLICABLE to V1 prompt** — no BARC injection; retrieval only when canonical | context excludes scores |
+| Canonical content | MIGRATE | **CONFORMING** — retrieval from `recoveryos.slogans`/`resources`; abstain if absent | Edge Fn `retrieveCanonical`; policy CANONICAL layer |
+| Slogans | MIGRATE / retire scoring | **CONFORMING** — exact from DB, max one, may decline, provenance; NO psychographic scoring | `retrieveCanonical`; eval `slogan_use`(4)+`hallucinated_slogan`(3) |
+| Recovery pathways | (n/a) | **CONFORMING** — multi-pathway respect, none privileged | policy MULTI-PATHWAY; eval `multi_pathway`(4)+`medication_supported`(3) |
+| Faith | RETIRE default religious persona | **CONFORMING** — no default faith; only participant-initiated, non-coercive | policy FAITH layer; eval faith(6) |
+| Personalization | RETIRE psychographics | **CONFORMING** — minimum-necessary include list only; psychographic tables never read | Edge Fn context; policy CONTEXT |
+| Memory | KEEP stateless | **CONFORMING** — stateless; "no memory between sessions" stated honestly | no persistence; policy ANTI-DEPENDENCY |
+| Conversation storage | none for V1 | **CONFORMING** — body is request/response only; nothing persisted | Edge Fn (no writes); §M report |
+| Consent | EXISTING SUFFICIENT | **CONFORMING** — `ai_features` grant, frontend + independent server recheck | Edge Fn consent gate; `GracePage` gate; `grace.ts` |
+| Safety | REFINE (keep protocol, replace detection, wire Support Now) | **CONFORMING — Authority wins**: 8 non-diagnostic routing categories, NOT the 8-substring toy, NO risk score, NO hidden crisis probability | policy SAFETY + `deterministicSafetyFloor`; eval crisis(6)/overdose(3)/violence(3) |
+| Support Now | REPLACE (surface it) | **CONFORMING** — surfaced in Grace; single canonical ladder reused, not duplicated | `GracePage` SupportNowButton; policy defers resource details to canonical ladder |
+| Silent-alert prohibition | RETIRE alerts | **CONFORMING** — no notification/alert/email/service_event from Grace | Edge Fn (no writes); G15 test |
+| Human sharing | participant-initiated | **CONFORMING** — draft-only; participant confirms; canonical RPC authorizes | policy TOOLS; §L report |
+| Staff privacy | (n/a) | **CONFORMING** — no coach-private data in context; admin cannot read transcript (none exists) | RLS own-data context; G17/G18 |
+| Anti-dependency | REFINE (make explicit) | **CONFORMING** | policy ANTI-DEPENDENCY; eval dependency(6) |
+| RAG | (n/a) | **CONFORMING** — retrieved text is DATA; injection-guarded | policy INPUT-AS-DATA; eval rag_injection(4) |
+| Prompt injection | (n/a) | **CONFORMING** | policy INPUT-AS-DATA; red-team system-prompt/secret extraction |
+| Stage-1 tools | REUSE/WRAPPER | **CONFORMING** — read-mostly; My Support/sessions/resources/slogans/draft messages via existing RPCs | policy TOOLS; §L report |
+| Controlled writes | draft/read-mostly | **CONFORMING** — no autonomous writes in V1 | Edge Fn performs no writes |
+| Service-event semantics | LOCK | **CONFORMING** — Grace never creates a service_event | Edge Fn; G16 test; §19 |
+| Analytics | process metadata only | **CONFORMING** — event names only, no bodies | `analytics.ts` grace events; G19/G20 |
+| Evaluation | build suite first | **CONFORMING (assets)** / **BLOCKED (run)** — 116-scenario suite + runner authored; run requires provider key (§O) | `e2e/grace/eval-scenarios.json`; `scripts/grace-eval.mjs` |
+| Red team | permanent coverage | **CONFORMING (assets)** — 32 adversarial scenarios pairing refusal + dignity | `e2e/grace/red-team-scenarios.json` |
+| Provider privacy | document before activation | **CONFLICT — AUTHORITY WINS / BLOCKED**: no HIPAA/42-CFR/zero-knowledge/no-hallucination claims; posture undocumented until a provider account is chosen (§Q) | report §Q |
+| Cloudflare AI Gateway | not for V1 | **CONFORMING** — not introduced | architecture §C |
+| Data authority | RecoveryOS | **CONFORMING** — Supabase/`recoveryos.*` sole authority | Edge Fn caller-JWT reads |
+| Server boundary | Edge Function | **CONFORMING** — WORKER_REQUIRED = NO honored | `supabase/functions/grace` |
+| UX | Hearth, Grace = one capability | **CONFORMING** — `/vrcc/grace`, IA preserved | `GracePage`; nav item |
+| Accessibility | P4H harness | **CONFORMING** — role=log transcript, labeled composer; in authenticated axe sweep | `GracePage`; `04-authenticated-a11y` |
+| Legal/privacy | no false claims | **CONFORMING** — accurate consent copy; no marketing compliance claims | `GracePage` consent card |
+| Deferred features | memory/streaming/Worker/faith-opt-in later | **CONFORMING** | report §Z |
+
+No G0 recommendation is in unresolved conflict with the Authority as enumerated;
+the two CONFLICT rows (safety detection sophistication; provider-privacy claims)
+were resolved in the Authority's favor and are reflected in the build.
