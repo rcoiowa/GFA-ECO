@@ -251,10 +251,18 @@ export async function ensureSupportRequested(
   optionTitle: RegExp,
 ): Promise<'requested' | 'waiting' | 'connected'> {
   await page.goto('/vrcc/connect');
+  // Role-scoped, exact matchers — loose text regexes match hidden shell
+  // elements ("Message your support team") and stall the wait.
   const option = page.getByRole('button', { name: optionTitle }).first();
-  const waiting = page.getByText(/we.?ve got your request|someone is on it/i).first();
-  const connected = page.getByText(/your support/i).first();
-  await expect(option.or(waiting).or(connected).first()).toBeVisible({ timeout: 25_000 });
+  const waiting = page
+    .getByRole('heading', { name: /we.?ve got your request|someone is on it/i })
+    .first();
+  const connected = page.getByRole('heading', { name: /^your support$/i }).first();
+  await Promise.race([
+    option.waitFor({ state: 'visible', timeout: 25_000 }),
+    waiting.waitFor({ state: 'visible', timeout: 25_000 }),
+    connected.waitFor({ state: 'visible', timeout: 25_000 }),
+  ]);
   if (await connected.isVisible().catch(() => false)) return 'connected';
   if (await waiting.isVisible().catch(() => false)) return 'waiting';
   await option.click();
