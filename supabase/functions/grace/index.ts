@@ -234,6 +234,7 @@ Deno.serve(async (req: Request) => {
   const system = buildSystemPrompt(ctx, floor, retrieval);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
+  const t0 = Date.now();
   try {
     const res = await fetch(ANTHROPIC_URL, {
       method: 'POST',
@@ -245,38 +246,142 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({ model, max_tokens: MAX_TOKENS, system, messages }),
     });
+    const latencyMs = Date.now() - t0;
     if (!res.ok) {
       // Do NOT log the upstream body (may echo content). Status only.
-      console.error('grace upstream status', res.status);
+      logMeta({ status: res.status, latency_ms: latencyMs, outcome: 'provider_error' });
       return json(
-        { ok: false, code: 'provider_error', safety, policy_version: POLICY_VERSION },
+        {
+          ok: false,
+          code: 'provider_error',
+          safety,
+          policy_version: POLICY_VERSION,
+          meta: { status: res.status, latency_ms: latencyMs },
+        },
         200,
       );
     }
-    const data = (await res.json()) as { content?: Array<{ type?: string; text?: string }> };
+
+    // Parse the FULL provider envelope so refusal, truncation, and usage are
+    // inspected — not just the text. `stop_reason` and `usage` are process
+    // metadata; the text content is the only body and is never logged/persisted.
+    const data = (await res.json()) as AnthropicResponse;
+    const stopReason = data.stop_reason ?? null; // end_turn|max_tokens|stop_sequence|refusal|tool_use
+    const returnedModel = data.model ?? model; // confirms which model actually served
+    const inputTokens = data.usage?.input_tokens ?? null;
+    const outputTokens = data.usage?.output_tokens ?? null;
     const content = Array.isArray(data.content)
       ? data.content
           .filter((b) => b.type === 'text')
           .map((b) => b.text ?? '')
           .join('')
       : '';
+
+    // Process metadata only — model id, stop reason, token counts, latency,
+    // status. NEVER the prompt or response body.
+    const meta = {
+      status: res.status,
+      model_id: returnedModel,
+      requested_model: model,
+      stop_reason: stopReason,
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      latency_ms: latencyMs,
+      truncated: stopReason === 'max_tokens',
+    };
+
+    // A REFUSAL is not an ordinary successful empty reply. On Opus 5 / Fable 5
+    // the safety classifier can return HTTP 200 with stop_reason:"refusal" and
+    // empty/partial content — surfacing that as `ok` with empty text would be a
+    // silent failure. Return a distinct code so the UI shows human support and
+    // the eval scores it correctly; never fabricate a reply.
+    if (stopReason === 'refusal') {
+      logMeta({ ...meta, outcome: 'provider_refusal' });
+      return json(
+        {
+          ok: false,
+          code: 'provider_refusal',
+          safety,
+          disclosure: DISCLOSURE,
+          policy_version: POLICY_VERSION,
+          meta,
+        },
+        200,
+      );
+    }
+
+    // max_tokens => the reply was cut off mid-generation. Recognize it as
+    // truncation rather than treating the partial as a clean answer.
+    const truncated = stopReason === 'max_tokens';
+    // Empty text with a normal stop reason is anomalous (nothing usable to show).
+    const emptyContent = content.trim().length === 0;
+    if (emptyContent && !truncated) {
+      logMeta({ ...meta, outcome: 'empty_content' });
+      return json(
+        {
+          ok: false,
+          code: 'provider_empty',
+          safety,
+          disclosure: DISCLOSURE,
+          policy_version: POLICY_VERSION,
+          meta,
+        },
+        200,
+      );
+    }
+
+    logMeta({ ...meta, outcome: truncated ? 'ok_truncated' : 'ok' });
     return json({
       ok: true,
       code: 'ok',
       content,
+      truncated,
       safety,
       retrieval: { used: retrieval.usedRetrieval, slogan_numbers: retrieval.sloganNumbers },
       policy_version: POLICY_VERSION,
-      model_id: model, // process metadata only; not a body
+      model_id: returnedModel, // process metadata only; not a body
+      meta,
     });
-  } catch (_err) {
+  } catch (err) {
     // Timeout or network — never log the request/response body.
-    console.error('grace provider exception');
-    return json({ ok: false, code: 'provider_error', safety, policy_version: POLICY_VERSION }, 200);
+    const latencyMs = Date.now() - t0;
+    const aborted = (err as { name?: string })?.name === 'AbortError';
+    logMeta({ latency_ms: latencyMs, outcome: aborted ? 'timeout' : 'provider_exception' });
+    return json(
+      {
+        ok: false,
+        code: aborted ? 'provider_timeout' : 'provider_error',
+        safety,
+        policy_version: POLICY_VERSION,
+        meta: { latency_ms: latencyMs, timed_out: aborted },
+      },
+      200,
+    );
   } finally {
     clearTimeout(timeout);
   }
 });
+
+/** Anthropic Messages API response — only the fields we inspect. */
+interface AnthropicResponse {
+  model?: string;
+  stop_reason?: string | null;
+  content?: Array<{ type?: string; text?: string }>;
+  usage?: { input_tokens?: number; output_tokens?: number };
+}
+
+/**
+ * Emit ONE structured line of PROCESS metadata (model id, stop reason, token
+ * counts, latency, status, outcome). Never includes prompt or response bodies.
+ * This is the only observability signal the function produces.
+ */
+function logMeta(meta: Record<string, unknown>): void {
+  try {
+    console.log(`grace-meta ${JSON.stringify(meta)}`);
+  } catch {
+    /* logging must never throw */
+  }
+}
 
 /**
  * Retrieve exact canonical content from recoveryos.slogans (+ a couple of

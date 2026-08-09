@@ -86,6 +86,26 @@ no client model selection; no client system-prompt override; **no writes** (no
 service_event, notification, or record). Degrades to `ai_unconfigured` (safety
 posture intact, **no fabricated reply**) when the provider is unset.
 
+**Response-handling hardening this phase (directive step 1).** The function now
+inspects the **full Anthropic envelope**, not just the text:
+- **`stop_reason: "refusal"` is NOT treated as a successful empty reply** — it
+  returns a distinct `provider_refusal` code (with the safety posture + disclosure)
+  so the UI surfaces human support and the eval scores it correctly. This closes the
+  Opus-5/Fable-5 silent-empty-refusal failure mode.
+- **`stop_reason: "max_tokens"` is recognized as truncation** (`truncated: true`),
+  not a clean answer; empty content with a normal stop reason returns
+  `provider_empty`; aborts return `provider_timeout`.
+- **Process metadata captured** (returned `model_id`, `requested_model`,
+  `stop_reason`, `input_tokens`, `output_tokens`, `latency_ms`, `status`,
+  `truncated`) in a `meta` object and one structured `grace-meta` log line —
+  **process metadata only; never the prompt or response body**. The frontend
+  already surfaces Support Now from `result.safety` on every code and shows a safe
+  fallback for any non-ok/no-content result, so the new codes degrade safely with
+  no UI change. A **separate eval-only judge function** (`supabase/functions/
+  grace-judge`) is added — see §N; it is inert (`judge_unconfigured`) unless
+  `GRACE_JUDGE_MODEL` + `GRACE_EVAL_SECRET` are set, is wired to no participant
+  surface, and refuses to run if the judge model equals the candidate model.
+
 ## F. Prompt / version
 
 Server-authoritative, layered, versioned **`grace-policy-1.0.0`**
@@ -168,11 +188,42 @@ prompt-injection 5, rag-injection 4, dependency 6, sycophancy 6, paranoia 4,
 hallucinated-slogan 3, privacy 9, boundaries 3 each, multi-pathway 4, faith 6,
 tool-honesty 5, slogan-use 4, …). Expected results describe **policy outcomes**,
 not exact sentences. Model-agnostic runner `scripts/grace-eval.mjs` evaluates the
-**deployed function** (so consent/safety/retrieval/bounds are applied), exits
-BLOCKED without manufacturing results if the provider is unconfigured. **RUN STATUS:
-BLOCKED** — no `ANTHROPIC_API_KEY`/`GRACE_MODEL` on the launch project and no
-provider credential available in this environment (`api.anthropic.com` reachable
-but 401; no key in env; cannot set Supabase secrets).
+**deployed function** (so consent/safety/retrieval/bounds are applied), and exits
+BLOCKED without manufacturing results if the provider is unconfigured.
+
+**Provider credential status (2026-08-09):** `ANTHROPIC_API_KEY` and
+`GRACE_MODEL=claude-opus-4-8` are now provisioned as **Edge Function secrets on
+RecoveryOS-Launch** (server-side only; the key is never retrieved, printed, or
+logged). `GRACE_PROVIDER_CONFIGURED` remains **unset** — real-participant Grace is
+NOT activated.
+
+**Harness hardening this phase (directive §22).** `scripts/grace-eval.mjs` now:
+- **Mints an ephemeral participant JWT** (GoTrue password grant for the seeded
+  `p4h-participant` fixture) and ensures its `ai_features` consent grant — no
+  manually maintained long-lived `GRACE_EVAL_JWT`.
+- Applies **deterministic hard-gate assertions** for the disqualifying
+  constraints: crisis Support-Now surfacing (server-computed), false
+  lived-experience, tool-action fabrication, system-prompt leak, method
+  provision, medical/legal advice, dependency reinforcement, privacy leak, and
+  canonical-slogan fabrication. High-precision phrase signals (under-detection
+  preferred over false positives); verified by an offline `selftest` mode.
+- Calls a **separate rubric judge** (`grace-judge` Edge Function) for the
+  qualitative categories — a **different model** (`GRACE_JUDGE_MODEL`, e.g.
+  `claude-opus-5`) that the judge function refuses to run if it equals the
+  candidate `GRACE_MODEL` (**no candidate self-judging**). The judge uses the same
+  server-side key (never exposed) and returns **scores + reason codes only**.
+- **Persists metadata only** — per-scenario code, stop_reason, truncation,
+  surface_support_now, latency, token counts, deterministic violations, and judge
+  scores/reason-codes/pass — **never a conversation body** (`grace-eval-results.json`).
+
+**RUN STATUS: NOT YET EXECUTED (READY).** The 116 + 32 run and the smoke set
+execute against the deployed function, which requires egress to `*.supabase.co`;
+this build environment has none and there is no MCP "invoke function" path, so the
+run is performed by the **`.github/workflows/grace-eval.yml`** gate (deploys
+`grace` + `grace-judge`, seeds fixtures, mints the JWT, runs smoke → full → judge,
+uploads metadata-only results). Execution is pending the CI prerequisites listed in
+§AC. **No smoke, scenario, judge, red-team, latency, token, or cost result has been
+manufactured.**
 
 ## O. Models evaluated
 
@@ -190,11 +241,26 @@ average). The server-side `GRACE_MODEL` secret is the single lock point.
 
 ## Q. Provider privacy posture
 
-**Undocumented (BLOCKED).** No provider account/tier is selected, so training-use,
-retention, logging, and configurable privacy settings cannot be documented. Per §23,
-**no** HIPAA / 42 CFR Part 2 / zero-knowledge / zero-retention / no-hallucination
-claim is made anywhere in the product (the historical false claims are retired).
-The consent copy states only what is true: AI language model, not a therapist, no
+**Provider: Anthropic commercial API (first-party), model candidate
+`claude-opus-4-8`.** General posture of the standard Anthropic commercial API,
+documented here for the §23 pre-activation review:
+- **Training:** Anthropic does **not** train its models on commercial API
+  inputs/outputs by default.
+- **Retention:** standard commercial API retention applies (limited-duration
+  retention for operational and trust-&-safety purposes). **Zero-retention / ZDR
+  is NOT in effect unless separately arranged** for the account.
+- **PHI / HIPAA:** a **BAA is NOT in place** unless separately executed; therefore
+  Grace must continue to treat the surface as **non-PHI** and **no HIPAA / 42 CFR
+  Part 2 / zero-knowledge / zero-retention / no-hallucination claim is made
+  anywhere** (the historical false claims stay retired).
+- **Egress:** the key lives only as a RecoveryOS-Launch Edge Function secret;
+  browser→function→Anthropic, never browser→Anthropic (G4).
+
+**Still required before real-participant activation (§23):** confirm the specific
+account's data-retention window, trust-&-safety logging, and whether any
+ZDR/BAA terms apply, **against the account's actual commercial agreement** — this
+document records the default posture, not a verified account-specific setting. The
+consent copy remains truthful and unchanged: AI language model, not a therapist, no
 cross-session memory, not shared without the participant's action, no autonomous
 staff alerts.
 
@@ -241,7 +307,10 @@ religion, false-lived-experience elicitation, dependency cultivation, sycophancy
 pressure, hallucinated-action pressure, fabricated-slogan pressure — each pairing a
 refusal/redirect with a **dignity** requirement. Structural defenses in place
 (INPUT-AS-DATA guard, no secret in prompt-returnable context, no client override).
-**Adversarial-run grading BLOCKED** on the provider (§N).
+The 32 red-team scenarios are graded by the **same hardened harness** (deterministic
+prompt-leak / injection / method / lived-experience / tool / privacy detectors +
+the separate judge) as part of the `full` run. **Adversarial-run grading NOT YET
+EXECUTED** — pending the CI prerequisites (§AC); no red-team finding is manufactured.
 
 ## W. G1–G25
 
@@ -328,31 +397,67 @@ launch remains blocked on the separate signup decision regardless of Grace.
 
 **GRACE NO-GO — [EXACT BLOCKERS]:**
 
-1. **No AI provider credential on RecoveryOS-Launch** (`ANTHROPIC_API_KEY` +
-   `GRACE_MODEL` unset; none available in this environment). This single human
-   action gates the next three:
-2. **Model evaluation suite not run** (§21/§N) — 116 scenarios + runner ready, but
-   §22 forbids manufacturing a result without the provider; so
-3. **No model locked** (§P) and
-4. **Provider privacy posture undocumented** (§Q/§23).
-5. **Red-team adversarial grading not run** (§V) — same provider dependency.
-6. **Generative G-gates G7/G8/G10/G12 not executed** (§W) — same dependency.
+The prior top blocker (**no provider credential**) is **CLEARED** —
+`ANTHROPIC_API_KEY` + `GRACE_MODEL=claude-opus-4-8` are provisioned on
+RecoveryOS-Launch (§N). The remaining blockers are **evaluation execution**, which
+by directive §22 must NOT be manufactured:
 
-Everything Grace-itself that can be verified **without a live model is built and
-passing**: server-authoritative Edge Function (deployed, JWT-only, consent-rechecked,
-own-data-only, no client override, no writes, no body logs), the `/vrcc/grace`
-Hearth surface with in-surface disclosure and consent gate, deterministic safety
-routing that surfaces Support Now even with the provider down, statelessness (no
-transcript store), no silent staff alert, no service_event, no provider key in the
-browser, and the non-generative live gates G1–G6/G13–G25. No STOP condition from §36
-is present in the built system (no browser key, no cross-user leak, no consent
-bypass, no false lived-experience/religious-coercion path, no body-to-logs, no silent
-alert, no Grace-created service_event, Support Now available, no autonomous action).
+1. **Evaluation + red-team not yet EXECUTED against the deployed function** (§N/§V).
+   The hardened harness, deterministic hard-gates, separate judge (`grace-judge`),
+   and the `grace-eval.yml` gate are built and unit-verified (`selftest` PASS), but
+   the live run needs egress to `*.supabase.co` (only the CI runner has it) and the
+   following **CI prerequisites**, none of which this build environment can set:
+   - GitHub environment `p4h-live-gate` secrets **`SUPABASE_ACCESS_TOKEN`** (Supabase
+     CLI: `functions deploy` + `secrets set`) and **`GRACE_EVAL_SECRET`** (gates the
+     separate judge). `SUPABASE_SERVICE_ROLE_KEY` already present.
+   - The workflow reachable as a manual trigger (merge `grace-eval.yml` to the
+     default branch for `workflow_dispatch`, or push a `grace-eval/**` branch).
+   - Approve the environment run if `p4h-live-gate` has required reviewers.
+2. **No model locked** (§P) — `claude-opus-4-8` is the **first candidate only**; it
+   does **not** advance to comparison until the run shows **zero critical hard-gate
+   failures** and the qualitative judge completes at/above threshold (§AD).
+3. **Provider privacy posture is default-documented but not account-verified** (§Q) —
+   confirm retention/ZDR/BAA against the actual commercial agreement before
+   real-participant activation.
+4. **Generative G-gates G7/G8/G10/G12 not executed** (§W) — clear by setting
+   `GRACE_PROVIDER_CONFIGURED=1` and re-running the live gate **after** the model
+   qualifies and is locked (NOT done now — `GRACE_PROVIDER_CONFIGURED` stays unset).
+
+Everything Grace-itself that can be verified **without executing the live model run
+is built and passing**, now including the response-handling hardening (refusal ≠
+empty success, max_tokens = truncation, process-metadata capture with no body logs —
+§E) and the evaluation machinery (§N). No STOP condition from §36 is present in the
+built system (no browser key, no cross-user leak, no consent bypass, no false
+lived-experience/religious-coercion path, no body-to-logs, no silent alert, no
+Grace-created service_event, Support Now available, no autonomous action). Standing
+non-authorizations honored: **`GRACE_PROVIDER_CONFIGURED` unset**, Grace **not**
+activated for real participants, **vrcc.app unchanged**, SMTP/public-launch
+restrictions unchanged.
 
 **To reach "GRACE COMPLETE — READY FOR CONTROLLED SOFT-LAUNCH CANDIDATE
-RECERTIFICATION":** a human provisions a provider API credential and `GRACE_MODEL`
-on the launch project; then run `scripts/grace-eval.mjs` + the red-team set, lock the
-model against explicit thresholds, document provider privacy, set
-`GRACE_PROVIDER_CONFIGURED=1` and re-run the live gate to clear G7/G8/G10/G12. No
-public launch; no vrcc.app change. The separate SMTP/signup gate still applies to any
-real-participant soft launch.
+RECERTIFICATION":** provision the two CI secrets and run `grace-eval.yml` (smoke →
+116 + 32 → judge); if `claude-opus-4-8` qualifies under the hard-gate standard, lock
+it, verify provider-privacy account terms, set `GRACE_PROVIDER_CONFIGURED=1`, and
+re-run the live gate to clear G7/G8/G10/G12 — or, if it does not qualify, evaluate
+the next candidate. No public launch; no vrcc.app change; SMTP/signup gate still
+applies.
+
+## AD. Provider-evaluation execution results (requested return items)
+
+Reported honestly as of 2026-08-09. The live run has **not executed** (blocker §AC.1);
+per §22 nothing below is fabricated.
+
+| Requested item | Status |
+|---|---|
+| Provider smoke result | **NOT YET RUN.** Smoke set is authored (auth, model availability, content parse, returned model id, stop-reason capture, token usage, consent enforcement, Support Now) in `grace-eval.mjs smoke`, executed by `grace-eval.yml`. |
+| Scenarios executed / passed / failed | **NOT YET RUN** (116 eval + 32 red-team ready). |
+| Failures grouped by category & severity | **NOT YET RUN** (harness emits `by_category` / `by_severity`). |
+| Deterministic hard-gate results | **Detectors built + `selftest` PASS** (crisis-support, lived-experience, tool-action, prompt-leak, method, medical/legal advice, dependency, privacy-leak, slogan-fabrication). **Live results NOT YET RUN.** |
+| Judge / rubric results | **NOT YET RUN.** Separate `grace-judge` (different model, no self-judging) built; qualitative dimensions per category defined. |
+| Red-team findings | **NOT YET RUN** (same harness/gates). |
+| Latency distribution | **NOT YET RUN** (p50/p90/p95/max captured per run). |
+| Input/output token totals | **NOT YET RUN** (captured from provider `usage`). |
+| Estimated API cost | **NOT YET RUN** (computed from tokens × price table; candidate `claude-opus-4-8` $5/$25 per 1M, judge priced separately). |
+| Provider privacy posture | **DOCUMENTED (default commercial posture)** — §Q; account-specific retention/ZDR/BAA still to be confirmed. |
+| Does `claude-opus-4-8` qualify for comparison testing? | **UNDETERMINED — do NOT lock.** Qualification requires the live run: zero critical hard-gate failures **and** the qualitative judge completing at ≥ threshold. First candidate only. |
+| Exact remaining blockers | §AC.1–4 (CI prerequisites + run execution; model qualification; account-privacy verification; generative G-gates). |

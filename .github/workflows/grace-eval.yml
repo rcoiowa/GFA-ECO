@@ -1,0 +1,148 @@
+# Grace provider evaluation gate (directive §21/§22). MANUAL ONLY.
+#
+# Deploys the server-authoritative grace + grace-judge Edge Functions to
+# RecoveryOS-Launch, seeds the p4h fixtures, mints an EPHEMERAL participant JWT
+# (no long-lived GRACE_EVAL_JWT), runs a live provider SMOKE set, then — only if
+# smoke passes — runs all 116 eval + 32 red-team scenarios against the DEPLOYED
+# function. Deterministic hard-gates + a SEPARATE rubric judge (different model,
+# never candidate self-judging) score each reply. Only metadata is persisted
+# (scores, reason codes, latency, tokens, cost) — never conversation bodies.
+#
+# This gate does NOT set GRACE_PROVIDER_CONFIGURED, does NOT activate Grace for
+# real participants, and does NOT change vrcc.app or the SMTP posture.
+#
+# Required secrets on the `p4h-live-gate` GitHub environment:
+#   SUPABASE_SERVICE_ROLE_KEY  fixture seeding + consent + person lookups (server-only)
+#   SUPABASE_ACCESS_TOKEN      Supabase CLI auth for `functions deploy` / `secrets set`
+#   GRACE_EVAL_SECRET          shared secret that gates the grace-judge function
+# Optional:
+#   P4H_E2E_PASSWORD           fixed fixture password (else a per-run random one)
+name: Grace eval gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_model:
+        description: 'Candidate GRACE_MODEL already set on the project (informational; the function reads its own secret)'
+        required: false
+        default: 'claude-opus-4-8'
+      judge_model:
+        description: 'Separate judge model (MUST differ from the candidate)'
+        required: false
+        default: 'claude-opus-5'
+      mode:
+        description: 'smoke | full'
+        required: false
+        default: 'full'
+  # Dispatch alternative while this file is not yet on the default branch:
+  # pushing a `grace-eval/<n>` branch IS the manual trigger.
+  push:
+    branches:
+      - 'grace-eval/**'
+
+concurrency:
+  group: grace-eval
+  cancel-in-progress: false
+
+env:
+  PROJECT_REF: cqcxvwoukyhxyokfwnjm
+  VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_URL || 'https://cqcxvwoukyhxyokfwnjm.supabase.co' }}
+  VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY != '' && vars.VITE_SUPABASE_ANON_KEY || 'sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x' }}
+  P4H_E2E_EMAIL_DOMAIN: fixtures.recoveryos.test
+  JUDGE_MODEL: ${{ inputs.judge_model || 'claude-opus-5' }}
+  RUN_MODE: ${{ inputs.mode || 'full' }}
+
+jobs:
+  grace-eval:
+    runs-on: ubuntu-latest
+    environment: p4h-live-gate
+    timeout-minutes: 60
+    steps:
+      - name: Require secrets
+        env:
+          SVC: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          missing=0
+          [ -z "$SVC" ] && { echo "::error::SUPABASE_SERVICE_ROLE_KEY is required (fixture seeding/consent; server-only)."; missing=1; }
+          [ -z "$TOKEN" ] && { echo "::error::SUPABASE_ACCESS_TOKEN is required (Supabase CLI: functions deploy / secrets set)."; missing=1; }
+          [ "$missing" = "1" ] && exit 1 || echo "secrets present"
+
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Configure judge secrets on the project (server-side; key never exposed)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          GRACE_EVAL_SECRET: ${{ secrets.GRACE_EVAL_SECRET }}
+        run: |
+          if [ -z "$GRACE_EVAL_SECRET" ]; then
+            echo "::error::GRACE_EVAL_SECRET is required to enable the separate rubric judge."
+            exit 1
+          fi
+          # GRACE_JUDGE_MODEL must differ from the candidate GRACE_MODEL; the
+          # grace-judge function refuses to run otherwise (no self-judging).
+          supabase secrets set --project-ref "$PROJECT_REF" \
+            "GRACE_JUDGE_MODEL=$JUDGE_MODEL" \
+            "GRACE_EVAL_SECRET=$GRACE_EVAL_SECRET"
+
+      - name: Deploy grace + grace-judge (server-authoritative)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase functions deploy grace --project-ref "$PROJECT_REF"
+          supabase functions deploy grace-judge --project-ref "$PROJECT_REF"
+
+      - name: Resolve fixture password
+        id: pw
+        env:
+          FIXED: ${{ secrets.P4H_E2E_PASSWORD }}
+        run: |
+          if [ -n "$FIXED" ]; then echo "value=$FIXED" >> "$GITHUB_OUTPUT";
+          else echo "value=P4h-$(openssl rand -hex 16)" >> "$GITHUB_OUTPUT"; fi
+          echo "::add-mask::$(grep '^value=' "$GITHUB_OUTPUT" | cut -d= -f2-)"
+
+      - name: Seed p4h-* fixtures (server-side; classified test_fixture)
+        env:
+          SUPABASE_URL: ${{ env.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
+        run: node scripts/seed-e2e-fixtures.mjs
+
+      - name: Live provider SMOKE set (verify auth, model, parse, stop-reason, tokens, consent, Support Now)
+        env:
+          SUPABASE_URL: ${{ env.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.VITE_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
+        run: node scripts/grace-eval.mjs smoke
+
+      - name: Full eval — 116 scenarios + 32 red-team + deterministic hard-gates + judge
+        if: ${{ env.RUN_MODE == 'full' }}
+        env:
+          SUPABASE_URL: ${{ env.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.VITE_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
+          GRACE_EVAL_SECRET: ${{ secrets.GRACE_EVAL_SECRET }}
+          GRACE_JUDGE_MODEL: ${{ env.JUDGE_MODEL }}
+          GRACE_EVAL_OUT: ${{ github.workspace }}/grace-eval-results.json
+        run: node scripts/grace-eval.mjs full
+
+      - name: Upload eval results (metadata only — no conversation bodies)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grace-eval-results
+          path: grace-eval-results.json
+          retention-days: 30
+          if-no-files-found: ignore
