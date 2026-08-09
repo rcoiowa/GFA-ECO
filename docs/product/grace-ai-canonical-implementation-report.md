@@ -272,35 +272,63 @@ available here, so **no comparative or single-model result is manufactured** (§
 
 ## P. Selected model + rationale
 
-**Not locked.** Model selection is deferred to recertification, contingent on the
-eval suite running against real credentials with explicit minimum safety/privacy
-thresholds (a model failing any critical safety/privacy category cannot win on
-average). The server-side `GRACE_MODEL` secret is the single lock point.
+**Grace V1 selected model: `claude-sonnet-5`, thinking DISABLED
+(`GRACE_DISABLE_THINKING=1`).** Locked 2026-08-09. `claude-opus-4-8` is recorded as
+the **qualified fallback / reference model** (not the production V1 model). The
+model-comparison phase for Grace V1 is **closed**; `claude-opus-5` was **not** run.
 
-## Q. Provider privacy posture
+**Rationale — actual run evidence (not generic benchmarks):** Sonnet 5 was
+evaluated apples-to-apples against the qualified Opus 4.8 run-003 baseline — same
+116 eval + 32 red-team suite, same `grace-policy-1.2.0`, same deterministic
+hard-gates, same separate judge (`claude-opus-5`), thinking off on both candidates
+(§AG, run 31302637519). Sonnet 5 produced:
+- **148/148 real replies** (100% coverage), **148/148 deterministic hard-gate
+  passes, 0 critical failures**;
+- **147/148 qualitative judge = 99.3%** (vs Opus 4.8's 95.3% on the identical
+  judge/rubric);
+- **32/32 red-team hard-pass**; **0 refusals; 0 truncations; 0 false-positive
+  Support Now surfacing; 0 model-attributable critical failures**;
+- **lower measured candidate cost** ($1.66 vs $2.63; $3.16 vs $4.11 total).
 
-**Provider: Anthropic commercial API (first-party), model candidate
-`claude-opus-4-8`.** General posture of the standard Anthropic commercial API,
-documented here for the §23 pre-activation review:
-- **Training:** Anthropic does **not** train its models on commercial API
-  inputs/outputs by default.
-- **Retention:** standard commercial API retention applies (limited-duration
-  retention for operational and trust-&-safety purposes). **Zero-retention / ZDR
-  is NOT in effect unless separately arranged** for the account.
-- **PHI / HIPAA:** a **BAA is NOT in place** unless separately executed; therefore
-  Grace must continue to treat the surface as **non-PHI** and **no HIPAA / 42 CFR
-  Part 2 / zero-knowledge / zero-retention / no-hallucination claim is made
-  anywhere** (the historical false claims stay retired).
-- **Egress:** the key lives only as a RecoveryOS-Launch Edge Function secret;
-  browser→function→Anthropic, never browser→Anthropic (G4).
+Sonnet 5 won the direct controlled comparison on qualitative performance and cost
+without any critical regression. The lock point is the server-side `GRACE_MODEL` +
+`GRACE_DISABLE_THINKING` secrets (never browser-controllable). A **model-lock
+preflight** enforces the tuple (see §AH Phase 1 / `scripts/grace-model-lock-verify.mjs`):
+a deployment whose live `model_id` drifts from `claude-sonnet-5` fails verification
+until a new model-evaluation decision is recorded.
 
-**Still required before real-participant activation (§23):** confirm the specific
-account's data-retention window, trust-&-safety logging, and whether any
-ZDR/BAA terms apply, **against the account's actual commercial agreement** — this
-document records the default posture, not a verified account-specific setting. The
-consent copy remains truthful and unchanged: AI language model, not a therapist, no
-cross-session memory, not shared without the participant's action, no autonomous
-staff alerts.
+## Q. Provider privacy / compliance gate (Grace V1 = `claude-sonnet-5`)
+
+**Provider: Anthropic commercial API (first-party).** Grace can receive highly
+sensitive recovery/health information, so this gate distinguishes what is knowable
+from Anthropic's PUBLISHED policy from what can only be confirmed against **GFA's
+actual Anthropic organization/account** — which the automated tooling here CANNOT
+inspect (no Console access). The 10 required items:
+
+| # | Item | Status |
+|---|---|---|
+| 1 | Commercial API organization status | **Public-policy-known / account-UNVERIFIED.** Standard first-party commercial API is in use (key is a RecoveryOS-Launch Edge Function secret). Which specific Anthropic org owns the key is a human/Console fact. |
+| 2 | Training-use posture | **Public policy:** Anthropic does **not** train on commercial API inputs/outputs by default. (No account exception assumed.) |
+| 3 | Actual retention arrangement | **Public policy:** standard commercial API inputs/outputs are generally deleted from Anthropic's backend within **~30 days** unless another agreement applies or retention is required for policy/legal reasons. **Account-specific window UNVERIFIED.** |
+| 4 | Zero Data Retention (ZDR) enabled? | **UNVERIFIED — assume NO.** Sonnet 5 is ZDR-*eligible* only with an approved ZDR arrangement. No ZDR claim may be made without account proof. |
+| 5 | Anthropic HIPAA readiness enabled? | **UNVERIFIED — assume NO.** HIPAA readiness is enabled at the ORG level (Console → Settings → Privacy). Cannot be inferred from the tech config. |
+| 6 | BAA actually executed? | **UNVERIFIED — assume NO.** Anthropic states the **signed BAA is the source of truth** for which API features are covered. No BAA-coverage claim without the executed agreement. |
+| 7 | Covered API endpoint/features used by Grace | Grace uses **only** `POST /v1/messages` (non-streaming) with `x-api-key`, `anthropic-version: 2023-06-01`. No Files/Batches/other endpoints. (Whether these are BAA-covered depends on the executed BAA — item 6.) |
+| 8 | Account/workspace privacy controls | **UNVERIFIED** (Console → Settings → Privacy). Report exactly what statuses appear; do not change blindly. |
+| 9 | Anthropic trust/safety retention exceptions | **Public policy:** retention may extend beyond the default window for policy/legal/trust-&-safety reasons. Applies regardless of ZDR/BAA. |
+| 10 | Unresolved legal/compliance questions (human) | **OPEN:** (a) execute Anthropic BAA + enable HIPAA readiness for this org before participant activation? (b) is GFA a HIPAA covered entity / subject to 42 CFR Part 2 — a **separate legal determination**, NOT inferred from the tech config. |
+
+**No claim is made — anywhere — of HIPAA compliance, 42 CFR Part 2 compliance,
+Zero Data Retention, BAA coverage, or zero retention.** Unless/until the actual
+organization/account evidence proves otherwise, the honest posture is: **standard
+commercial API, ~30-day default retention, no BAA, no HIPAA-ready config, no ZDR.**
+This is a **HUMAN COMPLIANCE DECISION before participant activation**, reported
+explicitly here as a blocker (not hidden as a technical pass). **Human action:**
+Anthropic Console → **Settings → Privacy** — report what appears re: HIPAA
+readiness / BAA / ZDR / Data retention / Privacy (without sharing API keys); do not
+change anything blindly. The consent copy remains truthful and unchanged: AI
+language model, not a therapist, no cross-session memory, not shared without the
+participant's action, no autonomous staff alerts.
 
 ## R. Analytics / logging
 
@@ -626,3 +654,99 @@ tokens). Each has a different minor qualitative soft spot (Opus 4.8: slogan/RAG/
 tool-honesty tone + one loneliness; Sonnet 5: one faith_active) — none a hard-gate
 failure. **STOP per directive: comparison matrix returned; Opus 5 NOT run; neither
 model locked; no activation.**
+
+## AH. Final integration — Grace V1 lock + certification (Phases 1–5)
+
+**PHASE 1 — MODEL LOCK — DONE (code) / APPLIED via `grace-lock.yml`.**
+Grace V1 = **`claude-sonnet-5`, `GRACE_DISABLE_THINKING=1`** (§P). Opus 4.8 recorded
+as qualified fallback/reference. Config invariant: `grace-model-lock.json` +
+`scripts/grace-model-lock-verify.mjs` (static tuple check PASS; live check asserts
+deployed `model_id === claude-sonnet-5`). `.github/workflows/grace-lock.yml` sets the
+two server-side secrets, deploys `grace`, and runs the live lock verification.
+Neither setting is browser-controllable (server-side env only; G4). All Opus 4.8 +
+Sonnet 5 evaluation evidence preserved immutably (§AD/§AE/§AF/§AG). Model-comparison
+phase CLOSED; Opus 5 NOT run.
+
+**PHASE 2 — PROVIDER PRIVACY / COMPLIANCE — BLOCKED (human).** §Q rewritten as the
+10-item account gate. Automated tooling cannot inspect GFA's Anthropic org, so
+items 1,3–6,8 are **UNVERIFIED**: assume standard commercial API, ~30-day default
+retention, **no ZDR, no HIPAA-ready config, no BAA**. No HIPAA/42-CFR/ZDR/BAA/
+zero-retention claim is made. **Human action required:** Console → Settings →
+Privacy; report HIPAA-readiness/BAA/ZDR/Data-retention statuses. This is a human
+compliance decision before activation.
+
+**PHASE 3 — AUTHORITY V1.0 RECONCILIATION — BLOCKED (missing source).** The complete
+source "Grace Implementation Authority V1.0" is **still not present** in the session
+or the repository (searched: only files that *reference* it exist; ADR-0013 is a
+house-policy authority, not the V1.0 directive). Reconciliation to date is against
+the directive's **enumerated restatement** (§A), which found all implicated sections
+conforming except the two resolved AUTHORITY-WINS items. **Cannot reconcile against
+the actual source text until the document is provided.** Authority wins on any
+conflict; no broad redesign unless a real conflict surfaces. **Human action:**
+supply the Authority V1.0 document.
+
+**PHASE 4 — LOCKED-MODEL GENERATIVE GATES — behaviors VERIFIED under the locked
+config; Playwright G7/G8/G10/G12 DEFERRED.** The Sonnet 5 comparison run (§AG) ran
+under the **exact locked configuration** (`claude-sonnet-5`, `GRACE_DISABLE_THINKING=1`,
+`grace-policy-1.2.0`), so it is the locked-model generative evidence — the 148-scenario
+selection suite is **not** re-run merely to reprove the same model (per directive).
+Mapping to the reconfirm list:
+
+| Reconfirm item | Locked-model (Sonnet 5) evidence |
+|---|---|
+| Exact canonical slogan behavior | `slogan_use` 4/4 hard-pass + judge 4/4 |
+| Abstention when canonical source missing | `hallucinated_slogan` 4/4 hard-pass + judge 4/4; 0 canonical-fabrication |
+| Draft-only Coach/Navigator; no fabricated tool completion | `tool_honesty` 7/7 hard-pass + judge 7/7; tool-action-claim detector clean |
+| Participant-controlled human connection | design-enforced; RPC path P4H-verified (UI action gate) |
+| Support Now independence | surfaced on every response code via `safety`; G13 (live-gate) |
+| No `service_event`; no transcript persistence; no staff transcript exposure | G15/G16/G17/G18 (structural; no store exists) |
+| No raw bodies in analytics/logging | G19/G20; `grace-meta` logs process metadata only |
+| Cross-user isolation | `another_participant`/`coach_privacy`/`privacy_self` all hard-pass + judge; G5/G6 |
+| Consent enforcement | G3; server recheck; `consent_required` path |
+| Browser has no provider secret / model override | G4 (bundle scan clean); model + thinking are server-side env only |
+| Refusal / truncation / provider-failure behavior | 0 refusals, 0 truncations this run; hardened codes (`provider_refusal`/`provider_empty`/`provider_timeout`/`provider_rate_limited`) |
+| Accessibility / PWA / privacy regressions | P4H gates; VoiceOver/NVDA remain a human-device gate |
+
+The **Playwright-form G7/G8/G10/G12** in `05-grace.spec.ts` are gated behind
+`GRACE_PROVIDER_CONFIGURED === '1'`, which is **intentionally OFF**, so they remain
+BLOCKED-skip (never faked). They run at activation-time recertification when the
+flag is deliberately flipped — the underlying behaviors are already green under the
+locked model via the harness above.
+
+**PHASE 5 — LEGACY CONTAINMENT — DOCUMENTED / not executed (gated).** The approved
+sequence (§B/§X): quarantine dangerous unused AI endpoints (`grace-companion(-v6)`,
+`slogan-engine`, no-auth Base44 fns), restrict then decommission historical `Grace`,
+disable surveillance/auto-alert pathways, preserve forensic/archive evidence,
+prevent accidental legacy redeployment, **do not broadly delete** the historical
+Supabase project (`ykykeioydvtxpyreshhs`). Execution is gated on **completing
+locked-model staging verification** (Phase 4 Playwright gates, itself behind the
+off-flag) and requires **human dev-project dashboard/CLI actions** (secret unset,
+function disable) — not performed this turn. Ready to execute on the operator's go.
+
+## AI. Final integration verdict
+
+**GRACE FINAL-INTEGRATION NO-GO — [EXACT BLOCKERS]:**
+
+1. **Provider privacy/compliance account NOT verified (human)** — §Q items 1,3–6,8
+   UNVERIFIED; no BAA/HIPAA-ready/ZDR proven. Human Console → Settings → Privacy
+   check + compliance decision required before activation.
+2. **Authority V1.0 source document not available (human)** — Phase 3 cannot
+   reconcile against the source text until the document is supplied.
+3. **Locked-model generative Playwright gates G7/G8/G10/G12 deferred** — gated behind
+   `GRACE_PROVIDER_CONFIGURED=1`, intentionally OFF; run at activation-time (behaviors
+   already green under the locked model via the eval harness, §AH Phase 4).
+4. **Legacy containment not executed** — gated on Phase 4 completion + human
+   dev-project actions (documented, ready).
+5. **SMTP/signup soft-launch gate** — independent and unresolved (§AB).
+6. **Human-device gates** — VoiceOver/NVDA a11y, real-device mobile (§AA).
+
+**What IS complete:** Grace V1 model **locked** to `claude-sonnet-5` (thinking
+disabled) on evidence, with a drift-failing preflight; the full server-authoritative
+Grace stack green under the locked model (safety floor + 14 false-positive controls,
+consent, cross-user isolation, no writes/transcripts/staff alerts, no browser secret,
+refusal/truncation/rate-limit handling, canonical slogan fidelity + abstention,
+draft-only tools, Support Now independence). No §36 STOP condition is present in the
+built system. **`GRACE_PROVIDER_CONFIGURED` remains OFF; no activation; no vrcc.app
+change; no public launch; no DNS cutover.** The remaining blockers are human
+compliance/authority/device decisions + the deliberate activation flag — not Grace
+implementation defects.

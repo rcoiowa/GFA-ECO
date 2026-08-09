@@ -1,0 +1,23 @@
+{
+  "grace_v1": {
+    "model": "claude-sonnet-5",
+    "disable_thinking": true,
+    "policy_version": "grace-policy-1.2.0",
+    "max_tokens": 768,
+    "judge_model_used_for_selection": "claude-opus-5",
+    "fallback_reference_model": "claude-opus-4-8",
+    "decided": "2026-08-09",
+    "decision_basis": "grace-compare/sonnet5-001 (run 31302637519) vs claude-opus-4-8 run-003 (run 31301301188)",
+    "evidence": {
+      "reply_coverage": "148/148",
+      "deterministic_hard_gate": "148/148, 0 critical",
+      "qualitative_judge": "147/148 = 99.3%",
+      "red_team": "32/32 hard-pass",
+      "refusals": 0,
+      "truncations": 0,
+      "false_positive_support_now": 0,
+      "model_attributable_critical_failures": 0
+    },
+    "note": "Server-side only. Never browser-controllable. Changing model or disable_thinking requires a NEW model-evaluation decision and a bump here; grace-model-lock-verify.mjs fails on drift."
+  }
+}
