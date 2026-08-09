@@ -679,15 +679,43 @@ zero-retention claim is made. **Human action required:** Console → Settings �
 Privacy; report HIPAA-readiness/BAA/ZDR/Data-retention statuses. This is a human
 compliance decision before activation.
 
-**PHASE 3 — AUTHORITY V1.0 RECONCILIATION — BLOCKED (missing source).** The complete
-source "Grace Implementation Authority V1.0" is **still not present** in the session
-or the repository (searched: only files that *reference* it exist; ADR-0013 is a
-house-policy authority, not the V1.0 directive). Reconciliation to date is against
-the directive's **enumerated restatement** (§A), which found all implicated sections
-conforming except the two resolved AUTHORITY-WINS items. **Cannot reconcile against
-the actual source text until the document is provided.** Authority wins on any
-conflict; no broad redesign unless a real conflict surfaces. **Human action:**
-supply the Authority V1.0 document.
+**PHASE 3 — AUTHORITY RECONCILIATION — BLOCKED, HELD pending the Ratified Canonical
+Edition.** Governance finding (operator, 2026-08-09): a single authoritative
+"Authority V1.0" file **never existed**. The recovered Grace source-material package is:
+- **Grace AI Master Implementation Blueprint** — AFFIRMING: nonclinical,
+  dignity-centered, trauma-aware, bridge-to-human-support; explicitly NOT a
+  therapist/medical-legal authority/crisis service/relationship replacement;
+  multi-pathway; faith not imposed; anti-dependency/privacy/transparency governance.
+  Confirms canonical Grace — no conflict.
+- **RecoveryOS / VRCC architecture** — AFFIRMING: ICARE (Identify→Connect→Assess→
+  Respond→Empower), Recovery Reasoning Engine, official 59 slogans, The Tapes We
+  Carry, human-connection orientation, persistent Support Now, and the prohibition
+  on pretending a consequential action occurred when it did not. Confirms canonical
+  Grace — no conflict.
+- **`Grace_AI_System_Prompt_Scaffold.docx`** — **REFERENCE ONLY, NOT governing
+  authority.** Contains SUPERSEDED historical behaviors that directly conflict with
+  the locked canonical decisions and MUST NOT override them.
+
+**Conflict register (historical Scaffold → canonical decision that SUPERSEDES it):**
+
+| Historical Scaffold behavior (REFERENCE ONLY, superseded) | Canonical locked decision (governs) |
+|---|---|
+| crisis `safety_flag` → Coach alert (even with consent) | **No silent staff alert**; Grace creates no `service_event`/notification; human connection is participant-initiated only (G14–G16) |
+| memory / persistence assumptions | **Stateless V1**; no transcript persistence; no cross-session memory (G17/G18, §M) |
+| historical risk record / risk scoring | **No hidden risk record**; non-diagnostic graduated safety routing, no risk score/probability (§H) |
+| inferred psychological profiling (Enneagram/True Colors/etc.) | **No psychographic tables read**; minimum-necessary own-data context only (§G) |
+| staff visibility into conversation | **No staff transcript exposure** (G17/G18) |
+
+**Status:** the "Grace AI Peer Companion Implementation Authority V1.0 — Ratified
+Canonical Edition" (consolidating the Blueprint + RecoveryOS/VRCC architecture +
+canonical org doctrine + the G0–G8 safety/privacy decisions + evaluated
+`grace-policy-1.2.0` + the Sonnet 5 V1 model-selection evidence, with explicit
+supersession language + this conflict register) is being produced by the operator.
+**Until it is supplied, Authority reconciliation stays BLOCKED and HELD** — no
+Grace architecture changes, no scaffold treated as canonical authority, locked
+Sonnet 5 config + certification evidence preserved, `GRACE_PROVIDER_CONFIGURED`
+stays OFF. When supplied, reconcile canonical Grace against the Ratified Authority
+(authority wins on any conflict; no broad redesign unless a real conflict surfaces).
 
 **PHASE 4 — LOCKED-MODEL GENERATIVE GATES — behaviors VERIFIED under the locked
 config; Playwright G7/G8/G10/G12 DEFERRED.** The Sonnet 5 comparison run (§AG) ran
@@ -734,8 +762,12 @@ function disable) — not performed this turn. Ready to execute on the operator'
 1. **Provider privacy/compliance account NOT verified (human)** — §Q items 1,3–6,8
    UNVERIFIED; no BAA/HIPAA-ready/ZDR proven. Human Console → Settings → Privacy
    check + compliance decision required before activation.
-2. **Authority V1.0 source document not available (human)** — Phase 3 cannot
-   reconcile against the source text until the document is supplied.
+2. **Authority reconciliation HELD (governance)** — no single "Authority V1.0" file
+   ever existed; the recovered package's `Grace_AI_System_Prompt_Scaffold.docx` is
+   REFERENCE-ONLY with SUPERSEDED behaviors (staff-alert, persistence, profiling)
+   that must not govern (§AH Phase 3 conflict register). Reconciliation resumes only
+   against the forthcoming **Authority V1.0 — Ratified Canonical Edition**; until
+   then, held with no architecture changes.
 3. **Locked-model generative Playwright gates G7/G8/G10/G12 deferred** — gated behind
    `GRACE_PROVIDER_CONFIGURED=1`, intentionally OFF; run at activation-time (behaviors
    already green under the locked model via the eval harness, §AH Phase 4).
