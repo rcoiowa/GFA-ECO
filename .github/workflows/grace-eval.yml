@@ -76,6 +76,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
+      - name: Deterministic safety-floor regression controls (12 crisis must trip, 14 controls must stay ordinary)
+        run: node scripts/grace-floor-selftest.mjs
+
       - uses: supabase/setup-cli@v1
         with:
           version: latest

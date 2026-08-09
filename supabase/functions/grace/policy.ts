@@ -9,7 +9,10 @@
 
 // 1.1.0: broadened the deterministic crisis safety-floor phrase coverage after
 // the live evaluation surfaced crisis phrasings the 1.0.0 floor missed.
-export const POLICY_VERSION = 'grace-policy-1.1.0';
+// 1.2.0: narrowed those broadened families to contextual matches after
+// false-positive regression controls (e.g. "blue lipstick", "arm numb because I
+// slept on it", "a bunch of photos") tripped the 1.1.0 substring clauses.
+export const POLICY_VERSION = 'grace-policy-1.2.0';
 
 /** Required in-surface disclosure (Authority §4). The frontend also renders a
  *  visible disclosure; this guarantees the model self-identifies on request. */
@@ -57,11 +60,14 @@ export function deterministicSafetyFloor(text: string): SafetyCategory {
   const all = (arr: string[]) => arr.every((p) => t.includes(p));
 
   // Phrase coverage was broadened after the live evaluation surfaced crisis
-  // phrasings the floor missed (first-person AND third-party overdose, passive
-  // suicidal ideation, self-injury, dosing solicitation, victim-of-violence /
-  // DV, weapon possession, stroke and alcohol-withdrawal medical emergencies).
-  // This is a high-precision FLOOR that guarantees Support Now surfaces even if
-  // the model fails — the model still does the nuanced routing above it.
+  // phrasings the floor missed. 1.2.0 narrows the broadened families to
+  // CONTEXTUAL matches after regression controls showed benign substrings
+  // ("blue lipstick", "arm numb because I slept on it", "a bunch of photos",
+  // "if I'm safe to exercise") tripping the floor. Every one of the 12 crisis
+  // phrasings from run-001 is still caught by a specific signal below; the
+  // dropped over-broad clauses were redundant. This is a high-precision FLOOR
+  // that guarantees Support Now surfaces even if the model fails — the model
+  // still does the nuanced routing above it.
   if (
     has([
       'overdosing',
@@ -71,21 +77,25 @@ export function deterministicSafetyFloor(text: string): SafetyCategory {
       'i took a whole bottle',
       'od-ing',
       "i'm od",
-      'bunch of pills',
+      'bunch of pills', // "a whole bunch of pills"
       'handful of pills',
-      'took a bunch of',
-      'whole bottle of',
+      // Dosing solicitation (specific).
       'lethal dose',
       'lethal amount',
       'how much fentanyl',
       'how much heroin',
+      'how much oxycodone',
       'how much oxy',
-      'before it kills',
-      'enough to kill',
+      // Cyanosis (specific phrases — do NOT match "blue lipstick").
+      'lips are blue',
+      'lips turning blue',
+      'lips went blue',
+      'lips are turning blue',
     ]) ||
-    // Third-party overdose (someone else is going under): unresponsive + cyanosis.
-    has(['not really responding', 'unresponsive', "won't wake up", 'not waking up', 'wont wake up']) ||
-    all(['lip', 'blue'])
+    // Third-party overdose: unresponsive AND an independent substance/cyanosis
+    // cue in the same message (avoids "my coach isn't responding to texts").
+    (has(['not really responding', 'unresponsive', "won't wake up", 'not waking up', 'wont wake up']) &&
+      has(['used and', 'overdose', 'overdosed', 'pills', 'heroin', 'fentanyl', 'oxycodone', 'blue', 'not breathing', 'naloxone', 'narcan']))
   )
     return 'overdose';
 
@@ -108,6 +118,7 @@ export function deterministicSafetyFloor(text: string): SafetyCategory {
       'hang myself',
       'no reason to live',
       'least painful way',
+      // Self-injury (specific — "cutting back on coffee" / "cutting paper" stay ordinary).
       'cutting again',
       'been cutting',
       'cut myself',
@@ -137,14 +148,13 @@ export function deterministicSafetyFloor(text: string): SafetyCategory {
       'plan how to hurt',
       'how to hurt him',
       'where should i wait',
-      // Victim of violence / domestic violence in immediate danger.
+      // Victim of violence / domestic violence in immediate danger (specific —
+      // "hits baseballs" / "hit my goal" stay ordinary).
       'hits me',
       'hitting me',
       'beats me',
       'he hurt me',
       'she hurt me',
-      "i'm not safe",
-      "if i'm safe",
       'afraid for my life',
       'scared for my life',
     ])
@@ -164,12 +174,15 @@ export function deterministicSafetyFloor(text: string): SafetyCategory {
       'face is drooping',
       'the dts',
       'delirium tremens',
-      'shaking and sweating',
     ]) ||
-    // Stroke-adjacent: one-sided numbness.
-    (t.includes('numb') && has(['arm', 'face', 'leg', 'side', 'vision'])) ||
-    // Alcohol-withdrawal danger: shakes/sweats on stopping drinking.
-    (has(['shake', 'sweat', 'the shakes']) && has(['stop drinking', 'quit drinking', 'stopped drinking']))
+    // Sudden one-sided numbness (stroke-adjacent) — but NOT a limb that was
+    // slept on / already resolving. Require an acuity cue.
+    (t.includes('numb') &&
+      has(['arm', 'face', 'leg', 'side', 'one side', 'vision']) &&
+      has(['suddenly', 'all of a sudden', "can't move", 'went numb', 'droop', 'slurred', 'blurry'])) ||
+    // Alcohol-withdrawal danger: shakes/sweats specifically on stopping drinking.
+    (has(['shake', 'sweat', 'the shakes']) &&
+      has(['stop drinking', 'quit drinking', 'stopped drinking', 'when i stop drinking']))
   )
     return 'medical_emergency';
 

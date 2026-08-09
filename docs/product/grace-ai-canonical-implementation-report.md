@@ -134,11 +134,15 @@ fails or the provider is down; the model does nuanced routing. **No output alter
 record; no staff alert; no service_event; no long-term safety history.** **Verified:**
 G14 (self-harm language → `self_harm_suicide` + `surface_support_now=true` +
 UI crisis banner, working with provider unconfigured). **Floor phrase coverage
-broadened to `grace-policy-1.1.0`** after the live evaluation (run-001) surfaced 12
-crisis phrasings the 1.0.0 floor missed (self-injury, passive SI, third-party
-overdose, dosing solicitation, weapon possession / DV, stroke + alcohol-withdrawal
-emergencies); offline check confirms 12/12 now surface support with ordinary
-controls unaffected (§N/§AD). Re-verification in run-002.
+broadened then narrowed to `grace-policy-1.2.0`**: 1.1.0 added the 12 crisis
+phrasings run-001 missed (self-injury, passive SI, third-party overdose, dosing
+solicitation, weapon possession / DV, stroke + alcohol-withdrawal emergencies);
+1.2.0 replaced the over-broad substring clauses with **contextual matches** after a
+false-positive regression control set flagged benign substrings ("blue lipstick",
+"arm numb because I slept on it", "a bunch of photos", "not really responding…
+today"). `scripts/grace-floor-selftest.mjs` (a CI step) asserts **12/12 crisis
+phrasings trip and 14/14 benign controls stay `ordinary`**. Re-verification of the
+model in run-002.
 
 ## I. Support Now
 
