@@ -385,32 +385,116 @@ client authorization unchanged), `scripts/seed-e2e-fixtures.mjs` (idempotent; cl
 synthetic identity `test_fixture`), Playwright config gains CI-runner browser fallback and the
 external-base-URL mode without touching the proven `local` project.
 
-**Execution evidence:** run 31283117272 (branch `live-gate/run-001`, commit `de764e5`) reached
-the egress-capable runner, resolved canonical config, and stopped exactly at the designed
-guard: **the `SUPABASE_SERVICE_ROLE_KEY` repository secret does not exist.** A follow-up
-workflow_dispatch (now registered) queued successfully — the dispatch path works too.
-
 **Chronic CI failure fixed (found during G1):** every CI run had failed for weeks on a
-pnpm version conflict (`pnpm/action-setup` pin vs `packageManager`); removed the pin — CI can
-go green again.
+pnpm version conflict (`pnpm/action-setup` pin vs `packageManager`); removed the pin — CI is
+green again. The residual `live-gate/run-001` branch is an inert trigger artifact (identical
+history; the push credential cannot delete remote branches).
 
-**Items G1 §9 (gate items 1–30), §12 (realtime/polling), §13 (cron), §14 (authenticated
-accessibility), §11/Phase C (deployed-artifact verification):** NOT EXECUTED — all gated behind
-the single missing secret below. Cron remains READY — NOT ACTIVATED; polling retained; external
-delivery OFF; no DNS changes; human-device VoiceOver/NVDA items unchanged.
+## G1 execution results (2026-08-09, after the `p4h-live-gate` environment secret was configured)
+
+The gate ran against the `p4h-live-gate` GitHub environment (holding
+`SUPABASE_SERVICE_ROLE_KEY`; per-run random masked fixture password). Bring-up took 7 iterated
+runs; the directive's standard (§9: fix the actual UI or the actual defect, never weaken
+assertions) was applied throughout.
+
+**Final Phase A result — run 31287827636 (commit `7d0b9de`): 26 passed, 1 skipped-BLOCKED,
+0 failed (4.6 m), MODE A (runner build → live RecoveryOS-Launch backend).** Items 3–30 all
+HTTP-VERIFIED, including: full coaching loop (request → claim → two-way messages), realtime
+proven by a `postgres_changes` INSERT event frame observed on the coach's websocket (not just
+an open socket — the 15 s polling fallback cannot masquerade), interactive scheduling
+(coach offers a time → participant chooses → confirmed appointment → coach records the real
+`complete_session` service event after the start instant passes), full navigation loop
+(claim → thread → need → referral with server-confirmed post-states → attestation), residence
+surfaces + resident isolation, and all seven governance items (invitation→real-signup→scoped
+role via the live trigger, operator no-premature-authority, live grant/revoke session effect,
+denial matrix incl. admin message-body probe, cross-residence scope, evidence no-TTMHC,
+triage). §14 authenticated accessibility: axe (WCAG 2.x A/AA) across all seven role
+workspaces (25 authenticated routes) — zero serious/critical.
+
+**Items 1–2 (real signup path) — BLOCKED, email posture.** Two observed rejections from the
+same root cause (confirmations ON + default Supabase SMTP against an undeliverable fixture
+domain): `429 over_email_send_rate_limit` (~2/hr budget) and, later in the day,
+`400 email_address_invalid` (GoTrue deliverability protection). This blocks REAL participant
+signups at any volume, independent of the gate. **Human decision required for soft launch:
+configure a production SMTP provider or deliberately disable email confirmations.** The gate
+reports the item BLOCKED rather than pretending; invitation/signup governance items still
+verify via the admin-API fallback (the provisioning trigger fires on those creates too).
+
+**Phase C (deployed-artifact verification, MODE B):** the same suite passed against the
+deployed Cloudflare staging Worker `https://recoveryos-staging.thomas-499.workers.dev` twice:
+run 31287126835 (18 passed/1 BLOCKED, pre-scheduling suite) and final full run **31288045851**
+(entire suite incl. scheduling + §14 a11y) against the current artifact — staging auto-redeploys
+on every push to the build branch; latest deploy 31287825600 = commit `7d0b9de`.
+
+**Genuine platform defects found by the gate and fixed at the root:**
+1. **Pool classification asymmetry** (migration `0120` + `0120b`): `list_open_support_requests`
+   filtered pools to production participants only, so fixture staff saw nothing — and the
+   inverse hole existed (fixture staff could claim REAL people). `same_world()` now enforces
+   symmetric classification on list AND claim; frontend row contract preserved exactly.
+2. **Booking RPC surface unreachable** (migration `0121`): 0100's `revoke execute … from
+   public, anon` hardening stripped the PUBLIC default grant with no re-grant to
+   `authenticated`, so create/propose/counter/cancel/reschedule booking + cancel_support_request
+   all returned 42501 through PostgREST — the entire scheduling surface was dead in the real
+   client while owner-privileged tests passed. Granted to `authenticated` (all six are
+   SECURITY DEFINER with internal authorization); the launch preflight now asserts EXECUTE for
+   `authenticated` across the whole frontend RPC surface as a permanent regression guard.
+3. **WCAG serious: `ink-faint` contrast** — light `#7c756e` only cleared pure white
+   (4.2:1 on `surface`, 4.0:1 on `sunken`); darkened to `#6b645d` (≥5.0:1 on all light
+   surfaces, hierarchy preserved) and the token contrast gate now covers the `ink-faint`
+   pairs in both appearances.
+4. **WCAG serious: message thread not keyboard-scrollable** — the conversation scroll region
+   had an aria-label but no tab stop; now `role="log"` + `tabIndex={0}` in the shared
+   `MessageThread` (participant, coach, navigator and staff threads all inherit the fix).
+
+**First-run harness fix log (selector/behavior corrections, § 9):** name-anchored
+"Message {name}" links (the sidebar "Messages" nav link matched `/^message/i` first and
+stranded journeys on the composer-less list page); claims target THIS run's participant row
+and assert the claim flow's own success navigation (previously `pool.first()` could claim a
+stale request, and file 02 navigated away mid-RPC); seeder cancels stale open fixture
+support requests for deterministic pools; websocket listener registered before the thread
+page mounts (Playwright only reports sockets created after registration); email-posture
+fallbacks as above; real need/referral forms driven with server-confirmed post-states; the
+post-accept assertion targets the "Your next session" card that actually renders.
+
+**§12 realtime → polling decision: polling RETAINED as fallback.** Realtime delivery is
+proven (INSERT event frames, exactly-once render, no reload). Retiring the 15–20 s polling
+heartbeat additionally requires reconnect/tab-focus/sleep-wake/network-transition resilience
+evidence that a headless CI runner cannot faithfully produce; those are HUMAN DEVICE CHECK
+items. Until then the documented posture stands: realtime is the doorbell, polling is the
+safety net. No user-visible cost; revisit after device checks.
+
+**§13 reminder cron 0104 — ACTIVATED with an observed cycle.** Prerequisites (auth,
+notifications, scheduling, realtime) all HTTP-green in run 31287827636, so
+`recoveryos-appointment-reminders` (`*/5 * * * *` → `process_appointment_reminders(50)`) was
+scheduled on the launch project and observed against a fixture appointment (id 14, person 85,
+classified test_fixture). Observed cycle: confirm trigger seeded the `starting_now` reminder
+(remind_at 01:22:13Z) → cron tick 01:25:00Z ran `succeeded` in 19 ms (`cron.job_run_details`)
+→ reminder `sent_at` 01:25:00.185722Z → in-app notification id 119 created
+(kind `session_reminder`, title "Session starting now", dedup_key
+`reminder:starting_now:14:85`). The gate's own scheduling journey also produced its
+`times_proposed` and `session_confirmed` notifications live. Idempotency held at the next
+tick (dedup_key + sent_at selection — no duplicate). External delivery remains OFF (in-app
+only). Disable switch: `select cron.unschedule('recoveryos-appointment-reminders');`.
+
+**§15 final contract rerun:** `launch_contract_check.sql` (now including the client-RPC-surface
+guard) — **LAUNCH CONTRACT PASS** post-0121. Advisors re-run via MCP: security = 3 INFO
+(RLS-enabled/no-policy on reference tables that intentionally have no client policies) +
+1 WARN (leaked-password protection — dashboard toggle, human action, unchanged);
+performance = the accepted P4H-R4 baseline (multiple permissive SELECT policies by design;
+young-database index INFO items). No new findings.
+
+**Remaining human-device / human-decision items:** VoiceOver/NVDA screen-reader passes
+(HUMAN DEVICE CHECK REQUIRED); sleep-wake/network-transition realtime resilience (same);
+production SMTP vs confirmation-off decision (the signup blocker above); optional Cloudflare
+Access policy on the staging workers.dev URL (dashboard action).
 
 ## G1 verdict
 
-**P4H LIVE GATE NO-GO — [BLOCKER: missing `SUPABASE_SERVICE_ROLE_KEY` repository secret]**
+**P4H LIVE GATE PASS — BASELINE READY, GRACE FINAL-INTEGRATION GATE PENDING**
 
-Exactly one human action unblocks the entire gate: add the launch project's service-role key as
-a GitHub Actions **repository secret** named `SUPABASE_SERVICE_ROLE_KEY`
-(github.com/rcoiowa/GFA-ECO → Settings → Secrets and variables → Actions → New repository
-secret; optionally also `P4H_E2E_PASSWORD` for a fixed fixture password — otherwise each run
-generates and masks its own). The key is used only by the server-side fixture seeder and never
-reaches the browser or the built artifact. After the secret exists, the gate runs via the
-Actions tab ("Live HTTP gate" → Run workflow on `claude/grace-coaching-audit-b0fyhq`) or by
-asking this session to dispatch it; first-run selector bring-up then proceeds per the runbook,
-followed by realtime→polling→cron→authenticated-accessibility→Phase C in the directive's order.
-The residual `live-gate/run-001` branch is an inert trigger artifact (identical history; the
-push credential cannot delete remote branches).
+Scope of this verdict: the platform baseline is verified over the real boundary
+(browser → HTTPS → Auth → PostgREST/RPC → RLS → Realtime → launch DB) from GitHub Actions,
+and against the deployed Cloudflare staging artifact. It is NOT a controlled-soft-launch GO:
+the Grace track (§16) has not recertified against this artifact, the signup email posture
+needs the human decision above, and the standing non-authorizations (no vrcc.app cutover, no
+public launch, no external SMS/email, no TTMHC) remain in force.

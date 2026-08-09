@@ -105,3 +105,34 @@ Only then, in order (each separately evidenced):
    notification → idempotent second run; reschedule cancels/reseeds; cancellation suppresses).
    Any defect → disable immediately, fix, repeat. Record scheduler config + run evidence.
 3. Evidence reconciliation snapshot (§27) and the soft-launch observation plan.
+
+## G1 execution record (2026-08-09)
+
+The gate is proven end-to-end from GitHub Actions. Working procedure: Actions → "Live HTTP
+gate" → Run workflow on `claude/grace-coaching-audit-b0fyhq` (MODE A default; set `base_url`
+to the staging Worker URL for MODE B). The job binds the `p4h-live-gate` environment for
+`SUPABASE_SERVICE_ROLE_KEY`.
+
+| Run | Commit | Mode | Result |
+|---|---|---|---|
+| 31286505439 | 0edbca8 | A | selector bring-up (claims/links fixed) |
+| 31286713291 | a37744d | A | realtime instrumented; found email 400 + disabled-submit |
+| 31286984456 | fbf1fde | A | **items 3–30 green** (18 passed / 1 BLOCKED) |
+| 31287126835 | fbf1fde | B (staging) | **deployed artifact green** (18 passed / 1 BLOCKED) |
+| 31287322800 | 3c2436b | A | found booking-RPC 42501 (→0121) + ink-faint contrast |
+| 31287634194 | 7eada32 | A | found thread keyboard-scroll; post-accept copy fixed |
+| 31287827636 | 7d0b9de | A | **FULL GREEN: 26 passed / 1 BLOCKED** (items 3–30 + scheduling 8/10 + §14 a11y ×7 roles) |
+
+Suite now also includes `live/04-authenticated-a11y.spec.ts` (§14: axe WCAG 2.x A/AA across
+all seven role workspaces; serious/critical fail the gate) and a dedicated scheduling test in
+`live/01-auth-connection.spec.ts` (items 8/10 — offer → choose → completion, ~90 s deliberate
+wait for the start instant).
+
+Item 1–2 (real signup) reports BLOCKED until the email posture is fixed (production SMTP or
+confirmations off): default SMTP rate limit `over_email_send_rate_limit` and GoTrue
+deliverability rejection `email_address_invalid` were both observed live.
+
+Platform defects fixed from gate evidence: 0120/0120b classification symmetry,
+0121 booking-RPC grants (preflight now guards the whole client RPC surface),
+ink-faint contrast token, keyboard-focusable message log. Details in
+`p4h-production-hardening-soft-launch-report.md` (G1 section).
