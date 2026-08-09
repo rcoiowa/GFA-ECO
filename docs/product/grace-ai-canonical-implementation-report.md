@@ -706,16 +706,23 @@ Edition.** Governance finding (operator, 2026-08-09): a single authoritative
 | inferred psychological profiling (Enneagram/True Colors/etc.) | **No psychographic tables read**; minimum-necessary own-data context only (§G) |
 | staff visibility into conversation | **No staff transcript exposure** (G17/G18) |
 
-**Status:** the "Grace AI Peer Companion Implementation Authority V1.0 — Ratified
-Canonical Edition" (consolidating the Blueprint + RecoveryOS/VRCC architecture +
-canonical org doctrine + the G0–G8 safety/privacy decisions + evaluated
-`grace-policy-1.2.0` + the Sonnet 5 V1 model-selection evidence, with explicit
-supersession language + this conflict register) is being produced by the operator.
-**Until it is supplied, Authority reconciliation stays BLOCKED and HELD** — no
-Grace architecture changes, no scaffold treated as canonical authority, locked
-Sonnet 5 config + certification evidence preserved, `GRACE_PROVIDER_CONFIGURED`
-stays OFF. When supplied, reconcile canonical Grace against the Ratified Authority
-(authority wins on any conflict; no broad redesign unless a real conflict surfaces).
+**Status: CLEARED (2026-08-09).** The **Grace AI Peer Companion Implementation
+Authority V1.0 — Ratified Canonical Edition** was ratified by the Executive Director
+and persisted as `docs/product/grace-ai-implementation-authority-v1.0.md` (the
+missing governance artifact — it consolidates the Blueprint + RecoveryOS/VRCC
+architecture + org doctrine + the G0–G8 safety/privacy decisions + evaluated
+`grace-policy-1.2.0` + Sonnet 5 V1 model-selection evidence, with explicit
+supersession language + this conflict register). The certified implementation was
+reconciled against all 51 sections:
+`docs/product/grace-ai-authority-v1.0-reconciliation.md`. **Result: all applicable
+sections CONFORMING; a few REFINE (non-blocking); §48 N/A (operational cadence);
+ZERO CONFLICT — AUTHORITY WINS; NO required remediation.** No code change was made
+(the implementation was built from the same G0–G8 decisions the Authority ratifies).
+Historical `Grace_AI_System_Prompt_Scaffold.docx` remains REFERENCE-ONLY; its
+superseded behaviors are already removed in canonical Grace (§45 register). Locked
+Sonnet 5 config + certification evidence preserved; `GRACE_PROVIDER_CONFIGURED` stays
+OFF. The remaining ACTIVATION blockers enumerated by the Authority itself (§49/§50)
+are unchanged and human-gated.
 
 **PHASE 4 — LOCKED-MODEL GENERATIVE GATES — behaviors VERIFIED under the locked
 config; Playwright G7/G8/G10/G12 DEFERRED.** The Sonnet 5 comparison run (§AG) ran
@@ -762,12 +769,13 @@ function disable) — not performed this turn. Ready to execute on the operator'
 1. **Provider privacy/compliance account NOT verified (human)** — §Q items 1,3–6,8
    UNVERIFIED; no BAA/HIPAA-ready/ZDR proven. Human Console → Settings → Privacy
    check + compliance decision required before activation.
-2. **Authority reconciliation HELD (governance)** — no single "Authority V1.0" file
-   ever existed; the recovered package's `Grace_AI_System_Prompt_Scaffold.docx` is
-   REFERENCE-ONLY with SUPERSEDED behaviors (staff-alert, persistence, profiling)
-   that must not govern (§AH Phase 3 conflict register). Reconciliation resumes only
-   against the forthcoming **Authority V1.0 — Ratified Canonical Edition**; until
-   then, held with no architecture changes.
+2. ~~Authority reconciliation~~ **CLEARED (2026-08-09).** The Authority V1.0 —
+   Ratified Canonical Edition is persisted
+   (`docs/product/grace-ai-implementation-authority-v1.0.md`); the certified
+   implementation reconciles CONFORMING across all 51 sections with **zero conflict
+   and no required remediation** (`docs/product/grace-ai-authority-v1.0-reconciliation.md`).
+   Historical scaffold remains REFERENCE-ONLY (superseded per §45). No longer a
+   blocker.
 3. **Locked-model generative Playwright gates G7/G8/G10/G12 deferred** — gated behind
    `GRACE_PROVIDER_CONFIGURED=1`, intentionally OFF; run at activation-time (behaviors
    already green under the locked model via the eval harness, §AH Phase 4).
