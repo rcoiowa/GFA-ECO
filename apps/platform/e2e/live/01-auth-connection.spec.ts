@@ -95,24 +95,55 @@ test('4–10. support request → claim → messages → realtime → scheduling
   await participant.goto('/vrcc');
   await expect(participant.getByText(`Coach hello — ${marker}`)).toHaveCount(0);
 
-  // 8 + 10. Scheduling and completion flows are exercised where the entry
-  // points exist for this relationship state; both remain hard-gated by the
-  // dedicated evidence checks (appointment ≠ service) on the admin side.
+  await participant.context().close();
+  await coach.context().close();
+});
+
+// ---- 8 + 10. Interactive scheduling + real completion ----------------------
+test('8 + 10. scheduling: coach offers → participant chooses → session completed', async ({
+  browser,
+}) => {
+  const participant = await userPage(browser, FIXTURES.participant);
+  const coach = await userPage(browser, FIXTURES.coach);
+
+  // Coach opens scheduling from the participant page (rerun-tolerant:
+  // withdraw a stale open offer left by an interrupted run).
+  await coach.goto('/coach/participants');
+  await coach.getByRole('link').filter({ hasText: /p4h-participant/i }).first().click();
+  await coach.waitForURL(/\/coach\/participants\/\d+/, { timeout: 20_000 });
+  const withdraw = coach.getByRole('button', { name: /withdraw these times/i }).first();
+  if (await withdraw.isVisible().catch(() => false)) await withdraw.click();
+  const open = coach.getByRole('button', { name: /schedule a session/i }).first();
+  await expect(open).toBeVisible({ timeout: 15_000 });
+  await open.click();
+
+  // Offer a start ~75s out: the form only accepts future instants, and the
+  // completion affordance appears only once the start time has passed —
+  // datetime-local is minute-granular, so the instant lands 15–75s ahead.
+  const start = new Date(Date.now() + 75_000);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const local = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}T${pad(start.getHours())}:${pad(start.getMinutes())}`;
+  await coach.getByLabel(/a time that could work/i).fill(local);
+  await coach.getByRole('button', { name: /send these times/i }).click();
+  await expect(coach.getByText(/times are with/i)).toBeVisible({ timeout: 15_000 });
+
+  // 8. Participant chooses the time — confirmed appointment over live HTTP.
   await participant.goto('/vrcc/sessions');
   const choose = participant.getByRole('button', { name: /choose this time/i }).first();
-  if (await choose.isVisible().catch(() => false)) {
-    await choose.click();
-    await expect(participant.getByText(/confirmed|scheduled/i).first()).toBeVisible({
-      timeout: 15_000,
-    });
-  }
+  await expect(choose).toBeVisible({ timeout: 20_000 });
+  await choose.click();
+  await expect(participant.getByText(/confirmed|scheduled/i).first()).toBeVisible({
+    timeout: 20_000,
+  });
+
+  // 10. Real completion (appointment ≠ service): wait out the start instant,
+  // then record it — exactly one service event via complete_session.
+  await coach.waitForTimeout(85_000);
   await coach.goto('/coach/sessions');
-  const complete = coach.getByRole('button', { name: /complete session/i }).first();
-  if (await complete.isVisible().catch(() => false)) {
-    await complete.click();
-    await expect(coach.getByText(/recorded|completed/i).first()).toBeVisible({ timeout: 15_000 });
-    await expect(coach.getByRole('button', { name: /complete session/i })).toHaveCount(0);
-  }
+  const complete = coach.getByRole('button', { name: /mark complete/i }).first();
+  await expect(complete).toBeVisible({ timeout: 20_000 });
+  await complete.click();
+  await expect(coach.getByText(/session recorded/i).first()).toBeVisible({ timeout: 15_000 });
 
   await participant.context().close();
   await coach.context().close();
