@@ -128,6 +128,27 @@ begin
                    and p.prosrc like '%is_platform_admin%') then
     raise exception 'LAUNCH-CONTRACT FAIL: is_admin_staff is no longer a platform-admin alias';
   end if;
+
+  -- 8) Client RPC surface (P4H-G1). Every RPC the frontend calls must be
+  --    executable by `authenticated` — the 0121 discovery: `revoke ... from
+  --    public` silently strips the PUBLIC default authenticated relied on,
+  --    and SECURITY DEFINER tests run as owner so they can't catch it.
+  select string_agg(distinct p.proname, ', ' order by p.proname) into missing
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'recoveryos'
+    and p.proname in (
+      'accept_booking_proposal','admin_list_people','admit_applicant','assign_bed',
+      'assign_participant_coach','cancel_booking','cancel_support_request','claim_support_request',
+      'counter_propose_booking_times','create_booking_request','create_residence_for_current_user',
+      'decide_pass','ensure_my_document_assignments','ensure_person_for_current_user',
+      'ensure_relationship_conversation','get_my_navigation_participants','get_my_participants',
+      'get_my_support_team','list_open_support_requests','mark_conversation_read',
+      'propose_booking_times','release_bed','reschedule_booking','review_residence_application',
+      'send_message','triage_residence_referral','complete_session')
+    and not has_function_privilege('authenticated', p.oid, 'EXECUTE');
+  if missing is not null then
+    raise exception 'LAUNCH-CONTRACT FAIL: authenticated cannot execute client RPC(s): %', missing;
+  end if;
 end $contract$;
 
 select 'LAUNCH CONTRACT PASS — schema usage, table privileges, anon scope, RLS posture verified' as result;

@@ -58,7 +58,9 @@
   --color-surface-sunken: #f1eeeb;
   --color-ink: #2b2724;
   --color-ink-muted: #57514c;
-  --color-ink-faint: #7c756e;
+  /* 4.5:1+ on surface, raised AND sunken — #7c756e only cleared pure white
+     (axe serious, P4H-G1 authenticated pass). Still lighter than ink-muted. */
+  --color-ink-faint: #6b645d;
   --color-line: #d8d3ce;
 
   /* ---------- SEMANTIC: brand action (Recovery Purple) ---------- */
