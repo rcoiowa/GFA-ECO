@@ -248,15 +248,44 @@ Deno.serve(async (req: Request) => {
     });
     const latencyMs = Date.now() - t0;
     if (!res.ok) {
-      // Do NOT log the upstream body (may echo content). Status only.
-      logMeta({ status: res.status, latency_ms: latencyMs, outcome: 'provider_error' });
+      // Do NOT read/log the upstream BODY (it may echo content). Capture only
+      // non-sensitive PROCESS metadata from headers so the eval harness can obey
+      // Anthropic's actual rate-limit recovery instruction (retry-after) rather
+      // than guessing. 429 = rate limit; 529 = overloaded.
+      const retryAfterSeconds = parseRetryAfter(res.headers.get('retry-after'));
+      const rateLimit = {
+        retry_after_seconds: retryAfterSeconds,
+        requests_remaining: res.headers.get('anthropic-ratelimit-requests-remaining'),
+        requests_reset: res.headers.get('anthropic-ratelimit-requests-reset'),
+        tokens_remaining: res.headers.get('anthropic-ratelimit-tokens-remaining'),
+        tokens_reset: res.headers.get('anthropic-ratelimit-tokens-reset'),
+        input_tokens_remaining: res.headers.get('anthropic-ratelimit-input-tokens-remaining'),
+        output_tokens_remaining: res.headers.get('anthropic-ratelimit-output-tokens-remaining'),
+      };
+      const code =
+        res.status === 429
+          ? 'provider_rate_limited'
+          : res.status === 529
+            ? 'provider_overloaded'
+            : 'provider_error';
+      logMeta({
+        status: res.status,
+        retry_after_seconds: retryAfterSeconds,
+        latency_ms: latencyMs,
+        outcome: code,
+      });
       return json(
         {
           ok: false,
-          code: 'provider_error',
+          code,
           safety,
           policy_version: POLICY_VERSION,
-          meta: { status: res.status, latency_ms: latencyMs },
+          meta: {
+            status: res.status,
+            latency_ms: latencyMs,
+            retry_after_seconds: retryAfterSeconds,
+            rate_limit: rateLimit,
+          },
         },
         200,
       );
@@ -381,6 +410,16 @@ function logMeta(meta: Record<string, unknown>): void {
   } catch {
     /* logging must never throw */
   }
+}
+
+/** Parse an HTTP Retry-After header (delta-seconds or HTTP-date) to seconds. */
+function parseRetryAfter(v: string | null): number | null {
+  if (!v) return null;
+  const n = Number(v);
+  if (Number.isFinite(n)) return Math.max(0, Math.round(n));
+  const t = Date.parse(v);
+  if (!Number.isNaN(t)) return Math.max(0, Math.round((t - Date.now()) / 1000));
+  return null;
 }
 
 /**

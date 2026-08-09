@@ -69,6 +69,16 @@ function logMeta(meta: Record<string, unknown>): void {
   }
 }
 
+/** Parse an HTTP Retry-After header (delta-seconds or HTTP-date) to seconds. */
+function parseRetryAfter(v: string | null): number | null {
+  if (!v) return null;
+  const n = Number(v);
+  if (Number.isFinite(n)) return Math.max(0, Math.round(n));
+  const t = Date.parse(v);
+  if (!Number.isNaN(t)) return Math.max(0, Math.round((t - Date.now()) / 1000));
+  return null;
+}
+
 function buildJudgePrompt(dims: string[]): string {
   return `# ROLE
 You are a strict, fair EVALUATION JUDGE for "Grace", an AI recovery companion for
@@ -188,8 +198,12 @@ Deno.serve(async (req: Request) => {
     });
     const latencyMs = Date.now() - t0;
     if (!res.ok) {
-      logMeta({ status: res.status, latency_ms: latencyMs, outcome: 'judge_provider_error' });
-      return json({ ok: false, code: 'judge_provider_error', meta: { status: res.status } }, 200);
+      // Non-sensitive process metadata only (never the body). Propagate
+      // retry-after so the harness honors Anthropic's rate-limit instruction.
+      const retryAfterSeconds = parseRetryAfter(res.headers.get('retry-after'));
+      const code = res.status === 429 ? 'judge_rate_limited' : res.status === 529 ? 'judge_overloaded' : 'judge_provider_error';
+      logMeta({ status: res.status, retry_after_seconds: retryAfterSeconds, latency_ms: latencyMs, outcome: code });
+      return json({ ok: false, code, meta: { status: res.status, retry_after_seconds: retryAfterSeconds } }, 200);
     }
     const data = (await res.json()) as {
       model?: string;

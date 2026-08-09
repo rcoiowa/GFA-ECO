@@ -168,8 +168,24 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // Codes that mean the provider (not the participant) failed — safe to retry so a
 // transient rate limit (429) or overload (529) does NOT turn into a vacuous
 // "no reply" that passes the gates without exercising the model.
-const RETRYABLE = new Set(['provider_error', 'provider_timeout', 'transport_error']);
+const RETRYABLE = new Set([
+  'provider_rate_limited', // 429
+  'provider_overloaded', // 529
+  'provider_error',
+  'provider_timeout',
+  'transport_error',
+]);
 const MAX_TRIES = 6;
+const RETRY_AFTER_CEILING_MS = 60000; // honor Anthropic's retry-after up to 60s
+
+// Rate-limit telemetry for the run summary (§6). Reset before the scored run.
+const RL = { count_429: 0, count_529_or_timeout: 0, retries: 0, max_retry_after_seconds: 0 };
+function resetRL() {
+  RL.count_429 = 0;
+  RL.count_529_or_timeout = 0;
+  RL.retries = 0;
+  RL.max_retry_after_seconds = 0;
+}
 
 async function callGraceOnce(jwt, messages) {
   const t0 = Date.now();
@@ -196,8 +212,23 @@ async function callGrace(jwt, userMessages) {
   for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
     last = await callGraceOnce(jwt, messages);
     const code = last.body?.code;
+    if (code === 'provider_rate_limited') RL.count_429++;
+    else if (code === 'provider_overloaded' || code === 'provider_timeout' || code === 'transport_error')
+      RL.count_529_or_timeout++;
     if (!RETRYABLE.has(code)) return { ...last, attempts: attempt };
-    if (attempt < MAX_TRIES) await sleep(Math.min(30000, 1000 * 2 ** attempt)); // 2s,4s,8s,16s,30s
+    if (attempt < MAX_TRIES) {
+      RL.retries++;
+      // Honor Anthropic's retry-after when present (bounded); else exp backoff.
+      const ra = last.body?.meta?.retry_after_seconds;
+      let waitMs;
+      if (Number.isFinite(ra) && ra > 0) {
+        RL.max_retry_after_seconds = Math.max(RL.max_retry_after_seconds, ra);
+        waitMs = Math.min(RETRY_AFTER_CEILING_MS, ra * 1000);
+      } else {
+        waitMs = Math.min(30000, 1000 * 2 ** attempt); // 2s,4s,8s,16s,30s
+      }
+      await sleep(waitMs);
+    }
   }
   return { ...last, attempts: MAX_TRIES };
 }
@@ -221,15 +252,36 @@ async function callJudgeOnce(jwt, payload) {
 }
 
 // Retry the judge on provider/transport errors (same account as the candidate,
-// so it is subject to the same rate limits).
-const JUDGE_RETRYABLE = new Set(['judge_provider_error', 'judge_error', 'judge_timeout', 'judge_transport_error', 'judge_bad_json']);
+// so it is subject to the same rate limits). Honor retry-after when present.
+const JUDGE_RETRYABLE = new Set([
+  'judge_rate_limited',
+  'judge_overloaded',
+  'judge_provider_error',
+  'judge_error',
+  'judge_timeout',
+  'judge_transport_error',
+  'judge_bad_json',
+]);
 async function callJudge(jwt, payload) {
   if (!EVAL_SECRET) return { ok: false, code: 'judge_secret_unset' };
   let last;
   for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
     last = await callJudgeOnce(jwt, payload);
+    if (last?.code === 'judge_rate_limited') RL.count_429++;
+    else if (last?.code === 'judge_overloaded' || last?.code === 'judge_timeout') RL.count_529_or_timeout++;
     if (last?.ok || !JUDGE_RETRYABLE.has(last?.code)) return last;
-    if (attempt < MAX_TRIES) await sleep(Math.min(30000, 1000 * 2 ** attempt));
+    if (attempt < MAX_TRIES) {
+      RL.retries++;
+      const ra = last?.meta?.retry_after_seconds;
+      let waitMs;
+      if (Number.isFinite(ra) && ra > 0) {
+        RL.max_retry_after_seconds = Math.max(RL.max_retry_after_seconds, ra);
+        waitMs = Math.min(RETRY_AFTER_CEILING_MS, ra * 1000);
+      } else {
+        waitMs = Math.min(30000, 1000 * 2 ** attempt);
+      }
+      await sleep(waitMs);
+    }
   }
   return last;
 }
@@ -922,12 +974,14 @@ async function main() {
   const jwt = await mintParticipantJwt();
 
   if (mode === 'smoke' || mode === 'all') {
+    resetRL();
     const smoke = await runSmoke(jwt);
-    console.error(`grace-eval: SMOKE ${smoke.pass ? 'PASS' : 'FAIL'}`);
+    const smokeRL = { ...RL };
+    console.error(`grace-eval: SMOKE ${smoke.pass ? 'PASS' : 'FAIL'} (429s=${smokeRL.count_429} 529/timeout=${smokeRL.count_529_or_timeout} retries=${smokeRL.retries} max_retry_after=${smokeRL.max_retry_after_seconds}s)`);
     for (const c of smoke.checks)
       console.error(`  [${c.pass ? 'ok' : 'XX'}] ${c.name} — ${c.detail}`);
     if (mode === 'smoke') {
-      process.stdout.write(JSON.stringify({ smoke }, null, 2));
+      process.stdout.write(JSON.stringify({ smoke, provider_rate_limit: smokeRL }, null, 2));
       process.exit(smoke.pass ? 0 : 1);
     }
     if (!smoke.pass) {
@@ -936,17 +990,42 @@ async function main() {
         1,
       );
     }
+    // Abort the full suite if the provider is still MATERIALLY throttled during
+    // smoke (persistent 429s that retries could not clear cheaply) — per directive.
+    if (smokeRL.count_429 >= 3) {
+      die(
+        `BLOCKED — provider materially throttled during smoke (${smokeRL.count_429} rate-limit responses, max retry-after ${smokeRL.max_retry_after_seconds}s). Aborting the full suite rather than spending a throttled run. Re-run when limits recover / raise the account limit.`,
+        1,
+      );
+    }
   }
 
+  resetRL(); // measure the scored run only
   const { model, results } = await runFull(jwt);
   const summary = summarize(model, JUDGE_MODEL, results);
+  summary.provider_rate_limit = {
+    count_429: RL.count_429,
+    count_529_or_timeout: RL.count_529_or_timeout,
+    retries: RL.retries,
+    max_retry_after_seconds: RL.max_retry_after_seconds,
+    final_reply_coverage: summary.reply_coverage?.ratio ?? null,
+  };
   const out = { generated: 'run-time', model, judge_model: JUDGE_MODEL || null, summary, results };
   writeFileSync(OUT_PATH, JSON.stringify(out, null, 2));
   console.error(`grace-eval: wrote ${OUT_PATH}`);
   // Print the summary (metadata only — no reply bodies) to stdout for the log.
   process.stdout.write(JSON.stringify(summary, null, 2));
-  // Non-zero exit if any critical hard-gate failed (fails the CI job loudly).
-  process.exit(summary.deterministic.critical_fail > 0 ? 3 : 0);
+  // CI exit signal per the decision tree:
+  //   coverage < 98%     → 4 (INCOMPLETE — throttled/vacuous, not a qualification)
+  //   any critical fail  → 3 (NO-GO)
+  //   else               → 0 (qualifies-for-comparison path)
+  const cov = summary.reply_coverage?.ratio ?? 0;
+  console.error(
+    `grace-eval: coverage ${(cov * 100).toFixed(1)}% | critical_fail ${summary.deterministic.critical_fail} | judge ${(((summary.judge?.pass_rate ?? 0) * 100)).toFixed(1)}% | qualifies ${summary.qualifies_for_comparison}`,
+  );
+  if (cov < 0.98) process.exit(4);
+  if (summary.deterministic.critical_fail > 0) process.exit(3);
+  process.exit(0);
 }
 
 main().catch((e) => {
