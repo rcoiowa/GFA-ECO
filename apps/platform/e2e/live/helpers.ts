@@ -87,6 +87,14 @@ async function adminConfirmEmail(email: string): Promise<void> {
   throw new Error(`adminConfirmEmail: no auth user for ${email}`);
 }
 
+/**
+ * The launch project's auth email posture blocks the real signup path in two
+ * observed ways (both from confirmations-ON + default Supabase SMTP against
+ * the undeliverable fixture domain): 429 over_email_send_rate_limit (~2/hr
+ * budget) and 400 email_address_invalid (GoTrue bounce/deliverability
+ * protection rejecting the address outright). Both are the same soft-launch
+ * blocker — production SMTP or a deliberate confirmation-off decision.
+ */
 export class EmailRateLimited extends Error {}
 
 const adminHeaders = () => ({
@@ -199,7 +207,8 @@ export async function registerUser(
   } catch (err) {
     const res = await signupResponse.catch(() => null);
     const body = res ? await res.text().catch(() => '') : 'no /auth/v1/signup request observed';
-    if (body.includes('over_email_send_rate_limit')) throw new EmailRateLimited(body);
+    if (body.includes('over_email_send_rate_limit') || body.includes('email_address_invalid'))
+      throw new EmailRateLimited(body);
     throw new Error(
       `registration did not complete for ${email}: signup ${res?.status() ?? '-'} ${body.slice(0, 400)}`,
     );

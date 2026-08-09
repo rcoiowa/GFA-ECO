@@ -41,31 +41,30 @@ test('11–16. navigation: claim → message → need → referral → confirmat
     timeout: 15_000,
   });
 
-  // 13–14. Need identified + referral created (surface-driven; the buttons
-  // live on the person page — conditional so drift surfaces as a trace, and
-  // the admin evidence checks in file 03 stay the hard gate).
+  // 13. Need identified — the person page's inline form: choosing a category
+  // enables the "Add need" submit (clicking it disabled just spins). The
+  // need row's "Connect to a resource" affordance appearing is the
+  // server-confirmed post-state.
   await navigator.goto('/navigator/people');
   await navigator.getByRole('link').filter({ hasText: tag }).first().click();
-  const addNeed = navigator.getByRole('button', { name: /add.*need|identify.*need|need/i }).first();
-  if (await addNeed.isVisible().catch(() => false)) {
-    await addNeed.click();
-    const category = navigator.getByLabel(/category|need/i).first();
-    if ((await category.count()) && (await category.evaluate((el) => el.tagName)) === 'SELECT') {
-      await category.selectOption({ index: 1 });
-    }
-    const save = navigator.getByRole('button', { name: /save|add|record/i }).first();
-    if (await save.isVisible().catch(() => false)) await save.click();
-  }
-  const addReferral = navigator
-    .getByRole('button', { name: /referral|warm handoff|connect to/i })
+  const needSelect = navigator.getByLabel(/what would be most helpful to work on/i);
+  await needSelect.selectOption({ index: 1 });
+  await navigator.getByRole('button', { name: /^add need$/i }).click();
+  const connectToResource = navigator
+    .getByRole('button', { name: /connect to a resource/i })
     .first();
-  if (await addReferral.isVisible().catch(() => false)) {
-    await addReferral.click();
-    const org = navigator.getByLabel(/organization|resource|partner|where/i).first();
-    if (await org.isVisible().catch(() => false)) await org.fill('P4H Fixture Housing Partner');
-    const save = navigator.getByRole('button', { name: /save|create|record/i }).first();
-    if (await save.isVisible().catch(() => false)) await save.click();
-  }
+  await expect(connectToResource).toBeVisible({ timeout: 15_000 });
+
+  // 14. Referral for that need — the real connection form; the referral row
+  // rendering the destination is the server-confirmed post-state.
+  await connectToResource.click();
+  await navigator
+    .getByLabel(/where are they being connected/i)
+    .fill('P4H Fixture Housing Partner');
+  await navigator.getByRole('button', { name: /^save connection$/i }).click();
+  await expect(navigator.getByText(/p4h fixture housing partner/i).first()).toBeVisible({
+    timeout: 15_000,
+  });
 
   // 15. Participant confirmation voice (visible once a referral exists).
   await participant.goto('/vrcc/connect');

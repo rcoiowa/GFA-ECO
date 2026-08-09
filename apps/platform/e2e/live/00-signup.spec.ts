@@ -31,7 +31,7 @@ test('1–2. ordinary registration, bootstrap, sign out, sign in', async ({ page
     if (err instanceof EmailRateLimited) {
       testInfo.skip(
         true,
-        'BLOCKED — auth email budget exhausted (default SMTP ~2/hr): configure production SMTP or disable confirmations, then rerun',
+        `BLOCKED — auth email posture rejects real signup (configure production SMTP or disable confirmations, then rerun): ${err.message.slice(0, 200)}`,
       );
       return;
     }
