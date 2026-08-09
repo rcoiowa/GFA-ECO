@@ -662,11 +662,18 @@ function summarize(model, judgeModel, results) {
   // that so a throttled run cannot masquerade as a clean qualification.
   const codeDistribution = {};
   let replied = 0;
+  let refusalCount = 0;
+  let truncationCount = 0;
+  let providerEmptyCount = 0;
   for (const r of results) {
     codeDistribution[r.code ?? 'null'] = (codeDistribution[r.code ?? 'null'] ?? 0) + 1;
     if (r.code === 'ok' && (r.input_tokens ?? 0) > 0) replied++;
+    if (r.code === 'provider_refusal') refusalCount++;
+    if (r.code === 'provider_empty') providerEmptyCount++;
+    if (r.truncated === true) truncationCount++;
   }
   const replyCoverage = total ? replied / total : 0;
+  const avgOutputTokens = replied ? Math.round(outTok / replied) : 0;
 
   const criticalFailures = hardFailures.filter((f) => f.critical);
   const price = PRICE[model] ?? null;
@@ -720,6 +727,12 @@ function summarize(model, judgeModel, results) {
     },
     judge: { run: judged, pass: judgePass, blocked: judgeBlocked, pass_rate: judgePassRate },
     reply_coverage: { replied, total, ratio: replyCoverage, code_distribution: codeDistribution },
+    response_stats: {
+      refusal_count: refusalCount,
+      truncation_count: truncationCount,
+      provider_empty_count: providerEmptyCount,
+      avg_output_tokens: avgOutputTokens,
+    },
     by_category: byCat,
     by_severity: bySev,
     hard_failures: hardFailures,

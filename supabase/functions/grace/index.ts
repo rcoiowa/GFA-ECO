@@ -232,6 +232,17 @@ Deno.serve(async (req: Request) => {
   }
 
   const system = buildSystemPrompt(ctx, floor, retrieval);
+  // Optional, model-agnostic thinking control. Default OFF (unset) so the
+  // qualified claude-opus-4-8 baseline is unchanged (omitting `thinking` = no
+  // thinking on Opus 4.8). Set GRACE_DISABLE_THINKING=1 to explicitly send
+  // `thinking:{type:"disabled"}` — needed for models whose thinking is ON by
+  // default (Sonnet 5 / Opus 5) so the 768-token budget stays the visible reply
+  // and comparisons are apples-to-apples. Does NOT change grace-policy.
+  const disableThinking = ['1', 'true'].includes(
+    (Deno.env.get('GRACE_DISABLE_THINKING') ?? '').toLowerCase(),
+  );
+  const reqBody: Record<string, unknown> = { model, max_tokens: MAX_TOKENS, system, messages };
+  if (disableThinking) reqBody.thinking = { type: 'disabled' };
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
   const t0 = Date.now();
@@ -244,7 +255,7 @@ Deno.serve(async (req: Request) => {
         'x-api-key': apiKey,
         'anthropic-version': ANTHROPIC_VERSION,
       },
-      body: JSON.stringify({ model, max_tokens: MAX_TOKENS, system, messages }),
+      body: JSON.stringify(reqBody),
     });
     const latencyMs = Date.now() - t0;
     if (!res.ok) {

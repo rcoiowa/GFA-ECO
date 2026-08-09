@@ -1,0 +1,159 @@
+# Grace model-COMPARISON gate (directive §22 comparison testing). MANUAL ONLY.
+#
+# Evaluates a CANDIDATE model against the same 116 eval + 32 red-team suite,
+# deterministic hard-gates, and the SAME separate judge (claude-opus-5) used for
+# the qualified claude-opus-4-8 run-003 baseline — so results are directly
+# comparable. It TEMPORARILY sets GRACE_MODEL to the candidate for the evaluation
+# deployment only and ALWAYS restores the qualified baseline model afterward,
+# even on failure.
+#
+# Does NOT set GRACE_PROVIDER_CONFIGURED, does NOT activate Grace, does NOT change
+# vrcc.app or the SMTP posture. grace-policy is unchanged.
+#
+# Required secrets on `p4h-live-gate`: SUPABASE_SERVICE_ROLE_KEY,
+# SUPABASE_ACCESS_TOKEN, GRACE_EVAL_SECRET.
+name: Grace model comparison
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_model:
+        description: 'Candidate model to evaluate (temporary GRACE_MODEL)'
+        required: false
+        default: 'claude-sonnet-5'
+      judge_model:
+        description: 'Judge model (must differ from candidate; keep opus-5 for comparability)'
+        required: false
+        default: 'claude-opus-5'
+      disable_thinking:
+        description: 'Send thinking:{type:disabled} on the candidate request (1/0)'
+        required: false
+        default: '1'
+      baseline_model:
+        description: 'Model to RESTORE GRACE_MODEL to after the run (the qualified baseline)'
+        required: false
+        default: 'claude-opus-4-8'
+  push:
+    branches:
+      - 'grace-compare/**'
+
+concurrency:
+  group: grace-eval # share the qualification gate's lock — never run both at once
+  cancel-in-progress: false
+
+env:
+  PROJECT_REF: cqcxvwoukyhxyokfwnjm
+  VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_URL || 'https://cqcxvwoukyhxyokfwnjm.supabase.co' }}
+  VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY != '' && vars.VITE_SUPABASE_ANON_KEY || 'sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x' }}
+  P4H_E2E_EMAIL_DOMAIN: fixtures.recoveryos.test
+  CANDIDATE_MODEL: ${{ inputs.candidate_model || 'claude-sonnet-5' }}
+  JUDGE_MODEL: ${{ inputs.judge_model || 'claude-opus-5' }}
+  DISABLE_THINKING: ${{ inputs.disable_thinking || '1' }}
+  BASELINE_MODEL: ${{ inputs.baseline_model || 'claude-opus-4-8' }}
+
+jobs:
+  grace-compare:
+    runs-on: ubuntu-latest
+    environment: p4h-live-gate
+    timeout-minutes: 60
+    steps:
+      - name: Require secrets
+        env:
+          SVC: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          EVALSEC: ${{ secrets.GRACE_EVAL_SECRET }}
+        run: |
+          missing=0
+          [ -z "$SVC" ] && { echo "::error::SUPABASE_SERVICE_ROLE_KEY required."; missing=1; }
+          [ -z "$TOKEN" ] && { echo "::error::SUPABASE_ACCESS_TOKEN required."; missing=1; }
+          [ -z "$EVALSEC" ] && { echo "::error::GRACE_EVAL_SECRET required."; missing=1; }
+          [ "$missing" = "1" ] && exit 1 || echo "secrets present"
+
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Deterministic safety-floor regression controls
+        run: node scripts/grace-floor-selftest.mjs
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Set candidate + judge secrets (TEMPORARY GRACE_MODEL = candidate)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          GRACE_EVAL_SECRET: ${{ secrets.GRACE_EVAL_SECRET }}
+        run: |
+          echo "Temporarily setting GRACE_MODEL=$CANDIDATE_MODEL (judge $JUDGE_MODEL, disable_thinking=$DISABLE_THINKING)"
+          supabase secrets set --project-ref "$PROJECT_REF" \
+            "GRACE_MODEL=$CANDIDATE_MODEL" \
+            "GRACE_DISABLE_THINKING=$DISABLE_THINKING" \
+            "GRACE_JUDGE_MODEL=$JUDGE_MODEL" \
+            "GRACE_EVAL_SECRET=$GRACE_EVAL_SECRET"
+
+      - name: Deploy grace + grace-judge
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase functions deploy grace --project-ref "$PROJECT_REF"
+          supabase functions deploy grace-judge --project-ref "$PROJECT_REF"
+
+      - name: Resolve fixture password
+        id: pw
+        env:
+          FIXED: ${{ secrets.P4H_E2E_PASSWORD }}
+        run: |
+          if [ -n "$FIXED" ]; then echo "value=$FIXED" >> "$GITHUB_OUTPUT";
+          else echo "value=P4h-$(openssl rand -hex 16)" >> "$GITHUB_OUTPUT"; fi
+          echo "::add-mask::$(grep '^value=' "$GITHUB_OUTPUT" | cut -d= -f2-)"
+
+      - name: Seed p4h-* fixtures
+        env:
+          SUPABASE_URL: ${{ env.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
+        run: node scripts/seed-e2e-fixtures.mjs
+
+      - name: Live provider SMOKE set (candidate)
+        env:
+          SUPABASE_URL: ${{ env.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.VITE_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
+        run: node scripts/grace-eval.mjs smoke
+
+      - name: Full comparison eval — 116 + 32 + hard-gates + judge
+        env:
+          SUPABASE_URL: ${{ env.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.VITE_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
+          GRACE_EVAL_SECRET: ${{ secrets.GRACE_EVAL_SECRET }}
+          GRACE_JUDGE_MODEL: ${{ env.JUDGE_MODEL }}
+          GRACE_EVAL_OUT: ${{ github.workspace }}/grace-eval-results-candidate.json
+        run: node scripts/grace-eval.mjs full
+
+      - name: RESTORE qualified baseline GRACE_MODEL (always)
+        if: always()
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          echo "Restoring GRACE_MODEL=$BASELINE_MODEL and clearing GRACE_DISABLE_THINKING"
+          supabase secrets set --project-ref "$PROJECT_REF" \
+            "GRACE_MODEL=$BASELINE_MODEL" \
+            "GRACE_DISABLE_THINKING=0"
+          supabase functions deploy grace --project-ref "$PROJECT_REF"
+
+      - name: Upload comparison results (metadata only)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grace-compare-results
+          path: grace-eval-results-candidate.json
+          retention-days: 30
+          if-no-files-found: ignore
