@@ -35,7 +35,8 @@ const json = (body: unknown, status = 200) =>
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_VERSION = '2023-06-01';
 const JUDGE_TIMEOUT_MS = 30000;
-const JUDGE_MAX_TOKENS = 1024; // room for a thinking judge model + JSON verdict
+const JUDGE_MAX_TOKENS = 1024; // ample for the JSON rubric verdict (thinking is
+// disabled on the judge request, so the full budget is output — see below).
 
 /** Qualitative dimensions this judge scores (0-3). Hard safety/privacy/tool
  *  constraints are asserted DETERMINISTICALLY in the harness, not here. */
@@ -173,6 +174,14 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model: judgeModel,
         max_tokens: JUDGE_MAX_TOKENS,
+        // Disable thinking on the JUDGE request so the entire max_tokens budget
+        // is available for the JSON rubric verdict. The default judge model
+        // (claude-opus-5) has thinking ON by default, which would share this
+        // budget and risk truncating the verdict. `{type:"disabled"}` is the
+        // documented off-switch on 4.6+ models (Opus 5/4.8/4.7/4.6, Sonnet 5/4.6);
+        // budget_tokens is rejected (400) on these, so it is NOT used. This
+        // touches ONLY the judge — candidate Grace behavior is unchanged.
+        thinking: { type: 'disabled' },
         system,
         messages: [{ role: 'user', content: userBlock }],
       }),
