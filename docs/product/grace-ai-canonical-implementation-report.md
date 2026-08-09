@@ -657,7 +657,11 @@ model locked; no activation.**
 
 ## AH. Final integration — Grace V1 lock + certification (Phases 1–5)
 
-**PHASE 1 — MODEL LOCK — DONE (code) / APPLIED via `grace-lock.yml`.**
+**PHASE 1 — MODEL LOCK — DONE + APPLIED + LIVE-VERIFIED.**
+Applied via `grace-lock.yml` (run **31312989738**, branch `grace-lock/apply-001`,
+commit `bfa2294`, 2026-08-09): secrets set, `grace` deployed, smoke `returned
+claude-sonnet-5`, and **LIVE lock verification `deployed model_id claude-sonnet-5
+=== claude-sonnet-5` → grace-model-lock PASS (0 drift)**.
 Grace V1 = **`claude-sonnet-5`, `GRACE_DISABLE_THINKING=1`** (§P). Opus 4.8 recorded
 as qualified fallback/reference. Config invariant: `grace-model-lock.json` +
 `scripts/grace-model-lock-verify.mjs` (static tuple check PASS; live check asserts
