@@ -33,6 +33,15 @@ test('4–10. support request → claim → messages → realtime → scheduling
   const participant = await userPage(browser, FIXTURES.participant);
   const coach = await userPage(browser, FIXTURES.coach);
 
+  // 9 (setup): watch the coach side's realtime websocket. Registered BEFORE
+  // the thread page mounts — Playwright only reports sockets created after
+  // the listener exists, and the realtime channel opens with the thread.
+  const wsFrames: string[] = [];
+  coach.on('websocket', (ws) => {
+    if (ws.url().includes('supabase'))
+      ws.on('framereceived', (f) => wsFrames.push(String(f.payload)));
+  });
+
   // 4. T0 — participant asks for a recovery coach (state-tolerant on rerun).
   const mode = await ensureSupportRequested(participant, /talk with a recovery coach/i);
   if (mode !== 'connected') {
@@ -62,13 +71,6 @@ test('4–10. support request → claim → messages → realtime → scheduling
   await coach.getByRole('button', { name: /^send$/i }).click();
   await expect(coach.getByText(`Coach hello — ${marker}`)).toBeVisible({ timeout: 15_000 });
 
-  // 9 (setup): watch the realtime websocket on the coach side.
-  const wsFrames: string[] = [];
-  coach.on('websocket', (ws) => {
-    if (ws.url().includes('supabase'))
-      ws.on('framereceived', (f) => wsFrames.push(String(f.payload)));
-  });
-
   await participant.goto('/vrcc/messages');
   await expect(participant.getByText(`Coach hello — ${marker}`)).toBeVisible({ timeout: 25_000 });
   await participant.getByLabel(/message/i).fill(`Participant reply — ${marker}`);
@@ -79,6 +81,15 @@ test('4–10. support request → claim → messages → realtime → scheduling
   await expect(coach.getByText(`Participant reply — ${marker}`)).toBeVisible({ timeout: 30_000 });
   await expect(coach.getByText(`Participant reply — ${marker}`)).toHaveCount(1);
   expect(wsFrames.length, 'supabase realtime websocket frames observed').toBeGreaterThan(0);
+  // Realtime PROOF, not just an open socket: the messages doorbell is a
+  // postgres_changes subscription, so the reply must arrive as an INSERT
+  // event frame ("INSERT" appears only in event frames, never in the
+  // subscribe handshake). Without this the 15s polling fallback could mask
+  // a dead channel.
+  expect(
+    wsFrames.some((f) => f.includes('INSERT')),
+    'postgres_changes INSERT event received over the realtime websocket',
+  ).toBe(true);
 
   // 7. Content-free notification surface: nothing on Today may leak the body.
   await participant.goto('/vrcc');
