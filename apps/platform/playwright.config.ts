@@ -60,6 +60,9 @@ export default defineConfig({
     {
       name: 'live',
       testMatch: /live\/.*\.spec\.ts/,
+      // Multi-user journeys over a real network need far more than the
+      // 30s default that suits the local project.
+      timeout: 180_000,
       use: { ...devices['Desktop Chrome'], launchOptions },
     },
   ],
