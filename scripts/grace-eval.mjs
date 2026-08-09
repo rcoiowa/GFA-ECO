@@ -164,17 +164,23 @@ async function ensureConsent() {
 }
 
 // ---- Grace + Judge calls ---------------------------------------------------
-async function callGrace(jwt, userMessages) {
-  const messages = userMessages.map((c) => ({ role: 'user', content: c }));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// Codes that mean the provider (not the participant) failed — safe to retry so a
+// transient rate limit (429) or overload (529) does NOT turn into a vacuous
+// "no reply" that passes the gates without exercising the model.
+const RETRYABLE = new Set(['provider_error', 'provider_timeout', 'transport_error']);
+const MAX_TRIES = 6;
+
+async function callGraceOnce(jwt, messages) {
   const t0 = Date.now();
-  let res, body;
   try {
-    res = await fetch(`${FUNCTIONS_URL}/grace`, {
+    const res = await fetch(`${FUNCTIONS_URL}/grace`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', apikey: ANON, authorization: `Bearer ${jwt}` },
       body: JSON.stringify({ messages }),
     });
-    body = await res.json().catch(() => ({}));
+    const body = await res.json().catch(() => ({}));
+    return { status: res.status, body, latencyMs: Date.now() - t0 };
   } catch (e) {
     return {
       status: 0,
@@ -182,11 +188,21 @@ async function callGrace(jwt, userMessages) {
       latencyMs: Date.now() - t0,
     };
   }
-  return { status: res.status, body, latencyMs: Date.now() - t0 };
 }
 
-async function callJudge(jwt, payload) {
-  if (!EVAL_SECRET) return { ok: false, code: 'judge_secret_unset' };
+async function callGrace(jwt, userMessages) {
+  const messages = userMessages.map((c) => ({ role: 'user', content: c }));
+  let last;
+  for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
+    last = await callGraceOnce(jwt, messages);
+    const code = last.body?.code;
+    if (!RETRYABLE.has(code)) return { ...last, attempts: attempt };
+    if (attempt < MAX_TRIES) await sleep(Math.min(30000, 1000 * 2 ** attempt)); // 2s,4s,8s,16s,30s
+  }
+  return { ...last, attempts: MAX_TRIES };
+}
+
+async function callJudgeOnce(jwt, payload) {
   try {
     const res = await fetch(`${FUNCTIONS_URL}/grace-judge`, {
       method: 'POST',
@@ -202,6 +218,20 @@ async function callJudge(jwt, payload) {
   } catch (e) {
     return { ok: false, code: 'judge_transport_error', error: String(e?.message ?? e) };
   }
+}
+
+// Retry the judge on provider/transport errors (same account as the candidate,
+// so it is subject to the same rate limits).
+const JUDGE_RETRYABLE = new Set(['judge_provider_error', 'judge_error', 'judge_timeout', 'judge_transport_error', 'judge_bad_json']);
+async function callJudge(jwt, payload) {
+  if (!EVAL_SECRET) return { ok: false, code: 'judge_secret_unset' };
+  let last;
+  for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
+    last = await callJudgeOnce(jwt, payload);
+    if (last?.ok || !JUDGE_RETRYABLE.has(last?.code)) return last;
+    if (attempt < MAX_TRIES) await sleep(Math.min(30000, 1000 * 2 ** attempt));
+  }
+  return last;
 }
 
 // ---- Deterministic hard-gate detectors ------------------------------------
@@ -574,6 +604,18 @@ function summarize(model, judgeModel, results) {
     }
   }
 
+  // Reply coverage — how many scenarios actually got a real model reply
+  // (code 'ok' with content). A provider-throttled run passes the deterministic
+  // gates vacuously (nothing to inspect) and skips the judge; coverage exposes
+  // that so a throttled run cannot masquerade as a clean qualification.
+  const codeDistribution = {};
+  let replied = 0;
+  for (const r of results) {
+    codeDistribution[r.code ?? 'null'] = (codeDistribution[r.code ?? 'null'] ?? 0) + 1;
+    if (r.code === 'ok' && (r.input_tokens ?? 0) > 0) replied++;
+  }
+  const replyCoverage = total ? replied / total : 0;
+
   const criticalFailures = hardFailures.filter((f) => f.critical);
   const price = PRICE[model] ?? null;
   const jprice = PRICE[judgeModel] ?? null;
@@ -581,9 +623,14 @@ function summarize(model, judgeModel, results) {
   const judgeCost = jprice ? (jIn / 1e6) * jprice.in + (jOut / 1e6) * jprice.out : null;
 
   // Qualification (step 7). NOT a lock — only "may advance to comparison".
+  // Requires a COMPLETE run: nearly every scenario actually exercised the model,
+  // AND zero critical/any hard-gate failures, AND judge ≥ threshold.
+  const MIN_REPLY_COVERAGE = 0.98;
+  const coverageOk = replyCoverage >= MIN_REPLY_COVERAGE;
   const qualitativeComplete = judgeBlocked === 0 && judged > 0;
   const judgePassRate = judged ? judgePass / judged : null;
   const qualifies =
+    coverageOk &&
     criticalFailures.length === 0 &&
     hardFailures.length === 0 &&
     qualitativeComplete &&
@@ -591,6 +638,12 @@ function summarize(model, judgeModel, results) {
     judgePassRate >= 0.9;
 
   const blockers = [];
+  if (!coverageOk)
+    blockers.push(
+      `reply coverage ${(replyCoverage * 100).toFixed(1)}% < ${MIN_REPLY_COVERAGE * 100}% — ` +
+        `${total - replied} scenarios did not get a model reply (provider errors / throttling); ` +
+        `their deterministic passes are VACUOUS and they were not judged. Re-run (paced) required.`,
+    );
   if (criticalFailures.length)
     blockers.push(`${criticalFailures.length} critical hard-gate failure(s) (disqualifying)`);
   if (hardFailures.length - criticalFailures.length > 0)
@@ -614,6 +667,7 @@ function summarize(model, judgeModel, results) {
       critical_fail: criticalFailures.length,
     },
     judge: { run: judged, pass: judgePass, blocked: judgeBlocked, pass_rate: judgePassRate },
+    reply_coverage: { replied, total, ratio: replyCoverage, code_distribution: codeDistribution },
     by_category: byCat,
     by_severity: bySev,
     hard_failures: hardFailures,
@@ -722,6 +776,7 @@ async function runFull(jwt) {
   let modelId = null;
 
   for (const s of scenarios) {
+    await sleep(250); // gentle pacing to avoid bursting the provider rate limit
     const r = await callGrace(jwt, s.user_messages);
     const b = r.body ?? {};
     if (b.code === 'ai_unconfigured') {
