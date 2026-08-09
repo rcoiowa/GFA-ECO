@@ -7,7 +7,9 @@
 // The prompt is layered and VERSIONED so evaluation and red-team runs pin an
 // exact policy. Bump POLICY_VERSION on any semantic change.
 
-export const POLICY_VERSION = 'grace-policy-1.0.0';
+// 1.1.0: broadened the deterministic crisis safety-floor phrase coverage after
+// the live evaluation surfaced crisis phrasings the 1.0.0 floor missed.
+export const POLICY_VERSION = 'grace-policy-1.1.0';
 
 /** Required in-surface disclosure (Authority §4). The frontend also renders a
  *  visible disclosure; this guarantees the model self-identifies on request. */
@@ -52,7 +54,14 @@ export const SURFACE_SUPPORT_NOW: ReadonlySet<SafetyCategory> = new Set<SafetyCa
 export function deterministicSafetyFloor(text: string): SafetyCategory {
   const t = ` ${text.toLowerCase()} `;
   const has = (arr: string[]) => arr.some((p) => t.includes(p));
+  const all = (arr: string[]) => arr.every((p) => t.includes(p));
 
+  // Phrase coverage was broadened after the live evaluation surfaced crisis
+  // phrasings the floor missed (first-person AND third-party overdose, passive
+  // suicidal ideation, self-injury, dosing solicitation, victim-of-violence /
+  // DV, weapon possession, stroke and alcohol-withdrawal medical emergencies).
+  // This is a high-precision FLOOR that guarantees Support Now surfaces even if
+  // the model fails — the model still does the nuanced routing above it.
   if (
     has([
       'overdosing',
@@ -62,7 +71,21 @@ export function deterministicSafetyFloor(text: string): SafetyCategory {
       'i took a whole bottle',
       'od-ing',
       "i'm od",
-    ])
+      'bunch of pills',
+      'handful of pills',
+      'took a bunch of',
+      'whole bottle of',
+      'lethal dose',
+      'lethal amount',
+      'how much fentanyl',
+      'how much heroin',
+      'how much oxy',
+      'before it kills',
+      'enough to kill',
+    ]) ||
+    // Third-party overdose (someone else is going under): unresponsive + cyanosis.
+    has(['not really responding', 'unresponsive', "won't wake up", 'not waking up', 'wont wake up']) ||
+    all(['lip', 'blue'])
   )
     return 'overdose';
 
@@ -72,14 +95,27 @@ export function deterministicSafetyFloor(text: string): SafetyCategory {
       'killing myself',
       'end my life',
       'ending my life',
+      'end it all',
       'suicide',
       'suicidal',
       'want to die',
       'better off dead',
+      'better off without me',
+      'everyone would be better off',
+      'burden to everyone',
       "don't want to be alive",
       'take my own life',
       'hang myself',
       'no reason to live',
+      'least painful way',
+      'cutting again',
+      'been cutting',
+      'cut myself',
+      'cutting myself',
+      'self-harm',
+      'harm myself',
+      'hurting myself',
+      'hurt myself',
     ])
   )
     return 'self_harm_suicide';
@@ -92,9 +128,25 @@ export function deterministicSafetyFloor(text: string): SafetyCategory {
       'hurt him',
       'hurt her',
       'hurt them',
+      'hurt the guy',
       'shoot up the',
       'going to hurt someone',
-      'i have a gun and',
+      'going to kill',
+      'gonna kill',
+      'i have a gun',
+      'plan how to hurt',
+      'how to hurt him',
+      'where should i wait',
+      // Victim of violence / domestic violence in immediate danger.
+      'hits me',
+      'hitting me',
+      'beats me',
+      'he hurt me',
+      'she hurt me',
+      "i'm not safe",
+      "if i'm safe",
+      'afraid for my life',
+      'scared for my life',
     ])
   )
     return 'immediate_danger_violence';
@@ -107,7 +159,17 @@ export function deterministicSafetyFloor(text: string): SafetyCategory {
       'not breathing',
       'seizure right now',
       'bleeding badly',
-    ])
+      'blurry vision',
+      'slurred speech',
+      'face is drooping',
+      'the dts',
+      'delirium tremens',
+      'shaking and sweating',
+    ]) ||
+    // Stroke-adjacent: one-sided numbness.
+    (t.includes('numb') && has(['arm', 'face', 'leg', 'side', 'vision'])) ||
+    // Alcohol-withdrawal danger: shakes/sweats on stopping drinking.
+    (has(['shake', 'sweat', 'the shakes']) && has(['stop drinking', 'quit drinking', 'stopped drinking']))
   )
     return 'medical_emergency';
 
