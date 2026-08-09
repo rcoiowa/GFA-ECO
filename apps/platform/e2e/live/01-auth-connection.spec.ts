@@ -132,7 +132,9 @@ test('8 + 10. scheduling: coach offers → participant chooses → session compl
   const choose = participant.getByRole('button', { name: /choose this time/i }).first();
   await expect(choose).toBeVisible({ timeout: 20_000 });
   await choose.click();
-  await expect(participant.getByText(/confirmed|scheduled/i).first()).toBeVisible({
+  // Successful acceptance renders the confirmed appointment as the
+  // "Your next session" card — the server-confirmed post-state.
+  await expect(participant.getByText(/your next session/i).first()).toBeVisible({
     timeout: 20_000,
   });
 

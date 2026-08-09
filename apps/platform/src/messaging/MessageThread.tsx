@@ -63,6 +63,8 @@ export function MessageThread({
       <div
         ref={scrollRef}
         onScroll={onScroll}
+        role="log"
+        tabIndex={0}
         className="min-h-0 flex-1 space-y-4 overflow-y-auto rounded-lg border border-line bg-surface-raised p-4"
         aria-label={`Conversation with ${otherName}`}
       >
