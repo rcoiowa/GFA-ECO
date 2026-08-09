@@ -240,12 +240,25 @@ export async function userPage(browser: Browser, email: string): Promise<Page> {
   return page;
 }
 
-/** Participant asks for support via the real Connect flow (Mode A). */
-export async function askForSupport(page: Page, optionTitle: RegExp): Promise<void> {
+/**
+ * Participant asks for support via the real Connect flow, tolerant of the
+ * canonical state already reached on reruns. Waits for the page to settle
+ * into ONE of its three modes before branching (isVisible() alone races the
+ * async load).
+ */
+export async function ensureSupportRequested(
+  page: Page,
+  optionTitle: RegExp,
+): Promise<'requested' | 'waiting' | 'connected'> {
   await page.goto('/vrcc/connect');
-  await page.getByRole('button', { name: optionTitle }).click();
+  const option = page.getByRole('button', { name: optionTitle }).first();
+  const waiting = page.getByText(/we.?ve got your request|someone is on it/i).first();
+  const connected = page.getByText(/your support/i).first();
+  await expect(option.or(waiting).or(connected).first()).toBeVisible({ timeout: 25_000 });
+  if (await connected.isVisible().catch(() => false)) return 'connected';
+  if (await waiting.isVisible().catch(() => false)) return 'waiting';
+  await option.click();
   await page.getByRole('button', { name: /request support/i }).click();
-  await expect(page.getByText(/we.?ve got your request|someone is on it/i)).toBeVisible({
-    timeout: 20_000,
-  });
+  await expect(waiting).toBeVisible({ timeout: 20_000 });
+  return 'requested';
 }

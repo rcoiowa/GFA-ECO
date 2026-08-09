@@ -1,4 +1,4 @@
-import { test, expect, FIXTURES, ensureFreshUser, userPage, askForSupport } from './helpers';
+import { test, expect, FIXTURES, ensureFreshUser, userPage, ensureSupportRequested } from './helpers';
 
 /** Live HTTP gate — items 11–23 (navigation loop + residence). Serial. */
 test.describe.configure({ mode: 'serial' });
@@ -14,7 +14,7 @@ test('11–16. navigation: claim → message → need → referral → confirmat
   await ensureFreshUser(participant, email, 'P4H', 'NavSeeker');
 
   // Participant raises a navigation-type request.
-  await askForSupport(participant, /help navigating something/i);
+  await ensureSupportRequested(participant, /help navigating something/i);
 
   // 11. Navigator claims from the waiting pool.
   const navigator = await userPage(browser, FIXTURES.navigator);
@@ -23,10 +23,12 @@ test('11–16. navigation: claim → message → need → referral → confirmat
   await expect(claim).toBeVisible({ timeout: 20_000 });
   await claim.click();
 
-  // 12. Navigation-context message.
+  // 12. Navigation-context message — the thread starts from the person page
+  // ("Message {name}"); the messages list only shows existing conversations.
   const marker = `P4H nav ${Date.now()}`;
-  await navigator.goto('/navigator/messages');
-  await navigator.getByRole('link').filter({ hasText: /navseeker|p4h/i }).first().click();
+  await navigator.goto('/navigator/people');
+  await navigator.getByRole('link').filter({ hasText: /navseeker/i }).first().click();
+  await navigator.getByRole('link', { name: /^message/i }).first().click();
   await navigator.getByLabel(/message/i).fill(`Navigator hello — ${marker}`);
   await navigator.getByRole('button', { name: /^send$/i }).click();
   await expect(navigator.getByText(`Navigator hello — ${marker}`)).toBeVisible({
@@ -37,7 +39,7 @@ test('11–16. navigation: claim → message → need → referral → confirmat
   // live on the person page — conditional so drift surfaces as a trace, and
   // the admin evidence checks in file 03 stay the hard gate).
   await navigator.goto('/navigator/people');
-  await navigator.getByRole('link').filter({ hasText: /navseeker|p4h/i }).first().click();
+  await navigator.getByRole('link').filter({ hasText: /navseeker/i }).first().click();
   const addNeed = navigator.getByRole('button', { name: /add.*need|identify.*need|need/i }).first();
   if (await addNeed.isVisible().catch(() => false)) {
     await addNeed.click();
@@ -68,17 +70,17 @@ test('11–16. navigation: claim → message → need → referral → confirmat
     await confirm.click();
   }
 
-  // 16. Navigation service attestation (conditional entry point).
+  // 16. Navigation service attestation — the real 'I provided navigation
+  // support' flow on the person page.
   await navigator.goto('/navigator/people');
-  await navigator.getByRole('link').filter({ hasText: /navseeker|p4h/i }).first().click();
-  const attest = navigator
-    .getByRole('button', { name: /record.*(service|session)|attest/i })
-    .first();
-  if (await attest.isVisible().catch(() => false)) {
-    await attest.click();
-    const save = navigator.getByRole('button', { name: /save|record|confirm/i }).first();
-    if (await save.isVisible().catch(() => false)) await save.click();
-  }
+  await navigator.getByRole('link').filter({ hasText: /navseeker/i }).first().click();
+  const attest = navigator.getByRole('button', { name: /i provided navigation support/i }).first();
+  await expect(attest).toBeVisible({ timeout: 15_000 });
+  await attest.click();
+  const minutes = navigator.getByLabel(/minutes/i).first();
+  if (await minutes.isVisible().catch(() => false)) await minutes.fill('30');
+  const save = navigator.getByRole('button', { name: /record|save|confirm/i }).first();
+  if (await save.isVisible().catch(() => false)) await save.click();
 
   await context.close();
   await navigator.context().close();

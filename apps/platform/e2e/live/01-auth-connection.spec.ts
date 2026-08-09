@@ -1,4 +1,4 @@
-import { test, expect, FIXTURES, userPage, askForSupport } from './helpers';
+import { test, expect, FIXTURES, userPage, ensureSupportRequested } from './helpers';
 
 /**
  * Live HTTP gate — items 1–10 (auth/identity + connection/coaching loop).
@@ -33,24 +33,9 @@ test('4–10. support request → claim → messages → realtime → scheduling
   const participant = await userPage(browser, FIXTURES.participant);
   const coach = await userPage(browser, FIXTURES.coach);
 
-  // 4. T0 — participant asks for a recovery coach (skip if already connected
-  //    from a previous run — the ask surface only shows before connection).
-  await participant.goto('/vrcc/connect');
-  const alreadyConnected = await participant
-    .getByText(/your support/i)
-    .first()
-    .isVisible()
-    .catch(() => false);
-  if (!alreadyConnected) {
-    const alreadyWaiting = await participant
-      .getByText(/we.?ve got your request|someone is on it/i)
-      .first()
-      .isVisible()
-      .catch(() => false);
-    if (!alreadyWaiting) {
-      await askForSupport(participant, /talk with a recovery coach/i);
-    }
-
+  // 4. T0 — participant asks for a recovery coach (state-tolerant on rerun).
+  const mode = await ensureSupportRequested(participant, /talk with a recovery coach/i);
+  if (mode !== 'connected') {
     // 5. T2 — coach claims; the waiting row leaves the pool.
     await coach.goto('/coach/requests');
     const claim = coach.getByRole('button', { name: /connect with this person/i }).first();
