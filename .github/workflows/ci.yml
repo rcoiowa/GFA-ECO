@@ -20,3 +20,16 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm build
+      - name: Enforce canonical RecoveryOS backend in production assets
+        run: |
+          RETIRED_REF='ykykeioydvtxpyreshhs'
+          CANONICAL_REF='cqcxvwoukyhxyokfwnjm'
+          if grep -R -n --fixed-strings "$RETIRED_REF" apps/platform/dist; then
+            echo "::error::Production bundle contains retired Supabase project ref $RETIRED_REF"
+            exit 1
+          fi
+          if ! grep -R -q --fixed-strings "$CANONICAL_REF" apps/platform/dist; then
+            echo "::error::Production bundle does not contain canonical RecoveryOS-Launch ref $CANONICAL_REF"
+            exit 1
+          fi
+          echo "Production bundle backend guard passed: canonical=$CANONICAL_REF retired-ref absent."
