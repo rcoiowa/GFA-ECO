@@ -67,6 +67,18 @@ test('4–10. support request → claim → messages → realtime → scheduling
   // .first() and strand the test on the list page.
   const marker = `P4H live gate ${Date.now()}`;
   await coach.getByRole('link', { name: /^message p4h/i }).first().click();
+
+  // Realtime proof must not race channel setup. Wait until Supabase confirms
+  // the coach's postgres_changes subscription before creating the participant
+  // INSERT we intend to observe. A trace from 2026-08-10 proved the previous
+  // test sent the reply ~139ms before the coach channel finished subscribing.
+  await expect
+    .poll(() => wsFrames.some((f) => f.includes('Subscribed to PostgreSQL')), {
+      message: 'coach realtime postgres_changes subscription ready',
+      timeout: 15_000,
+    })
+    .toBe(true);
+
   await coach.getByLabel(/message/i).fill(`Coach hello — ${marker}`);
   await coach.getByRole('button', { name: /^send$/i }).click();
   await expect(coach.getByText(`Coach hello — ${marker}`)).toBeVisible({ timeout: 15_000 });
