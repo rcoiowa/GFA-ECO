@@ -1,0 +1,63 @@
+name: Deploy production candidate
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'deploy-candidate/**'
+
+concurrency:
+  group: recoveryos-production-candidate
+  cancel-in-progress: false
+
+jobs:
+  deploy-candidate:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_API_TOKEN || vars.CLOUDFLARE_API_TOKEN }}
+      VITE_SUPABASE_URL: https://cqcxvwoukyhxyokfwnjm.supabase.co
+      VITE_SUPABASE_ANON_KEY: sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x
+      VITE_RELEASE: ${{ github.sha }}
+    steps:
+      - name: Require Cloudflare deployment token
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is required to deploy the production candidate."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+      - name: Enforce canonical RecoveryOS backend in candidate assets
+        run: |
+          RETIRED_REF='ykykeioydvtxpyreshhs'
+          CANONICAL_REF='cqcxvwoukyhxyokfwnjm'
+          if grep -R -n --fixed-strings "$RETIRED_REF" apps/platform/dist; then
+            echo "::error::Candidate bundle contains retired Supabase project ref $RETIRED_REF"
+            exit 1
+          fi
+          if ! grep -R -q --fixed-strings "$CANONICAL_REF" apps/platform/dist; then
+            echo "::error::Candidate bundle does not contain canonical RecoveryOS-Launch ref $CANONICAL_REF"
+            exit 1
+          fi
+
+      - name: Deploy canonical production candidate Worker
+        run: npx wrangler@4 deploy --config wrangler.jsonc
+
+      - name: Record candidate deployment
+        run: |
+          echo "Candidate Worker: gfa-eco-recovery-residence-os" >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit: ${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Backend: cqcxvwoukyhxyokfwnjm" >> "$GITHUB_STEP_SUMMARY"
+          echo "Domain/DNS cutover: NOT PERFORMED by this workflow" >> "$GITHUB_STEP_SUMMARY"
