@@ -18,6 +18,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Enforce canonical backend in deployable source (Phase H guardrail)
+        run: node scripts/check-no-retired-ref.mjs
       - run: pnpm typecheck
       - run: pnpm build
       - name: Enforce canonical RecoveryOS backend in production assets

@@ -13,6 +13,8 @@ export * from './repositories/applications';
 export * from './repositories/providerOnboarding';
 export * from './repositories/houseBoard';
 export * from './repositories/referrals';
+export * from './repositories/publicIntake';
+export * from './repositories/intakeReview';
 export * from './repositories/exhibitEReport';
 export * from './repositories/supervisionReport';
 export * from './repositories/sessions';
