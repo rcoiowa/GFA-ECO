@@ -1,7 +1,9 @@
-# EJWRH Intake Drift — Provenance, Writer Trace & Hardening Preparation
+# EJWRH Intake Drift — Provenance, Writer Trace & Hardening
 
-**Date:** 2026-08-14 · **Classification:** TYPE A (read/audit) + TYPE B (repo docs/migration prep).
-**No live mutation performed.** Canonical project: `cqcxvwoukyhxyokfwnjm` (RecoveryOS-Launch / CQCX).
+**Date:** 2026-08-14 · **Classification:** TYPE A (read/audit) + TYPE B (repo docs/migration prep),
+then a **TYPE D grants-only hardening APPLIED under authorization** (§7). Canonical project:
+`cqcxvwoukyhxyokfwnjm` (RecoveryOS-Launch / CQCX). Sections 1–5 record the reconciliation as prepared;
+§7 records the applied live change.
 
 Live access this session (verified working): GitHub ✓ · Cloudflare ✓ (limited) · Supabase ✓.
 
@@ -103,7 +105,10 @@ evident.** Definitive "is any single production record a real external participa
 by staff, but every available marker indicates internal-only. Crucially, the drifted intake table
 holds **zero rows**, so no applicant PII is at rest.
 
-## 5. Prepared hardening (NOT applied) — `0123_housing_applications_least_privilege.PREPARED.sql`
+## 5. Hardening plan — `0123_housing_applications_least_privilege.APPLIED.sql`
+
+> Applied 2026-08-14 under an authorized gate — see the live execution record in §7. The plan below
+> is retained as the design rationale and matrices.
 
 ### Proposed migration SQL
 
@@ -184,8 +189,64 @@ Provenance captured, writer pathway confirmed (deployment identity blocked by to
 classified as synthetic-plus-internal-staff with zero applicant rows at risk, and a safe,
 behavior-preserving least-privilege migration + rollback prepared with full matrices.
 
-**EJWRH INTAKE DRIFT RECONCILIATION: READY FOR HARDENING**
+**EJWRH INTAKE DRIFT RECONCILIATION: READY FOR HARDENING → HARDENING APPLIED (see §7).**
 
 Residual open item (does not block hardening): identify the exact EJWRH form deployment (Cloudflare
 Pages not enumerable via available MCP). The hardening is safe regardless because it preserves the
 confirmed anon-INSERT pathway.
+
+## 7. Live execution record — hardening APPLIED
+
+- **Timestamp:** 2026-08-14T09:29:28Z · **Project:** `cqcxvwoukyhxyokfwnjm` (RecoveryOS-Launch / CQCX)
+- **Classification:** TYPE D — live configuration, scoped strictly to table grants on
+  `public.housing_applications`. Executed under explicit authorization.
+- **Migration file:** `supabase/live-drift/cqcx/0123_housing_applications_least_privilege.APPLIED.sql`
+  (renamed from `.PREPARED.sql`; the `.captured.sql` provenance files are unchanged and are **not**
+  canonical `recoveryos` migrations).
+
+**Exact live SQL executed** (via authorized gate; the commented optional policy rewrite was **not**
+run):
+
+```sql
+begin;
+revoke select, update, delete, truncate, references, trigger
+  on public.housing_applications from anon;
+revoke all
+  on public.housing_applications from authenticated;
+commit;
+```
+
+**Preflight (before) — verified:** table exists; RLS enabled; 0 rows; policy
+`housing_applications_public_insert` unchanged; anon = SELECT/INSERT/UPDATE/DELETE/TRUNCATE/
+REFERENCES/TRIGGER; authenticated = same broad 7; service_role = broad 7; no new policy/trigger/
+writer drift; project ref exact. No precondition drift.
+
+**Before → after grant matrix**
+
+| Role          | Before                                                        | After             |
+| ------------- | ------------------------------------------------------------- | ----------------- |
+| anon          | SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER | **INSERT only**   |
+| authenticated | SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER | **(none)**        |
+| service_role  | SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER | unchanged (all 7) |
+
+**Post-change verification (live):**
+
+- RLS: **enabled** (unchanged). Row count: **0** (unchanged).
+- Policy `housing_applications_public_insert`: **unchanged** (INSERT; roles `anon,authenticated`; same
+  check `house_code='ejwrh' ∧ email 3–320 ∧ consent_contact=true`). No SELECT/UPDATE/DELETE policy exists.
+- Authorization proof (`has_table_privilege`, write-free): anon INSERT **available**; anon SELECT/
+  UPDATE/DELETE/TRUNCATE/REFERENCES/TRIGGER **denied**; authenticated **no privilege**; service_role **full**.
+
+**Synthetic test:** none created. Authorization was proven by privilege + policy introspection (the
+smallest safe check), so **no fixture row was inserted and no cleanup was required**. No real EJWRH
+application was submitted.
+
+**Behavioral outcome:** unauthorized read/update/delete remain denied (anon lacks the grant;
+authenticated lacks all grants; no permissive policies); the intended anonymous INSERT path retains
+database authorization (INSERT grant + unchanged INSERT policy). **Frontend submit path preserved.**
+
+**Rollback:** **NOT used** (not needed). Documented rollback remains available in the APPLIED file.
+
+**Status:** `0123` recorded as **APPLIED LIVE HARDENING — transitional drift remediation.** The
+longer-term recommendation stands: converge EJWRH (and Grace House) intake onto the canonical
+`recoveryos.residence_application_intake` boundary (`0122`) under a separate implementation gate.

@@ -1,7 +1,12 @@
 -- ============================================================================
--- PREPARED — NOT APPLIED. Least-privilege hardening for public.housing_applications
--- on CQCX (cqcxvwoukyhxyokfwnjm). Do NOT apply without an explicit human gate.
--- Analysis + matrices + rollback trigger: docs/migration/ejwrh-intake-drift-reconciliation.md
+-- APPLIED LIVE HARDENING (transitional drift remediation) — grants-only.
+-- Applied to CQCX (cqcxvwoukyhxyokfwnjm) 2026-08-14T09:29:28Z via authorized gate.
+-- Before: anon + authenticated held full DML (default public-schema grants).
+-- After:  anon = INSERT only; authenticated = no direct privileges; service_role unchanged.
+-- Verified post-change; rollback NOT used. Execution record + evidence:
+--   docs/migration/ejwrh-intake-drift-reconciliation.md (§7 Live execution record).
+-- This is INTERIM: the end-state remains convergence of EJWRH intake into the canonical
+-- recoveryos.residence_application_intake boundary (supabase/launch/migrations/0122).
 -- ============================================================================
 --
 -- WHY: The table's create migration relied on RLS to deny all public reads/writes
