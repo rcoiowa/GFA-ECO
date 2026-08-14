@@ -1,0 +1,25 @@
+{
+  "icare_v1": {
+    "authority": "docs/product/recoveryos-icare-integration-authority-v1.0.md",
+    "authority_version": "1.0",
+    "decided": "2026-08-14",
+    "icare_stages": ["Identify", "Connect", "Assess", "Respond", "Empower"],
+    "icare_is_assessment_domain_set": false,
+    "grace_may_assign_or_infer_icare_stage": false,
+    "grace_may_create_silent_staff_alert": false,
+    "passive_emotion_or_risk_inference_allowed": false,
+    "barc10": {
+      "items": 10,
+      "item_min": 1,
+      "item_max": 6,
+      "total_min": 10,
+      "total_max": 60,
+      "subdomain_scoring_allowed": false,
+      "crisis_threshold_35_allowed": false,
+      "benchmark_47_tier": "research_reference_only",
+      "benchmark_47_may_trigger_automation": false
+    },
+    "service_event_reporting_authority": "human_or_system_confirmed_only",
+    "note": "Governance invariants for ICARE-related RecoveryOS behavior. This pins policy, not UI. Changing any value is a deliberate, reviewable act that must be backed by a ratified Authority version bump; scripts/icare-lock-verify.mjs fails on drift between this lock and the Authority, and scripts/check-icare-governance.mjs fails the build if prohibited behavior appears in source/schema."
+  }
+}

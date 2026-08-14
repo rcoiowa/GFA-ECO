@@ -20,6 +20,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Enforce canonical backend in deployable source (Phase H guardrail)
         run: node scripts/check-no-retired-ref.mjs
+      - name: Verify ICARE governance lock (Authority ↔ lock ↔ BARC code)
+        run: node scripts/icare-lock-verify.mjs
+      - name: ICARE governance regression guard (prohibited behavior)
+        run: node scripts/check-icare-governance.mjs
       - run: pnpm typecheck
       - run: pnpm build
       - name: Enforce canonical RecoveryOS backend in production assets
