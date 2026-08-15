@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { RequirePerson } from '@recoveryos/auth';
 import { GroundingPage } from '@recoveryos/safety';
+import { OnboardingConsentGate } from '../components/OnboardingConsentGate';
 import { ParticipantShell } from './ParticipantShell';
 import { TodayPage } from './pages/TodayPage';
 import { CheckInPage } from './pages/CheckInPage';
@@ -23,7 +24,8 @@ import { NotFoundPage } from '../pages/StatusPages';
 export function ParticipantArea() {
   return (
     <RequirePerson>
-      <Routes>
+      <OnboardingConsentGate>
+        <Routes>
         <Route element={<ParticipantShell />}>
           <Route index element={<Navigate to="today" replace />} />
           <Route path="today" element={<TodayPage />} />
@@ -44,7 +46,8 @@ export function ParticipantArea() {
           <Route path="support/grounding" element={<GroundingPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
-      </Routes>
+        </Routes>
+      </OnboardingConsentGate>
     </RequirePerson>
   );
 }

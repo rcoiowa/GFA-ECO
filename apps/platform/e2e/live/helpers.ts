@@ -174,6 +174,7 @@ export async function ensureFreshUser(
     await adminCreateUser(email);
     await classifyAsFixture(email);
     await signIn(page, email);
+    await completeMinimalOnboardingIfPresent(page);
     return 'admin';
   }
 }
@@ -217,8 +218,28 @@ export async function registerUser(
     await adminConfirmEmail(email);
     await signIn(page, email);
   }
-  // Onboarding provisions automatically and routes onward.
+  // Onboarding provisions automatically; fresh participants then meet the
+  // minimal consent + immediate-support step before routing onward.
+  await completeMinimalOnboardingIfPresent(page);
   await page.waitForURL(/home|vrcc|coach|navigator|staff|residence|admin/, { timeout: 25_000 });
+}
+
+/**
+ * Complete the minimal onboarding boundary (immediate-support question +
+ * required consent acknowledgments) the way a real participant would, when
+ * it appears. People who already satisfied it never see the step, so absence
+ * within the wait is a pass, not a failure.
+ */
+export async function completeMinimalOnboardingIfPresent(page: Page): Promise<void> {
+  const okay = page.getByRole('button', { name: /okay right now/i });
+  const appeared = await okay
+    .waitFor({ state: 'visible', timeout: 15_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!appeared) return;
+  await okay.click();
+  for (const box of await page.getByRole('checkbox').all()) await box.check();
+  await page.getByRole('button', { name: /agree and continue/i }).click();
 }
 
 export async function signIn(page: Page, email: string): Promise<void> {
