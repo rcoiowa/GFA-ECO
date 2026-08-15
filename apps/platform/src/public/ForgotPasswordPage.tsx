@@ -22,7 +22,7 @@ export function ForgotPasswordPage() {
     }
     setBusy(true);
     setError(null);
-    await requestPasswordReset(email.trim(), `${window.location.origin}/sign-in`);
+    await requestPasswordReset(email.trim(), `${window.location.origin}/reset-password`);
     // Deliberately identical outcome whether or not the account exists.
     setBusy(false);
     setSent(true);

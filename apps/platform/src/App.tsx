@@ -13,6 +13,7 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { NotAuthorizedPage, NotFoundPage } from './pages/StatusPages';
 import { RoleHome } from './pages/RoleHome';
 import { ForgotPasswordPage } from './public/ForgotPasswordPage';
+import { ResetPasswordPage } from './public/ResetPasswordPage';
 import { LegacyAppRedirect, ResidencesDispatcher } from './pages/WorkspaceShells';
 import { RequireAuth } from '@recoveryos/auth';
 
@@ -134,6 +135,7 @@ export function App() {
       <Route path="/app/*" element={<LegacyAppRedirect />} />
 
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/not-authorized" element={<NotAuthorizedPage />} />
       <Route path="/home" element={<RoleHome />} />
       <Route path="*" element={<NotFoundPage />} />

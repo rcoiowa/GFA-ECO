@@ -45,7 +45,7 @@ export function StaffShell() {
           <button
             type="button"
             onClick={() => void signOut()}
-            className="hidden text-sm text-ink-muted hover:text-ink md:block"
+            className="text-sm text-ink-muted hover:text-ink"
           >
             Sign out
           </button>
