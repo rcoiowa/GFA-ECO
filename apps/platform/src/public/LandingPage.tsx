@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { GFA_CONTACTS } from '@recoveryos/safety';
 
 /**
  * Public landing. Success test: "What is this?" in 5 seconds, "What can I do
@@ -62,6 +63,23 @@ export function LandingPage() {
             Need help now? Call or text 988
           </a>
         </div>
+        <p className="mt-4 max-w-2xl text-ink-muted">
+          Rather talk with a person at Grace For Addictions? Call the warmline at{' '}
+          <a
+            href={`tel:${GFA_CONTACTS.warmline.number}`}
+            className="font-medium text-experience-700 underline underline-offset-2"
+          >
+            {GFA_CONTACTS.warmline.display}
+          </a>{' '}
+          — or see{' '}
+          <Link
+            to="/support"
+            className="font-medium text-experience-700 underline underline-offset-2"
+          >
+            every support option
+          </Link>
+          . No account needed.
+        </p>
 
         <section aria-labelledby="what-you-can-do" className="mt-14">
           <h2 id="what-you-can-do" className="text-xl font-semibold text-ink">
@@ -131,7 +149,10 @@ export function LandingPage() {
         <p className="mx-auto max-w-4xl px-4 text-sm text-ink-muted">
           Grace For Addictions · Connection prevents crisis · No shame. No stigma. Just grace. ·
           Your information is private and protected. VRCC is not an emergency service — in immediate
-          danger, call 911.
+          danger, call 911. ·{' '}
+          <Link to="/support" className="underline underline-offset-2 hover:text-ink">
+            All support options
+          </Link>
         </p>
       </footer>
     </div>

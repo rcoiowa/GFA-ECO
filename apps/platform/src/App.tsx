@@ -9,6 +9,7 @@ import { ResidenceDirectoryPage } from './public/ResidenceDirectoryPage';
 import { ResidenceApplyPage } from './public/ResidenceApplyPage';
 import { MyApplicationPage } from './public/MyApplicationPage';
 import { ListYourResidencePage } from './public/ListYourResidencePage';
+import { SupportNowPage } from './public/SupportNowPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { NotAuthorizedPage, NotFoundPage } from './pages/StatusPages';
 import { RoleHome } from './pages/RoleHome';
@@ -57,6 +58,8 @@ export function App() {
       <Route path="/" element={<HostHome />} />
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      {/* Anonymous Support Now — the safety path never requires an account. */}
+      <Route path="/support" element={<SupportNowPage />} />
       <Route path="/recovery-residences" element={<ResidenceDirectoryPage />} />
       <Route path="/recovery-residences/list-your-residence" element={<ListYourResidencePage />} />
       <Route path="/recovery-residences/grace-house" element={<GraceHousePage />} />

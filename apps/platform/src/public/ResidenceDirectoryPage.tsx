@@ -222,7 +222,10 @@ export function ResidenceDirectoryPage() {
       <footer className="border-t border-line py-6">
         <p className="mx-auto max-w-4xl px-4 text-sm text-ink-muted">
           Grace For Addictions · Connection prevents crisis · In immediate danger, call 911. For
-          crisis support, call or text 988.
+          crisis support, call or text 988. ·{' '}
+          <Link to="/support" className="underline underline-offset-2 hover:text-ink">
+            All support options
+          </Link>
         </p>
       </footer>
     </div>

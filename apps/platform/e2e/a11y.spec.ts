@@ -11,6 +11,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 const PUBLIC_ROUTES = [
   { path: '/', name: 'landing' },
+  { path: '/support', name: 'support-now' },
   { path: '/sign-in', name: 'sign-in' },
   { path: '/register', name: 'register' },
   { path: '/forgot-password', name: 'forgot-password' },

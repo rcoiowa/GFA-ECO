@@ -15,6 +15,13 @@ export type AnalyticsEvent =
   | 'grace_provider_failed'
   | 'grace_support_now_surfaced'
   | 'grace_human_connection_offered'
+  // Public safety path + minimal onboarding (process only — no answers, no
+  // consent contents, no crisis narrative; the event name is the entire payload)
+  | 'public_support_viewed'
+  | 'onboarding_viewed'
+  | 'onboarding_immediate_support_selected'
+  | 'onboarding_consent_completed'
+  | 'onboarding_completed'
   | 'connect_page_viewed'
   | 'support_request_started'
   | 'support_request_submitted'

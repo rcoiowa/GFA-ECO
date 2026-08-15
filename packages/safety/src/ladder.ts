@@ -18,6 +18,16 @@ export interface SupportOption {
     | { kind: 'sms'; number: string; body?: string; display: string };
 }
 
+/**
+ * Canonical GFA human-contact points. Every surface that shows a GFA phone
+ * number — the ladder, public pages, footers — must read from here so a
+ * number correction lands everywhere at once.
+ */
+export const GFA_CONTACTS = {
+  warmline: { number: '+15153103425', display: '515-310-DIAL (3425)' },
+  office: { number: '+15152208771', display: '515-220-8771' },
+} as const;
+
 export const SUPPORT_LADDER: SupportOption[] = [
   {
     key: 'grounding',
@@ -29,13 +39,21 @@ export const SUPPORT_LADDER: SupportOption[] = [
     key: 'gfa-warmline',
     title: 'Call the Grace warmline',
     description: 'A real person who understands recovery — no crisis required, just call.',
-    action: { kind: 'tel', number: '+15153103425', display: 'Call 515-310-DIAL (3425)' },
+    action: {
+      kind: 'tel',
+      number: GFA_CONTACTS.warmline.number,
+      display: `Call ${GFA_CONTACTS.warmline.display}`,
+    },
   },
   {
     key: 'gfa-office',
     title: 'Reach the Grace For Addictions office',
     description: 'Talk with the team during office hours about services, housing, or next steps.',
-    action: { kind: 'tel', number: '+15152208771', display: 'Call 515-220-8771' },
+    action: {
+      kind: 'tel',
+      number: GFA_CONTACTS.office.number,
+      display: `Call ${GFA_CONTACTS.office.display}`,
+    },
   },
   {
     key: 'my-team',
@@ -60,5 +78,47 @@ export const SUPPORT_LADDER: SupportOption[] = [
     title: 'Emergency services',
     description: 'If you or someone else is in immediate danger, call 911.',
     action: { kind: 'tel', number: '911', display: 'Call 911' },
+  },
+];
+
+/**
+ * The anonymous/public Support Now hierarchy. Unlike the in-app ladder (a
+ * coping ladder ordered least → most urgent), the public surface is a triage
+ * page: the person answers "which of these am I?" from most to least acute —
+ * emergency, then crisis, then connecting with GFA's human support. Every
+ * option is a deterministic phone action reachable without an account, and
+ * nothing here touches Grace AI or any backend.
+ */
+export interface PublicSupportGroup {
+  key: 'emergency' | 'crisis' | 'gfa';
+  title: string;
+  lede: string;
+  options: SupportOption[];
+}
+
+function ladderOption(key: string): SupportOption {
+  const option = SUPPORT_LADDER.find((entry) => entry.key === key);
+  if (!option) throw new Error(`Support ladder option missing: ${key}`);
+  return option;
+}
+
+export const PUBLIC_SUPPORT_GROUPS: PublicSupportGroup[] = [
+  {
+    key: 'emergency',
+    title: 'In immediate danger?',
+    lede: 'Emergency services respond right now, day or night.',
+    options: [ladderOption('emergency')],
+  },
+  {
+    key: 'crisis',
+    title: 'Need crisis support right now?',
+    lede: 'Free, confidential crisis and peer lines — no account, no cost, no judgment.',
+    options: [ladderOption('crisis-988'), ladderOption('warmline')],
+  },
+  {
+    key: 'gfa',
+    title: 'Want to connect with Grace For Addictions?',
+    lede: 'Real people who understand recovery. Not an emergency or 24/7 crisis service — for that, use the options above.',
+    options: [ladderOption('gfa-warmline'), ladderOption('gfa-office')],
   },
 ];

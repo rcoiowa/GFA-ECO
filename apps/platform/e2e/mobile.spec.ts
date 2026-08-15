@@ -14,7 +14,14 @@ const VIEWPORTS = [
   { name: 'desktop', width: 1280, height: 800 },
 ];
 
-const ROUTES = ['/', '/sign-in', '/register', '/recovery-residences', '/recovery-residences/grace-house'];
+const ROUTES = [
+  '/',
+  '/support',
+  '/sign-in',
+  '/register',
+  '/recovery-residences',
+  '/recovery-residences/grace-house',
+];
 
 for (const vp of VIEWPORTS) {
   for (const route of ROUTES) {
