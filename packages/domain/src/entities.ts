@@ -377,6 +377,8 @@ export interface Grievance {
   status: 'open' | 'in_review' | 'resolved' | 'closed';
   filed_at: string;
   resolved_at: string | null;
+  /** Who disposed of it (0115); null until resolved/closed. */
+  resolved_by_person_id: number | null;
 }
 
 export interface CheckIn {
