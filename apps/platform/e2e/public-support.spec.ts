@@ -27,6 +27,9 @@ test('the full hierarchy is present: emergency, crisis, and GFA human support', 
   ).toBeVisible();
   await expect(page.locator('a[href="tel:911"]')).toBeVisible();
   await expect(page.locator('a[href="tel:988"]')).toBeVisible();
+  // Iowa Warm Line — externally governed; verified against Your Life Iowa
+  // 2026-08-15 (see docs/product/support-contact-provenance.md).
+  await expect(page.locator('a[href="tel:+18447759276"]')).toBeVisible();
   await expect(page.locator('a[href="tel:+15153103425"]')).toBeVisible();
   await expect(page.locator('a[href="tel:+15152208771"]')).toBeVisible();
 });

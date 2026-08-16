@@ -19,13 +19,36 @@ export interface SupportOption {
 }
 
 /**
- * Canonical GFA human-contact points. Every surface that shows a GFA phone
- * number — the ladder, public pages, footers — must read from here so a
- * number correction lands everywhere at once.
+ * Canonical GFA human-contact points — INTERNAL, GFA-owned numbers (verified
+ * from the canonical Grace House documents; they appear in the contact block
+ * of every form). Every surface that shows a GFA phone number — the ladder,
+ * public pages, footers — must read from here so a number correction lands
+ * everywhere at once.
  */
 export const GFA_CONTACTS = {
   warmline: { number: '+15153103425', display: '515-310-DIAL (3425)' },
   office: { number: '+15152208771', display: '515-220-8771' },
+} as const;
+
+/**
+ * EXTERNALLY GOVERNED crisis/support contacts. GFA does not own these
+ * numbers, so they can drift without any change in this repository: they
+ * require periodic re-verification against their authoritative sources
+ * (at minimum at every launch-readiness review). The unit tests that pin
+ * these values prove only what we ship — never that the external number is
+ * still current.
+ *
+ * Provenance:
+ * - iowaWarmLine — source: Your Life Iowa (official Iowa crisis-services
+ *   source), verified 2026-08-15: 844-775-9276, available 24/7, can connect
+ *   callers with a Peer Support Specialist. (Replaced drifted 844-309-4304.)
+ * - crisis988 — 988 Suicide & Crisis Lifeline (national).
+ * - emergency — 911 (national).
+ */
+export const EXTERNAL_SUPPORT_CONTACTS = {
+  iowaWarmLine: { number: '+18447759276', display: '844-775-9276' },
+  crisis988: { number: '988', display: '988' },
+  emergency: { number: '911', display: '911' },
 } as const;
 
 export const SUPPORT_LADDER: SupportOption[] = [
@@ -64,20 +87,33 @@ export const SUPPORT_LADDER: SupportOption[] = [
   {
     key: 'warmline',
     title: 'Iowa Warm Line',
-    description: 'Free, confidential peer support by phone, any day of the week.',
-    action: { kind: 'tel', number: '+18443094304', display: 'Call 844-309-4304' },
+    description:
+      'Support is available 24/7. Warm Line staff can also connect you with a Peer Support Specialist.',
+    action: {
+      kind: 'tel',
+      number: EXTERNAL_SUPPORT_CONTACTS.iowaWarmLine.number,
+      display: `Call ${EXTERNAL_SUPPORT_CONTACTS.iowaWarmLine.display}`,
+    },
   },
   {
     key: 'crisis-988',
     title: '988 Suicide & Crisis Lifeline',
     description: 'Free, confidential crisis support 24/7. Call or text 988.',
-    action: { kind: 'tel', number: '988', display: 'Call or text 988' },
+    action: {
+      kind: 'tel',
+      number: EXTERNAL_SUPPORT_CONTACTS.crisis988.number,
+      display: 'Call or text 988',
+    },
   },
   {
     key: 'emergency',
     title: 'Emergency services',
     description: 'If you or someone else is in immediate danger, call 911.',
-    action: { kind: 'tel', number: '911', display: 'Call 911' },
+    action: {
+      kind: 'tel',
+      number: EXTERNAL_SUPPORT_CONTACTS.emergency.number,
+      display: 'Call 911',
+    },
   },
 ];
 
