@@ -64,7 +64,13 @@ deploy steps.
    GFA hierarchy, GFA warmline + office as `tel:` links on landing / Grace House / directory pages,
    no account required, Grace-independent, a11y + mobile + e2e gated. _Live validation of the
    deployed public path is still pending_ (Type D/E deploy gates).
-2. **Password-reset completion was broken (service interruption).** **FIXED** (`b1eb4ef`).
+2. **Password-reset completion was broken (service interruption).** **FIXED** (`b1eb4ef`) —
+   **re-verified on this branch** (email repoint → `/reset-password` → recovery handler →
+   `updatePassword`, expired-link path included) and **regression-protected**: the fix had shipped
+   with zero tests, so the original failure mode (recovery arrival with no mounted handler) was
+   invisible to every gate. Added unit suites for both pages, a route-mount guard
+   (`App.test.tsx`), and `/reset-password` to the a11y + mobile gates. _Live email-delivery
+   round-trip remains a Type D item (existing SMTP-posture finding applies to reset mail too)._
 3. **No onboarding intake / consent capture at entry (privacy/dignity).** **REPO IMPLEMENTATION
    COMPLETE** (this branch): minimal onboarding boundary after person provisioning — immediate-
    support question first (yes → `/support`, before any consent), then granular affirmative capture

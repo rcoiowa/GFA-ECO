@@ -15,6 +15,8 @@ const PUBLIC_ROUTES = [
   { path: '/sign-in', name: 'sign-in' },
   { path: '/register', name: 'register' },
   { path: '/forgot-password', name: 'forgot-password' },
+  // Anonymous arrival renders the expired-link state — still a real surface.
+  { path: '/reset-password', name: 'reset-password' },
   { path: '/recovery-residences', name: 'residence-directory' },
   { path: '/recovery-residences/grace-house', name: 'grace-house' },
   { path: '/recovery-residences/list-your-residence', name: 'list-your-residence' },
@@ -76,7 +78,10 @@ test('sign-in is keyboard-completable to the submit control', async ({ page }) =
       const el = document.activeElement as HTMLElement | null;
       return el ? { tag: el.tagName, type: el.getAttribute('type'), text: el.textContent } : null;
     });
-    if (active?.tag === 'BUTTON' && (active.type === 'submit' || /sign in/i.test(active.text ?? '')))
+    if (
+      active?.tag === 'BUTTON' &&
+      (active.type === 'submit' || /sign in/i.test(active.text ?? ''))
+    )
       reachedSubmit = true;
   }
   expect(reachedSubmit).toBe(true);

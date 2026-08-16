@@ -19,6 +19,8 @@ const ROUTES = [
   '/support',
   '/sign-in',
   '/register',
+  '/forgot-password',
+  '/reset-password',
   '/recovery-residences',
   '/recovery-residences/grace-house',
 ];

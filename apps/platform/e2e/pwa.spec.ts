@@ -21,9 +21,7 @@ test('manifest is served, linked, and complete', async ({ page, request }) => {
   const sizes = manifest.icons.map((i: { sizes: string }) => i.sizes);
   expect(sizes).toContain('192x192');
   expect(sizes).toContain('512x512');
-  expect(
-    manifest.icons.some((i: { purpose?: string }) => i.purpose === 'maskable'),
-  ).toBe(true);
+  expect(manifest.icons.some((i: { purpose?: string }) => i.purpose === 'maskable')).toBe(true);
   for (const icon of manifest.icons) {
     expect((await request.get(icon.src)).status()).toBe(200);
   }
@@ -41,7 +39,20 @@ test('service worker registers and controls the page', async ({ page }) => {
   const swState = await page.evaluate(async () => {
     if (!('serviceWorker' in navigator)) return 'unsupported';
     const reg = await navigator.serviceWorker.ready;
-    return reg.active?.state ?? 'none';
+    const worker = reg.active;
+    if (!worker) return 'none';
+    // `ready` resolves once a worker is active, but its state can lawfully
+    // still be 'activating' — await the transition instead of racing it (the
+    // assertion below still requires it to actually reach 'activated').
+    if (worker.state !== 'activated') {
+      await new Promise<void>((resolve) => {
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'activated') resolve();
+        });
+        setTimeout(resolve, 5000);
+      });
+    }
+    return worker.state;
   });
   expect(swState).toBe('activated');
 });
