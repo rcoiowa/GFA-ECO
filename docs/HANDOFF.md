@@ -1,5 +1,14 @@
 # RecoveryOS — session handoff
 
+> **⚠️ SUPERSEDED / HISTORICAL — DO NOT FOLLOW (2026-08-18).**
+> This document describes the pre-launch YKY era and is preserved as
+> historical evidence only. Statements below that name Supabase project
+> `ykykeioydvtxpyreshhs` as canonical are **no longer true**. The canonical
+> backend is Supabase **RecoveryOS-Launch (`cqcxvwoukyhxyokfwnjm`)**,
+> `recoveryos` schema, applied from `supabase/launch/migrations/`.
+> Start instead from `CLAUDE.md` and
+> `docs/audits/canonical-reconciliation-2026-08-18.md`.
+
 **Read this first.** It is the shared brain between Claude sessions: a new
 session has none of the previous conversation, only this repository. Keep it
 current — update it in the same commit as any significant change.

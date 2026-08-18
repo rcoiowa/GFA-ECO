@@ -1,5 +1,14 @@
 # State of the System — verified 2026-08-02
 
+> **⚠️ SUPERSEDED / HISTORICAL — DO NOT FOLLOW (2026-08-18).**
+> This snapshot predates the RecoveryOS-Launch cutover and is preserved as
+> historical evidence only. Its claim that Supabase project
+> `ykykeioydvtxpyreshhs` is canonical is **no longer true**: the canonical
+> backend is **RecoveryOS-Launch (`cqcxvwoukyhxyokfwnjm`)**, `recoveryos`
+> schema, applied from `supabase/launch/migrations/`. For current state, see
+> `CLAUDE.md`, `docs/audits/canonical-reconciliation-2026-08-18.md`, and
+> `docs/launch/service-readiness-scorecard.md`.
+
 Plain-language master status. Detailed registries: `docs/source-inventory/`,
 migration plan: `docs/migration/`, phase log: `docs/build-manifest.md`.
 
