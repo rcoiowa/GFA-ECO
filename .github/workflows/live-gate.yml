@@ -1,0 +1,136 @@
+# P4H live HTTP/E2E gate (P4H-G1). MANUAL ONLY — the suite mutates fixture
+# state on the live RecoveryOS-Launch project, so it never runs on push.
+#
+# MODE A (default): builds apps/platform against RecoveryOS-Launch, serves
+# the production build on the runner, and drives real Chromium through real
+# HTTPS Auth/PostgREST/RPC/RLS/Realtime.
+# MODE B: set the base_url input to the protected staging URL to run the
+# same specs against the deployed Cloudflare artifact.
+#
+# Required repository secret:
+#   SUPABASE_SERVICE_ROLE_KEY — used ONLY by the server-side fixture seeder
+#   (create/refresh p4h-* synthetic identities + test_fixture
+#   classification). Never reaches the browser or the built artifact.
+# Optional secret: P4H_E2E_PASSWORD (fixed fixture password); when absent a
+# per-run random password is generated — nothing is ever committed.
+name: Live HTTP gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'MODE B: staging URL to test against (leave empty for MODE A local build)'
+        required: false
+        default: ''
+      grep:
+        description: 'Optional test-name filter (e.g. "role routing")'
+        required: false
+        default: ''
+  # Deliberate-execution alternative while this workflow file is not on the
+  # repository default branch (workflow_dispatch registration requires that):
+  # pushing a `live-gate/<n>` branch IS the manual trigger. Never triggered
+  # by ordinary development pushes.
+  push:
+    branches:
+      - 'live-gate/**'
+
+concurrency:
+  group: live-gate
+  cancel-in-progress: false
+
+jobs:
+  live-gate:
+    runs-on: ubuntu-latest
+    # Secrets (SUPABASE_SERVICE_ROLE_KEY, optional P4H_E2E_PASSWORD) live on
+    # this GitHub environment.
+    environment: p4h-live-gate
+    timeout-minutes: 45
+    env:
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_URL || 'https://cqcxvwoukyhxyokfwnjm.supabase.co' }}
+      VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY != '' && vars.VITE_SUPABASE_ANON_KEY || 'sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x' }}
+      P4H_E2E_EMAIL_DOMAIN: fixtures.recoveryos.test
+    steps:
+      - name: Require service key
+        env:
+          KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::SUPABASE_SERVICE_ROLE_KEY repository secret is required (fixture seeding only; never shipped to the browser). Add it under Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        working-directory: apps/platform
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Resolve fixture password
+        id: pw
+        env:
+          FIXED: ${{ secrets.P4H_E2E_PASSWORD }}
+        run: |
+          if [ -n "$FIXED" ]; then
+            echo "value=$FIXED" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=P4h-$(openssl rand -hex 16)" >> "$GITHUB_OUTPUT"
+          fi
+          echo "::add-mask::$(grep '^value=' "$GITHUB_OUTPUT" | cut -d= -f2-)"
+
+      - name: Seed p4h-* fixtures (server-side, classified test_fixture)
+        env:
+          SUPABASE_URL: ${{ env.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
+        run: node scripts/seed-e2e-fixtures.mjs
+
+      - name: Probe signup posture (raw GoTrue response, throwaway identity)
+        run: |
+          RESP=$(curl -s -o /tmp/signup.json -w "%{http_code}" \
+            -X POST "$VITE_SUPABASE_URL/auth/v1/signup" \
+            -H "apikey: $VITE_SUPABASE_ANON_KEY" -H "content-type: application/json" \
+            -d "{\"email\":\"p4h-probe-$(date +%s)@fixtures.recoveryos.test\",\"password\":\"${{ steps.pw.outputs.value }}\"}")
+          echo "signup HTTP $RESP"
+          cat /tmp/signup.json | head -c 600; echo
+
+      - name: Build platform (RecoveryOS-Launch publishable config)
+        if: ${{ inputs.base_url == '' }}
+        run: pnpm build
+        env:
+          VITE_RELEASE: ${{ github.sha }}
+
+      - name: Run live gate
+        working-directory: apps/platform
+        env:
+          RECOVERYOS_E2E_LIVE: '1'
+          P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
+          P4H_E2E_BASE_URL: ${{ inputs.base_url }}
+          # Node-side only (confirm-email fallback in the harness); the key
+          # never reaches the browser or the built artifact.
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -n "${{ inputs.grep }}" ]; then
+            pnpm exec playwright test --project=live --workers=1 --grep "${{ inputs.grep }}"
+          else
+            pnpm exec playwright test --project=live --workers=1
+          fi
+
+      - name: Upload traces & report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-gate-results
+          path: |
+            apps/platform/test-results/
+            apps/platform/playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore

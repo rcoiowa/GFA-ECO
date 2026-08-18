@@ -52,7 +52,7 @@ export function GroundingPage() {
         </button>
         <a
           href="tel:988"
-          className="inline-flex min-h-11 items-center rounded-md bg-support-600 px-4 font-semibold text-white hover:bg-support-700"
+          className="inline-flex min-h-11 items-center rounded-md bg-support-600 px-4 font-semibold text-white hover:bg-support-strong"
         >
           Call or text 988
         </a>

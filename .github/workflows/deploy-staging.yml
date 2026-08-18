@@ -1,13 +1,17 @@
-# Deploys the RecoveryOS platform to the recoveryos-staging Worker on every
-# push to the build branch (config: root wrangler.jsonc). Requires a Cloudflare API token ("Edit Cloudflare
-# Workers" template) named CLOUDFLARE_API_TOKEN, provided as a repository
-# secret, a repository variable, or a secret on the "production" environment.
+# Deploys the RecoveryOS platform to the NON-PRODUCTION `recoveryos-staging`
+# Worker (config: wrangler.staging.jsonc — never the production-candidate
+# Worker and never vrcc.app). Publishable Supabase configuration comes from
+# repository/environment variables with the canonical RecoveryOS-Launch
+# values as fallback, so staging can never silently drift back to a retired
+# project. Requires CLOUDFLARE_API_TOKEN ("Edit Cloudflare Workers"
+# template) as a repository secret/variable or on the "production"
+# environment.
 name: Deploy staging
 
 on:
   push:
     branches:
-      - claude/recoveryos-greenfield-build-8pns7n
+      - claude/grace-coaching-audit-b0fyhq
       - main
   workflow_dispatch:
 
@@ -21,10 +25,9 @@ jobs:
       - name: Check token is present
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "::error::CLOUDFLARE_API_TOKEN is empty. Add it on github.com/rcoiowa/GFA-ECO under Settings -> Secrets and variables -> Actions -> 'Repository secrets' (New repository secret), named exactly CLOUDFLARE_API_TOKEN. The Variables tab and a 'production' environment secret also work; Codespaces/Dependabot secrets do not."
+            echo "::error::CLOUDFLARE_API_TOKEN is empty. Add it on github.com/rcoiowa/GFA-ECO under Settings -> Secrets and variables -> Actions."
             exit 1
           fi
-          echo "Token present (length ${#CLOUDFLARE_API_TOKEN})."
 
       - uses: actions/checkout@v4
 
@@ -37,12 +40,19 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Build platform
+      - name: Build platform (RecoveryOS-Launch publishable config)
         run: pnpm build
         env:
-          # Publishable values (RLS is the data boundary)
-          VITE_SUPABASE_URL: https://ykykeioydvtxpyreshhs.supabase.co
-          VITE_SUPABASE_ANON_KEY: sb_publishable_9NOklH5Dvj3PcQs2dCLdpg_zx4txe8a
+          # Publishable values (RLS is the data boundary). Overridable via
+          # repository variables; fallback is the canonical launch project —
+          # NEVER the retired ykykeioydvtxpyreshhs project.
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_URL || 'https://cqcxvwoukyhxyokfwnjm.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY != '' && vars.VITE_SUPABASE_ANON_KEY || 'sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x' }}
+          VITE_RELEASE: ${{ github.sha }}
 
-      - name: Deploy to Cloudflare
-        run: npx wrangler@4 deploy
+      - name: Deploy to Cloudflare (recoveryos-staging)
+        run: npx wrangler@4 deploy --config wrangler.staging.jsonc
+
+      - name: Record deployment
+        run: |
+          echo "Deployed commit ${{ github.sha }} to recoveryos-staging at $(date -u +%FT%TZ)" >> "$GITHUB_STEP_SUMMARY"

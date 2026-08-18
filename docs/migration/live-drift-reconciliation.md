@@ -1,4 +1,4 @@
-# Live database drift — reconciliation (2026-08-04)
+# Live database drift — reconciliation (2026-08-04, updated 2026-08-07)
 
 Parallel Claude sessions worked on the same Supabase project
 (`ykykeioydvtxpyreshhs`) and the same repository at the same time. This note
@@ -95,6 +95,30 @@ base64-embedded HTML, with its own root `wrangler.toml`, `index.js`, and
 `deploy.sh`. **Not merged**: it is a deployment artifact, not monorepo code,
 and its root `wrangler.toml` would collide with this repo's `wrangler.jsonc`.
 It stays on its branch as a preserved SOURCE artifact.
+
+## Round 3 (2026-08-07): Grace Coaching engine applied live, uncommitted
+
+A session on the morning of 2026-08-07 applied four migrations directly to the live
+project and deployed an Edge Function, committing none of it to any repository:
+
+| Applied live as (name / time UTC)                  | Recovered into repo as                                                    |
+| -------------------------------------------------- | ------------------------------------------------------------------------- |
+| `vrcc_coaching_engine_v1` (09:05)                  | `docs/migration/recovered/20260807090508_vrcc_coaching_engine_v1.sql`      |
+| `vrcc_coaching_engine_v1_tables` (09:05)           | `docs/migration/recovered/20260807090536_..._tables.sql`                   |
+| `vrcc_coaching_engine_v1_triggers` (09:06)         | `docs/migration/recovered/20260807090611_..._triggers.sql`                 |
+| `vrcc_coaching_engine_v1_cron` (09:07)             | `docs/migration/recovered/20260807090730_..._cron.sql`                     |
+
+Plus Edge Function `coaching` (v1, 09:13 UTC) — a self-contained HTML Grace Coaching
+app; its source exists only in the deployed function (readable via the management
+API). These extend the **prototype layer** (`public` schema `v2_*` tables from the
+vrcc.app repo's `v2/` tree), not the canonical `recoveryos` schema — so the verbatim
+copies live under `docs/migration/recovered/`, outside the canonical migration chain,
+and must not be re-applied to fresh environments.
+
+The same audit session then applied `coaching_engine_p0_hardening` (committed as
+`docs/migration/recovered/20260807_coaching_engine_p0_hardening.sql`) closing four
+security holes in the prototype layer. Full findings and the coaching migration map:
+`docs/discovery/grace-coaching-audit.md`.
 
 ## Rule going forward
 

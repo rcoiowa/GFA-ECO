@@ -58,7 +58,7 @@ export function ResidenceDirectoryPage() {
 
       <main className="mx-auto max-w-4xl px-4 py-12">
         <nav aria-label="Breadcrumb" className="mb-3 text-sm text-ink-muted">
-          <Link to="/" className="hover:text-experience-700 underline-offset-2 hover:underline">
+          <Link to="/" className="hover:text-experience-700 underline underline-offset-2">
             Home
           </Link>
           <span aria-hidden> / </span>
@@ -81,19 +81,19 @@ export function ResidenceDirectoryPage() {
             {GFA_RESIDENCES.map((r) => (
               <li
                 key={r.name}
-                className="flex flex-col rounded-lg border border-line bg-surface-raised p-5"
+                className="flex min-w-0 flex-col rounded-lg border border-line bg-surface-raised p-5"
               >
                 <h3 className="text-lg font-semibold text-ink">{r.name}</h3>
                 <p className="text-sm text-ink-muted">
                   {r.city}, Iowa · {r.population} · {r.type}
                 </p>
                 <p className="mt-2 flex-1 text-ink-muted">{r.description}</p>
-                <p className="mt-2 text-sm text-ink-muted">{r.contact}</p>
+                <p className="mt-2 break-words text-sm text-ink-muted">{r.contact}</p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   {r.applyUrl ? (
                     <a
                       href={r.applyUrl}
-                      className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+                      className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
                     >
                       Visit {r.name} &amp; apply
                     </a>
@@ -212,7 +212,7 @@ export function ResidenceDirectoryPage() {
           </p>
           <Link
             to="/register"
-            className="mt-4 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+            className="mt-4 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
           >
             Join the VRCC free
           </Link>
@@ -222,7 +222,10 @@ export function ResidenceDirectoryPage() {
       <footer className="border-t border-line py-6">
         <p className="mx-auto max-w-4xl px-4 text-sm text-ink-muted">
           Grace For Addictions · Connection prevents crisis · In immediate danger, call 911. For
-          crisis support, call or text 988.
+          crisis support, call or text 988. ·{' '}
+          <Link to="/support" className="underline underline-offset-2 hover:text-ink">
+            All support options
+          </Link>
         </p>
       </footer>
     </div>

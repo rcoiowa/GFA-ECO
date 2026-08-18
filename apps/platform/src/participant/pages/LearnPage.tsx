@@ -15,7 +15,7 @@ export function LearnPage() {
       <PageHeader
         title="Learn"
         lede="Understanding is part of healing. Explore at your own pace."
-        crumbs={[{ to: '/app/today', label: 'Today' }]}
+        crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
       />
       <ul className="flex flex-col gap-4">
         {TRACKS.map(([title, body]) => (

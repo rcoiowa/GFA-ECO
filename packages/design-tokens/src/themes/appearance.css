@@ -1,0 +1,57 @@
+/*
+ * APPEARANCE layer (P4H spec §5/§6A): System · Light · Dark.
+ *
+ * The stored preference is 'system' | 'light' | 'dark'; the pre-paint script
+ * and the AppearanceControls resolve 'system' via prefers-color-scheme and
+ * stamp the RESOLVED mode on <html data-appearance="light|dark">, so CSS here
+ * only needs the dark override block. Dark is a designed theme — a
+ * purple-warmed near-black field with tonal elevation — not an inversion.
+ *
+ * All pairings are locked by scripts/contrast-check.mjs.
+ */
+
+[data-appearance='dark'] {
+  color-scheme: dark;
+  --focus-ring: #9573cc;
+
+  /* Field: purple-warmed near-black; elevation is tonal, not shadowed. */
+  --color-surface: #141019;
+  --color-surface-raised: #1b1622;
+  --color-surface-sunken: #0e0b12;
+  --color-ink: #f0edf5;
+  --color-ink-muted: #b5acc6;
+  --color-ink-faint: #8d8399;
+  --color-line: #382f47;
+
+  /* Brand action: lighter purple for fills; text accents lighter still. */
+  --color-brand-600: #7e58c0;
+  --color-brand-700: #c0a6e8;
+
+  /* Functional families: softened hues on tinted dark surfaces. */
+  --color-accent-50: #1b2534;
+  --color-accent-500: #7fa4d9;
+  --color-accent-600: #5d84bd;
+  --color-accent-700: #9fbee6;
+
+  --color-positive-50: #152b1c;
+  --color-positive-600: #4caf6f;
+  --color-positive-700: #8fd6a4;
+
+  --color-attention-50: #2d2413;
+  --color-attention-600: #c9963d;
+  --color-attention-700: #e0b46a;
+
+  --color-critical-50: #341b17;
+  --color-critical-600: #c96a5c;
+  --color-critical-700: #e89c8f;
+
+  --color-support-500: #8a63cc;
+  --color-support-600: #63498c;
+  --color-support-700: #9d7fd4;
+  --color-support-strong: #7a52bc;
+  --color-critical-strong: #a84335;
+
+  /* Tonal depth: shadows soften; borders/highlights do the lifting. */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 2px 8px rgb(0 0 0 / 0.3);
+  --shadow-raised: 0 2px 6px rgb(0 0 0 / 0.45), 0 8px 24px rgb(0 0 0 / 0.4);
+}

@@ -113,3 +113,38 @@ export async function listMyGrievances(personId: number): Promise<Grievance[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+/**
+ * The residence's grievance queue, open first then newest. Visibility is
+ * deliberately narrow (0115 `grievances_scoped_select`): residence managers
+ * of this residence and platform admins see the residence's grievances;
+ * anyone else gets only their own filings back. RLS filters — it never
+ * errors — so an empty list can mean "none filed" or "not yours to see".
+ */
+export async function listResidenceGrievances(residenceId: number): Promise<Grievance[]> {
+  const { data, error } = await getSupabase()
+    .from('grievances')
+    .select('*')
+    .eq('residence_id', residenceId)
+    .order('filed_at', { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+/**
+ * Move a grievance through its disposition (0115 `resolve_grievance` RPC):
+ * manager/admin only, and never by the person who filed it — the server
+ * returns `conflict_of_interest` with a human message we surface verbatim.
+ */
+export async function resolveGrievance(
+  grievanceId: number,
+  status: 'in_review' | 'resolved' | 'closed',
+): Promise<void> {
+  const { data, error } = await getSupabase().rpc('resolve_grievance', {
+    p_grievance_id: grievanceId,
+    p_status: status,
+  });
+  if (error) throw error;
+  const result = data as { ok?: boolean; code?: string; message?: string } | null;
+  if (!result?.ok) throw new Error(result?.message ?? String(result?.code ?? 'resolve_failed'));
+}

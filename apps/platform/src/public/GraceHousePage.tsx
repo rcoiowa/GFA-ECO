@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { GFA_CONTACTS } from '@recoveryos/safety';
 
 /**
  * Public Grace House information page (feature-matrix: PRESERVE CONTENT,
@@ -27,13 +28,13 @@ export function GraceHousePage() {
 
       <main className="mx-auto max-w-4xl px-4 py-12">
         <nav aria-label="Breadcrumb" className="mb-3 text-sm text-ink-muted">
-          <Link to="/" className="hover:text-experience-700 underline-offset-2 hover:underline">
+          <Link to="/" className="hover:text-experience-700 underline underline-offset-2">
             Home
           </Link>
           <span aria-hidden> / </span>
           <Link
             to="/recovery-residences"
-            className="hover:text-experience-700 underline-offset-2 hover:underline"
+            className="hover:text-experience-700 underline underline-offset-2"
           >
             Recovery residences
           </Link>
@@ -83,7 +84,7 @@ export function GraceHousePage() {
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
               to="/recovery-residences/grace-house/apply"
-              className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+              className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
             >
               Apply online here
             </Link>
@@ -104,17 +105,46 @@ export function GraceHousePage() {
           </div>
         </section>
 
+        <section aria-labelledby="gh-talk" className="mt-8">
+          <h2 id="gh-talk" className="text-xl font-semibold text-ink">
+            Rather talk with a person first?
+          </h2>
+          <p className="mt-2 max-w-2xl text-ink-muted">
+            Call the Grace For Addictions office at{' '}
+            <a
+              href={`tel:${GFA_CONTACTS.office.number}`}
+              className="font-medium text-experience-700 underline underline-offset-2"
+            >
+              {GFA_CONTACTS.office.display}
+            </a>{' '}
+            during office hours, or the warmline at{' '}
+            <a
+              href={`tel:${GFA_CONTACTS.warmline.number}`}
+              className="font-medium text-experience-700 underline underline-offset-2"
+            >
+              {GFA_CONTACTS.warmline.display}
+            </a>{' '}
+            — no application or account needed.{' '}
+            <Link to="/support" className="font-medium text-experience-700 underline underline-offset-2">
+              See every support option
+            </Link>
+            .
+          </p>
+        </section>
+
         <p className="mt-8 text-sm text-ink-muted">
-          Grace House does not discriminate on any basis protected by law. Detailed program,
-          eligibility, and contact information is being finalized with Grace For Addictions and will
-          appear here.
+          Grace House does not discriminate on any basis protected by law. Detailed program and
+          eligibility information is being finalized with Grace For Addictions and will appear here.
         </p>
       </main>
 
       <footer className="border-t border-line py-6">
         <p className="mx-auto max-w-4xl px-4 text-sm text-ink-muted">
           Grace For Addictions · No shame. No stigma. Just grace. · In immediate danger, call 911.
-          For crisis support, call or text 988.
+          For crisis support, call or text 988. ·{' '}
+          <Link to="/support" className="underline underline-offset-2 hover:text-ink">
+            All support options
+          </Link>
         </p>
       </footer>
     </div>

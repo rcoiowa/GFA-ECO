@@ -93,7 +93,7 @@ export function MyApplicationPage() {
             </p>
             <Link
               to="/recovery-residences"
-              className="mt-4 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+              className="mt-4 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
             >
               See recovery housing options
             </Link>
@@ -159,7 +159,7 @@ export function MyApplicationPage() {
               </p>
               <Link
                 to="/app/today"
-                className="mt-4 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+                className="mt-4 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
               >
                 {application.status === 'approved'
                   ? 'Complete VRCC onboarding'

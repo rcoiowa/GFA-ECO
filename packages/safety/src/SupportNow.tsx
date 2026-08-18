@@ -42,7 +42,7 @@ export function SupportNowButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-support-600 px-4 font-semibold text-white shadow-raised hover:bg-support-700 ${className}`}
+        className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-support-600 px-4 font-semibold text-white shadow-raised hover:bg-support-strong ${className}`}
       >
         <span aria-hidden>♥</span> Support now
       </button>

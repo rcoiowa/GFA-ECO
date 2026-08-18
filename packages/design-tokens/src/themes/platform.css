@@ -1,30 +1,63 @@
 /*
- * Platform experience theming. One deployment hosts multiple experiences, so
- * experience colors are runtime-switchable: @theme registers the utilities
- * (defaulting to the VRCC palette) and [data-experience] overrides re-point
- * the variables for the residence and professional route subtrees. The shell
- * sets data-experience on its root element.
+ * Experience accent layer. One deployment hosts several experiences, and the
+ * relationship contexts stay visually distinguishable (P4H spec §2/§21):
+ * participant surfaces carry Recovery Purple, residence surfaces carry Plum
+ * (Grace House warmth), professional workspaces carry a quieter violet-slate.
+ * The shell stamps [data-experience] on its subtree; these accents ride on
+ * top of whichever appearance mode is active.
+ *
+ * All pairings are locked by scripts/contrast-check.mjs.
  */
 @theme {
-  /* VRCC participant default: warm, hopeful, community-oriented */
-  --color-experience-500: #348872;
-  --color-experience-600: #266d5c;
-  --color-experience-700: #20574b;
-  --color-experience-soft: #eef7f4;
+  /* VRCC participant default: Recovery Purple — warmest register */
+  --color-experience-500: #7a52bc;
+  --color-experience-600: #6540a5;
+  --color-experience-700: #533489;
+  --color-experience-soft: #f5f2fb;
+  /* Hover/active fill for white-text buttons (see tokens.css note). */
+  --color-experience-strong: #533489;
 }
 
-/* Recovery residence: steady, grounded, home-like */
+/* Recovery residence: Plum — home, belonging */
 [data-experience='residence'] {
-  --color-experience-500: #4372b5;
-  --color-experience-600: #35598f;
-  --color-experience-700: #2d4a76;
-  --color-experience-soft: #f2f6fc;
+  --color-experience-500: #a05585;
+  --color-experience-600: #8a4570;
+  --color-experience-700: #5c2c4a;
+  --color-experience-soft: #f8eff4;
+  --color-experience-strong: #5c2c4a;
 }
 
-/* Professional workspaces (staff, coach, navigator, admin): calm, information-dense */
+/* Professional workspaces (staff, coach, navigator, admin): violet-slate */
 [data-experience='professional'] {
-  --color-experience-500: #52627c;
-  --color-experience-600: #414f66;
-  --color-experience-700: #364154;
-  --color-experience-soft: #f2f4f8;
+  --color-experience-500: #6e6584;
+  --color-experience-600: #565070;
+  --color-experience-700: #453f5c;
+  --color-experience-soft: #f2f1f6;
+  --color-experience-strong: #453f5c;
+}
+
+/* ---------- Dark-appearance accent variants (light text accents on the
+   purple-warmed field; fills lighten one step to hold 4.5:1 with white) */
+[data-appearance='dark'] {
+  --color-experience-500: #9573cc;
+  --color-experience-600: #7e58c0;
+  --color-experience-700: #c0a6e8;
+  --color-experience-soft: #2a2138;
+  --color-experience-strong: #6e4aae;
+}
+
+[data-appearance='dark'] [data-experience='residence'] {
+  --color-experience-500: #c98fb4;
+  --color-experience-600: #a05585;
+  --color-experience-700: #d8a2c2;
+  --color-experience-soft: #33202c;
+  --color-experience-strong: #8a4570;
+}
+
+[data-appearance='dark'] [data-experience='professional'] {
+  --color-experience-500: #8d84a6;
+  --color-experience-600: #6e6584;
+  --color-experience-700: #b9b2ce;
+  --color-experience-soft: #272335;
+  --color-experience-strong: #565070;
 }

@@ -6,4 +6,7 @@ main = "src/index.ts"
 compatibility_date = "2025-06-01"
 
 [vars]
-SUPABASE_URL = "https://ykykeioydvtxpyreshhs.supabase.co"
+# Canonical RecoveryOS-Launch backend (CQCX). The public intake gateway writes
+# ONLY to recoveryos.residence_application_intake here. The retired dev project
+# must never receive new public submissions (enforced by check-no-retired-ref).
+SUPABASE_URL = "https://cqcxvwoukyhxyokfwnjm.supabase.co"

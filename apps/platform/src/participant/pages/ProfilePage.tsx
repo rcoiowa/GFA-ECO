@@ -10,7 +10,7 @@ export function ProfilePage() {
       <PageHeader
         title="Profile"
         lede="Your account and how RecoveryOS speaks to you."
-        crumbs={[{ to: '/app/today', label: 'Today' }]}
+        crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
       />
       <div className="flex flex-col gap-5">
         <Card>

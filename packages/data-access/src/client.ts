@@ -20,7 +20,7 @@ export function configureSupabase(config: SupabaseConfig): RecoveryOSClient {
   if (!client) {
     client = createClient(config.url, config.anonKey, {
       // The canonical model lives in its own schema on the shared live
-      // project, alongside the legacy schemas (docs/migration/README.md).
+      // project, as the platform's single data authority.
       db: { schema: 'recoveryos' },
       auth: {
         persistSession: true,

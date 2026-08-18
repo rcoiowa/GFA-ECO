@@ -1,0 +1,32 @@
+/*
+ * BRAND SKIN layer (P4H spec §6A) — contract and mining ledger.
+ *
+ * A brand skin is applied as [data-brand] on <html> and may override ONLY:
+ * brand colors (--color-brand-*, --color-experience-* accents), identity
+ * assets, and limited typography accents. It must NOT fork component
+ * behavior, interaction logic, accessibility, or canonical RecoveryOS UX,
+ * and any skin ships only after scripts/contrast-check.mjs covers its
+ * values. The GFA / RecoveryOS brand is the core system itself (tokens.css)
+ * — no attribute needed.
+ *
+ * Mining ledger for the retired monolithic [data-visual] themes (source
+ * inspected in git history: themes/visual.css prior to P4H):
+ *
+ *   default → REBUILT ON CURRENT TOKENS — became the Hearth core (light).
+ *   dark    → REBUILT ON CURRENT TOKENS — became the dark APPEARANCE
+ *             (purple-warmed field replaces the green-tinted night).
+ *   space   → REFINED — palette merged into dark appearance; static
+ *             starfield kept as the Cosmic ATMOSPHERE (atmosphere.css).
+ *   gfa     → RETIRED as a monolith; DEFERRED as a future [data-brand='gfa']
+ *             skin (aqua-teal accents from graceforaddictions.org) if the
+ *             organization wants a distinct skin beyond the core brand.
+ *   rcoia   → DEFERRED as a future [data-brand='rcoia'] skin (deep-purple
+ *             ground + gold/teal accents, owner-provided spec 2026-08-02).
+ *   sky     → DEFERRED atmosphere (airy daylight) — rebuild on current
+ *             tokens if wanted; light-appearance ambience only.
+ *   retro   → DEFERRED atmosphere (70s sunrise warm paper) — rebuild on
+ *             current tokens; its AA-corrected palette is in git history.
+ *
+ * Stored legacy preferences migrate in the pre-paint script (index.html):
+ * dark→dark appearance, space→dark+cosmic, everything else→system+hearth.
+ */

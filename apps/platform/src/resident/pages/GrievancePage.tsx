@@ -101,7 +101,9 @@ export function GrievancePage() {
               <CardTitle>What's going on?</CardTitle>
               {submitted ? (
                 <Alert tone="positive">
-                  Your grievance is filed. You'll hear from us in writing within 2 business days.
+                  Your grievance is filed. A staff member follows up in writing within 2 business
+                  days. If you don't hear back, the paper form posted in the house — or a note to any
+                  staff member — reaches the same process, with the same timelines.
                 </Alert>
               ) : null}
               {error ? (

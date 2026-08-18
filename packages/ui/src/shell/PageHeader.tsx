@@ -30,7 +30,7 @@ export function PageHeader({
               <li key={c.to} className="flex items-center gap-1.5">
                 <Link
                   to={c.to}
-                  className="hover:text-experience-700 underline-offset-2 hover:underline"
+                  className="hover:text-experience-700 underline underline-offset-2"
                 >
                   {c.label}
                 </Link>

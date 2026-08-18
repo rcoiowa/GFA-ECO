@@ -41,7 +41,7 @@ export function MyJourneyPage() {
       <PageHeader
         title="My Journey"
         lede="Every check-in and every step is part of your story."
-        crumbs={[{ to: '/app/today', label: 'Today' }]}
+        crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
       />
       <Card>
         <CardTitle>Recent check-ins</CardTitle>

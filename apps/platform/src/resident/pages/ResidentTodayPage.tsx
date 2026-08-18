@@ -6,9 +6,16 @@ import {
   getLatestPhaseOverride,
   getMyActiveResidency,
   listMyChoreAssignments,
+  listMyDocumentAssignments,
   type ChoreAssignmentWithChore,
 } from '@recoveryos/data-access';
-import { getPhaseInfo, type Phase, type PhaseInfo } from '@recoveryos/domain';
+import {
+  deriveResidentAttention,
+  getPhaseInfo,
+  type Phase,
+  type PhaseInfo,
+  type ResidenceAttentionItem,
+} from '@recoveryos/domain';
 import type { CurfewSchedule, Residence, Residency } from '@recoveryos/domain';
 import { Alert, Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
 
@@ -30,6 +37,7 @@ export function ResidentTodayPage() {
   const [todaysChores, setTodaysChores] = useState<ChoreAssignmentWithChore[]>([]);
   const [tonightsCurfew, setTonightsCurfew] = useState<CurfewSchedule | null>(null);
   const [phaseInfo, setPhaseInfo] = useState<PhaseInfo | null>(null);
+  const [attention, setAttention] = useState<ResidenceAttentionItem[]>([]);
 
   const load = useCallback(async () => {
     if (!person) return;
@@ -40,13 +48,22 @@ export function ResidentTodayPage() {
       setResidency(res);
       if (res) {
         const today = new Date().toISOString().slice(0, 10);
-        const [choreRows, curfewRows, phaseOverride] = await Promise.all([
+        const [choreRows, curfewRows, phaseOverride, documentRows] = await Promise.all([
           listMyChoreAssignments(res.id, today, today),
           getCurfewSchedule(res.residence_id),
           getLatestPhaseOverride(res.id),
+          listMyDocumentAssignments(person.id),
         ]);
         setTodaysChores(choreRows);
         setTonightsCurfew(curfewRows.find((c) => c.day_of_week === new Date().getDay()) ?? null);
+        setAttention(
+          deriveResidentAttention({
+            documentsAwaiting: documentRows.filter((d) => !d.acknowledged_at).length,
+            passDecided: false,
+            choresDueToday: choreRows.filter((c) => !c.completed_at).length,
+            meetingToday: false,
+          }),
+        );
         if (res.admission_date) {
           setPhaseInfo(
             getPhaseInfo(res.admission_date, (phaseOverride?.phase as Phase | undefined) ?? null),
@@ -81,6 +98,23 @@ export function ResidentTodayPage() {
         </Alert>
       ) : (
         <div className="flex flex-col gap-5">
+          {attention.length > 0 ? (
+            <Card>
+              <CardTitle>For you today</CardTitle>
+              <ul className="mt-2 space-y-1.5">
+                {attention.map((item) => (
+                  <li key={item.key}>
+                    <Link
+                      to={item.to}
+                      className="block rounded-md border border-line bg-surface-raised px-3 py-2.5 font-medium text-ink hover:bg-surface-sunken"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
           <Card>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>

@@ -31,18 +31,22 @@ export async function listReferrals(residenceId: number): Promise<Referral[]> {
   return data ?? [];
 }
 
+/**
+ * Triage is RPC-only (P4G): the server derives the handler and timestamp and
+ * refuses transitions out of settled states — direct table UPDATE has no
+ * policy anymore. `handledByPersonId` is accepted for call-site compatibility
+ * but ignored; the acting person comes from the JWT.
+ */
 export async function updateReferralStatus(input: {
   referralId: number;
   status: Referral['status'];
-  handledByPersonId: number;
+  handledByPersonId?: number;
 }): Promise<void> {
-  const { error } = await getSupabase()
-    .from('referrals')
-    .update({
-      status: input.status,
-      handled_by_person_id: input.handledByPersonId,
-      handled_at: new Date().toISOString(),
-    })
-    .eq('id', input.referralId);
+  const { data, error } = await getSupabase().rpc('triage_residence_referral', {
+    p_referral_id: input.referralId,
+    p_status: input.status,
+  });
   if (error) throw error;
+  const envelope = data as { ok: boolean; code?: string } | null;
+  if (!envelope?.ok) throw new Error(envelope?.code ?? 'triage_failed');
 }

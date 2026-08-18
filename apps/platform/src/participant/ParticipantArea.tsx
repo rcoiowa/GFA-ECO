@@ -1,12 +1,17 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { RequirePerson } from '@recoveryos/auth';
 import { GroundingPage } from '@recoveryos/safety';
+import { OnboardingConsentGate } from '../components/OnboardingConsentGate';
 import { ParticipantShell } from './ParticipantShell';
 import { TodayPage } from './pages/TodayPage';
 import { CheckInPage } from './pages/CheckInPage';
 import { MyRecoveryPage } from './pages/MyRecoveryPage';
 import { ConnectPage } from './pages/ConnectPage';
+import { MessagesPage } from './pages/MessagesPage';
+import { SessionsPage } from './pages/SessionsPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 import { LearnPage } from './pages/LearnPage';
+import { GracePage } from './pages/GracePage';
 import { ToolsPage } from './pages/ToolsPage';
 import { RecoveryCapitalPage } from './pages/RecoveryCapitalPage';
 import { ResourcesPage } from './pages/ResourcesPage';
@@ -19,13 +24,18 @@ import { NotFoundPage } from '../pages/StatusPages';
 export function ParticipantArea() {
   return (
     <RequirePerson>
-      <Routes>
+      <OnboardingConsentGate>
+        <Routes>
         <Route element={<ParticipantShell />}>
           <Route index element={<Navigate to="today" replace />} />
           <Route path="today" element={<TodayPage />} />
           <Route path="check-in" element={<CheckInPage />} />
           <Route path="recovery" element={<MyRecoveryPage />} />
           <Route path="connect" element={<ConnectPage />} />
+          <Route path="grace" element={<GracePage />} />
+          <Route path="messages" element={<MessagesPage />} />
+          <Route path="sessions" element={<SessionsPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="learn" element={<LearnPage />} />
           <Route path="tools" element={<ToolsPage />} />
           <Route path="tools/recovery-capital" element={<RecoveryCapitalPage />} />
@@ -36,7 +46,8 @@ export function ParticipantArea() {
           <Route path="support/grounding" element={<GroundingPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
-      </Routes>
+        </Routes>
+      </OnboardingConsentGate>
     </RequirePerson>
   );
 }

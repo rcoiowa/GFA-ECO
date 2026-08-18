@@ -29,7 +29,14 @@ export const BARC10_SCALE = [
   { value: 6, label: 'Strongly agree' },
 ] as const;
 
-/** Total >= 47 indicates strong recovery capital (published BARC-10 threshold). */
+/**
+ * 47 is a research-informed BARC-10 benchmark (exact provenance/population is an
+ * OPEN binding — see docs/product/recoveryos-icare-integration-authority-v1.0.md
+ * §4). It is used here ONLY as a participant-facing reflection boundary for the
+ * soil metaphor — never a clinical cutoff, access gate, risk flag, or automated
+ * trigger. BARC-10 remains one 10–60 total; there is no subdomain scoring and no
+ * ≤35 "crisis" logic.
+ */
 export const BARC10_THRESHOLD = 47;
 
 export interface SoilType {

@@ -6,7 +6,9 @@
   "exports": {
     "./tokens.css": "./src/tokens.css",
     "./themes/platform.css": "./src/themes/platform.css",
-    "./themes/visual.css": "./src/themes/visual.css"
+    "./themes/appearance.css": "./src/themes/appearance.css",
+    "./themes/atmosphere.css": "./src/themes/atmosphere.css",
+    "./themes/brand.css": "./src/themes/brand.css"
   },
   "scripts": {
     "typecheck": "echo 'design-tokens: css only'"

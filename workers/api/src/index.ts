@@ -2,10 +2,15 @@
  * RecoveryOS shared API gateway.
  * Health/version endpoints plus the public residence-application intake:
  * external application flows (the Grace House site at gracehouse4.pages.dev,
- * and later recoveryresidence.app) POST here, and the gateway creates the
- * resident account server-side — auth invite, person record, and the
- * application row under the residence applied to — so the applicant lands in
- * the staff review queue exactly like an in-platform application.
+ * and later recoveryresidence.app) POST here.
+ *
+ * The gateway is a CONTROLLED CQCX INTAKE BOUNDARY. It writes the submission
+ * to recoveryos.residence_application_intake (service role) so it lands in the
+ * staff review queue — and does NOT provision anything: no auth user, no
+ * person, no residency. A prospective resident may apply before they have a
+ * RecoveryOS account; staff create canonical records deliberately, later, from
+ * the intake row. This preserves the person-model authority chain and matches
+ * the canonical lead-intake / residence-intake boundary posture.
  */
 
 export interface Env {
@@ -85,14 +90,12 @@ async function handleApplication(request: Request, env: Env, cors: Record<string
     return json({ error: 'valid_email_required' }, 400, cors);
 
   // Answers: keep only short string values so the payload stays reviewable.
-  const answers: Record<string, string> = { source: new URL(request.url).hostname };
+  const answers: Record<string, string> = {};
   for (const [key, value] of Object.entries(body.answers ?? {})) {
     if (typeof value === 'string' && value.trim() && key.length <= 64) {
       answers[key] = value.trim().slice(0, 2000);
     }
   }
-  answers.applicantName = `${firstName} ${lastName}`;
-  answers.applicantEmail = email;
 
   const serviceHeaders = {
     apikey: env.SUPABASE_SERVICE_ROLE_KEY,
@@ -109,74 +112,27 @@ async function handleApplication(request: Request, env: Env, cors: Record<string
   const residenceId = residences[0]?.id;
   if (residenceId === undefined) return json({ error: 'residence_unavailable' }, 502, cors);
 
-  // 2. Resident account: invite the email (creates the auth user and sends a
-  //    set-password email). If the account already exists, look it up via an
-  //    admin-generated magic link instead — no duplicate, no second email.
-  let authUserId: string | null = null;
-  const inviteRes = await fetch(`${env.SUPABASE_URL}/auth/v1/invite`, {
+  // 2. Write the submission to the controlled pre-account intake table. NO auth
+  //    user, NO person, NO residency is created — an anonymous public submission
+  //    must never provision identities. Staff review the intake row and create
+  //    canonical records deliberately, later.
+  const intakeRes = await fetch(`${env.SUPABASE_URL}/rest/v1/residence_application_intake`, {
     method: 'POST',
-    headers: serviceHeaders,
-    body: JSON.stringify({ email, data: { first_name: firstName, last_name: lastName } }),
+    headers: { ...serviceHeaders, 'content-profile': 'recoveryos', prefer: 'return=minimal' },
+    body: JSON.stringify({
+      residence_id: residenceId,
+      applicant_name: `${firstName} ${lastName}`,
+      applicant_email: email,
+      answers,
+      source: new URL(request.url).hostname,
+    }),
   });
-  if (inviteRes.ok) {
-    const invited = (await inviteRes.json()) as { id?: string };
-    authUserId = invited.id ?? null;
-  } else {
-    const linkRes = await fetch(`${env.SUPABASE_URL}/auth/v1/admin/generate_link`, {
-      method: 'POST',
-      headers: serviceHeaders,
-      body: JSON.stringify({ type: 'magiclink', email }),
-    });
-    if (linkRes.ok) {
-      const link = (await linkRes.json()) as { id?: string; user?: { id?: string } };
-      authUserId = link.user?.id ?? link.id ?? null;
-    }
-  }
-  if (!authUserId) return json({ error: 'account_creation_failed' }, 502, cors);
-
-  // 3. Person record (find-or-create by auth user).
-  const personRes = await fetch(
-    `${env.SUPABASE_URL}/rest/v1/people?auth_user_id=eq.${authUserId}&select=id`,
-    { headers: { ...serviceHeaders, 'accept-profile': 'recoveryos' } },
-  );
-  let personId: number | null = null;
-  if (personRes.ok) {
-    const existing = (await personRes.json()) as { id: number }[];
-    personId = existing[0]?.id ?? null;
-  }
-  if (personId === null) {
-    const createRes = await fetch(`${env.SUPABASE_URL}/rest/v1/people`, {
-      method: 'POST',
-      headers: {
-        ...serviceHeaders,
-        'content-profile': 'recoveryos',
-        prefer: 'return=representation',
-      },
-      body: JSON.stringify({
-        auth_user_id: authUserId,
-        first_name: firstName,
-        last_name: lastName,
-      }),
-    });
-    if (createRes.ok) {
-      const created = (await createRes.json()) as { id: number }[];
-      personId = created[0]?.id ?? null;
-    }
-  }
-  if (personId === null) return json({ error: 'person_creation_failed' }, 502, cors);
-
-  // 4. The application itself — lands in the staff queue as 'submitted'.
-  const applicationRes = await fetch(`${env.SUPABASE_URL}/rest/v1/residence_applications`, {
-    method: 'POST',
-    headers: { ...serviceHeaders, 'content-profile': 'recoveryos' },
-    body: JSON.stringify({ person_id: personId, residence_id: residenceId, answers }),
-  });
-  if (!applicationRes.ok) return json({ error: 'application_failed' }, 502, cors);
+  if (!intakeRes.ok) return json({ error: 'application_failed' }, 502, cors);
 
   return json(
     {
       status: 'received',
-      next: 'Staff will contact you within 2 business days. Check your email to finish setting up your resident account, then explore the VRCC at https://vrcc.app while you wait.',
+      next: 'Thanks — your application is in. Grace House staff will reach out within 2 business days to talk through next steps.',
     },
     201,
     cors,

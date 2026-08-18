@@ -5,10 +5,15 @@ export { Alert } from './primitives/Alert';
 export { EmptyState, LoadingState, ErrorState } from './primitives/States';
 export { AppShell, type AppShellProps, type NavItem } from './shell/AppShell';
 export { PageHeader, type Crumb } from './shell/PageHeader';
+export { OfflineNotice, useOnlineStatus } from './primitives/Offline';
 export {
-  ThemeSwitcher,
-  VISUAL_THEMES,
-  applyVisualTheme,
-  getStoredVisualTheme,
-  type VisualTheme,
+  AppearanceControls,
+  APPEARANCES,
+  ATMOSPHERES,
+  applyAppearance,
+  getStoredAppearance,
+  getStoredAtmosphere,
+  setAppearancePreference,
+  type AppearancePreference,
+  type Atmosphere,
 } from './primitives/ThemeSwitcher';

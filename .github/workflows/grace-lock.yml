@@ -1,0 +1,104 @@
+# Grace V1 MODEL LOCK (directive Phase 1). MANUAL ONLY.
+#
+# Applies the locked canonical Grace V1 provider configuration and verifies it:
+#     GRACE_MODEL            = claude-sonnet-5
+#     GRACE_DISABLE_THINKING = 1
+# Then confirms the DEPLOYED function actually serves claude-sonnet-5.
+#
+# This does NOT set GRACE_PROVIDER_CONFIGURED, does NOT activate Grace for real
+# participants, and does NOT change vrcc.app or the SMTP posture. grace-policy is
+# unchanged (grace-policy-1.2.0).
+#
+# Required secrets on `p4h-live-gate`: SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ACCESS_TOKEN.
+name: Grace V1 model lock
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - 'grace-lock/**'
+
+concurrency:
+  group: grace-eval
+  cancel-in-progress: false
+
+env:
+  PROJECT_REF: cqcxvwoukyhxyokfwnjm
+  VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_URL || 'https://cqcxvwoukyhxyokfwnjm.supabase.co' }}
+  VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY != '' && vars.VITE_SUPABASE_ANON_KEY || 'sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x' }}
+  P4H_E2E_EMAIL_DOMAIN: fixtures.recoveryos.test
+
+jobs:
+  grace-lock:
+    runs-on: ubuntu-latest
+    environment: p4h-live-gate
+    timeout-minutes: 20
+    steps:
+      - name: Require secrets
+        env:
+          SVC: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          missing=0
+          [ -z "$SVC" ] && { echo "::error::SUPABASE_SERVICE_ROLE_KEY required."; missing=1; }
+          [ -z "$TOKEN" ] && { echo "::error::SUPABASE_ACCESS_TOKEN required."; missing=1; }
+          [ "$missing" = "1" ] && exit 1 || echo "secrets present"
+
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Static model-lock declaration check
+        run: node scripts/grace-model-lock-verify.mjs
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: LOCK — set GRACE_MODEL=claude-sonnet-5 + GRACE_DISABLE_THINKING=1 (server-side)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase secrets set --project-ref "$PROJECT_REF" \
+            "GRACE_MODEL=claude-sonnet-5" \
+            "GRACE_DISABLE_THINKING=1"
+
+      - name: Deploy grace (locked config)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy grace --project-ref "$PROJECT_REF"
+
+      - name: Resolve fixture password
+        id: pw
+        env:
+          FIXED: ${{ secrets.P4H_E2E_PASSWORD }}
+        run: |
+          if [ -n "$FIXED" ]; then echo "value=$FIXED" >> "$GITHUB_OUTPUT";
+          else echo "value=P4h-$(openssl rand -hex 16)" >> "$GITHUB_OUTPUT"; fi
+          echo "::add-mask::$(grep '^value=' "$GITHUB_OUTPUT" | cut -d= -f2-)"
+
+      - name: Seed p4h-* fixtures
+        env:
+          SUPABASE_URL: ${{ env.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
+        run: node scripts/seed-e2e-fixtures.mjs
+
+      - name: Smoke (ensures consent; confirms generation on locked model)
+        env:
+          SUPABASE_URL: ${{ env.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.VITE_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
+        run: node scripts/grace-eval.mjs smoke
+
+      - name: LIVE model-lock verification (deployed model_id === claude-sonnet-5)
+        env:
+          SUPABASE_URL: ${{ env.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.VITE_SUPABASE_ANON_KEY }}
+          P4H_E2E_PASSWORD: ${{ steps.pw.outputs.value }}
+        run: node scripts/grace-model-lock-verify.mjs
