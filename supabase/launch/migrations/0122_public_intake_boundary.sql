@@ -16,8 +16,13 @@
 --     grant. The ONLY write path is a service-role server boundary (the
 --     residence-intake Edge Function, or the recoveryos-api gateway) after
 --     validation. Anonymous browsers cannot INSERT, SELECT, UPDATE or DELETE.
---   * Reads/updates are staff-only through named policies and SECURITY DEFINER
---     review RPCs; every review decision is written to recoveryos.audit_log.
+--   * Reads are staff-only through named SELECT policies. There is NO direct
+--     UPDATE/DELETE path for any client role: lifecycle, reviewer, conversion,
+--     and applicant fields change ONLY through the SECURITY DEFINER review
+--     RPCs below, and every review decision is written to recoveryos.audit_log.
+--     Table privileges are explicitly revoked so the schema-wide authenticated
+--     grants from 0110 (including its default-privilege rule for new tables)
+--     cannot reopen a PostgREST PATCH bypass.
 --   * A separate anon-readable projection view (residence_directory_public)
 --     exposes ONLY curated public columns for residences explicitly published to
 --     the directory — the operational residences table stays auth-gated.
@@ -118,15 +123,17 @@ create trigger residence_listing_submissions_set_updated_at
 alter table recoveryos.residence_listing_submissions enable row level security;
 
 -- NO insert policy and NO anon grant: inserts come only from the service-role
--- intake boundary. Reads/updates are platform-admin only (national directory
--- moderation is a platform function, not a per-residence one).
+-- intake boundary. Reads are platform-admin only (national directory
+-- moderation is a platform function, not a per-residence one). There is NO
+-- UPDATE policy: lifecycle changes go only through the audited review/publish
+-- RPCs — a direct PostgREST PATCH must fail even for platform admins.
 create policy residence_listing_submissions_admin_select
   on recoveryos.residence_listing_submissions for select to authenticated
   using (recoveryos.is_platform_admin());
-create policy residence_listing_submissions_admin_update
-  on recoveryos.residence_listing_submissions for update to authenticated
-  using (recoveryos.is_platform_admin())
-  with check (recoveryos.is_platform_admin());
+-- Belt and braces: neutralize 0110's schema-wide + default-privilege grants so
+-- no client role holds INSERT/UPDATE/DELETE privilege on this table at all.
+revoke insert, update, delete on recoveryos.residence_listing_submissions
+  from anon, authenticated;
 
 -- In-app staff alert on new listing submission (single event source; exception-safe).
 create or replace function recoveryos.trg_listing_submission_notify()
@@ -201,18 +208,19 @@ create trigger residence_application_intake_set_updated_at
 alter table recoveryos.residence_application_intake enable row level security;
 
 -- NO insert policy and NO anon grant: inserts come only from the service-role
--- intake boundary. Reads/updates are limited to staff of the target residence
--- OR care-operations staff — never "any authenticated user", never anon.
+-- intake boundary. Reads are limited to staff of the target residence OR
+-- care-operations staff — never "any authenticated user", never anon. There is
+-- NO UPDATE policy: applicant PII/answers and the status/reviewer/conversion
+-- lifecycle change ONLY through review_residence_application_intake (audited,
+-- lifecycle-guarded) — a direct PostgREST PATCH must fail even for staff.
 create policy residence_application_intake_staff_select
   on recoveryos.residence_application_intake for select to authenticated
   using (residence_id in (select recoveryos.staff_residence_ids())
          or recoveryos.is_care_operations_staff());
-create policy residence_application_intake_staff_update
-  on recoveryos.residence_application_intake for update to authenticated
-  using (residence_id in (select recoveryos.staff_residence_ids())
-         or recoveryos.is_care_operations_staff())
-  with check (residence_id in (select recoveryos.staff_residence_ids())
-         or recoveryos.is_care_operations_staff());
+-- Belt and braces: neutralize 0110's schema-wide + default-privilege grants so
+-- no client role holds INSERT/UPDATE/DELETE privilege on this table at all.
+revoke insert, update, delete on recoveryos.residence_application_intake
+  from anon, authenticated;
 
 -- In-app staff alert on new application intake (exception-safe). Notifies staff
 -- assigned to the residence plus care-operations roles; body is intentionally
@@ -246,9 +254,11 @@ create trigger trg_application_intake_notify
   for each row execute function recoveryos.trg_application_intake_notify();
 
 -- ============================================================================
--- Staff review RPCs (SECURITY DEFINER; authenticated; audited). Direct UPDATE
--- is possible for staff via the policies above, but the RPCs are the sanctioned
--- path: they stamp the reviewer, guard the lifecycle, and write the audit row.
+-- Staff review RPCs (SECURITY DEFINER; authenticated; audited). These are the
+-- ONLY write path for intake rows — there is no direct UPDATE policy and table
+-- DML privileges are revoked from client roles above. The RPCs stamp the
+-- reviewer, guard the lifecycle, and write the audit row; running as the table
+-- owner, they are unaffected by the client-role revokes.
 -- ============================================================================
 
 -- FLOW 1 review: platform-admin moves a submission through the lifecycle.

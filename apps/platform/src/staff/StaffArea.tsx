@@ -18,11 +18,14 @@ import { NotFoundPage } from '../pages/StatusPages';
 
 /**
  * Room 1 — the Operator Dashboard (Integration Plan §2). Route guard is
- * navigation only; every query is bounded by the staff RLS policies.
+ * navigation only; every query is bounded by the staff RLS policies. The
+ * roles admitted here must cover every role that routing.ts sends to
+ * /staff/today — program_manager lands here (care-operations staff) and RLS
+ * scopes what they can actually see, which may be an honest empty state.
  */
 export function StaffArea() {
   return (
-    <RequireRole anyOf={['residence_staff', 'residence_manager']}>
+    <RequireRole anyOf={['residence_staff', 'residence_manager', 'program_manager']}>
       <StaffProvider>
         <Routes>
           <Route element={<StaffShell />}>

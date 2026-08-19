@@ -65,6 +65,41 @@ assert(
     !/residence_directory_public[\s\S]*postal_code/i.test(migration),
 );
 
+// --- Writes are RPC-only: no direct UPDATE policy, DML privileges revoked ----
+// (PR #6 review remediation: a direct authenticated UPDATE policy plus 0110's
+// schema-wide grants let staff bypass the audited review lifecycle via
+// PostgREST PATCH. Lifecycle/PII changes must go through the review RPCs.)
+const statements = migration.split(';');
+const policyStatements = statements.filter((s) => /create\s+policy/i.test(s));
+assert(
+  'no UPDATE policy on residence_application_intake (review RPC is the only write path)',
+  !policyStatements.some(
+    (s) => s.includes('residence_application_intake') && /for\s+update/i.test(s),
+  ),
+);
+assert(
+  'no UPDATE policy on residence_listing_submissions (review/publish RPCs only)',
+  !policyStatements.some(
+    (s) => s.includes('residence_listing_submissions') && /for\s+update/i.test(s),
+  ),
+);
+assert(
+  'no DELETE/INSERT/UPDATE table privilege for client roles on residence_application_intake',
+  /revoke insert, update, delete on recoveryos\.residence_application_intake\s+from anon, authenticated/i.test(
+    migration,
+  ),
+);
+assert(
+  'no DELETE/INSERT/UPDATE table privilege for client roles on residence_listing_submissions',
+  /revoke insert, update, delete on recoveryos\.residence_listing_submissions\s+from anon, authenticated/i.test(
+    migration,
+  ),
+);
+assert(
+  'audited review RPC exists for application intake',
+  /create or replace function recoveryos\.review_residence_application_intake/i.test(migration),
+);
+
 // --- Review RPCs are staff-only ----------------------------------------------
 assert(
   'review/publish RPCs revoked from anon',

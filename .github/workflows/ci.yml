@@ -24,6 +24,10 @@ jobs:
         run: node scripts/icare-lock-verify.mjs
       - name: ICARE governance regression guard (prohibited behavior)
         run: node scripts/check-icare-governance.mjs
+      - name: Public-intake boundary invariants (0122 — RPC-only writes, no anon)
+        run: node scripts/verify-intake-boundary.mjs
+      - name: Booking write-integrity invariants (0100/0124 — ownership + proposal safety)
+        run: node scripts/verify-booking-integrity.mjs
       - run: pnpm typecheck
       - run: pnpm build
       - name: Enforce canonical RecoveryOS backend in production assets

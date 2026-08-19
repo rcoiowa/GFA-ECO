@@ -115,3 +115,57 @@ No deployment, no migration applied (0122 remains unapplied), no `residence-inta
 Supabase change, no Cloudflare change, no DNS/domain change, no Grace activation, no production
 environment variables touched, no live data touched, no branch or tag deleted, no history
 rewritten, no force-push. Live systems were only read during the underlying audit.
+
+---
+
+## Addendum — PR #6 review remediation (2026-08-18)
+
+Automated review on PR #6 surfaced five findings; each was verified against code before any fix.
+Disposition and actions (repo-only; the live ledger was re-verified read-only first: `0100` IS
+applied, `0122`/`0123`/`0124` are NOT in the launch ledger):
+
+1. **P1 VALID — program_manager routing/gate mismatch.** `routing.ts` and the workspace switcher
+   send `program_manager` to `/staff/today`; `StaffArea` admitted only
+   `residence_staff`/`residence_manager`, a guaranteed not-authorized dead-end. Fix: admit
+   `program_manager` in `StaffArea`'s gate (narrowest fix; route guards are navigation-only and
+   RLS bounds visibility — a program manager with no residence assignment sees honest empty
+   states). Regression: `apps/platform/src/staff/StaffArea.test.tsx` pins the general invariant
+   (router/switcher staff roles ⊆ gate roles).
+2. **P1 VALID — booking support-request ownership.** `create_booking_request` (0100, applied
+   live) accepted a foreign `support_request_id`; `accept_booking_proposal` would later flip that
+   foreign request to `scheduled`. Fix: additive migration
+   `supabase/launch/migrations/0124_booking_write_integrity.sql` re-creates the function with a
+   server-side ownership check (`support_requests.person_id` must equal
+   `p_participant_person_id`; rejects with `support_request_mismatch`). 0100 history untouched.
+3. **P1 VALID — residence intake direct-UPDATE bypass.** 0122 (unapplied → corrected in place)
+   carried authenticated UPDATE policies on `residence_application_intake` and
+   `residence_listing_submissions` alongside 0110's schema-wide grants, letting staff bypass the
+   audited review RPCs via PostgREST PATCH (PII rewrite, reviewer/conversion spoofing, direct
+   `converted` status). Fix: both UPDATE policies removed; explicit
+   `revoke insert, update, delete ... from anon, authenticated` on both tables (neutralizes
+   0110's blanket + default-privilege grants); SELECT stays staff-/admin-scoped; the SECURITY
+   DEFINER review RPCs (table owner) are the only write path. Regression:
+   `scripts/verify-intake-boundary.mjs` now asserts no-UPDATE-policy + revoked DML + RPC
+   presence.
+4. **P2 VALID — proposal loss on invalid replacement times.** `propose_booking_times` (0100)
+   deactivated the current round before validating replacements; a JSON-error return commits, so
+   a bad counter-offer destroyed all acceptable times. Fix in 0124: validate first (transaction-
+   stable `now()`), `no_valid_times` returns before any deactivation;
+   `counter_propose_booking_times` delegates and inherits the fix. Regression:
+   `scripts/verify-booking-integrity.mjs` (also pins that the fix is additive — 0100 is never
+   retro-edited).
+5. **P2 VALID (in captured legacy code) / NOT CANONICAL-DEPLOYABLE — notify-fanout premature
+   `sent`.** The defect is real as written (delivery row inserted `sent` pre-provider; unique
+   claim makes failures permanently non-retryable), but `supabase/functions/notify-fanout/` is
+   the verbatim capture of the retired YKY project's deployed function: it targets legacy `v2_*`
+   tables, is not deployed on CQCX (verified live), is referenced by no canonical code, and the
+   canonical launch line is in-app-only by design. Editing captured evidence would falsify the
+   record and change nothing live. Action: the capture README now carries a prominent
+   legacy-capture / do-not-deploy warning documenting the defect and the required claim
+   lifecycle (pending/processing → sent on provider success → failed retryable) for any future
+   canonical external-delivery function.
+
+Both new static verifiers are wired into CI alongside the existing guards. Migration numbering:
+`0123` remains reserved for the out-of-band live-drift hardening
+(`supabase/live-drift/cqcx/0123_housing_applications_least_privilege.APPLIED.sql`); the corrective
+migration is `0124`. No live mutation of any kind occurred during remediation.

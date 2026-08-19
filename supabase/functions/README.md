@@ -4,6 +4,21 @@ These are the deployed Edge Functions of project `ykykeioydvtxpyreshhs`, capture
 verbatim on 2026-08-07 so production can be reconstructed from Git (they previously
 existed only in the deployed environment).
 
+> **Legacy capture — do not deploy to RecoveryOS-Launch.** `coaching` and
+> `notify-fanout` target the retired project's `v2_*` tables and are preserved
+> verbatim as evidence; they are NOT deployed on the canonical launch project
+> and are not part of the launch line, whose notifications are **in-app only**
+> (0100/0111 triggers). Known defect recorded during PR #6 review
+> (2026-08-18, unfixed here because the capture is evidence, not deployable
+> source): `notify-fanout` inserts its per-channel delivery claim as
+> `status: "sent"` **before** the Resend/Twilio call, so a provider failure or
+> a crash mid-send leaves a false `sent`/dead `failed` row that the
+> `UNIQUE(notification_id, channel)` claim then makes permanently
+> non-retryable. Any future canonical external-delivery function must use a
+> claim lifecycle instead: claim as `pending`/`processing` → `sent` only on
+> provider success → `failed` rows retryable (retry updates the existing row
+> rather than re-inserting).
+
 | Function | Deployed version captured | verify_jwt | Notes |
 | --- | --- | --- | --- |
 | `coaching` | v2 (2026-08-07, P0) | **false** | The Grace Coaching prototype — a self-contained HTML/JS app served as one response. `verify_jwt=false` is intentional (the page must load pre-auth); the app authenticates with the publishable key, RLS is the boundary, and all privileged mutations go through the P0 transactional RPCs (`claim_coaching_request`, `assign_participant_to_coach`, `accept_session_proposal`). |
