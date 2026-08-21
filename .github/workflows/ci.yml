@@ -36,6 +36,8 @@ jobs:
         run: node scripts/check-grace-disclosure-sync.mjs
       - name: View privilege guard (owner-privileged view / RLS-bypass class — 0125)
         run: node scripts/verify-view-privileges.mjs
+      - name: Domain vocabulary guard (ratified canon — SQL ↔ TS ↔ live keys, 0129)
+        run: node scripts/verify-domain-vocabulary.mjs
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
