@@ -5,6 +5,7 @@ import { StaffShell } from './StaffShell';
 import { StaffTodayPage } from './pages/StaffTodayPage';
 import { BedBoardPage } from './pages/BedBoardPage';
 import { ResidentsPage } from './pages/ResidentsPage';
+import { HouseOpsPage } from './pages/HouseOpsPage';
 import { ApplicationsPage } from './pages/ApplicationsPage';
 import { ScreeningsPage } from './pages/ScreeningsPage';
 import { IncidentsPage } from './pages/IncidentsPage';
@@ -35,6 +36,7 @@ export function StaffArea() {
             <Route path="today" element={<StaffTodayPage />} />
             <Route path="beds" element={<BedBoardPage />} />
             <Route path="residents" element={<ResidentsPage />} />
+            <Route path="house-ops" element={<HouseOpsPage />} />
             <Route path="applications" element={<ApplicationsPage />} />
             <Route path="screenings" element={<ScreeningsPage />} />
             <Route path="incidents" element={<IncidentsPage />} />
