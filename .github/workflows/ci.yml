@@ -28,7 +28,16 @@ jobs:
         run: node scripts/verify-intake-boundary.mjs
       - name: Booking write-integrity invariants (0100/0124 — ownership + proposal safety)
         run: node scripts/verify-booking-integrity.mjs
+      - name: Grace model lock (static — live check stays in grace-lock.yml)
+        run: node scripts/grace-model-lock-verify.mjs
+      - name: Grace deterministic safety floor self-test (12 crisis + 14 controls)
+        run: node scripts/grace-floor-selftest.mjs
+      - name: Grace disclosure sync (server policy ↔ participant banner)
+        run: node scripts/check-grace-disclosure-sync.mjs
+      - name: View privilege guard (owner-privileged view / RLS-bypass class — 0125)
+        run: node scripts/verify-view-privileges.mjs
       - run: pnpm typecheck
+      - run: pnpm test
       - run: pnpm build
       - name: Enforce canonical RecoveryOS backend in production assets
         run: |
