@@ -16,6 +16,7 @@ export async function createGoal(input: {
   title: string;
   detail?: string;
   targetDate?: string | null;
+  domainKey?: string | null;
 }): Promise<Goal> {
   const { data, error } = await getSupabase()
     .from('goals')
@@ -24,6 +25,7 @@ export async function createGoal(input: {
       title: input.title,
       detail: input.detail ?? null,
       target_date: input.targetDate ?? null,
+      domain_key: input.domainKey ?? null,
       status: 'active',
     })
     .select()
@@ -34,5 +36,13 @@ export async function createGoal(input: {
 
 export async function updateGoalStatus(goalId: number, status: Goal['status']): Promise<void> {
   const { error } = await getSupabase().from('goals').update({ status }).eq('id', goalId);
+  if (error) throw error;
+}
+
+export async function updateGoalDomain(goalId: number, domainKey: string | null): Promise<void> {
+  const { error } = await getSupabase()
+    .from('goals')
+    .update({ domain_key: domainKey })
+    .eq('id', goalId);
   if (error) throw error;
 }

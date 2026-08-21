@@ -291,6 +291,8 @@ export interface Goal {
   detail: string | null;
   status: 'active' | 'achieved' | 'paused' | 'archived';
   target_date: string | null;
+  /** Optional participant-chosen domain attribution (ratified canon); null is always valid. */
+  domain_key: string | null;
   created_at: string;
   updated_at: string;
 }

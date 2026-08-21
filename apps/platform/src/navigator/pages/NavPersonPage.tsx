@@ -11,8 +11,10 @@ import {
   TextField,
 } from '@recoveryos/ui';
 import {
+  DOMAINS,
   NEED_CATEGORIES,
   awaitingConnectionConfirmation,
+  domainForSubcategory,
   formatElapsed,
   needCategoryLabel,
   needStatusLabel,
@@ -32,6 +34,21 @@ import {
   useUpdateNeedStatus,
 } from '../hooks/useNavigatorWorkspace';
 import { navigatorKeys } from '../../lib/query';
+
+// Presentation-only grouping of the live need categories under the ratified domain canon
+// (P1.3). Canonical need_category values are untouched — only the picker gains structure.
+const NEED_CATEGORY_GROUPS = [
+  ...DOMAINS.map((d) => ({
+    key: d.key,
+    label: d.staffLabel,
+    categories: NEED_CATEGORIES.filter((c) => domainForSubcategory(c.key) === d.key),
+  })),
+  {
+    key: 'cross_cutting',
+    label: 'Cross-cutting',
+    categories: NEED_CATEGORIES.filter((c) => domainForSubcategory(c.key) === null),
+  },
+].filter((g) => g.categories.length > 0);
 
 /**
  * One person's navigation view (P4E): relationship overview, structured needs,
@@ -251,10 +268,14 @@ export function NavPersonPage() {
               className="mt-1 rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink"
             >
               <option value="">Choose…</option>
-              {NEED_CATEGORIES.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {c.label}
-                </option>
+              {NEED_CATEGORY_GROUPS.map((group) => (
+                <optgroup key={group.key} label={group.label}>
+                  {group.categories.map((c) => (
+                    <option key={c.key} value={c.key}>
+                      {c.label}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>
