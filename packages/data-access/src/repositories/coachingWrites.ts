@@ -48,6 +48,28 @@ export function assignParticipantCoach(input: {
   });
 }
 
+/**
+ * P0.5-B: end a coaching connection (RPC `end_coaching_relationship`, 0127).
+ * History is preserved — the row flips to 'ended' with a reason and effective
+ * date; the participant is notified and can ask to reconnect anytime.
+ */
+export function endCoachingRelationship(input: {
+  relationshipId: number;
+  reason?: string;
+}): Promise<RpcResult> {
+  return callRpc('end_coaching_relationship', {
+    p_relationship_id: input.relationshipId,
+    p_reason: input.reason ?? null,
+  });
+}
+
+/** Care-operations: the assignable coach roster (RPC `list_active_coaches`, 0117). */
+export async function listActiveCoaches(): Promise<{ coach_person_id: number; coach_name: string }[]> {
+  const { data, error } = await getSupabase().rpc('list_active_coaches');
+  if (error) throw error;
+  return (data as { coach_person_id: number; coach_name: string }[]) ?? [];
+}
+
 // ---- supportRequestService (writes) ----------------------------------------
 
 /** Coach claims an open support request; creates/activates the relationship atomically. */

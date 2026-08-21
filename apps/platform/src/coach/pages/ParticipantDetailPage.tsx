@@ -1,7 +1,10 @@
 import { useMemo, useState, type FormEvent } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Button, Card, CardTitle, ErrorState, LoadingState, PageHeader, TextField } from '@recoveryos/ui';
 import { formatElapsed, requestTypeLabel } from '@recoveryos/domain';
+import { endCoachingRelationship } from '@recoveryos/data-access';
+import { coachKeys } from '../../lib/query';
 import { useCoachWorkspace, useCompleteFollowUp, useCreateFollowUp } from '../hooks/useCoachWorkspace';
 import { SessionRow } from '../components/SessionRow';
 import { SchedulingCard } from '../components/SchedulingCard';
@@ -20,6 +23,11 @@ export function ParticipantDetailPage() {
   const completeFollowUp = useCompleteFollowUp();
   const [dueDate, setDueDate] = useState('');
   const [note, setNote] = useState('');
+  const [endingConnection, setEndingConnection] = useState(false);
+  const [endReason, setEndReason] = useState('');
+  const [endError, setEndError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const entry = useMemo(
     () => roster.find((r) => r.participant_person_id === personId),
@@ -43,6 +51,21 @@ export function ParticipantDetailPage() {
   const sessions = todaySessions.filter((a) => a.person_id === personId);
   const personFollowUps = followUps.filter((f) => f.person_id === personId);
   const openFollowUps = personFollowUps.filter((f) => f.status === 'open');
+
+  async function endConnection() {
+    if (!entry) return;
+    setEndError(null);
+    const result = await endCoachingRelationship({
+      relationshipId: entry.relationship_id,
+      reason: endReason.trim() || undefined,
+    });
+    if (!result.ok) {
+      setEndError(result.message ?? 'We couldn’t end the connection just now.');
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: coachKeys.all });
+    void navigate('/coach/participants');
+  }
 
   async function addFollowUp(e: FormEvent) {
     e.preventDefault();
@@ -159,6 +182,45 @@ export function ParticipantDetailPage() {
           Back to My Participants
         </Link>
       </div>
+
+      <Card>
+        <CardTitle>Ending this connection</CardTitle>
+        {endError ? (
+          <div className="mt-2">
+            <Alert tone="critical">{endError}</Alert>
+          </div>
+        ) : null}
+        {endingConnection ? (
+          <div className="mt-2 space-y-2">
+            <TextField
+              label="Reason (kept with the record)"
+              value={endReason}
+              onChange={(e) => setEndReason(e.target.value)}
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" size="md" onClick={() => void endConnection()}>
+                End the connection
+              </Button>
+              <Button variant="ghost" size="md" onClick={() => setEndingConnection(false)}>
+                Keep walking together
+              </Button>
+            </div>
+            <p className="text-sm text-ink-faint">
+              {entry.display_name} will be told the connection ended and that they can ask to
+              connect again anytime. Nothing about your time together is deleted. Transfers to
+              another coach go through a navigator or admin so nothing gets dropped.
+            </p>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="mt-2 text-sm text-ink-muted underline underline-offset-2"
+            onClick={() => setEndingConnection(true)}
+          >
+            End this coaching connection…
+          </button>
+        )}
+      </Card>
     </div>
   );
 }

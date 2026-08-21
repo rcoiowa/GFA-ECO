@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useAuth } from '@recoveryos/auth';
 import {
+  designateResidenceSupport,
   dischargeResidency,
+  endResidenceSupport,
   listResidenceRoster,
+  recordResidenceSupportServiceEvent,
   type RosterEntry,
 } from '@recoveryos/data-access';
 import {
@@ -36,7 +40,20 @@ const END_OPTIONS = [
   { status: 'discharged' as const, label: 'Discharged' },
 ];
 
+const SUPPORT_CODES: Record<string, string> = {
+  designated: 'You are now their designated support person.',
+  already_designated: 'You are already their designated support person.',
+  not_residence_staff: 'Residence support must be staff at this residence.',
+  not_authorized: 'Designating support is a residence-manager action.',
+  no_active_residency: 'They don’t have an active residency.',
+  ended: 'The support designation has ended.',
+  none_active: 'There was no active support designation.',
+  recorded: 'Support conversation recorded.',
+  already_recorded: 'That conversation was already recorded.',
+};
+
 export function ResidentsPage() {
+  const { person } = useAuth();
   const { residence } = useStaff();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -44,6 +61,10 @@ export function ResidentsPage() {
   const [endingId, setEndingId] = useState<number | null>(null);
   const [endReason, setEndReason] = useState('');
   const [actionError, setActionError] = useState<string | null>(null);
+  const [supportNotice, setSupportNotice] = useState<string | null>(null);
+  const [recordingFor, setRecordingFor] = useState<number | null>(null);
+  const [supportModality, setSupportModality] = useState('in_person');
+  const [supportMinutes, setSupportMinutes] = useState('15');
 
   const load = useCallback(async () => {
     if (!residence) return;
@@ -78,6 +99,38 @@ export function ResidentsPage() {
     }
   };
 
+  // P0.5-B: the residence-support seam (0115). Designation is an intentional
+  // manager decision; the service event is a human attestation that support
+  // actually happened — never inferred from house operations.
+  const designateMe = async (personId: number) => {
+    if (!person) return;
+    setSupportNotice(null);
+    const result = await designateResidenceSupport(personId, person.id);
+    setSupportNotice(SUPPORT_CODES[result.code ?? ''] ?? 'We couldn’t record that designation.');
+  };
+
+  const endSupport = async (personId: number) => {
+    setSupportNotice(null);
+    const result = await endResidenceSupport(personId);
+    setSupportNotice(SUPPORT_CODES[result.code ?? ''] ?? 'We couldn’t end that designation.');
+  };
+
+  const recordSupport = async (personId: number) => {
+    setSupportNotice(null);
+    const minutes = Number(supportMinutes);
+    const result = await recordResidenceSupportServiceEvent({
+      personId,
+      modality: supportModality,
+      durationMinutes: Number.isFinite(minutes) && minutes > 0 ? minutes : undefined,
+    });
+    if (result.ok) {
+      setRecordingFor(null);
+      setSupportNotice(SUPPORT_CODES[result.code ?? ''] ?? 'Support conversation recorded.');
+    } else {
+      setSupportNotice(SUPPORT_CODES[result.code ?? ''] ?? 'We couldn’t record that conversation.');
+    }
+  };
+
   if (!residence) return <Alert tone="attention">Select a residence to view residents.</Alert>;
 
   const current = roster.filter((r) =>
@@ -99,6 +152,7 @@ export function ResidentsPage() {
       ) : (
         <div className="flex flex-col gap-5">
           {actionError ? <Alert tone="critical">{actionError}</Alert> : null}
+          {supportNotice ? <Alert tone="info">{supportNotice}</Alert> : null}
           <Card>
             <CardTitle>Current residents ({current.length})</CardTitle>
             {current.length === 0 ? (
@@ -117,6 +171,51 @@ export function ResidentsPage() {
                           ? ` · since ${new Date(r.admission_date).toLocaleDateString()}`
                           : ''}
                       </span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {recordingFor === r.id ? (
+                        <div className="flex flex-wrap items-end gap-2">
+                          <label className="flex flex-col gap-1 text-sm font-medium text-ink">
+                            How
+                            <select
+                              className="min-h-11 rounded-md border border-line bg-surface-raised px-2 text-base"
+                              value={supportModality}
+                              onChange={(e) => setSupportModality(e.target.value)}
+                            >
+                              <option value="in_person">In person</option>
+                              <option value="phone">Phone</option>
+                              <option value="video">Video</option>
+                            </select>
+                          </label>
+                          <TextField
+                            label="Minutes"
+                            value={supportMinutes}
+                            onChange={(e) => setSupportMinutes(e.target.value)}
+                          />
+                          <Button size="md" onClick={() => void recordSupport(r.person_id)}>
+                            Record it
+                          </Button>
+                          <Button variant="ghost" size="md" onClick={() => setRecordingFor(null)}>
+                            Never mind
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <Button
+                            variant="secondary"
+                            size="md"
+                            onClick={() => setRecordingFor(r.id)}
+                          >
+                            Record support conversation
+                          </Button>
+                          <Button variant="ghost" size="md" onClick={() => void designateMe(r.person_id)}>
+                            Make me their support person
+                          </Button>
+                          <Button variant="ghost" size="md" onClick={() => void endSupport(r.person_id)}>
+                            End support designation
+                          </Button>
+                        </>
+                      )}
                     </div>
                     {endingId === r.id ? (
                       <div className="mt-3 space-y-2">

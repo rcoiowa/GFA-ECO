@@ -57,6 +57,7 @@ export function NavPersonPage() {
   const [referralType, setReferralType] = useState<'information' | 'referral' | 'warm_handoff'>('referral');
   const [destination, setDestination] = useState('');
   const [outcomeNotice, setOutcomeNotice] = useState<string | null>(null);
+  const [evidenceFor, setEvidenceFor] = useState<number | null>(null);
   const [followUpDate, setFollowUpDate] = useState('');
   const [serviceOpen, setServiceOpen] = useState(false);
   const [serviceMinutes, setServiceMinutes] = useState('30');
@@ -125,6 +126,8 @@ export function NavPersonPage() {
       );
     } else if (result === 'failed') {
       setOutcomeNotice('We couldn’t record that. Try again.');
+    } else {
+      setEvidenceFor(null);
     }
   }
 
@@ -283,27 +286,80 @@ export function NavPersonPage() {
                   </span>
                 </div>
                 {awaitingConnectionConfirmation(referral.status) ? (
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  evidenceFor === referral.id ? (
+                    // P0.5-14: CONNECTION REQUIRES EVIDENCE — the navigator says
+                    // how they know before 'connected' can be recorded. Partner
+                    // confirmation is consent-gated server-side; the refusal
+                    // message surfaces verbatim above.
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'connected', 'navigator_confirmation')}
+                      >
+                        I confirmed it myself
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'connected', 'participant_report')}
+                      >
+                        They told me
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'connected', 'partner_confirmation')}
+                      >
+                        The provider confirmed
+                      </Button>
+                      <Button variant="ghost" size="md" onClick={() => setEvidenceFor(null)}>
+                        Back
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Button variant="ghost" size="md" onClick={() => setEvidenceFor(referral.id)}>
+                        They connected — how do I know?
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'contact_attempted')}
+                      >
+                        I reached out
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'not_connected')}
+                      >
+                        Not connected yet
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'participant_declined')}
+                      >
+                        No longer needed
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'partner_unavailable')}
+                      >
+                        Provider unavailable
+                      </Button>
+                    </div>
+                  )
+                ) : referral.status !== 'closed' ? (
+                  <div className="mt-2">
                     <Button
                       variant="ghost"
                       size="md"
-                      onClick={() => void markOutcome(referral.id, 'connected', 'navigator_confirmation')}
+                      onClick={() => void markOutcome(referral.id, 'closed')}
                     >
-                      They connected
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="md"
-                      onClick={() => void markOutcome(referral.id, 'not_connected')}
-                    >
-                      Not connected yet
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="md"
-                      onClick={() => void markOutcome(referral.id, 'partner_unavailable')}
-                    >
-                      Provider unavailable
+                      Close this connection
                     </Button>
                   </div>
                 ) : null}

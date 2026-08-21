@@ -12,6 +12,7 @@ import { FollowUpsPage } from './pages/FollowUpsPage';
 import { MessagesListPage } from './pages/MessagesListPage';
 import { CoachThreadPage } from './pages/CoachThreadPage';
 import { NotFoundPage } from '../pages/StatusPages';
+import { NotificationsPanel } from '../components/NotificationsPanel';
 
 /**
  * Coach Workspace (P4C/P4D) — a relational support workspace, not a CRM.
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { to: '/coach/messages', label: 'Messages' },
   { to: '/coach/sessions', label: "Today's Sessions", shortLabel: 'Sessions' },
   { to: '/coach/follow-ups', label: 'Follow-Ups', shortLabel: 'Follow-Ups' },
+  { to: '/coach/notifications', label: 'Notifications', shortLabel: 'Alerts' },
 ];
 
 export function CoachArea() {
@@ -50,6 +52,7 @@ export function CoachArea() {
           <Route path="messages/:personId" element={<CoachThreadPage />} />
           <Route path="sessions" element={<SessionsPage />} />
           <Route path="follow-ups" element={<FollowUpsPage />} />
+          <Route path="notifications" element={<NotificationsPanel fallbackPath="/coach" />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AppShell>

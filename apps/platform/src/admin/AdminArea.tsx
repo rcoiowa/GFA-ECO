@@ -8,6 +8,7 @@ import { AccessPage } from './pages/AccessPage';
 import { PeoplePage } from './pages/PeoplePage';
 import { ResidencesPage } from './pages/ResidencesPage';
 import { DirectorySubmissionsPage } from './pages/DirectorySubmissionsPage';
+import { NotificationsPanel } from '../components/NotificationsPanel';
 import { EvidencePage } from './pages/EvidencePage';
 import { SystemPage } from './pages/SystemPage';
 import { AuditPage } from './pages/AuditPage';
@@ -32,6 +33,7 @@ const NAV_ITEMS = [
   { to: '/admin/evidence', label: 'Evidence' },
   { to: '/admin/system', label: 'System' },
   { to: '/admin/audit', label: 'Audit' },
+  { to: '/admin/notifications', label: 'Notifications', shortLabel: 'Alerts' },
 ];
 
 export function AdminArea() {
@@ -57,6 +59,7 @@ export function AdminArea() {
             <Route path="evidence" element={<EvidencePage />} />
             <Route path="system" element={<SystemPage />} />
             <Route path="audit" element={<AuditPage />} />
+            <Route path="notifications" element={<NotificationsPanel fallbackPath="/admin" />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </div>

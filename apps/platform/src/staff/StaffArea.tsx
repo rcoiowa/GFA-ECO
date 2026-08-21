@@ -16,6 +16,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { StaffMessagesPage } from './pages/StaffMessagesPage';
 import { StaffThreadPage } from './pages/StaffThreadPage';
 import { NotFoundPage } from '../pages/StatusPages';
+import { NotificationsPanel } from '../components/NotificationsPanel';
 
 /**
  * Room 1 — the Operator Dashboard (Integration Plan §2). Route guard is
@@ -44,6 +45,7 @@ export function StaffArea() {
             <Route path="reports" element={<ReportsPage />} />
             <Route path="messages" element={<StaffMessagesPage />} />
             <Route path="messages/:personId" element={<StaffThreadPage />} />
+            <Route path="notifications" element={<NotificationsPanel fallbackPath="/staff/today" />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

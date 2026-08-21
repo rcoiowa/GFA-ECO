@@ -16,6 +16,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/staff/fees', label: 'Fees' },
   { to: '/staff/board', label: 'House Board', shortLabel: 'Board' },
   { to: '/staff/messages', label: 'Messages' },
+  { to: '/staff/notifications', label: 'Notifications', shortLabel: 'Alerts' },
   { to: '/staff/reports', label: 'Reports' },
 ];
 
