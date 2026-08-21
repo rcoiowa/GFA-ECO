@@ -149,6 +149,27 @@ begin
   if missing is not null then
     raise exception 'LAUNCH-CONTRACT FAIL: authenticated cannot execute client RPC(s): %', missing;
   end if;
+
+  -- 9) View privilege posture (P0-1, 2026-08-21). A plain view executes with its
+  --    OWNER's privileges and bypasses RLS; 0110's blanket grant (and its default-
+  --    privileges rule) captures views too. Every recoveryos view reachable by a
+  --    client role must therefore be security_invoker — except explicitly
+  --    allowlisted curated surfaces (residence_directory_public: anon directory
+  --    projection, column-curated in 0122).
+  select string_agg(v.viewname, ', ' order by v.viewname) into missing
+  from pg_views v
+  where v.schemaname = 'recoveryos'
+    and v.viewname <> 'residence_directory_public'
+    and (has_table_privilege('anon', format('recoveryos.%I', v.viewname), 'SELECT')
+      or has_table_privilege('authenticated', format('recoveryos.%I', v.viewname), 'SELECT'))
+    and not exists (
+      select 1 from pg_class c
+      join pg_namespace ns on ns.oid = c.relnamespace
+      where ns.nspname = 'recoveryos' and c.relname = v.viewname
+        and c.reloptions @> array['security_invoker=true']);
+  if missing is not null then
+    raise exception 'LAUNCH-CONTRACT FAIL: owner-privileged view readable by client roles: %', missing;
+  end if;
 end $contract$;
 
 select 'LAUNCH CONTRACT PASS — schema usage, table privileges, anon scope, RLS posture verified' as result;
