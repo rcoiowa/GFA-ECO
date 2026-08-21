@@ -5,9 +5,10 @@ import { useAuth } from '@recoveryos/auth';
 import {
   getMyLatestApplication,
   getMyResidencyAt,
+  withdrawMyApplication,
   type MyApplication,
 } from '@recoveryos/data-access';
-import { Card, CardTitle, ErrorState, LoadingState } from '@recoveryos/ui';
+import { Alert, Button, Card, CardTitle, ErrorState, LoadingState } from '@recoveryos/ui';
 
 /**
  * Applicant-facing status for a residence application: submitted → review →
@@ -20,6 +21,20 @@ export function MyApplicationPage() {
   const [error, setError] = useState(false);
   const [application, setApplication] = useState<MyApplication | null>(null);
   const [residency, setResidency] = useState<Residency | null>(null);
+  const [confirmingWithdraw, setConfirmingWithdraw] = useState(false);
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
+
+  const withdraw = async () => {
+    if (!application) return;
+    setWithdrawError(null);
+    try {
+      await withdrawMyApplication(application.id);
+      setApplication({ ...application, status: 'withdrawn' });
+      setConfirmingWithdraw(false);
+    } catch (e) {
+      setWithdrawError(e instanceof Error ? e.message : 'We couldn’t withdraw it just now.');
+    }
+  };
 
   useEffect(() => {
     if (!person) {
@@ -143,6 +158,37 @@ export function MyApplicationPage() {
                 >
                   Browse recovery housing across Iowa
                 </Link>
+              ) : null}
+
+              {['submitted', 'in_review', 'waitlisted'].includes(application.status) ? (
+                <div className="mt-4 border-t border-line pt-3">
+                  {withdrawError ? (
+                    <div className="mb-2">
+                      <Alert tone="critical">{withdrawError}</Alert>
+                    </div>
+                  ) : null}
+                  {confirmingWithdraw ? (
+                    <div className="flex flex-wrap items-center gap-3">
+                      <p className="text-sm text-ink-muted">
+                        Withdraw this application? You can always apply again — the door stays open.
+                      </p>
+                      <Button variant="secondary" size="md" onClick={() => void withdraw()}>
+                        Yes, withdraw it
+                      </Button>
+                      <Button variant="ghost" size="md" onClick={() => setConfirmingWithdraw(false)}>
+                        Keep my application
+                      </Button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingWithdraw(true)}
+                      className="text-sm text-ink-muted underline underline-offset-2 hover:text-ink"
+                    >
+                      Withdraw my application
+                    </button>
+                  )}
+                </div>
               ) : null}
             </Card>
 

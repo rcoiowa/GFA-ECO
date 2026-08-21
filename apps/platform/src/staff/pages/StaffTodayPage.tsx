@@ -4,10 +4,13 @@ import { useAuth } from '@recoveryos/auth';
 import {
   decidePass,
   getBedBoard,
+  getMyAssignedFollowUps,
   listApplications,
   listIncidents,
+  listOpenPasses,
   listPendingPasses,
   listResidenceRoster,
+  recordPassReturn,
 } from '@recoveryos/data-access';
 import { deriveResidenceStaffAttention, type ResidenceAttentionItem } from '@recoveryos/domain';
 import {
@@ -26,7 +29,7 @@ import { captureError } from '../../lib/monitor';
  * The morning snapshot: occupancy, who's here, what needs a decision.
  */
 export function StaffTodayPage() {
-  const { person } = useAuth();
+  const { person, roles } = useAuth();
   const { residence, loading: staffLoading } = useStaff();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -34,20 +37,24 @@ export function StaffTodayPage() {
   const [pendingPasses, setPendingPasses] = useState<Awaited<ReturnType<typeof listPendingPasses>>>(
     [],
   );
+  const [openPasses, setOpenPasses] = useState<Awaited<ReturnType<typeof listOpenPasses>>>([]);
   const [attention, setAttention] = useState<ResidenceAttentionItem[]>([]);
 
   const load = useCallback(async () => {
-    if (!residence) return;
+    if (!residence || !person) return;
     setLoading(true);
     setError(false);
     try {
-      const [board, roster, applications, passes, incidents] = await Promise.all([
-        getBedBoard(residence.id),
-        listResidenceRoster(residence.id),
-        listApplications(residence.id),
-        listPendingPasses(residence.id),
-        listIncidents(residence.id),
-      ]);
+      const [board, roster, applications, passes, outPasses, incidents, myFollowUps] =
+        await Promise.all([
+          getBedBoard(residence.id),
+          listResidenceRoster(residence.id),
+          listApplications(residence.id),
+          listPendingPasses(residence.id),
+          listOpenPasses(residence.id),
+          listIncidents(residence.id),
+          getMyAssignedFollowUps(person.id),
+        ]);
       const bedCount = board.rooms.reduce(
         (n, r) => n + r.beds.filter((b) => b.is_active).length,
         0,
@@ -61,7 +68,9 @@ export function StaffTodayPage() {
         ).length,
       });
       setPendingPasses(passes);
+      setOpenPasses(outPasses);
       const assignedResidencies = new Set(board.activeAssignments.map((a) => a.residency_id));
+      const now = Date.now();
       setAttention(
         deriveResidenceStaffAttention({
           unreviewedIncidents: incidents.filter((i) => !i.reviewed_at).length,
@@ -74,7 +83,9 @@ export function StaffTodayPage() {
               ['active', 'on_pass', 'transitioning'].includes(r.residency_status) &&
               !assignedResidencies.has(r.id),
           ).length,
-          followUpsDue: 0,
+          followUpsDue: myFollowUps.filter(
+            (f) => f.status === 'open' && f.due_at !== null && new Date(f.due_at).getTime() <= now,
+          ).length,
         }),
       );
     } catch (e) {
@@ -85,7 +96,7 @@ export function StaffTodayPage() {
     } finally {
       setLoading(false);
     }
-  }, [residence]);
+  }, [residence, person]);
 
   useEffect(() => {
     void load();
@@ -101,14 +112,49 @@ export function StaffTodayPage() {
     }
   };
 
+  const recordReturn = async (passId: number) => {
+    try {
+      await recordPassReturn(passId);
+      await load();
+    } catch {
+      setError(true);
+    }
+  };
+
   if (staffLoading) return <LoadingState label="Loading your residences…" />;
-  if (!residence)
+  if (!residence) {
+    // P0.5-A: program managers legitimately land here with no residence
+    // assignment — they are care-operations staff, not house staff. Give them
+    // their actual work surface instead of a dead end.
+    if (roles.includes('program_manager')) {
+      return (
+        <div className="flex flex-col gap-4">
+          <PageHeader
+            title="Care operations"
+            lede="You're not assigned to a residence — your work lives in the intake and support queues."
+          />
+          <Card>
+            <CardTitle>Housing application intake</CardTitle>
+            <p className="mt-1 text-ink-muted">
+              Public Grace House applications waiting for contact and review.
+            </p>
+            <Link
+              to="/residences/applications/intake"
+              className="mt-3 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
+            >
+              Open the intake queue
+            </Link>
+          </Card>
+        </div>
+      );
+    }
     return (
       <Alert tone="attention">
         No residence is linked to your staff role yet. A program administrator can assign you to a
         residence.
       </Alert>
     );
+  }
 
   return (
     <>
@@ -214,6 +260,47 @@ export function StaffTodayPage() {
             <p className="mt-3 text-sm text-ink-faint">
               Per the Curfew &amp; Pass Policy: reasons for a &ldquo;not approved&rdquo; are always
               shared with the resident in person and on the form.
+            </p>
+          </Card>
+
+          <Card>
+            <CardTitle>Out on a pass</CardTitle>
+            {openPasses.length === 0 ? (
+              <p className="text-ink-muted">Nobody is out on a pass right now.</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {openPasses.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-line bg-surface-raised px-4 py-3"
+                  >
+                    <div>
+                      <p className="font-medium text-ink">
+                        {p.residency.person.preferred_name || p.residency.person.first_name}{' '}
+                        {p.residency.person.last_name}
+                      </p>
+                      <p className="text-sm text-ink-muted">
+                        Due back{' '}
+                        {new Date(p.ends_at).toLocaleString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}
+                        {p.destination ? ` · ${p.destination}` : ''}
+                        {new Date(p.ends_at).getTime() < Date.now() ? ' · past due-back time' : ''}
+                      </p>
+                    </div>
+                    <Button variant="secondary" size="md" onClick={() => void recordReturn(p.id)}>
+                      Record return
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="mt-3 text-sm text-ink-faint">
+              Recording the return closes the pass — that&rsquo;s what keeps the board honest about
+              who is home.
             </p>
           </Card>
         </div>

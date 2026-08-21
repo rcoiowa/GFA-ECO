@@ -16,7 +16,7 @@ import { RoleHome } from './pages/RoleHome';
 import { ForgotPasswordPage } from './public/ForgotPasswordPage';
 import { ResetPasswordPage } from './public/ResetPasswordPage';
 import { LegacyAppRedirect, ResidencesDispatcher } from './pages/WorkspaceShells';
-import { RequireAuth } from '@recoveryos/auth';
+import { RequireAuth, RequireRole } from '@recoveryos/auth';
 
 /**
  * One platform, several intentional front doors (ADR-0010), now also
@@ -50,6 +50,9 @@ const NavigatorArea = lazy(() =>
   import('./navigator/NavigatorArea').then((m) => ({ default: m.NavigatorArea })),
 );
 const AdminArea = lazy(() => import('./admin/AdminArea').then((m) => ({ default: m.AdminArea })));
+const IntakeQueuePage = lazy(() =>
+  import('./staff/pages/IntakeQueuePage').then((m) => ({ default: m.IntakeQueuePage })),
+);
 
 export function App() {
   return (
@@ -133,6 +136,32 @@ export function App() {
         }
       />
       <Route path="/residences" element={<ResidencesDispatcher />} />
+
+      {/* P0.5-A: the housing application intake review queue (0122 Flow 2).
+          Deliberately routed at the exact path the 0122 notification triggers
+          emit, and role-gated to exactly the set the RLS read policy grants:
+          staff of a residence, plus care-operations roles. */}
+      <Route
+        path="/residences/applications/intake"
+        element={
+          <RequireAuth>
+            <RequireRole
+              anyOf={[
+                'residence_staff',
+                'residence_manager',
+                'program_manager',
+                'navigator',
+                'administrator',
+                'system_administrator',
+              ]}
+            >
+              <Suspense fallback={<LoadingState label="Opening the intake queue…" />}>
+                <IntakeQueuePage />
+              </Suspense>
+            </RequireRole>
+          </RequireAuth>
+        }
+      />
 
       {/* Legacy aliases — safe redirects, removed only when nothing links to them. */}
       <Route path="/app/*" element={<LegacyAppRedirect />} />

@@ -4,6 +4,7 @@ import { StaffProvider } from './staffContext';
 import { StaffShell } from './StaffShell';
 import { StaffTodayPage } from './pages/StaffTodayPage';
 import { BedBoardPage } from './pages/BedBoardPage';
+import { ResidentsPage } from './pages/ResidentsPage';
 import { ApplicationsPage } from './pages/ApplicationsPage';
 import { ScreeningsPage } from './pages/ScreeningsPage';
 import { IncidentsPage } from './pages/IncidentsPage';
@@ -32,6 +33,7 @@ export function StaffArea() {
             <Route index element={<Navigate to="today" replace />} />
             <Route path="today" element={<StaffTodayPage />} />
             <Route path="beds" element={<BedBoardPage />} />
+            <Route path="residents" element={<ResidentsPage />} />
             <Route path="applications" element={<ApplicationsPage />} />
             <Route path="screenings" element={<ScreeningsPage />} />
             <Route path="incidents" element={<IncidentsPage />} />
