@@ -51,6 +51,10 @@ export interface EvidenceSummary {
   navigation: {
     needs: number;
     needs_by_category: Record<string, number>;
+    /** P1.6 domain lens (activity-level: identified needs rolled up through the ratified
+     *  mapping; 'cross_cutting' carries identification_documents). Optional so the page
+     *  degrades gracefully if the frontend deploys ahead of migration 0132. */
+    needs_by_domain?: Record<string, number>;
     needs_resolved: number;
     needs_partially_resolved: number;
     needs_unresolved: number;

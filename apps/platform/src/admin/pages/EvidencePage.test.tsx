@@ -27,6 +27,7 @@ const data = {
   navigation: {
     needs: 7,
     needs_by_category: { housing: 3 },
+    needs_by_domain: { housing: 3, health: 2, cross_cutting: 1, financial_stability: 1 },
     needs_resolved: 2,
     needs_partially_resolved: 1,
     needs_unresolved: 4,
@@ -76,5 +77,29 @@ describe('EvidencePage evidence integrity', () => {
     render(<EvidencePage />);
     const header = screen.getByText('Navigation').parentElement!;
     expect(within(header).getByText('outcome')).toBeInTheDocument();
+  });
+
+  it('shows the domain lens beside categories, labeled activity, with human labels (P1.6)', () => {
+    mocks.useEvidenceSummary.mockReturnValue({ data, isLoading: false, isError: false });
+    render(<EvidencePage />);
+    // The lens is explicitly ladder-classified and additive — categories stay too.
+    expect(screen.getByText('Needs by domain (activity)')).toBeInTheDocument();
+    expect(screen.getByText('Needs by category')).toBeInTheDocument();
+    expect(screen.getByText(/Financial Stability & Basic Needs · 1/)).toBeInTheDocument();
+    expect(screen.getByText(/Cross-cutting · 1/)).toBeInTheDocument();
+    // Raw machine keys never render.
+    expect(screen.queryByText(/financial_stability/)).not.toBeInTheDocument();
+  });
+
+  it('degrades gracefully when the summary predates the domain lens', () => {
+    const { needs_by_domain: _omit, ...navigationLegacy } = data.navigation;
+    mocks.useEvidenceSummary.mockReturnValue({
+      data: { ...data, navigation: navigationLegacy },
+      isLoading: false,
+      isError: false,
+    });
+    render(<EvidencePage />);
+    expect(screen.queryByText('Needs by domain (activity)')).not.toBeInTheDocument();
+    expect(screen.getByText('Needs by category')).toBeInTheDocument();
   });
 });

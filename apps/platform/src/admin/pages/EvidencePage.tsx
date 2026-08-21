@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
+import { domainStaffLabel } from '@recoveryos/domain';
 import { useEvidenceSummary } from '../hooks/useAdminData';
 import { track } from '../../lib/analytics';
 
@@ -165,6 +166,25 @@ export function EvidencePage() {
                     className="rounded-full border border-line bg-surface-raised px-3 py-1 text-sm text-ink"
                   >
                     {category.replaceAll('_', ' ')} · {count}
+                  </li>
+                ))}
+            </ul>
+          </>
+        ) : null}
+        {navigation.needs_by_domain && Object.keys(navigation.needs_by_domain).length > 0 ? (
+          <>
+            {/* P1.6: the domain lens beside (never replacing) needs_by_category. These count
+                identified needs — activity on the evidence ladder, not connection or outcome. */}
+            <p className="mt-3 text-sm font-medium text-ink">Needs by domain (activity)</p>
+            <ul className="mt-1 flex flex-wrap gap-2">
+              {Object.entries(navigation.needs_by_domain)
+                .sort(([, a], [, b]) => b - a)
+                .map(([key, count]) => (
+                  <li
+                    key={key}
+                    className="rounded-full border border-line bg-surface-raised px-3 py-1 text-sm text-ink"
+                  >
+                    {key === 'cross_cutting' ? 'Cross-cutting' : domainStaffLabel(key)} · {count}
                   </li>
                 ))}
             </ul>
