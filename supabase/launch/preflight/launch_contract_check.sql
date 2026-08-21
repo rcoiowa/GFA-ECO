@@ -25,10 +25,15 @@ begin
   end if;
 
   -- 2) authenticated holds SELECT/INSERT/UPDATE on every canonical table
-  --    (RLS policies — not privileges — are the row gate).
+  --    (RLS policies — not privileges — are the row gate). Named exceptions:
+  --    the two 0122 intake tables DELIBERATELY revoke client INSERT/UPDATE/DELETE
+  --    (service-role-only writes; audited review RPCs are the only lifecycle path),
+  --    so they are excluded here — their stricter posture is asserted by
+  --    scripts/verify-intake-boundary.mjs and the anon check below.
   select string_agg(tablename, ', ' order by tablename) into missing
   from pg_tables
   where schemaname = 'recoveryos'
+    and tablename not in ('residence_listing_submissions','residence_application_intake')
     and not (has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'SELECT')
          and has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'INSERT')
          and has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'UPDATE'));
@@ -144,7 +149,9 @@ begin
       'ensure_relationship_conversation','get_my_navigation_participants','get_my_participants',
       'get_my_support_team','list_open_support_requests','mark_conversation_read',
       'propose_booking_times','release_bed','reschedule_booking','review_residence_application',
-      'send_message','triage_residence_referral','complete_session')
+      'send_message','triage_residence_referral','complete_session',
+      'review_residence_listing_submission','publish_residence_listing_submission',
+      'review_residence_application_intake')
     and not has_function_privilege('authenticated', p.oid, 'EXECUTE');
   if missing is not null then
     raise exception 'LAUNCH-CONTRACT FAIL: authenticated cannot execute client RPC(s): %', missing;
