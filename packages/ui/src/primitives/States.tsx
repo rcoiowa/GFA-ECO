@@ -21,11 +21,13 @@ export function EmptyState({
 }
 
 export function LoadingState({ label = 'Loading…' }: { label?: string }) {
+  // loading-late keeps fast loads silent (spec §38): the indicator only
+  // fades in once loading has actually lasted a beat.
   return (
     <div
       role="status"
       aria-live="polite"
-      className="flex items-center gap-3 px-4 py-8 text-ink-muted"
+      className="loading-late flex items-center gap-3 px-4 py-8 text-ink-muted"
     >
       <span
         className="inline-block size-5 animate-spin rounded-full border-2 border-line border-t-experience-600"
@@ -50,7 +52,7 @@ export function ErrorState({
         <button
           type="button"
           onClick={onRetry}
-          className="mt-3 min-h-11 rounded-md border border-critical-600/40 px-4 font-medium text-critical-700 hover:bg-critical-600 hover:text-white"
+          className="mt-3 min-h-11 rounded-md border border-critical-600/40 px-4 font-medium text-critical-700 hover:bg-critical-strong hover:text-white"
         >
           Try again
         </button>

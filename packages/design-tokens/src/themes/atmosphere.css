@@ -1,0 +1,54 @@
+/*
+ * ATMOSPHERE layer (P4H spec §6A). Person-selectable ambience that never
+ * changes information architecture, semantic state colors, interaction
+ * meaning, privacy boundaries, or accessibility.
+ *
+ * HEARTH is the approved default and is intentionally attribute-free: the
+ * core tokens ARE Hearth. Cosmic below is the one additional atmosphere
+ * productionized in P4H — REFINED from the legacy `space` theme whose source
+ * was mined per §6A (its palette merged into the dark appearance; its static
+ * starfield kept). Retro and Sky were classified REBUILD-ON-CURRENT-TOKENS
+ * and stay deferred (see brand.css header for the mining ledger).
+ *
+ * Cosmic rules honored here:
+ *  - ambient only — no product meaning, no reward, nothing keyed to
+ *    accomplishments/streaks/progress/notifications;
+ *  - static imagery (data-URI SVG + gradients) — there is no animation to
+ *    stop, which also satisfies the reduced-motion and reduced-effects
+ *    fallback ("static optimized Cosmic background") in one implementation;
+ *  - content stays on opaque raised surfaces; text never sits on stars.
+ *
+ * Cosmic requires the dark field: the AppearanceControls force dark
+ * appearance while Cosmic is active (a light starfield is not a designed
+ * state), so these selectors compose with [data-appearance='dark'] tokens.
+ */
+
+[data-atmosphere='cosmic'] {
+  /* Deepen the field slightly beneath the stars; cards keep tonal elevation. */
+  --color-surface: #100c16;
+  --color-surface-sunken: #0a070e;
+}
+
+[data-atmosphere='cosmic'] body,
+[data-atmosphere='cosmic'] .bg-surface {
+  background-color: #100c16;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cg fill='none' stroke='%23b49bdd' stroke-width='.7'%3E%3Cpath stroke-opacity='.14' d='M40 60 L120 90 L180 40'/%3E%3Cpath stroke-opacity='.11' d='M260 300 L330 260 L390 320'/%3E%3Cpath stroke-opacity='.12' d='M300 90 L360 140 L330 210'/%3E%3Cpath stroke-opacity='.1' d='M90 300 L60 380'/%3E%3C/g%3E%3Cg fill='%23d4c6ec'%3E%3Ccircle cx='40' cy='60' r='1.4' fill-opacity='.85'/%3E%3Ccircle cx='120' cy='90' r='1.1' fill-opacity='.65'/%3E%3Ccircle cx='180' cy='40' r='1.6' fill-opacity='.9'/%3E%3Ccircle cx='260' cy='300' r='1.2' fill-opacity='.7'/%3E%3Ccircle cx='330' cy='260' r='1.5' fill-opacity='.85'/%3E%3Ccircle cx='390' cy='320' r='1' fill-opacity='.55'/%3E%3Ccircle cx='90' cy='300' r='1.3' fill-opacity='.75'/%3E%3Ccircle cx='60' cy='380' r='1' fill-opacity='.55'/%3E%3Ccircle cx='300' cy='90' r='1.5' fill-opacity='.85'/%3E%3Ccircle cx='360' cy='140' r='1' fill-opacity='.6'/%3E%3Ccircle cx='330' cy='210' r='1.2' fill-opacity='.7'/%3E%3Ccircle cx='210' cy='180' r='.8' fill-opacity='.45'/%3E%3Ccircle cx='150' cy='240' r='.7' fill-opacity='.4'/%3E%3Ccircle cx='20' cy='160' r='.9' fill-opacity='.5'/%3E%3Ccircle cx='380' cy='30' r='.8' fill-opacity='.45'/%3E%3Ccircle cx='240' cy='30' r='.7' fill-opacity='.4'/%3E%3Ccircle cx='400' cy='210' r='.7' fill-opacity='.35'/%3E%3Ccircle cx='110' cy='410' r='.8' fill-opacity='.45'/%3E%3Ccircle cx='280' cy='400' r='.9' fill-opacity='.5'/%3E%3Ccircle cx='10' cy='330' r='.7' fill-opacity='.35'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(1px 1px at 33% 47%, rgba(212, 198, 236, 0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 71% 23%, rgba(212, 198, 236, 0.35) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 87% 67%, rgba(212, 198, 236, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 13% 83%, rgba(212, 198, 236, 0.3) 50%, transparent 100%),
+    radial-gradient(ellipse 70% 50% at 18% 20%, rgba(101, 64, 165, 0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 45% at 85% 75%, rgba(160, 85, 133, 0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(47, 30, 79, 0.4) 0%, transparent 70%);
+  background-size:
+    420px 420px,
+    260px 260px,
+    310px 310px,
+    360px 360px,
+    290px 290px,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  background-attachment: fixed;
+}

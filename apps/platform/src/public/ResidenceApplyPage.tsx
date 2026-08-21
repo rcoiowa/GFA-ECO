@@ -172,7 +172,7 @@ export function ResidenceApplyPage() {
               yours: coaching, peer support, and resource navigation, starting today.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <Button size="lg" onClick={() => navigate('/app/today')}>
+              <Button size="lg" onClick={() => navigate('/vrcc/today')}>
                 Check out the VRCC
               </Button>
               <Button
@@ -194,7 +194,7 @@ export function ResidenceApplyPage() {
               <Button onClick={() => navigate('/recovery-residences/my-application')}>
                 See my application status
               </Button>
-              <Button variant="secondary" onClick={() => navigate('/app/today')}>
+              <Button variant="secondary" onClick={() => navigate('/vrcc/today')}>
                 Go to the VRCC
               </Button>
             </div>
@@ -222,7 +222,7 @@ export function ResidenceApplyPage() {
               </p>
               <a
                 href="https://gracehouse4.pages.dev/"
-                className="mt-3 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+                className="mt-3 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
               >
                 Open the Grace House documents
               </a>

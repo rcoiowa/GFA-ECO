@@ -2,6 +2,12 @@
 
 Status: Accepted (2026-08-04) — owner-specified, corroborated by the live schema.
 
+> **Superseded for implementation detail (2026-08-14):** the controlling ICARE implementation
+> authority is now `docs/product/recoveryos-icare-integration-authority-v1.0.md`. This ADR remains
+> the historical decision of record for the ICARE **definition** (Identify → Connect → Assess →
+> Respond → Empower, a workflow — not assessment domains), which the Authority preserves unchanged.
+> Where this ADR and the Authority differ on implementation rules, the Authority governs.
+
 ## Context
 
 ICARE had never been written down in this repository. In its absence a prior

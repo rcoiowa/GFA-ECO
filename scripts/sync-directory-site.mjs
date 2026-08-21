@@ -1,8 +1,8 @@
-// Copies the canonical RecoveryResidence.org directory site into the
-// platform's public assets so it serves at /residence/directory/ from the
-// same Worker as the app. The copy is generated (gitignored) — the single
-// source of truth stays sites/recoveryresidence-directory/index.html.
-import { copyFileSync, mkdirSync } from 'node:fs';
+// Copies the RecoveryResidence.org directory presentation into the platform's
+// public assets so it serves at /residence/directory/ from the same Worker as
+// the app. Runtime backend configuration is canonicalized here so historical
+// source-template values can never leak into a RecoveryOS production build.
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -10,6 +10,35 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const source = join(repoRoot, 'sites', 'recoveryresidence-directory', 'index.html');
 const target = join(repoRoot, 'apps', 'platform', 'public', 'residence', 'directory', 'index.html');
 
+const RETIRED_PROJECT_REF = 'ykykeioydvtxpyreshhs';
+const RETIRED_API = `https://${RETIRED_PROJECT_REF}.supabase.co/rest/v1`;
+const RETIRED_KEY = 'sb_publishable_9NOklH5Dvj3PcQs2dCLdpg_zx4txe8a';
+
+const CANONICAL_PROJECT_REF = 'cqcxvwoukyhxyokfwnjm';
+const CANONICAL_URL = process.env.VITE_SUPABASE_URL ?? `https://${CANONICAL_PROJECT_REF}.supabase.co`;
+const CANONICAL_KEY = process.env.VITE_SUPABASE_ANON_KEY ?? 'sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x';
+
+if (!CANONICAL_URL.includes(CANONICAL_PROJECT_REF) || CANONICAL_URL.includes(RETIRED_PROJECT_REF)) {
+  throw new Error(`Directory sync refused non-canonical Supabase URL: ${CANONICAL_URL}`);
+}
+
+let html = readFileSync(source, 'utf8');
+
+if (!html.includes(RETIRED_API) || !html.includes(RETIRED_KEY)) {
+  throw new Error('Directory source backend markers changed; review sync canonicalization before building.');
+}
+
+html = html
+  .replaceAll(RETIRED_API, `${CANONICAL_URL}/rest/v1`)
+  .replaceAll(RETIRED_KEY, CANONICAL_KEY);
+
+if (html.includes(RETIRED_PROJECT_REF)) {
+  throw new Error(`Directory sync left retired Supabase ref ${RETIRED_PROJECT_REF} in generated runtime asset.`);
+}
+if (!html.includes("'Content-Profile': 'recoveryos'")) {
+  throw new Error('Directory referral POST must target the recoveryos PostgREST schema.');
+}
+
 mkdirSync(dirname(target), { recursive: true });
-copyFileSync(source, target);
-console.log('Synced directory site → apps/platform/public/residence/directory/index.html');
+writeFileSync(target, html, 'utf8');
+console.log(`Synced directory site → apps/platform/public/residence/directory/index.html (${CANONICAL_PROJECT_REF})`);

@@ -41,7 +41,7 @@ export function SignInPage() {
       );
       return;
     }
-    navigate(location.state?.from ?? '/app/today', { replace: true });
+    navigate(location.state?.from ?? '/home', { replace: true });
   }
 
   return (
@@ -86,6 +86,14 @@ export function SignInPage() {
               className="font-medium text-experience-700 underline underline-offset-2"
             >
               Create your account
+            </Link>
+          </p>
+          <p className="mt-2 text-ink-muted">
+            <Link
+              to="/forgot-password"
+              className="font-medium text-experience-700 underline underline-offset-2"
+            >
+              Forgot your password?
             </Link>
           </p>
         </Card>

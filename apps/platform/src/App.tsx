@@ -9,8 +9,13 @@ import { ResidenceDirectoryPage } from './public/ResidenceDirectoryPage';
 import { ResidenceApplyPage } from './public/ResidenceApplyPage';
 import { MyApplicationPage } from './public/MyApplicationPage';
 import { ListYourResidencePage } from './public/ListYourResidencePage';
+import { SupportNowPage } from './public/SupportNowPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { NotAuthorizedPage, NotFoundPage } from './pages/StatusPages';
+import { RoleHome } from './pages/RoleHome';
+import { ForgotPasswordPage } from './public/ForgotPasswordPage';
+import { ResetPasswordPage } from './public/ResetPasswordPage';
+import { LegacyAppRedirect, ResidencesDispatcher } from './pages/WorkspaceShells';
 import { RequireAuth } from '@recoveryos/auth';
 
 /**
@@ -40,6 +45,11 @@ const ResidentArea = lazy(() =>
   import('./resident/ResidentArea').then((m) => ({ default: m.ResidentArea })),
 );
 const StaffArea = lazy(() => import('./staff/StaffArea').then((m) => ({ default: m.StaffArea })));
+const CoachArea = lazy(() => import('./coach/CoachArea').then((m) => ({ default: m.CoachArea })));
+const NavigatorArea = lazy(() =>
+  import('./navigator/NavigatorArea').then((m) => ({ default: m.NavigatorArea })),
+);
+const AdminArea = lazy(() => import('./admin/AdminArea').then((m) => ({ default: m.AdminArea })));
 
 export function App() {
   return (
@@ -48,6 +58,8 @@ export function App() {
       <Route path="/" element={<HostHome />} />
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      {/* Anonymous Support Now — the safety path never requires an account. */}
+      <Route path="/support" element={<SupportNowPage />} />
       <Route path="/recovery-residences" element={<ResidenceDirectoryPage />} />
       <Route path="/recovery-residences/list-your-residence" element={<ListYourResidencePage />} />
       <Route path="/recovery-residences/grace-house" element={<GraceHousePage />} />
@@ -71,9 +83,9 @@ export function App() {
         }
       />
 
-      {/* Experience shells */}
+      {/* Experience shells — canonical role-explicit routes (P4A). */}
       <Route
-        path="/app/*"
+        path="/vrcc/*"
         element={
           <Suspense fallback={<LoadingState label="Opening the VRCC…" />}>
             <ParticipantArea />
@@ -96,9 +108,39 @@ export function App() {
           </Suspense>
         }
       />
+      <Route
+        path="/coach/*"
+        element={
+          <Suspense fallback={<LoadingState label="Opening your workspace…" />}>
+            <CoachArea />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/navigator/*"
+        element={
+          <Suspense fallback={<LoadingState label="Opening your workspace…" />}>
+            <NavigatorArea />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/*"
+        element={
+          <Suspense fallback={<LoadingState label="Opening the command center…" />}>
+            <AdminArea />
+          </Suspense>
+        }
+      />
+      <Route path="/residences" element={<ResidencesDispatcher />} />
 
+      {/* Legacy aliases — safe redirects, removed only when nothing links to them. */}
+      <Route path="/app/*" element={<LegacyAppRedirect />} />
+
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/not-authorized" element={<NotAuthorizedPage />} />
-      <Route path="/home" element={<Navigate to="/app/today" replace />} />
+      <Route path="/home" element={<RoleHome />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

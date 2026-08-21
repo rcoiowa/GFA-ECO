@@ -84,7 +84,7 @@ export function MyRecoveryPage() {
       <PageHeader
         title="My Recovery"
         lede="Your goals and your plan — at your pace, in your words."
-        crumbs={[{ to: '/app/today', label: 'Today' }]}
+        crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
         action={
           <Button onClick={() => setShowForm((v) => !v)}>
             {showForm ? 'Close' : 'Add a goal'}

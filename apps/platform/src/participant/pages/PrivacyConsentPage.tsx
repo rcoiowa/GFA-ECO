@@ -71,8 +71,8 @@ export function PrivacyConsentPage() {
         title="Privacy and consent"
         lede="You decide what you share. Changing your mind is always allowed."
         crumbs={[
-          { to: '/app/today', label: 'Today' },
-          { to: '/app/profile', label: 'Profile' },
+          { to: '/vrcc/today', label: 'Today' },
+          { to: '/vrcc/profile', label: 'Profile' },
         ]}
       />
       <div className="mb-5">

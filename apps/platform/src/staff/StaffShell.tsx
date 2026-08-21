@@ -9,9 +9,11 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/staff/applications', label: 'Applications', shortLabel: 'Apps' },
   { to: '/staff/screenings', label: 'Screenings' },
   { to: '/staff/incidents', label: 'Incidents' },
+  { to: '/staff/grievances', label: 'Grievances' },
   { to: '/staff/compliance', label: 'Compliance' },
   { to: '/staff/fees', label: 'Fees' },
   { to: '/staff/board', label: 'House Board', shortLabel: 'Board' },
+  { to: '/staff/messages', label: 'Messages' },
   { to: '/staff/reports', label: 'Reports' },
 ];
 
@@ -44,7 +46,7 @@ export function StaffShell() {
           <button
             type="button"
             onClick={() => void signOut()}
-            className="hidden text-sm text-ink-muted hover:text-ink md:block"
+            className="text-sm text-ink-muted hover:text-ink"
           >
             Sign out
           </button>

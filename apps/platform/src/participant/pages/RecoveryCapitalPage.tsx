@@ -60,8 +60,8 @@ export function RecoveryCapitalPage() {
   }
 
   const crumbs = [
-    { to: '/app/today', label: 'Today' },
-    { to: '/app/tools', label: 'Tools' },
+    { to: '/vrcc/today', label: 'Today' },
+    { to: '/vrcc/tools', label: 'Tools' },
   ];
 
   if (stage === 'intro') {
@@ -113,7 +113,7 @@ export function RecoveryCapitalPage() {
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
               to="/app/connect"
-              className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-700"
+              className="inline-flex min-h-11 items-center rounded-full bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
             >
               Connect with support
             </Link>

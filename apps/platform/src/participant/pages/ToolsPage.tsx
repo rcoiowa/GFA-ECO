@@ -8,7 +8,7 @@ export function ToolsPage() {
       <PageHeader
         title="Tools"
         lede="Practices and check-ins for the day you're actually having."
-        crumbs={[{ to: '/app/today', label: 'Today' }]}
+        crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
       />
       <div className="flex flex-col gap-4">
         <Card>

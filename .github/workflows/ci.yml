@@ -11,13 +11,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # pnpm version comes from package.json's packageManager field.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Enforce canonical backend in deployable source (Phase H guardrail)
+        run: node scripts/check-no-retired-ref.mjs
+      - name: Verify ICARE governance lock (Authority ↔ lock ↔ BARC code)
+        run: node scripts/icare-lock-verify.mjs
+      - name: ICARE governance regression guard (prohibited behavior)
+        run: node scripts/check-icare-governance.mjs
+      - name: Public-intake boundary invariants (0122 — RPC-only writes, no anon)
+        run: node scripts/verify-intake-boundary.mjs
+      - name: Booking write-integrity invariants (0100/0124 — ownership + proposal safety)
+        run: node scripts/verify-booking-integrity.mjs
       - run: pnpm typecheck
       - run: pnpm build
+      - name: Enforce canonical RecoveryOS backend in production assets
+        run: |
+          RETIRED_REF='ykykeioydvtxpyreshhs'
+          CANONICAL_REF='cqcxvwoukyhxyokfwnjm'
+          if grep -R -n --fixed-strings "$RETIRED_REF" apps/platform/dist; then
+            echo "::error::Production bundle contains retired Supabase project ref $RETIRED_REF"
+            exit 1
+          fi
+          if ! grep -R -q --fixed-strings "$CANONICAL_REF" apps/platform/dist; then
+            echo "::error::Production bundle does not contain canonical RecoveryOS-Launch ref $CANONICAL_REF"
+            exit 1
+          fi
+          echo "Production bundle backend guard passed: canonical=$CANONICAL_REF retired-ref absent."

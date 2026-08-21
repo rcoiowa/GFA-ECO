@@ -7,7 +7,7 @@ export function ResourcesPage() {
       <PageHeader
         title="Resources"
         lede="Housing, work, transportation, benefits — practical help, found together."
-        crumbs={[{ to: '/app/today', label: 'Today' }]}
+        crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
       />
       <Card>
         <EmptyState

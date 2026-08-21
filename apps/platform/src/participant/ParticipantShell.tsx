@@ -4,15 +4,20 @@ import { SupportNowButton } from '@recoveryos/safety';
 import { useAuth } from '@recoveryos/auth';
 import { ExperienceSwitcher } from '../components/ExperienceSwitcher';
 
-/** The seven VRCC participant destinations. Do not add an eighth casually. */
+/**
+ * The VRCC participant destinations. Do not add another casually — Messages
+ * earned its place in P4D as the first genuinely two-way human surface.
+ */
 const NAV_ITEMS: NavItem[] = [
-  { to: '/app/today', label: 'Today' },
-  { to: '/app/recovery', label: 'My Recovery', shortLabel: 'Recovery' },
-  { to: '/app/connect', label: 'Connect' },
-  { to: '/app/learn', label: 'Learn' },
-  { to: '/app/tools', label: 'Tools' },
-  { to: '/app/resources', label: 'Resources' },
-  { to: '/app/journey', label: 'My Journey', shortLabel: 'Journey' },
+  { to: '/vrcc/today', label: 'Today' },
+  { to: '/vrcc/recovery', label: 'My Recovery', shortLabel: 'Recovery' },
+  { to: '/vrcc/connect', label: 'Connect' },
+  { to: '/vrcc/grace', label: 'Grace' },
+  { to: '/vrcc/messages', label: 'Messages' },
+  { to: '/vrcc/learn', label: 'Learn' },
+  { to: '/vrcc/tools', label: 'Tools' },
+  { to: '/vrcc/resources', label: 'Resources' },
+  { to: '/vrcc/journey', label: 'My Journey', shortLabel: 'Journey' },
 ];
 
 export function ParticipantShell() {
