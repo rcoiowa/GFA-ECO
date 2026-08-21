@@ -1,5 +1,12 @@
 # P1 — Canonical Domain & Vocabulary Architecture (PROPOSAL FOR EXECUTIVE REVIEW)
 
+> **RATIFIED 2026-08-21 with clarifications and governance constraints.** This file is
+> preserved as the review-gate audit trail. The architecture of record is
+> `docs/architecture/domain-vocabulary-v1.0.md`, which also carries the ratification's added
+> evidence-governance constraints (canonical evidence ladder, retention/continuity separation,
+> peer-support evidence discipline, neuro-informed UX, trauma-aware doctrine, person-first
+> language requirement, capture doctrine).
+
 **Date:** 2026-08-21 · **Status: PROPOSAL — NOTHING IMPLEMENTED.** No migration, enum, CHECK,
 seed, UI, or CQCX change accompanies this document. Semantic architecture gate only.
 **Baseline verified:** branch `claude/recoveryos-canonical-audit-1pvcwr` @ `a833e7c` (CI #92
