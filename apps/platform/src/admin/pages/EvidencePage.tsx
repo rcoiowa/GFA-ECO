@@ -91,7 +91,10 @@ export function EvidencePage() {
       <Card>
         <div className="flex items-center justify-between">
           <CardTitle>Coaching relationships</CardTitle>
-          <Badge kind="outcome" />
+          {/* OUTPUT, deliberately (P0-4): every row here is an engagement/activity
+              signal — relationship records and message existence — not a verified
+              change in a person's life. */}
+          <Badge kind="output" />
         </div>
         <ul className="mt-2 divide-y divide-line">
           <Row label="Relationships established" value={relationships.coaching_established} />
@@ -112,7 +115,9 @@ export function EvidencePage() {
           />
         </ul>
         <p className="mt-2 text-sm text-ink-faint">
-          Counts come from message existence only — nobody reads the messages to compute this.
+          These are engagement signals (outputs), not participant outcomes. Counts come from
+          message existence only — nobody reads the messages to compute this, and
+          &ldquo;established&rdquo; counts every relationship record regardless of current status.
         </p>
       </Card>
 
@@ -210,13 +215,15 @@ export function EvidencePage() {
         <ul className="mt-2 divide-y divide-line">
           <Row label="People served (attested service events)" value={services.people_served} />
           <Row label="Service events" value={services.events} />
-          <Row
-            label="With a funding source recorded"
-            value={services.funding_attributed}
-            of={`of ${services.events} events`}
-          />
-          <Row label="Not yet attributed to funding" value={services.funding_unattributed} />
         </ul>
+        {/* Funding attribution rows removed (P0-4): no workflow writes
+            service_events.funding_source_id yet, so the numbers were structurally
+            0 / N — a permanent zero presented as evidence. Restore the rows when a
+            funding-attribution writer exists. */}
+        <p className="mt-2 text-sm text-ink-faint">
+          Funding attribution is not yet recorded by any workflow, so no funding split is shown —
+          publishing a structural zero would misstate the evidence.
+        </p>
         {Object.keys(services.by_type).length > 0 ? (
           <>
             <p className="mt-3 text-sm font-medium text-ink">By service type</p>
