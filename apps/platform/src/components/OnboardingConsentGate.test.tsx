@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { OnboardingConsentGate } from './OnboardingConsentGate';
 
@@ -62,9 +62,23 @@ describe('OnboardingConsentGate', () => {
     expect(mocks.listMissingRequiredConsents).not.toHaveBeenCalled();
   });
 
-  it('fails open on a read failure rather than locking the person out', async () => {
+  it('fails safe on a read failure: blocks with a retry, never silently grants (P0-2)', async () => {
     mocks.listMissingRequiredConsents.mockRejectedValue(new Error('offline'));
     wrap();
+    expect(
+      await screen.findByText(/couldn’t confirm your consent choices/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('participant space')).not.toBeInTheDocument();
+  });
+
+  it('recovers through the retry action once the read succeeds', async () => {
+    mocks.listMissingRequiredConsents
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce([]);
+    wrap();
+    const retry = await screen.findByRole('button', { name: /try again/i });
+    fireEvent.click(retry);
     expect(await screen.findByText('participant space')).toBeInTheDocument();
+    expect(mocks.listMissingRequiredConsents).toHaveBeenCalledTimes(2);
   });
 });
