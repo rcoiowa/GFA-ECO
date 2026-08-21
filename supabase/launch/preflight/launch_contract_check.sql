@@ -30,10 +30,15 @@ begin
   --    (service-role-only writes; audited review RPCs are the only lifecycle path),
   --    so they are excluded here — their stricter posture is asserted by
   --    scripts/verify-intake-boundary.mjs and the anon check below.
+  --    The 0129/0131 domain-vocabulary tables are read-only reference data by design
+  --    (SELECT yes; INSERT/UPDATE/DELETE revoked — vocabulary changes are migrations,
+  --    never client writes; scripts/verify-domain-vocabulary.mjs guards the content).
   select string_agg(tablename, ', ' order by tablename) into missing
   from pg_tables
   where schemaname = 'recoveryos'
-    and tablename not in ('residence_listing_submissions','residence_application_intake')
+    and tablename not in ('residence_listing_submissions','residence_application_intake',
+                          'domains','domain_subcategories','domain_external_mappings',
+                          'resource_domains')
     and not (has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'SELECT')
          and has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'INSERT')
          and has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'UPDATE'));
