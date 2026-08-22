@@ -7,6 +7,7 @@ import type {
   RoleKey,
   ServiceModality,
 } from './enums';
+import type { ServiceEventSource } from './serviceProvenance';
 
 /**
  * Canonical entity types. Field names match the PostgreSQL schema exactly
@@ -253,8 +254,13 @@ export interface ServiceEvent {
   modality: ServiceModality;
   started_at: string;
   ended_at: string | null;
+  /** DEPRECATED (P2): never written, never wired — outcomes live on evidence-gated state records. */
   outcome_status: string | null;
   funding_source_id: number | null;
+  /** How the event entered institutional record (ratified closed vocabulary); immutable. */
+  source: ServiceEventSource;
+  /** Idempotency anchor: one human action → one key; immutable. */
+  dedupe_key: string | null;
   created_at: string;
 }
 
