@@ -38,6 +38,8 @@ jobs:
         run: node scripts/verify-view-privileges.mjs
       - name: Domain vocabulary guard (ratified canon — SQL ↔ TS ↔ live keys, 0129)
         run: node scripts/verify-domain-vocabulary.mjs
+      - name: Service provenance guard (ratified canon — sources/authorities/whitelist, P2)
+        run: node scripts/verify-service-provenance.mjs
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build

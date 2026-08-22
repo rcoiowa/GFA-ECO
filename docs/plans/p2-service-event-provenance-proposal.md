@@ -1,8 +1,10 @@
 # P2 — Service Event, Provenance & Evidence Integrity: Canonical Architecture
 
 > **Status: RATIFIED 2026-08-22 with executive corrections (P2 Executive Ratification).**
-> Nothing is implemented yet — implementation awaits separate authorization against
-> `docs/plans/p2-implementation-plan.md`.
+> **The canonical compact record now lives at
+> `docs/architecture/service-event-provenance-v1.0.md`** (P2.1 semantic lock) — this
+> document is preserved as the full analysis and ratification audit trail. Implementation
+> proceeds under `docs/plans/p2-implementation-plan.md`.
 >
 > Executive corrections incorporated into this document:
 > 1. **Reporting-authority naming** — the proposal's "Class A/B/C" labels are REJECTED
