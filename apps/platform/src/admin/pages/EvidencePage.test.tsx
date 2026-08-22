@@ -46,7 +46,9 @@ const data = {
   },
   services: {
     people_served: 9,
+    people_engaging_participant_reported: 3,
     events: 15,
+    events_by_authority: { organizationally_attested: 11, participant_reported: 4 },
     by_type: { 'Recovery coaching session': 6 },
     funding_attributed: 0,
     funding_unattributed: 15,
@@ -89,6 +91,43 @@ describe('EvidencePage evidence integrity', () => {
     expect(screen.getByText(/Cross-cutting · 1/)).toBeInTheDocument();
     // Raw machine keys never render.
     expect(screen.queryByText(/financial_stability/)).not.toBeInTheDocument();
+  });
+
+  it('splits service activity by reporting authority — never one silent "delivered" number (P2.6)', () => {
+    mocks.useEvidenceSummary.mockReturnValue({ data, isLoading: false, isError: false });
+    render(<EvidencePage />);
+    expect(
+      screen.getByText('People served (organizationally attested service activity)'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('People engaging (participant-reported — engagement, not delivery)'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Organizationally attested service activity · 11/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Participant-reported engagement · 4/)).toBeInTheDocument();
+    // No Institutional-Evidence-Ledger collision, no unclassified bucket, no raw keys.
+    expect(screen.queryByText(/Class [ABC]/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/unclassified/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/organizationally_attested/)).not.toBeInTheDocument();
+  });
+
+  it('degrades gracefully when the summary predates the authority split', () => {
+    const {
+      events_by_authority: _a,
+      people_engaging_participant_reported: _p,
+      ...servicesLegacy
+    } = data.services;
+    mocks.useEvidenceSummary.mockReturnValue({
+      data: { ...data, services: servicesLegacy },
+      isLoading: false,
+      isError: false,
+    });
+    render(<EvidencePage />);
+    expect(screen.queryByText('Events by reporting authority')).not.toBeInTheDocument();
+    expect(
+      screen.getByText('People served (organizationally attested service activity)'),
+    ).toBeInTheDocument();
   });
 
   it('degrades gracefully when the summary predates the domain lens', () => {

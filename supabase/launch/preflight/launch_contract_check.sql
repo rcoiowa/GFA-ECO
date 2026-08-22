@@ -158,7 +158,7 @@ begin
       'review_residence_listing_submission','publish_residence_listing_submission',
       'review_residence_application_intake',
       'record_navigation_service_event','record_residence_support_service_event',
-      'record_my_activity')
+      'record_my_activity','residence_service_lenses')
     and not has_function_privilege('authenticated', p.oid, 'EXECUTE');
   if missing is not null then
     raise exception 'LAUNCH-CONTRACT FAIL: authenticated cannot execute client RPC(s): %', missing;

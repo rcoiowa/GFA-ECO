@@ -72,8 +72,15 @@ export interface EvidenceSummary {
     median_length_of_stay_days: number;
   };
   services: {
+    /** Distinct people with ORGANIZATIONALLY ATTESTED service activity (0136 redefinition). */
     people_served: number;
+    /** Distinct people with participant-reported activity — engagement, never delivery.
+     *  Optional: absent until migration 0136 is live. */
+    people_engaging_participant_reported?: number;
     events: number;
+    /** P2.6 reporting-authority split (organizationally_attested / participant_reported /
+     *  system_derived); optional until migration 0136 is live. */
+    events_by_authority?: Record<string, number>;
     by_type: Record<string, number>;
     funding_attributed: number;
     funding_unattributed: number;

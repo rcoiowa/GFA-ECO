@@ -21,6 +21,10 @@ export interface ExhibitEReportData {
   residenceName: string;
   blocks: ExhibitEBlock[];
   serviceBreakdown: { category: string; count: number }[];
+  /** Lens B (P2.6, ratified): GFA services received during residency — separately defined,
+   *  never summed with the residence-delivered blocks above. Absent if the lens RPC is
+   *  unavailable (frontend deployed ahead of migration 0136). */
+  residentWindow?: { definition: string; events: number; people: number } | null;
 }
 
 const CATEGORY_CITATIONS: Record<string, string> = {
@@ -49,10 +53,10 @@ export async function compileExhibitEReport(
   const sinceIso = since.toISOString();
   const sinceDate = sinceIso.slice(0, 10);
 
-  const [events, residencies, screenings, meetings] = await Promise.all([
+  const [events, residencies, screenings, meetings, lenses] = await Promise.all([
     sb
       .from('service_events')
-      .select('person_id, started_at, service_type:service_types(key, category)')
+      .select('person_id, started_at, source, service_type:service_types(key, category)')
       .eq('residence_id', residenceId)
       .gte('started_at', sinceIso),
     sb
@@ -69,13 +73,23 @@ export async function compileExhibitEReport(
       .select('id, starts_at')
       .eq('residence_id', residenceId)
       .gte('starts_at', sinceIso),
+    // Lens B (never summed with Lens A): tolerated failure — the RPC ships with 0136.
+    sb.rpc('residence_service_lenses', { p_residence_id: residenceId, p_window_days: windowDays }),
   ]);
   for (const r of [events, residencies, screenings, meetings]) {
     if (r.error) throw r.error;
   }
 
-  type EventRow = { person_id: number; service_type: { category: string } | null };
-  const eventRows = (events.data ?? []) as unknown as EventRow[];
+  type EventRow = {
+    person_id: number;
+    source: string | null;
+    service_type: { category: string } | null;
+  };
+  // Reporting authority (P2.6): Exhibit E delivery metrics count ORGANIZATIONALLY ATTESTED
+  // events only (source = staff_attested) — participant-reported engagement never enters a
+  // delivered-services claim. Pre-provenance rows (source null) cannot occur after 0133.
+  const allRows = (events.data ?? []) as unknown as EventRow[];
+  const eventRows = allRows.filter((e) => e.source === 'staff_attested');
   const residencyRows = (residencies.data ?? []) as {
     residency_status: string;
     admission_date: string | null;
@@ -97,10 +111,10 @@ export async function compileExhibitEReport(
 
   const blocks: ExhibitEBlock[] = [
     {
-      metric: 'People served (distinct participants with documented services)',
+      metric: 'People served (distinct participants with organizationally attested services)',
       value: peopleServed,
       exhibitE: 'B-B.1, B-B.2',
-      note: 'Comprehensive wrap-around and continuum of recovery services',
+      note: 'Comprehensive wrap-around services — staff-attested delivery only (source = staff_attested); participant-reported engagement is never counted as delivery',
     },
     {
       metric: 'Recovery residence — residents currently housed',
@@ -115,10 +129,10 @@ export async function compileExhibitEReport(
       note: 'Housing access incl. persons transitioning from incarceration',
     },
     {
-      metric: 'Documented service events (all categories)',
+      metric: 'Documented service events (all categories, organizationally attested)',
       value: eventRows.length,
       exhibitE: 'Sch-A/I, B-J.1, L.1',
-      note: 'Evidence-based data collection via the service-event spine',
+      note: 'Evidence-based data collection via the service-event spine — residence-delivered (Lens A: residence attribution), staff-attested only',
     },
     {
       metric: 'Drug/alcohol screenings administered',
@@ -134,6 +148,13 @@ export async function compileExhibitEReport(
     },
   ];
 
+  type LensPayload = {
+    ok?: boolean;
+    received_during_residency?: { definition?: string; events?: number; people?: number };
+  };
+  const lensData = (lenses.error ? null : (lenses.data as LensPayload | null)) ?? null;
+  const rw = lensData?.ok ? lensData.received_during_residency : null;
+
   return {
     windowDays,
     residenceName,
@@ -141,6 +162,15 @@ export async function compileExhibitEReport(
     serviceBreakdown: [...byCategory.entries()]
       .map(([category, count]) => ({ category, count }))
       .sort((a, b) => b.count - a.count),
+    residentWindow: rw
+      ? {
+          definition:
+            rw.definition ??
+            'GFA services received during an enrolled residency period (Lens B) — never summed with residence-delivered services.',
+          events: rw.events ?? 0,
+          people: rw.people ?? 0,
+        }
+      : null,
   };
 }
 

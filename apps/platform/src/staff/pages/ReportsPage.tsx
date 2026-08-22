@@ -193,6 +193,16 @@ export function ReportsPage() {
                     </tbody>
                   </table>
                 </div>
+                {exhibitE.residentWindow ? (
+                  <div className="rounded-md border border-line bg-surface-raised p-3">
+                    <p className="font-medium text-ink">
+                      Services received by residents during residency (Lens B):{' '}
+                      {exhibitE.residentWindow.events} events · {exhibitE.residentWindow.people}{' '}
+                      people
+                    </p>
+                    <p className="mt-1 text-sm text-ink-faint">{exhibitE.residentWindow.definition}</p>
+                  </div>
+                ) : null}
                 {exhibitE.serviceBreakdown.length > 0 ? (
                   <div>
                     <p className="mb-1 font-medium text-ink">Service events by category</p>
@@ -287,9 +297,15 @@ export function ReportsPage() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm text-ink-muted">Recovery services received</dt>
+                    <dt className="text-sm text-ink-muted">
+                      Recovery services received (residence-attributed only)
+                    </dt>
                     <dd className="font-medium text-ink">
                       {report.serviceEvents.length} documented service events
+                      <span className="block text-sm font-normal text-ink-faint">
+                        Counts services delivered under residence programming; VRCC coaching and
+                        navigation are not shown here.
+                      </span>
                     </dd>
                   </div>
                   <div>
