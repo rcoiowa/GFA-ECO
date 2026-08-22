@@ -81,9 +81,17 @@ export function NavPersonPage() {
   // One human action → one dedupe key (P2.4): minted when the attestation form opens,
   // reused across retries of that submission, regenerated only by reopening the form.
   const [serviceDedupeKey, setServiceDedupeKey] = useState('');
+  // P2.7: optional referral linkage ("this contact was about…") + one-tap follow-up after
+  // a recorded contact — continuity through the existing follow-up spine, never a text note.
+  const [serviceReferralId, setServiceReferralId] = useState('');
+  const [serviceRecorded, setServiceRecorded] = useState(false);
   const toggleServiceOpen = () => {
     setServiceOpen((v) => {
-      if (!v) setServiceDedupeKey(crypto.randomUUID());
+      if (!v) {
+        setServiceDedupeKey(crypto.randomUUID());
+        setServiceReferralId('');
+        setServiceRecorded(false);
+      }
       return !v;
     });
   };
@@ -198,13 +206,34 @@ export function NavPersonPage() {
               Record the support you just provided — this is the honest service record, separate
               from referrals and messages.
             </p>
-            <div className="mt-2 flex items-end gap-2">
+            <div className="mt-2 flex flex-wrap items-end gap-2">
               <TextField
                 label="About how many minutes?"
                 type="number"
                 value={serviceMinutes}
                 onChange={(e) => setServiceMinutes(e.target.value)}
               />
+              {personReferrals.length > 0 ? (
+                <div>
+                  <label htmlFor="service-referral" className="block text-sm text-ink-muted">
+                    This contact was about… (optional)
+                  </label>
+                  <select
+                    id="service-referral"
+                    value={serviceReferralId}
+                    onChange={(e) => setServiceReferralId(e.target.value)}
+                    className="mt-1 rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink"
+                  >
+                    <option value="">Not about a specific referral</option>
+                    {personReferrals.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.destination_name ?? 'A community resource'} ·{' '}
+                        {referralStatusLabel(r.status)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
               <Button
                 variant="secondary"
                 disabled={recordService.isPending}
@@ -213,9 +242,13 @@ export function NavPersonPage() {
                     .mutateAsync({
                       personId,
                       durationMinutes: Number(serviceMinutes) || undefined,
+                      referralId: serviceReferralId ? Number(serviceReferralId) : undefined,
                       dedupeKey: serviceDedupeKey || undefined,
                     })
-                    .then(() => setServiceOpen(false))
+                    .then(() => {
+                      setServiceOpen(false);
+                      setServiceRecorded(true);
+                    })
                     .catch(() => undefined)
                 }
               >
@@ -225,6 +258,31 @@ export function NavPersonPage() {
             {recordService.isError ? (
               <Alert tone="critical">We couldn’t record that. Try again.</Alert>
             ) : null}
+          </div>
+        ) : null}
+        {serviceRecorded ? (
+          <div className="mt-3 flex flex-wrap items-center gap-3 rounded-md border border-line bg-surface p-3">
+            <span className="text-sm text-ink">
+              Recorded. What happens next? A follow-up keeps the loop alive.
+            </span>
+            <Button
+              variant="secondary"
+              size="md"
+              disabled={followUp.isPending}
+              onClick={() => {
+                const due = new Date();
+                due.setDate(due.getDate() + 7);
+                void followUp
+                  .mutateAsync(due.toISOString().slice(0, 10))
+                  .then(() => setServiceRecorded(false))
+                  .catch(() => undefined);
+              }}
+            >
+              {followUp.isPending ? 'Saving…' : 'Follow up in a week'}
+            </Button>
+            <Button variant="ghost" size="md" onClick={() => setServiceRecorded(false)}>
+              Not needed
+            </Button>
           </div>
         ) : null}
       </Card>

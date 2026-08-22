@@ -102,7 +102,21 @@ require a formal relationship. Referral doctrine: REFERRAL = activity; CONNECTIO
 evidence-gated state; SERVICE EVENT = support delivered. Completed appointment → exactly one
 service event; cancelled/no-show → status only, never an event.
 
-## 8. What is never captured
+## 8. Timeline join contract (P7 preparation — the timeline is NOT built in P2)
+
+A future participant/role-aware relational timeline reads `service_events` joined outward;
+it never duplicates state. The contract each event now preserves:
+who (`person_id`, `provider_person_id`), what (`service_type_id`), when (`started_at` =
+occurrence, `created_at` = attestation; the lag is meaningful and immutable), how
+(`modality`), where (`delivery_context`, `residence_id`/`residency_id`), source (`source`),
+linked appointment (`appointment_id` → scheduling chain), linked relationship
+(`coaching_relationship_id` / `navigation_relationship_id`), linked loop
+(`navigation_referral_id` → `navigation_needs` via the referral's need), and resulting state
+movement — read from the state tables the event links to (referral status walks, need
+resolution, goal status), never stored on the event. Visibility in the timeline follows the
+reader's existing RLS posture; the timeline adds no new read grants.
+
+## 9. What is never captured
 
 No psychotherapy/case notes, trauma narratives, character judgments, or free-text event
 columns; no emotion inference or surveillance-derived events; no staff-productivity
