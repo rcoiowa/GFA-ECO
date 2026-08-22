@@ -37,6 +37,7 @@ export async function createCheckIn(input: {
     personId: input.personId,
     serviceTypeKey: 'daily_check_in',
     deliveryContext: input.deliveryContext,
+    featureRef: `check_in:${data.id}`,
   });
 
   return data;

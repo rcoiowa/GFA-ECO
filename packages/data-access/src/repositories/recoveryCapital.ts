@@ -55,6 +55,7 @@ export async function submitBarc10(input: {
     personId: input.personId,
     serviceTypeKey: 'recovery_capital_assessment',
     deliveryContext: input.deliveryContext,
+    featureRef: `barc10:${data.id}`,
   });
 
   return data;

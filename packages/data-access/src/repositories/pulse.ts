@@ -167,6 +167,7 @@ export async function submitPulseCheckIn(input: SubmitPulseInput): Promise<Pulse
     personId: input.personId,
     serviceTypeKey: 'daily_check_in',
     deliveryContext: 'vrcc',
+    featureRef: `pulse_check_in:${(data as { id?: number }).id ?? ''}`,
   });
 
   return data as unknown as PulseCheckIn;
