@@ -6,7 +6,10 @@ executive corrections). Nothing below has been applied; migration numbers 0133�
 reserved by this plan.
 
 Standing constraints carried into every phase: additive-first; historical rows never
-rewritten; unknown provenance stays NULL; no enum surgery; no parallel events table; no
+rewritten; provenance is classified only under documented deterministic rules and a
+migration ABORTS rather than guess (FINAL RECONCILIATION — no NULL/unknown/unclassified
+provenance semantics); `imported` is not a provenance value (ingestion/transport is modeled
+separately if ever needed); no enum surgery; no parallel events table; no
 free-text case-note columns; `funding_source_id` stays NULL; least privilege — the internal
 writer is never a public RPC; the participant direct-insert path survives until the
 replacement is deployed and verified (no participant dead end); pre-mutation checklist +
@@ -18,8 +21,9 @@ committable and STOP-capable.
 ## P2.1 — Semantic / governance lock + CI guard
 
 **Files**
-- `docs/architecture/service-event-provenance-v1.0.md` (new) — canonical record: source
-  vocabulary + immutability + NULL-is-unknown rule; writer-fingerprint backfill rule;
+- `docs/architecture/service-event-provenance-v1.0.md` (new) — canonical record: the
+  four-value closed source vocabulary + immutability + NOT NULL / abort-on-unclassifiable
+  rule (no `imported`; transport ≠ attestation); writer-fingerprint backfill rule;
   reporting-authority model (`organizationally_attested` / `participant_reported` /
   `system_derived`) + source→authority mapping; the O-G rule (event source ≠ Institutional
   Evidence Ledger class); idempotency contract (one human action → one dedupe key);
@@ -27,16 +31,18 @@ committable and STOP-capable.
   self-recordable type list (closed); appointment doctrine; what-not-to-capture boundary.
 - `docs/plans/p2-service-event-provenance-proposal.md` — banner pointing at the architecture
   doc (audit trail, P1.1 pattern).
-- `packages/domain/src/serviceProvenance.ts` (new) — `SERVICE_EVENT_SOURCES` (5 keys),
+- `packages/domain/src/serviceProvenance.ts` (new) — `SERVICE_EVENT_SOURCES` (4 keys:
+  `participant_self_reported`, `staff_attested`, `partner_confirmed`, `system_derived`),
   `REPORTING_AUTHORITIES` (3 keys + display labels: "Organizationally attested service
   activity", "Participant-reported engagement", "System-derived activity"),
   `reportingAuthorityForSource(source)` mapping, `SELF_RECORDABLE_SERVICE_TYPES` (3 keys).
   Exported from `packages/domain/src/index.ts`.
-- `packages/domain/src/serviceProvenance.test.ts` (new) — pins: 5 sources; mapping
-  staff_attested→organizationally_attested, participant_self_reported→participant_reported,
-  system_derived→system_derived; partner_confirmed/imported have NO mapped authority (throws
-  or returns null — reserved); self-recordable list exactly the 3 ratified keys; no label
-  contains "Class A/B/C".
+- `packages/domain/src/serviceProvenance.test.ts` (new) — pins: exactly 4 sources and
+  **`imported` is absent**; mapping staff_attested→organizationally_attested,
+  participant_self_reported→participant_reported, system_derived→system_derived (with the
+  authority-conditions note); partner_confirmed has NO auto-mapped authority (reserved for
+  the future governed workflow, never auto-folded into organizationally_attested);
+  self-recordable list exactly the 3 ratified keys; no label contains "Class A/B/C".
 - `scripts/verify-service-provenance.mjs` (new) + `.github/workflows/ci.yml` step — pins the
   0133 CHECK value list ↔ TS `SERVICE_EVENT_SOURCES` ↔ architecture doc; asserts the
   self-recordable whitelist matches in 0134's `record_my_activity` body and TS; asserts the
@@ -53,9 +59,11 @@ typecheck + suite + build green locally and in CI.
 
 **Schema changes (additive)**
 - `alter table recoveryos.service_events add column if not exists source text
-  check (source in ('participant_self_reported','staff_attested','system_derived',
-  'partner_confirmed','imported'))` — **nullable**: NULL = explicitly unknown historical
-  provenance (ratification §2.D).
+  check (source in ('participant_self_reported','staff_attested','partner_confirmed',
+  'system_derived'))` — the four-value closed vocabulary; **no `imported`** (transport ≠
+  attestation, FINAL RECONCILIATION §A). Added nullable only as the standard three-step
+  pattern: add → backfill → **set NOT NULL** in the same migration once the backfill proves
+  completeness.
 - `add column if not exists dedupe_key uuid`.
 - Expression unique index:
   `create unique index service_events_dedupe_uidx on recoveryos.service_events
@@ -63,41 +71,52 @@ typecheck + suite + build green locally and in CI.
   — scopes the key to the acting owner (provider for staff writes, person for self writes).
 - `comment on column recoveryos.service_events.outcome_status` → DEPRECATED (never wire;
   physical drop only under a later separately reviewed cleanup).
-- Guard trigger `service_events_provenance_guard` (before insert or update):
+- Guard trigger `service_events_provenance_guard` (BEFORE insert or update — it fires
+  before the NOT NULL constraint is checked, so transition stamping and NOT NULL coexist):
   - INSERT with `source` set → pass through (writer-stamped).
-  - INSERT with `source` NULL → transition stamping: if the row matches the W1 direct-insert
-    fingerprint (`person_id = recoveryos.current_person_id()`, `provider_person_id` null,
-    service type in the ratified self list, modality `self_directed`) → set
+  - INSERT arriving without `source` → transition stamping under the same
+    demonstrable-provenance rule used for backfill: W1 direct-insert fingerprint
+    (`person_id = recoveryos.current_person_id()`, `provider_person_id` null, service type
+    in the ratified self list, modality `self_directed`) → set
     `source := 'participant_self_reported'` (deterministic: RLS makes the self path the only
-    client direct insert); otherwise RAISE — no sourceless institutional record.
+    client direct insert); staff-writer fingerprint (appointment_id /
+    navigation_relationship_id+type / residency_id+type) → set `source := 'staff_attested'`
+    (covers the pre-0134 RPC bodies); otherwise RAISE — no sourceless, no guessed
+    institutional record. Never a NULL row in the table.
   - UPDATE changing `source` or `dedupe_key` → RAISE (immutability, ratification §2.B).
-- **Backfill by writer fingerprint only** (ratification §2.D — never provider-null alone):
+- **Backfill by writer fingerprint only** (never provider-null alone):
   `appointment_id is not null` → `staff_attested`;
   `navigation_relationship_id is not null and service_type = resource_navigation` →
   `staff_attested`; `residency_id is not null and service_type =
-  residence_recovery_support` → `staff_attested`; W1 fingerprint → 
-  `participant_self_reported`; else leave NULL (explicit unknown).
+  residence_recovery_support` → `staff_attested`; W1 fingerprint →
+  `participant_self_reported`.
+- **Abort check (FINAL RECONCILIATION §B)**: after the fingerprint backfill, a DO block
+  RAISEs — reporting the offending row ids and shapes — if any row's `source` is still null.
+  The whole migration transaction rolls back; nothing is guessed, nothing is applied, and the
+  unexpected rows go to executive review. Only after this check does the migration run
+  `alter column source set not null`.
 - Header ROLLBACK: drop trigger + function, drop index, drop both columns, restore
   outcome_status comment to null.
 
-**RLS/RPC/UI**: none in this phase. **Compatibility**: W1 direct inserts keep working (the
-trigger stamps them); all RPCs keep working (source NULL → but wait: RPC inserts run before
-0134 re-creates them, so their inserts arrive sourceless and do NOT match the W1 fingerprint —
-the trigger would RAISE.) **Therefore the trigger's RAISE branch is deferred**: in 0133 the
-non-matching sourceless branch stamps `staff_attested` **only when the insert carries a
-staff-writer fingerprint** (appointment_id / navigation_relationship_id+type /
-residency_id+type — the same demonstrable-provenance rule applied at insert time) and RAISEs
-only when no fingerprint matches. 0137 tightens it to require explicit source once all
-writers stamp. This keeps 0133 independently deployable with zero writer changes.
+**RLS/RPC/UI**: none in this phase. **Compatibility**: W1 direct inserts and the pre-0134
+RPC bodies both keep working — their inserts arrive sourceless and the trigger stamps them
+from their insert-time fingerprints, exactly the demonstrable-provenance rule, so 0133 is
+independently deployable with zero writer changes. 0137 tightens the trigger to require an
+explicit `source` from every writer once all writers stamp.
 
-**Tests**: extend guard script (0133 parsed: CHECK list, fingerprint backfill present, no
-provider-null-only rule). **Live CQCX checks (at apply)**: pre-mutation checklist; post-apply:
-15 rows classified `staff_attested`, 0 `participant_self_reported`, 0 NULL (all current rows
-carry fingerprints — verified 2026-08-21); trigger present; unique index present; e2e temp-
-table probe: direct self-insert of `daily_check_in` as unknown-authenticated fixture identity
-gets stamped `participant_self_reported`; UPDATE of source → error. Preflight run (unchanged
-steps must stay green — no privilege change in 0133). **Deploy order**: first live change of
-P2. **Rollback**: header script; safe while nothing reads `source` (P2.6 is the first reader).
+**Tests**: extend guard script (0133 parsed: four-value CHECK list with `imported` absent,
+fingerprint backfill present, abort check present, `set not null` present, no
+provider-null-only rule). **Live CQCX checks**: *before apply*: fresh read-only fingerprint
+census — every existing row must match exactly one fingerprint; a mismatch stops the apply
+and goes to executive review (the in-migration abort check remains the backstop at the
+moment of mutation). *Post-apply*: 15 rows classified `staff_attested`,
+0 `participant_self_reported`, column NOT NULL (verified 2026-08-21 census: 4 appointment-
+fingerprint + 11 navigation-fingerprint rows); trigger present; unique index present; e2e
+temp-table probe: direct self-insert of `daily_check_in` as unknown-authenticated fixture
+identity gets stamped `participant_self_reported`; UPDATE of source → error. Preflight run
+(unchanged steps must stay green — no privilege change in 0133). **Deploy order**: first live
+change of P2. **Rollback**: header script; safe while nothing reads `source` (P2.6 is the
+first reader).
 
 ## P2.3 — Shared internal event writer + role-specific wrappers (migration 0134)
 
@@ -230,8 +249,10 @@ dead end at any step — the direct path dies only after telemetry proves it idl
   not a delivery — RATIFIED §5/§13).
 - Re-create `admin_evidence_summary()` services block (0132-pattern: add beside, never
   replace): `events_by_authority` — counts keyed `organizationally_attested` /
-  `participant_reported` / `system_derived` / `unclassified` (NULL source stays visible,
-  never absorbed); `people_served` gains the explicit definition "distinct people with
+  `participant_reported` / `system_derived` (complete provenance is established by 0133's
+  verified NOT NULL backfill, so **no `unclassified` bucket exists** — FINAL RECONCILIATION
+  §D; `system_derived` renders with its authority-conditions label); `people_served` gains
+  the explicit definition "distinct people with
   organizationally attested service activity" and a separate
   `people_engaging_participant_reported` count — **no silent combination** (§17).
 - New definer RPC `residence_service_lenses(p_residence_id, p_window_days)` — staff-of-
@@ -251,15 +272,15 @@ dead end at any step — the direct path dies only after telemetry proves it idl
 - Supervision report: scope sentence ("residence-attributed services only; VRCC services are
   not shown here") — honest label, no data change.
 - EvidencePage: services card splits by authority with the P1.6-style additive chips; the
-  ladder badges stay; "unclassified" renders when present.
+  ladder badges stay.
 
-**Tests**: EvidencePage tests (authority split rendering; no "Class" strings; unclassified
-visible); exhibitE compiler unit test with mixed-source fixture data (self rows excluded from
+**Tests**: EvidencePage tests (authority split rendering; no "Class" strings; no
+"unclassified" string); exhibitE compiler unit test with mixed-source fixture data (self rows excluded from
 delivery metrics); guard script extended (authority keys pinned SQL↔TS↔doc). **Negative
 tests (live)**: `residence_service_lenses` as non-staff → not_authorized envelope; as staff
 of another residence → not_authorized. **Live checks**: preflight (10 steps); function prosrc
 probes; evidence summary output carries the new keys with correct counts (15 staff_attested
-fixture events → unclassified 0). **Rollback**: re-run 0132 body for the summary; re-activate
+fixture events → all organizationally_attested). **Rollback**: re-run 0132 body for the summary; re-activate
 the two types; drop the lens RPC (header scripts). **Compatibility**: EvidencePage typing
 optional-keyed (frontend-ahead-of-migration safe, P1.6 pattern).
 
@@ -291,7 +312,7 @@ optional-keyed (frontend-ahead-of-migration safe, P1.6 pattern).
 | Order | Step | Gate before | Gate after |
 |---|---|---|---|
 | 1 | P2.1 commit (docs+guard) | baseline re-verify (branch/HEAD/CI/CQCX/ledger 0132/guards) | CI green |
-| 2 | 0133 apply | pre-mutation checklist | backfill counts verified (15/0/0-NULL), trigger probes, preflight green |
+| 2 | 0133 apply | pre-mutation checklist + fresh read-only fingerprint census (100% classifiable or STOP) | backfill counts verified (15 staff_attested / 0 other), source NOT NULL, trigger probes, preflight green |
 | 3 | 0134 apply | 0133 verified | 10-step preflight green, internal-writer negative probe, wrapper probes |
 | 4 | Frontend release A (P2.4 dedupe/wrappers + P2.5 W1 reroute + P2.7 UI) | 0134 live | suite/typecheck/build/guards + remote CI green |
 | 5 | 0135 apply | release A live | full RLS test matrix (positive/negative/cross-provider/boundary/unknown) |
@@ -304,7 +325,9 @@ from the migration header before mutation. Any FAIL → stop, report, no deploy-
 
 ## Explicitly out of P2 scope
 
-Partner-confirmed/imported writers; relationship-wide provider visibility; physical drop of
+Partner-confirmed writers; data-import/ingestion tooling and its separately governed
+ingestion metadata (should ingestion ever be proposed — transport is never a provenance
+value); relationship-wide provider visibility; physical drop of
 `outcome_status`; delivery_context enum surgery or historical rewrites; funding attribution;
 self-reported meeting/community participation; the timeline itself (P7); Institutional
 Evidence Ledger export tooling (aggregate-compatibility metadata only, per §P of the

@@ -11,10 +11,27 @@
 >    `organizationally_attested`, `participant_reported`, `system_derived` (§O).
 > 2. **Provenance backfill rule** — historical rows are classified only by demonstrable
 >    writer provenance (writer fingerprints), never solely by
->    `provider_person_id IS NULL / NOT NULL`; unestablishable provenance stays explicitly
->    unknown (NULL). Never fabricate provenance (§E).
-> 3. **Reserved source values** — `partner_confirmed` and `imported` are vocabulary only;
->    no writer exists until an approved workflow exists (§E).
+>    `provider_person_id IS NULL / NOT NULL`. Never fabricate provenance (§E).
+> 3. **Reserved source value** — `partner_confirmed` is vocabulary only; no writer exists
+>    until an approved workflow exists (§E).
+>
+> **FINAL RECONCILIATION (2026-08-22, P2 Final Reconciliation Gate — supersedes the two
+> points above where they conflict):**
+> - **`imported` is removed from the provenance vocabulary.** It is an ingestion/transport
+>   mechanism, not an attestation authority; if ingestion-channel tracking is ever needed it
+>   is modeled separately through explicitly governed ingestion metadata (§E). The canonical
+>   P2 vocabulary is exactly: `participant_self_reported`, `staff_attested`,
+>   `partner_confirmed`, `system_derived`.
+> - **No NULL/unknown/unclassified provenance semantics.** Every existing service_event was
+>   verified deterministically classifiable by writer fingerprint (live census 2026-08-21:
+>   15 rows, all fingerprint-matched). `source` is therefore **NOT NULL**; the backfill
+>   migration classifies under the documented deterministic rules and **fails (aborts) if
+>   any row cannot be defensibly classified** — no silent guessing, no speculative unknown
+>   bucket, no architecture change without executive review.
+> - **`system_derived` does not independently establish external reporting authority** —
+>   see §O conditions.
+> - **Partner-confirmed activity is never automatically treated as GFA-delivered service**;
+>   its reporting authority is defined by the future governed workflow (§O).
 > 4. **Self-recordable types locked for P2** — `daily_check_in`,
 >    `recovery_capital_assessment`, `recovery_practice`. Self-reported meeting/community
 >    participation is deliberately excluded from P2 (future design under the P1
@@ -155,19 +172,28 @@ timestamp-equality weakness demonstrated).
 
 ## E. Provenance recommendation
 
-**Add one column: `source text` + CHECK, immutable, on `service_events`.** NULL is the
-explicit representation of *unknown/unestablished historical provenance* — a NULL source is
-never fabricated away, and every post-P2 writer sets `source` explicitly (enforced by the
-internal writer plus an insert-time guard trigger; see the backfill rule below for the
-transition behavior). Values:
+**Add one column: `source text NOT NULL` + CHECK, immutable, on `service_events`.** Every
+row carries a defensible provenance value — there is no NULL/unknown/unclassified state
+(FINAL RECONCILIATION): the backfill classifies every existing row under the documented
+deterministic rules and the migration ABORTS if any row cannot be defensibly classified.
+Every post-P2 writer sets `source` explicitly (enforced by the internal writer plus an
+insert-time guard trigger; see the backfill rule below for the transition behavior). Values
+(the complete, closed P2 vocabulary):
 
 | Value | Meaning | Ladder rung of what it can evidence |
 |---|---|---|
 | `participant_self_reported` | the person recorded their own activity | ENGAGEMENT (never org delivery) |
 | `staff_attested` | a human staff member claimed delivery occurred (identity in provider_person_id, lag visible in created_at−started_at) | ACTIVITY (delivered service) |
-| `system_derived` | generated deterministically from another confirmed system fact (e.g. future: meeting attendance ⇒ participation event); the generating fact must be linked | inherits the source fact's authority |
-| `partner_confirmed` | **RESERVED** — external partner attested. No writer exists or may be created until an approved partner-confirmation workflow exists | ACTIVITY (when a workflow exists) |
-| `imported` | **RESERVED** — migrated from an external system. No writer exists or may be created until an approved import workflow exists; original provenance recorded in import metadata, else unknown | report-only with import caveat |
+| `system_derived` | generated deterministically from another confirmed system fact (e.g. future: meeting attendance ⇒ participation event); the generating fact must be linked | does NOT independently establish external authority — only under the §O system-derived conditions |
+| `partner_confirmed` | **RESERVED** — external partner attested. No writer exists or may be created until an approved partner-confirmation workflow exists | defined by the future governed workflow — never automatically GFA-delivered service |
+
+**`imported` is deliberately NOT in this vocabulary** (FINAL RECONCILIATION): import is an
+ingestion/transport mechanism, not an attestation authority — how a record *traveled* says
+nothing about who attested the underlying fact. If data ingestion ever becomes necessary,
+ingestion-channel tracking is modeled separately through explicitly governed ingestion
+metadata (e.g. an import-batch reference), and each imported row still receives a real
+attestation `source` from the source system's evidence — or the import is refused. Transport
+and attestation are never mixed.
 
 Rejected: a separate provenance table (over-engineering — provenance is a property of how the
 row was born, 1:1, immutable); provenance on outcome records instead (outcomes already have
@@ -196,18 +222,24 @@ each recoverable from the closed set of writers that have ever existed:
   recovery_capital_assessment) AND modality = self_directed` ⇒ written by the W1 direct-insert
   path (the 0012 policy is the only client insert path, and it forces person = actor) ⇒
   `participant_self_reported`;
-- **anything else ⇒ `source` stays NULL — explicitly unknown.** Never fabricated.
+- **anything else ⇒ the migration ABORTS** (raises inside the transaction, applying nothing):
+  the unexpected row's shape is reported for executive review, no source is invented, and the
+  architecture is not changed to accommodate it without that review (FINAL RECONCILIATION).
 
 The 15 live rows all match the first two fingerprints (verified live 2026-08-21: 11 W3 +
 4 W2), so the backfill classifies them `staff_attested` on writer evidence, not on a
-provider-null heuristic.
+provider-null heuristic — and `source` is set NOT NULL in the same migration, after the
+backfill proves completeness. A fresh read-only fingerprint census is re-run immediately
+before the live apply; the in-migration abort check is the backstop at the moment of mutation.
 
-Transition behavior (no participant dead end): while the W1 direct-insert path remains live
-during the staged cutover, the insert-time guard trigger stamps a direct insert (source
-absent) as `participant_self_reported` — deterministic at insert time because RLS guarantees
-only the self path can reach a direct insert — and raises for any other sourceless insert.
-After the cutover completes and the direct-insert policy is retired, the trigger tightens to
-require an explicit `source` from every writer.
+Transition behavior (no participant dead end, no NULL rows): while pre-P2 writers remain
+live during the staged cutover, the BEFORE-INSERT guard trigger stamps a sourceless insert
+under the same demonstrable-provenance fingerprints used for backfill — the W1 direct-insert
+shape → `participant_self_reported` (RLS guarantees only the self path reaches a direct
+insert), a staff-writer fingerprint → `staff_attested` (covers pre-0134 RPC bodies) — and
+RAISES for any insert matching no fingerprint. The trigger fires before the NOT NULL
+constraint is evaluated, so no NULL ever lands. After the cutover completes, the trigger
+tightens to require an explicit `source` from every writer.
 
 ## F. Idempotency recommendation
 
@@ -404,16 +436,23 @@ model uses semantic machine keys:
 
 | Reporting authority (key) | Source values mapped in | May support | Must never be presented as |
 |---|---|---|---|
-| **`organizationally_attested`** | `staff_attested` (and, only when an approved workflow defines its evidence basis, `partner_confirmed`) | external claims: "GFA delivered N services", Exhibit E, funder reports | participant outcome |
+| **`organizationally_attested`** | `staff_attested` | external claims: "GFA delivered N services", Exhibit E, funder reports | participant outcome |
 | **`participant_reported`** | `participant_self_reported` | "N participants actively engaging", retention/engagement signals | GFA-delivered service, ever — unless the metric name says "participant-reported" |
-| **`system_derived`** | `system_derived` | whatever its generating fact supports, labeled | independent evidence |
+| **`system_derived`** | `system_derived` | see the authority conditions below — labeled deterministic derivation | independent evidence |
+| *(future)* partner-confirmed activity | `partner_confirmed` | defined by the future governed partner workflow, according to the underlying evidence | GFA-delivered service, automatically — partner confirmation is never auto-folded into `organizationally_attested` |
+
+**`system_derived` authority conditions (FINAL RECONCILIATION §C):** deterministic system
+derivation does not independently establish external reporting authority. A system-derived
+event may support an externally reportable claim only when (1) the generating fact is itself
+authoritative, (2) the derivation is deterministic and traceable to that fact, and (3) the
+metric's operational definition explicitly permits that use. Otherwise system-derived
+aggregates are internal/labeled activity only.
 
 **Event source and reporting authority are related but not identical layers.** `source`
 describes how one row entered institutional record; reporting authority describes what an
 aggregate over such rows may claim. The mapping above is the canonical translation;
-`partner_confirmed` and `imported` acquire a reporting authority only when their approved
-workflows define the underlying evidence — never by assumption (an `imported` row's authority
-depends on what the source system could attest).
+`partner_confirmed` acquires its reporting authority only when the approved workflow defines
+the underlying evidence — never by assumption.
 
 Binding rules: external service-delivery claims draw from `organizationally_attested` only,
 fixture-filtered (`is_production_person`), with period and operational definition attached.
@@ -474,7 +513,7 @@ events are invisible to residence staff and vice versa unless residence-attribut
 | id | identity | db | ✓ | never | via own-row reads | — | — |
 | person_id | who received/did | writer | ✓ | never | self | denominator | scoped by RLS |
 | service_type_id | what kind | writer (whitelist per source class) | ✓ | never | label only | by_type | low |
-| **source** *(new)* | how this became evidence | writer, CHECK enum §E | ✓ | **never** | no (drives labels) | **class selector** | low |
+| **source** *(new)* | how this became evidence | writer, CHECK enum §E (4 values, NOT NULL) | ✓ | **never** | no (drives labels) | **reporting-authority selector** | low |
 | provider_person_id | who attested/delivered | RPC identity | staff sources | never | staff name only where role-appropriate | organizationally_attested actor | medium — display-name rules apply |
 | organization_id | delivering org | derived | ✓ | never | no | org claims | low |
 | program_id | program setting | inherited/selected | opt | never | no | program rollups | low |
@@ -499,12 +538,14 @@ tables the event links to — the timeline joins, it does not duplicate.
 
 ## S. Migration strategy (when authorized — nothing applied now)
 
-All additive; historical rows never rewritten; unknowns stay unknown.
+All additive; historical rows never rewritten; provenance is classified only under
+documented deterministic rules, and a migration aborts rather than guess.
 
-- **0133_service_event_provenance**: add `source text` + CHECK; deterministic backfill
-  (`provider_person_id is not null ⇒ 'staff_attested'` else `'participant_self_reported'`,
-  rule documented in-migration); set NOT NULL after backfill; add `dedupe_key uuid` + partial
-  unique index; comment `outcome_status` DEPRECATED. Rollback: drop the two columns + index.
+- **0133_service_event_provenance**: add `source text` + CHECK (the four-value closed
+  vocabulary — no `imported`); deterministic backfill by the §E writer fingerprints (rule
+  documented in-migration); **ABORT if any row remains unclassified**; set NOT NULL after the
+  backfill proves completeness; add `dedupe_key uuid` + partial unique index; comment
+  `outcome_status` DEPRECATED. Rollback: drop the two columns + index.
 - **0134_canonical_event_writer**: re-create the three RPCs (complete_session,
   record_navigation_service_event, record_residence_support_service_event) over one internal
   `record_service_event_internal` (§7 option B — see T); they stamp `source`, accept
