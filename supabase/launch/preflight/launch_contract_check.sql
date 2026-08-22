@@ -156,7 +156,9 @@ begin
       'propose_booking_times','release_bed','reschedule_booking','review_residence_application',
       'send_message','triage_residence_referral','complete_session',
       'review_residence_listing_submission','publish_residence_listing_submission',
-      'review_residence_application_intake')
+      'review_residence_application_intake',
+      'record_navigation_service_event','record_residence_support_service_event',
+      'record_my_activity')
     and not has_function_privilege('authenticated', p.oid, 'EXECUTE');
   if missing is not null then
     raise exception 'LAUNCH-CONTRACT FAIL: authenticated cannot execute client RPC(s): %', missing;
@@ -181,6 +183,20 @@ begin
         and c.reloptions @> array['security_invoker=true']);
   if missing is not null then
     raise exception 'LAUNCH-CONTRACT FAIL: owner-privileged view readable by client roles: %', missing;
+  end if;
+
+  -- 10) Internal-writer least privilege (P2.3, 0134). The canonical event writer
+  --     record_service_event_internal owns validation and is reachable ONLY through the
+  --     approved role-specific wrappers — a client-executable internal writer would bypass
+  --     every wrapper authorization check. Negative assertion: no client role may execute it.
+  select string_agg(distinct p.proname, ', ') into missing
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'recoveryos'
+    and p.proname in ('record_service_event_internal','resolve_sole_organization')
+    and (has_function_privilege('anon', p.oid, 'EXECUTE')
+      or has_function_privilege('authenticated', p.oid, 'EXECUTE'));
+  if missing is not null then
+    raise exception 'LAUNCH-CONTRACT FAIL: internal writer executable by client roles: %', missing;
   end if;
 end $contract$;
 
