@@ -1,6 +1,41 @@
 # P2 — Service Event, Provenance & Evidence Integrity: Canonical Architecture
 
-**Status: EXECUTIVE REVIEW GATE — analysis only. Nothing here is implemented.**
+> **Status: RATIFIED 2026-08-22 with executive corrections (P2 Executive Ratification).**
+> Nothing is implemented yet — implementation awaits separate authorization against
+> `docs/plans/p2-implementation-plan.md`.
+>
+> Executive corrections incorporated into this document:
+> 1. **Reporting-authority naming** — the proposal's "Class A/B/C" labels are REJECTED
+>    (collision with the GFA Institutional Evidence Ledger's Evidence Classes A–F, a
+>    different governance layer). Replaced by semantic keys:
+>    `organizationally_attested`, `participant_reported`, `system_derived` (§O).
+> 2. **Provenance backfill rule** — historical rows are classified only by demonstrable
+>    writer provenance (writer fingerprints), never solely by
+>    `provider_person_id IS NULL / NOT NULL`; unestablishable provenance stays explicitly
+>    unknown (NULL). Never fabricate provenance (§E).
+> 3. **Reserved source values** — `partner_confirmed` and `imported` are vocabulary only;
+>    no writer exists until an approved workflow exists (§E).
+> 4. **Self-recordable types locked for P2** — `daily_check_in`,
+>    `recovery_capital_assessment`, `recovery_practice`. Self-reported meeting/community
+>    participation is deliberately excluded from P2 (future design under the P1
+>    Recovery ≠ Community decision) (§K).
+> 5. **`support_request` deprecation approved** — the request workflow/concept is NOT
+>    deprecated; no replacement "responded_to_request" type is created (§J).
+> 6. **Resident-window reporting approved** — two separately labeled lenses, never summed,
+>    never produced by mutating attribution, operational definitions exposed (§H).
+> 7. **Provider self-read approved narrowly** — `provider_person_id = actor` only, never
+>    role-wide history; full positive/negative test matrix required (§Q).
+> 8. **Shared writer Option B ratified** — internal writer owns canonical validation and is
+>    never a public authenticated RPC (§T.3).
+> 9. **Idempotency contract** — ONE HUMAN ACTION → ONE DEDUPE KEY; retries reuse the key,
+>    new real interactions get a new key (§F).
+> 10. **Staged self-insert cutover required** — the participant direct-insert path is not
+>    removed until the replacement `record_my_activity` path is deployed and verified;
+>    no participant dead end (§K, implementation plan P2.5).
+> 11. **Governance rule added (§O-G)** — RecoveryOS event source describes individual
+>    record origin; the Institutional Evidence Ledger A–F classification describes
+>    institutional evidence authority. Different layers; neither vocabulary impersonates
+>    the other.
 
 Baseline verified 2026-08-21: branch `claude/recoveryos-canonical-audit-1pvcwr`, HEAD `2d90520`
 (= origin, tree clean, CI run #94 green), CQCX `cqcxvwoukyhxyokfwnjm` (RecoveryOS-Launch,
@@ -120,15 +155,19 @@ timestamp-equality weakness demonstrated).
 
 ## E. Provenance recommendation
 
-**Add one column: `source text not null` + CHECK, immutable, on `service_events`.** Values:
+**Add one column: `source text` + CHECK, immutable, on `service_events`.** NULL is the
+explicit representation of *unknown/unestablished historical provenance* — a NULL source is
+never fabricated away, and every post-P2 writer sets `source` explicitly (enforced by the
+internal writer plus an insert-time guard trigger; see the backfill rule below for the
+transition behavior). Values:
 
 | Value | Meaning | Ladder rung of what it can evidence |
 |---|---|---|
 | `participant_self_reported` | the person recorded their own activity | ENGAGEMENT (never org delivery) |
 | `staff_attested` | a human staff member claimed delivery occurred (identity in provider_person_id, lag visible in created_at−started_at) | ACTIVITY (delivered service) |
 | `system_derived` | generated deterministically from another confirmed system fact (e.g. future: meeting attendance ⇒ participation event); the generating fact must be linked | inherits the source fact's authority |
-| `partner_confirmed` | external partner attested (future; requires partner identity model) | ACTIVITY |
-| `imported` | migrated from an external system; original provenance recorded in import metadata, else unknown | report-only with import caveat |
+| `partner_confirmed` | **RESERVED** — external partner attested. No writer exists or may be created until an approved partner-confirmation workflow exists | ACTIVITY (when a workflow exists) |
+| `imported` | **RESERVED** — migrated from an external system. No writer exists or may be created until an approved import workflow exists; original provenance recorded in import metadata, else unknown | report-only with import caveat |
 
 Rejected: a separate provenance table (over-engineering — provenance is a property of how the
 row was born, 1:1, immutable); provenance on outcome records instead (outcomes already have
@@ -143,11 +182,32 @@ survives its opening.
 Immutability: already structural for clients (no UPDATE policy, no UPDATE in any RPC);
 document as a contract, optionally pin with a `before update` guard trigger on the column.
 
-Backfill: **deterministic, not fabricated** — every one of the 15 live rows is attributable to
-a known writer (11 W3 + 4 W2 ⇒ `staff_attested`). The migration backfills by
-`provider_person_id is not null ⇒ staff_attested`, `is null ⇒ participant_self_reported`
-(0 such rows live), and documents the rule. Nothing unknown exists; if it ever did, the answer
-is a frank `imported`/unknown marker, never a guess.
+Backfill (EXECUTIVE CORRECTION applied): **only by demonstrable writer provenance — writer
+fingerprints — never solely by `provider_person_id IS NULL / NOT NULL`.** The fingerprints,
+each recoverable from the closed set of writers that have ever existed:
+
+- `appointment_id IS NOT NULL` ⇒ written by `complete_session` (the unique partial index
+  guarantees this is the only path that sets it) ⇒ `staff_attested`;
+- `navigation_relationship_id IS NOT NULL AND service_type = resource_navigation` ⇒ written
+  by `record_navigation_service_event` ⇒ `staff_attested`;
+- `residency_id IS NOT NULL AND service_type = residence_recovery_support` ⇒ written by
+  `record_residence_support_service_event` ⇒ `staff_attested`;
+- `provider_person_id IS NULL AND service_type IN (daily_check_in,
+  recovery_capital_assessment) AND modality = self_directed` ⇒ written by the W1 direct-insert
+  path (the 0012 policy is the only client insert path, and it forces person = actor) ⇒
+  `participant_self_reported`;
+- **anything else ⇒ `source` stays NULL — explicitly unknown.** Never fabricated.
+
+The 15 live rows all match the first two fingerprints (verified live 2026-08-21: 11 W3 +
+4 W2), so the backfill classifies them `staff_attested` on writer evidence, not on a
+provider-null heuristic.
+
+Transition behavior (no participant dead end): while the W1 direct-insert path remains live
+during the staged cutover, the insert-time guard trigger stamps a direct insert (source
+absent) as `participant_self_reported` — deterministic at insert time because RLS guarantees
+only the self path can reach a direct insert — and raises for any other sourceless insert.
+After the cutover completes and the direct-insert policy is retired, the trigger tightens to
+require an explicit `source` from every writer.
 
 ## F. Idempotency recommendation
 
@@ -207,11 +267,13 @@ from where the participant sleeps.**
   NULLs are semantically correct. Auto-deriving from active residency would fabricate
   attribution and double-claim VRCC work for the house — rejected.
 - Attribution is chosen explicitly by the writer, immutable after insert (append-only table).
-- The undercount is fixed in *reporting*: residence/funder reports gain a second, separately
-  labeled lens — "services received by current/window residents (any GFA program)" computed by
-  joining person + residency window — alongside the existing "services delivered by the
-  residence" (`residence_id`). Two different funder questions, two labeled metrics, no
-  double-counting because they are never summed.
+- The undercount is fixed in *reporting* (RATIFIED, two lenses):
+  **A. RESIDENCE-DELIVERED SERVICES** — services actually delivered under the residence
+  program / residence attribution (`residence_id`);
+  **B. SERVICES RECEIVED DURING RESIDENCY** — GFA services received by a participant while an
+  active residency existed, regardless of who delivered them (person + residency-window join).
+  Attribution is never mutated to produce lens B; the lenses are never summed as though
+  mutually exclusive; every report using either exposes its operational definition.
 
 ## I. Program / organization / funding attribution decision
 
@@ -231,7 +293,7 @@ from where the participant sleeps.**
 |---|---|---|
 | `navigation` | **DEPRECATE** (`is_active=false`, row kept, history untouched) | confirmed duplicate of `resource_navigation` (0112:873 added the wired one); zero events; two keys for one meaning invites split counts |
 | `resource_navigation` | KEEP | the wired navigation attestation type |
-| `support_request` | **DEPRECATE** | a request is not a delivered service; requests live in `support_requests`; the delivered response is a coaching/peer_support event. Zero events. Keeping it invites counting asks as delivery. |
+| `support_request` | **DEPRECATE** (RATIFIED — event type only; the request workflow/concept is untouched; no replacement "responded_to_request" type) | a request is not a delivered service; requests live in `support_requests`; the human/system response creates the appropriate actual service event (coaching, navigation, peer support, residence support). Zero events. Keeping it invites counting asks as delivery. |
 | `coaching_session`, `peer_support`, `mentoring`, `accountability`, `recovery_circle`, `residence_recovery_support`, `community_event`, `education_module` | KEEP (staff/system-recordable delivery types) | real service taxonomy; several await writers ("wire before rebuilding" applies later, not in P2) |
 | `daily_check_in`, `recovery_capital_assessment`, `recovery_practice` | KEEP (participant-self class) | engagement-rung activity; must be labeled as such in reporting (§O) |
 
@@ -245,9 +307,12 @@ No historical rows deleted, ever; deprecation is `is_active=false` + comment.
 Principle: **a participant may self-record what they themselves did (their own activity /
 engagement); only staff or system may record what GFA delivered.**
 
-Self-recordable (participant authority, ENGAGEMENT rung): `daily_check_in`,
-`recovery_capital_assessment`, `recovery_practice`; plausibly self-reported meeting/community
-participation later (as participation, never as GFA facilitation).
+Self-recordable (participant authority, ENGAGEMENT rung — **RATIFIED LIST, closed for P2**):
+`daily_check_in`, `recovery_capital_assessment`, `recovery_practice`. Self-reported
+meeting/community participation is deliberately NOT added in P2 — it is a valid future
+participant/community-engagement concept requiring its own design under the P1
+Recovery ≠ Community decision. Participant self-recording means the participant records what
+THEY did; it must never silently become "GFA delivered this service."
 
 Staff/system-only (delivery claim, ACTIVITY rung): `coaching_session`, `peer_support`,
 `mentoring`, `accountability`, `recovery_circle`, `resource_navigation`,
@@ -330,23 +395,42 @@ touched, never write it. Outcomes live where evidence gates them: referral conne
 need resolution, goal status, residency completion. Column physically dropped only in a later
 cleanup phase, never rewritten.
 
-## O. Reporting-authority model
+## O. Reporting-authority model (EXECUTIVE CORRECTION applied — renamed)
 
-Every service-event aggregate must declare its **authority class** (from `source`) and its
-**ladder rung**:
+The three-level distinction is ratified; the "Class A/B/C" names are **rejected** — GFA's
+Institutional Evidence Ledger already carries Evidence Classes A–F with entirely different
+meanings, and RecoveryOS must not create a second A/B/C system. The reporting-authority
+model uses semantic machine keys:
 
-| Class | Source values | May support | Must never be presented as |
+| Reporting authority (key) | Source values mapped in | May support | Must never be presented as |
 |---|---|---|---|
-| **A — Organizational service delivery** | `staff_attested`, `partner_confirmed` | external claims: "GFA delivered N services", Exhibit E, funder reports | participant outcome |
-| **B — Participant engagement** | `participant_self_reported` | "N participants actively engaging", retention/engagement signals | GFA-delivered service, ever — unless the metric name says "participant-reported" |
-| **C — Derived** | `system_derived` | whatever its generating fact supports, labeled | independent evidence |
+| **`organizationally_attested`** | `staff_attested` (and, only when an approved workflow defines its evidence basis, `partner_confirmed`) | external claims: "GFA delivered N services", Exhibit E, funder reports | participant outcome |
+| **`participant_reported`** | `participant_self_reported` | "N participants actively engaging", retention/engagement signals | GFA-delivered service, ever — unless the metric name says "participant-reported" |
+| **`system_derived`** | `system_derived` | whatever its generating fact supports, labeled | independent evidence |
 
-Binding rules: external service-delivery claims draw from Class A only, fixture-filtered
-(`is_production_person`), with period and operational definition attached. The
-`admin_evidence_summary` services block splits A from B the day Class B rows exist. Exhibit E
-gains an explicit Class A filter (`source='staff_attested'`) so the §A.2 hole is closed at the
-report too, not just at the write path. Rung mapping: Class A events = ACTIVITY;
-Class B = ENGAGEMENT; CONNECTION and above never come from this table.
+**Event source and reporting authority are related but not identical layers.** `source`
+describes how one row entered institutional record; reporting authority describes what an
+aggregate over such rows may claim. The mapping above is the canonical translation;
+`partner_confirmed` and `imported` acquire a reporting authority only when their approved
+workflows define the underlying evidence — never by assumption (an `imported` row's authority
+depends on what the source system could attest).
+
+Binding rules: external service-delivery claims draw from `organizationally_attested` only,
+fixture-filtered (`is_production_person`), with period and operational definition attached.
+The `admin_evidence_summary` services block splits authorities the day `participant_reported`
+rows exist. Exhibit E gains an explicit `source = 'staff_attested'` filter so the §A.2 hole is
+closed at the report too, not just at the write path. Ladder mapping:
+`organizationally_attested` events = ACTIVITY; `participant_reported` = ENGAGEMENT;
+CONNECTION and above never come from this table.
+
+### O-G. Governance rule: event source is not Institutional Evidence Class
+
+**RecoveryOS event provenance/`source` describes individual record origin. The GFA
+Institutional Evidence Ledger A–F classification describes institutional evidence authority.
+They are different layers. Neither vocabulary impersonates the other.** The Ledger may later
+classify a generated RecoveryOS aggregate independently under its own A–F governance taxonomy;
+RecoveryOS never emits "Class A/B/C…" language of its own, and Ledger classes never appear as
+row-level values in RecoveryOS.
 
 ## P. Evidence-Ledger compatibility (aggregate-only)
 
@@ -371,10 +455,13 @@ Changes proposed, all narrowing or neutral except one:
 - **Narrowing:** self-insert policy restricted then removed (§K) — the only genuine widening
   risk in P2 is *not* doing this.
 - **Neutral:** RPC writers already definer-gated; dedupe/provenance columns add no read surface.
-- **One candidate widening (flagged, Executive decision §V):** a `provider_person_id =
-  current_person_id()` SELECT policy so coaches/navigators can read events they themselves
-  attested (today they cannot). Minimal, role-appropriate, and useful for correcting mistakes
-  via a future amendment flow — but it is a widening, so it ships only if ratified.
+- **One widening (RATIFIED, narrowly):** a `provider_person_id = current_person_id()` SELECT
+  policy so providers read exactly the events they personally attested — the principle is
+  actor identity, never "role = coach therefore read broad participant history."
+  Relationship-wide service-event visibility remains a later explicit design decision.
+  Required tests before ship: positive provider-self read; negative cross-provider read;
+  participant-own read unchanged; residence-staff boundary unchanged; unknown-authenticated
+  identity reads zero rows.
 
 Consent: service events record service facts, not disclosures; no consent-gated content is
 added (and §24's boundary keeps it that way). Cross-role leakage: none found; navigation
@@ -388,7 +475,7 @@ events are invisible to residence staff and vice versa unless residence-attribut
 | person_id | who received/did | writer | ✓ | never | self | denominator | scoped by RLS |
 | service_type_id | what kind | writer (whitelist per source class) | ✓ | never | label only | by_type | low |
 | **source** *(new)* | how this became evidence | writer, CHECK enum §E | ✓ | **never** | no (drives labels) | **class selector** | low |
-| provider_person_id | who attested/delivered | RPC identity | staff classes | never | staff name only where role-appropriate | Class A actor | medium — display-name rules apply |
+| provider_person_id | who attested/delivered | RPC identity | staff sources | never | staff name only where role-appropriate | organizationally_attested actor | medium — display-name rules apply |
 | organization_id | delivering org | derived | ✓ | never | no | org claims | low |
 | program_id | program setting | inherited/selected | opt | never | no | program rollups | low |
 | residence_id / residency_id | residence-delivered attribution (§H) | writer authority | opt | never | staff | residence reports | medium |
@@ -430,7 +517,7 @@ All additive; historical rows never rewritten; unknowns stay unknown.
   same release; policy dropped in a later migration once telemetry shows zero direct inserts.
   Rollback: restore 0012 policy text.
 - **0136_reporting_corrections**: `is_active=false` on `navigation`, `support_request`;
-  evidence-summary services block splits Class A/B and the resident-window lens lands beside
+  evidence-summary services block splits reporting authorities and the resident-window lens lands beside
   the residence lens (0132 pattern: add beside, never replace); preflight step-8 list gains
   the new RPCs. Rollback: re-run prior bodies.
 
@@ -456,7 +543,7 @@ clients working until the switch is complete.
    pass-through UI, follow-up micro-capture prompt.
 5. **P2.5 — Self-insert restriction** (0135 + W1 reroute).
 6. **P2.6 — Evidence/reporting corrections** (0136 + EvidencePage class labels + Exhibit E
-   Class A filter + resident-window lens + supervision scope label).
+   `staff_attested` filter + resident-window lens + supervision scope label).
 7. **P2.7 — Timeline/loop linkage prep**: verify every writer emits full linkage; document
    the timeline join contract for P7. No timeline built.
 
@@ -472,27 +559,25 @@ activity or page views (Grace interactions are never service events — locked d
 mandatory capture fields. No funding backfill. No BARC-linked event outcomes. No timeline UI
 (P7). No enum surgery on delivery_context. No deletion of any historical row or type.
 
-## V. Genuine Executive Director decisions
+## V. Executive Director decisions — ALL RESOLVED (P2 Executive Ratification, 2026-08-22)
 
-1. **Self-recordable type list (§K).** Recommended: `daily_check_in`,
-   `recovery_capital_assessment`, `recovery_practice`. Adding self-reported
-   meeting/community participation is an organizational-policy call: it strengthens
-   engagement data but creates a Class B count adjacent to Class A community_event delivery.
-2. **`support_request` service-type deprecation (§J).** Recommended DEPRECATE (requests are
-   not deliveries). Semantic judgment on whether "responding to a support request" deserves
-   its own delivery type instead (recommended: no — the response is coaching/peer support).
-3. **External-claim language (§O).** Ratify the three-class authority model and the naming
-   rule that Class B metrics must say "participant-reported" in every external artifact.
-4. **Resident-window residence reporting (§H).** May funder-facing residence reports include
-   the separately labeled "services received by residents from GFA programs during residency"
-   metric? Recommended yes, with both lenses labeled; this is a funder-semantics judgment.
-5. **Provider self-read policy (§Q).** The one RLS widening on the table: coaches/navigators
-   reading events they themselves attested. Recommended yes (minimal, role-appropriate);
-   ships only if ratified.
-
-Everything else in this document is resolved on evidence and needs no executive input.
+1. **Self-recordable type list (§K).** DECIDED: `daily_check_in`,
+   `recovery_capital_assessment`, `recovery_practice` only. Self-reported meeting/community
+   participation is excluded from P2 (future deliberate design under Recovery ≠ Community).
+2. **`support_request` service-type deprecation (§J).** APPROVED as an event type; the
+   request workflow/concept is untouched; NO replacement "responded_to_request" type.
+3. **Reporting-authority model (§O).** RATIFIED with naming correction:
+   `organizationally_attested` / `participant_reported` / `system_derived` — never "Class
+   A/B/C" (Institutional Evidence Ledger collision). Participant-reported metrics must say so
+   in every external artifact.
+4. **Resident-window residence reporting (§H).** APPROVED: two separately labeled lenses,
+   operational definitions exposed, never summed, never produced by mutating attribution.
+5. **Provider self-read policy (§Q).** APPROVED narrowly: `provider_person_id = actor` only,
+   never role-wide participant history; full positive/negative test matrix required;
+   relationship-wide visibility remains a later explicit design decision.
 
 ---
 
-*Analysis gate complete. No migration 0133 created, no schema/RLS/service-type/reporting
-change made, no CQCX mutation performed. Awaiting P2 ratification.*
+*RATIFIED architecture. Implementation plan: `docs/plans/p2-implementation-plan.md`.
+No migration created, no schema/RLS/service-type/reporting change made, no CQCX mutation
+performed. Implementation awaits separate authorization.*
