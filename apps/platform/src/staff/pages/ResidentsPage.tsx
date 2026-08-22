@@ -63,6 +63,13 @@ export function ResidentsPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [supportNotice, setSupportNotice] = useState<string | null>(null);
   const [recordingFor, setRecordingFor] = useState<number | null>(null);
+  // One human action → one dedupe key (P2.4): minted when the record form opens,
+  // held across retries of that submission, regenerated only by opening a new form.
+  const [supportDedupeKey, setSupportDedupeKey] = useState<string>('');
+  const openRecording = (personId: number) => {
+    setSupportDedupeKey(crypto.randomUUID());
+    setRecordingFor(personId);
+  };
   const [supportModality, setSupportModality] = useState('in_person');
   const [supportMinutes, setSupportMinutes] = useState('15');
 
@@ -122,6 +129,7 @@ export function ResidentsPage() {
       personId,
       modality: supportModality,
       durationMinutes: Number.isFinite(minutes) && minutes > 0 ? minutes : undefined,
+      dedupeKey: supportDedupeKey || undefined,
     });
     if (result.ok) {
       setRecordingFor(null);
@@ -204,7 +212,7 @@ export function ResidentsPage() {
                           <Button
                             variant="secondary"
                             size="md"
-                            onClick={() => setRecordingFor(r.id)}
+                            onClick={() => openRecording(r.id)}
                           >
                             Record support conversation
                           </Button>

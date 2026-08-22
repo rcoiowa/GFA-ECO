@@ -223,6 +223,7 @@ export function useRecordNavigationService() {
       modality?: string;
       durationMinutes?: number;
       referralId?: number | null;
+      dedupeKey?: string;
     }) => {
       const result = await recordNavigationServiceEvent(input);
       if (!result.ok) throw new Error(String(result.code));

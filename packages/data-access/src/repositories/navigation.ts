@@ -136,6 +136,8 @@ export function recordNavigationServiceEvent(input: {
   startedAt?: string;
   durationMinutes?: number;
   referralId?: number | null;
+  /** One human action → one key; the caller holds it across retries of that action. */
+  dedupeKey?: string;
 }): Promise<RpcEnvelope> {
   return rpc('record_navigation_service_event', {
     p_person_id: input.personId,
@@ -144,6 +146,7 @@ export function recordNavigationServiceEvent(input: {
     p_started_at: input.startedAt ?? new Date().toISOString(),
     p_duration_minutes: input.durationMinutes ?? null,
     p_referral_id: input.referralId ?? null,
+    p_dedupe_key: input.dedupeKey ?? null,
   });
 }
 

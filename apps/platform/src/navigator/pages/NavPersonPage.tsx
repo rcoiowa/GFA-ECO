@@ -78,6 +78,15 @@ export function NavPersonPage() {
   const [followUpDate, setFollowUpDate] = useState('');
   const [serviceOpen, setServiceOpen] = useState(false);
   const [serviceMinutes, setServiceMinutes] = useState('30');
+  // One human action → one dedupe key (P2.4): minted when the attestation form opens,
+  // reused across retries of that submission, regenerated only by reopening the form.
+  const [serviceDedupeKey, setServiceDedupeKey] = useState('');
+  const toggleServiceOpen = () => {
+    setServiceOpen((v) => {
+      if (!v) setServiceDedupeKey(crypto.randomUUID());
+      return !v;
+    });
+  };
 
   const entry = useMemo(
     () => roster.find((r) => r.participant_person_id === personId),
@@ -179,7 +188,7 @@ export function NavPersonPage() {
           >
             Message {entry.display_name}
           </Link>
-          <Button variant="secondary" onClick={() => setServiceOpen((v) => !v)}>
+          <Button variant="secondary" onClick={toggleServiceOpen}>
             I provided navigation support
           </Button>
         </div>
@@ -201,7 +210,11 @@ export function NavPersonPage() {
                 disabled={recordService.isPending}
                 onClick={() =>
                   void recordService
-                    .mutateAsync({ personId, durationMinutes: Number(serviceMinutes) || undefined })
+                    .mutateAsync({
+                      personId,
+                      durationMinutes: Number(serviceMinutes) || undefined,
+                      dedupeKey: serviceDedupeKey || undefined,
+                    })
                     .then(() => setServiceOpen(false))
                     .catch(() => undefined)
                 }
