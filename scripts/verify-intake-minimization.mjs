@@ -44,6 +44,7 @@ const M = {
   conditional: 'supabase/launch/migrations/0141_conditional_intake_data.sql',
   readiness: 'supabase/launch/migrations/0142_intake_conversion_readiness.sql',
   medreview: 'supabase/launch/migrations/0143_medication_status_review.sql',
+  lookup: 'supabase/launch/migrations/0144_intake_conversion_lookup.sql',
 };
 
 // ---- B4: banned over-collection vocabulary across all four migrations ----------------------

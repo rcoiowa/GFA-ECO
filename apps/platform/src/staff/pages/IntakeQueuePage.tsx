@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import {
+  convertApplicationIntake,
+  findPersonForIntakeConversion,
   listApplicationIntake,
   reviewApplicationIntake,
+  type IntakeConversionCandidate,
   type ResidenceApplicationIntake,
 } from '@recoveryos/data-access';
 import {
@@ -14,6 +17,7 @@ import {
   LoadingState,
   PageHeader,
   TextAreaField,
+  TextField,
 } from '@recoveryos/ui';
 
 /**
@@ -50,7 +54,6 @@ const NEXT_STEPS: Record<string, { status: Exclude<ResidenceApplicationIntake['s
     { status: 'closed', label: 'Close' },
   ],
   account_offered: [
-    { status: 'converted', label: 'Mark converted' },
     { status: 'waitlisted', label: 'Waitlist' },
     { status: 'closed', label: 'Close' },
   ],
@@ -112,6 +115,71 @@ export function IntakeQueuePage() {
   const open = rows.filter((r) => OPEN_STATUSES.has(r.status));
   const settled = rows.filter((r) => !OPEN_STATUSES.has(r.status));
 
+  /**
+   * B5A conversion flow: find the account matching the intake email (or one the
+   * applicant states), then convert through the audited RPC. Identity warnings
+   * (email mismatch / another account on that email) require an explicit human
+   * "I verified" confirmation — never silently merged.
+   */
+  const [convertFor, setConvertFor] = useState<number | null>(null);
+  const [candidates, setCandidates] = useState<IntakeConversionCandidate[] | null>(null);
+  const [lookupEmail, setLookupEmail] = useState('');
+  const [lookupNote, setLookupNote] = useState<string | null>(null);
+  const [pendingWarnings, setPendingWarnings] = useState<{ personId: number; warnings: string[] } | null>(null);
+  const [converted, setConverted] = useState<string | null>(null);
+
+  const openConvert = async (intakeId: number) => {
+    setConvertFor(intakeId);
+    setCandidates(null);
+    setLookupEmail('');
+    setLookupNote(null);
+    setPendingWarnings(null);
+    setActionError(null);
+    const r = await findPersonForIntakeConversion({ intakeId });
+    if (r.ok) {
+      setCandidates(r.candidates ?? []);
+      if ((r.candidates ?? []).length === 0)
+        setLookupNote('No account uses the email from the application yet.');
+    } else if (r.code === 'no_email') {
+      setCandidates([]);
+      setLookupNote('The application has no email — ask which email they signed up with.');
+    } else {
+      setActionError(r.message ?? 'We couldn’t look that up.');
+    }
+  };
+
+  const lookupByEmail = async () => {
+    if (convertFor == null || !lookupEmail.trim()) return;
+    setLookupNote(null);
+    const r = await findPersonForIntakeConversion({ intakeId: convertFor, email: lookupEmail.trim() });
+    if (r.ok) {
+      setCandidates(r.candidates ?? []);
+      if ((r.candidates ?? []).length === 0) setLookupNote('No account uses that email.');
+    } else {
+      setActionError(r.message ?? 'We couldn’t look that up.');
+    }
+  };
+
+  const WARNING_TEXT: Record<string, string> = {
+    email_mismatch: 'this account signed up with a different email than the application',
+    email_matches_other_person: 'a different account also uses the application’s email',
+  };
+
+  const convert = async (intakeId: number, personId: number, confirmed: boolean) => {
+    setActionError(null);
+    const r = await convertApplicationIntake({ intakeId, personId, confirm: confirmed });
+    if (r.ok) {
+      setConvertFor(null);
+      setPendingWarnings(null);
+      setConverted('Converted — the full application now appears on the Applications page.');
+      await load();
+    } else if (r.code === 'confirm_required') {
+      setPendingWarnings({ personId, warnings: r.warnings ?? [] });
+    } else {
+      setActionError(r.message ?? 'The conversion didn’t go through.');
+    }
+  };
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <PageHeader
@@ -131,6 +199,7 @@ export function IntakeQueuePage() {
       ) : (
         <div className="flex flex-col gap-5">
           {actionError ? <Alert tone="critical">{actionError}</Alert> : null}
+          {converted ? <Alert tone="positive">{converted}</Alert> : null}
 
           <Card>
             <CardTitle>Waiting on us ({open.length})</CardTitle>
@@ -204,6 +273,11 @@ export function IntakeQueuePage() {
                       </button>
                     )}
                     <div className="mt-3 flex flex-wrap gap-2">
+                      {r.status === 'account_offered' ? (
+                        <Button size="md" onClick={() => void openConvert(r.id)}>
+                          Create full application…
+                        </Button>
+                      ) : null}
                       {(NEXT_STEPS[r.status] ?? []).map((step) => (
                         <Button
                           key={step.status}
@@ -215,6 +289,86 @@ export function IntakeQueuePage() {
                         </Button>
                       ))}
                     </div>
+                    {convertFor === r.id ? (
+                      <div className="mt-3 rounded-md border border-line bg-surface p-3" data-testid="convert-panel">
+                        <p className="text-sm font-medium text-ink">
+                          Which account belongs to {r.applicant_name}?
+                        </p>
+                        {candidates === null ? (
+                          <p className="mt-1 text-sm text-ink-muted">Looking for their account…</p>
+                        ) : (
+                          <>
+                            {candidates.map((c) => (
+                              <div
+                                key={c.person_id}
+                                className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-line px-3 py-2"
+                              >
+                                <span className="text-sm text-ink">
+                                  {c.first_name} {c.last_name}
+                                  {c.matched_intake_email ? ' · matches the application email' : ''}
+                                </span>
+                                {pendingWarnings?.personId === c.person_id ? (
+                                  <div className="w-full">
+                                    <Alert tone="attention">
+                                      Check before continuing:{' '}
+                                      {pendingWarnings.warnings
+                                        .map((w) => WARNING_TEXT[w] ?? w)
+                                        .join('; ')}
+                                      . Only continue if you have verified with them that this is
+                                      the same person.
+                                    </Alert>
+                                    <Button
+                                      size="md"
+                                      className="mt-2"
+                                      onClick={() => void convert(r.id, c.person_id, true)}
+                                    >
+                                      I verified — convert
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Button
+                                    size="md"
+                                    variant="secondary"
+                                    onClick={() => void convert(r.id, c.person_id, false)}
+                                  >
+                                    This is them
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                            {lookupNote ? (
+                              <p className="mt-2 text-sm text-ink-muted">{lookupNote}</p>
+                            ) : null}
+                            <div className="mt-2 flex items-end gap-2">
+                              <TextField
+                                label="Or search by the email they signed up with"
+                                value={lookupEmail}
+                                onChange={(e) => setLookupEmail(e.target.value)}
+                              />
+                              <Button
+                                variant="secondary"
+                                size="md"
+                                disabled={!lookupEmail.trim()}
+                                onClick={() => void lookupByEmail()}
+                              >
+                                Find
+                              </Button>
+                            </div>
+                            <p className="mt-2 text-xs text-ink-faint">
+                              No account yet? They sign up in the app first — creating an account is
+                              always their own step.
+                            </p>
+                          </>
+                        )}
+                        <button
+                          type="button"
+                          className="mt-2 text-sm text-ink-muted underline underline-offset-2"
+                          onClick={() => setConvertFor(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : null}
                   </li>
                 ))}
               </ul>

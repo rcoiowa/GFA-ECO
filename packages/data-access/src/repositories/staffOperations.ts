@@ -138,11 +138,11 @@ export async function listApplications(residenceId: number): Promise<Application
 /**
  * P4F: decisions go through review_residence_application — the server derives
  * the decider, enforces legal transitions, and requires residence-manager
- * authority for terminal decisions. The staff UI's "Approve" action keeps its
- * historical product meaning (approve AND open the residency) by chaining the
- * admit RPC; waitlist/decline/in-review are review-only. `decidedByPersonId`
- * is retained for signature compatibility but ignored — identity is never
- * client-supplied.
+ * authority for terminal decisions. B5A: approval is ONLY approval — it
+ * unlocks the intake checklist; the residency is opened later by the separate,
+ * deliberate move-in action (admitApplicant), readiness-gated on the server.
+ * `decidedByPersonId` is retained for signature compatibility but ignored —
+ * identity is never client-supplied.
  */
 export async function decideApplication(input: {
   application: ResidenceApplication;
@@ -150,8 +150,7 @@ export async function decideApplication(input: {
   decidedByPersonId?: number;
   notes?: string;
 }): Promise<void> {
-  const sb = getSupabase();
-  const { data, error } = await sb.rpc('review_residence_application', {
+  const { data, error } = await getSupabase().rpc('review_residence_application', {
     p_application_id: input.application.id,
     p_decision: input.status,
     p_note: input.notes ?? null,
@@ -159,24 +158,6 @@ export async function decideApplication(input: {
   if (error) throw error;
   const result = data as { ok?: boolean; code?: string; message?: string } | null;
   if (!result?.ok) throw new Error(result?.message ?? String(result?.code ?? 'review_failed'));
-
-  if (input.status === 'approved') {
-    const { data: admitData, error: admitError } = await sb.rpc('admit_applicant', {
-      p_application_id: input.application.id,
-      p_bed_id: null,
-      p_admission_date: new Date().toISOString().slice(0, 10),
-    });
-    if (admitError) throw admitError;
-    const admit = admitData as { ok?: boolean; code?: string; message?: string } | null;
-    // Gate B3: admission is readiness-gated and approval never creates residency
-    // on its own. An intake_incomplete refusal means the approval stands and the
-    // person proceeds through the intake checklist; admission happens later as
-    // its own deliberate action once the checklist is complete (or via the
-    // narrow audited override). Any other refusal is still an error.
-    if (!admit?.ok && admit?.code !== 'intake_incomplete') {
-      throw new Error(admit?.message ?? String(admit?.code ?? 'admit_failed'));
-    }
-  }
 }
 
 // Screenings ---------------------------------------------------------------

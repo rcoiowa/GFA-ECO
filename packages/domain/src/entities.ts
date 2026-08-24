@@ -309,6 +309,10 @@ export interface DocumentTemplate {
   key: string;
   name: string;
   requires_signature: boolean;
+  /** Ack-only intake documents (0139): received/read, no signature. */
+  requires_acknowledgment: boolean;
+  /** NULL = organization-wide; a residence id scopes the document to that house (0139). */
+  residence_id: number | null;
   is_active: boolean;
 }
 
@@ -317,6 +321,8 @@ export interface DocumentVersion {
   template_id: number;
   version: string;
   body_markdown: string;
+  /** Trigger-computed sha256 of body_markdown — the immutable evidence fingerprint (0139). */
+  content_hash: string;
   published_at: string | null;
 }
 
@@ -325,8 +331,12 @@ export interface DocumentAssignment {
   document_version_id: number;
   person_id: number;
   residency_id: number | null;
+  /** Intake-stage anchor: assignment issued against an approved application (0139). */
+  application_id: number | null;
   assigned_at: string;
   acknowledged_at: string | null;
+  /** Set only for signature documents; ack-only documents never carry it (0139). */
+  signed_at: string | null;
   signature_name: string | null;
 }
 

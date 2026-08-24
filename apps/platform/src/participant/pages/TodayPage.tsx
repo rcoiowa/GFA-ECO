@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
-import { listMyGoals, listMyRecentCheckIns } from '@recoveryos/data-access';
+import {
+  getMyLatestApplication,
+  listMyGoals,
+  listMyRecentCheckIns,
+  type MyApplication,
+} from '@recoveryos/data-access';
 import { dailySlogan } from '@recoveryos/recovery-content';
 import type { CheckIn, Goal } from '@recoveryos/domain';
 import { Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
@@ -17,18 +22,21 @@ export function TodayPage() {
   const [error, setError] = useState(false);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
+  const [application, setApplication] = useState<MyApplication | null>(null);
 
   const load = useCallback(async () => {
     if (!person) return;
     setLoading(true);
     setError(false);
     try {
-      const [g, c] = await Promise.all([
+      const [g, c, app] = await Promise.all([
         listMyGoals(person.id),
         listMyRecentCheckIns(person.id, 7),
+        getMyLatestApplication(person.id).catch(() => null),
       ]);
       setGoals(g.filter((goal) => goal.status === 'active'));
       setCheckIns(c);
+      setApplication(app);
     } catch {
       setError(true);
     } finally {
@@ -65,6 +73,22 @@ export function TodayPage() {
         <ErrorState onRetry={() => void load()} />
       ) : (
         <div className="flex flex-col gap-5">
+          {application && ['submitted', 'in_review', 'approved', 'waitlisted'].includes(application.status) ? (
+            <Card>
+              <CardTitle>Getting settled</CardTitle>
+              <p className="text-ink-muted">
+                {application.status === 'approved'
+                  ? `You're approved at ${application.residence?.name ?? 'your residence'} — a few things are ready for you to look through, at your pace.`
+                  : `Your application at ${application.residence?.name ?? 'the residence'} is in motion.`}
+              </p>
+              <Link
+                to="/app/getting-settled"
+                className="mt-2 inline-block font-medium text-experience-700 underline underline-offset-2"
+              >
+                See what's next
+              </Link>
+            </Card>
+          ) : null}
           <Card>
             <CardTitle>How are you arriving today?</CardTitle>
             {checkedInToday ? (

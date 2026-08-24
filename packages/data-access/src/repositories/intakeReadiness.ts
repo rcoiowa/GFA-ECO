@@ -188,3 +188,69 @@ export async function applicationIntakeReadiness(
 ): Promise<IntakeRpcResult & { complete?: boolean; items?: ReadinessItem[]; blocking_unmet?: string[] }> {
   return callRpc('application_intake_readiness', { p_application_id: applicationId });
 }
+
+/**
+ * The deliberate move-in action (B3 admit_applicant v2): manager/admin gated,
+ * readiness-gated, with the narrow audited override for deferrable items only.
+ * Approval never calls this — admission is its own human act.
+ */
+export async function admitApplicant(input: {
+  applicationId: number;
+  bedId?: number;
+  admissionDate?: string;
+  override?: boolean;
+  overrideReason?: string;
+}): Promise<IntakeRpcResult & { residency_id?: number }> {
+  return callRpc('admit_applicant', {
+    p_application_id: input.applicationId,
+    p_bed_id: input.bedId ?? null,
+    p_admission_date: input.admissionDate ?? new Date().toISOString().slice(0, 10),
+    p_override: input.override ?? false,
+    p_override_reason: input.overrideReason ?? null,
+  });
+}
+
+export interface IntakeConversionCandidate {
+  person_id: number;
+  first_name: string;
+  last_name: string;
+  matched_intake_email: boolean;
+}
+
+/**
+ * Find the account(s) matching an intake row's email (or an email the applicant
+ * states in person) so staff can convert to the RIGHT person (0144). Minimum
+ * disclosure: id + name only, for one intake the caller already reviews.
+ */
+export async function findPersonForIntakeConversion(input: {
+  intakeId: number;
+  email?: string;
+}): Promise<IntakeRpcResult & { candidates?: IntakeConversionCandidate[] }> {
+  return callRpc('find_person_for_intake_conversion', {
+    p_intake_id: input.intakeId,
+    p_email: input.email ?? null,
+  });
+}
+
+export interface MedicationItem {
+  id: number;
+  person_id: number;
+  name: string;
+  storage_requirement: 'self_managed' | 'secure_storage' | 'staff_count';
+  is_moud: boolean;
+  prescriber_on_file: boolean;
+  started_at: string;
+  ended_at: string | null;
+}
+
+/** Active medication items for a person (RLS: self, or staff of their residence). */
+export async function listActiveMedicationItems(personId: number): Promise<MedicationItem[]> {
+  const { data, error } = await getSupabase()
+    .from('residency_medication_items')
+    .select('id, person_id, name, storage_requirement, is_moud, prescriber_on_file, started_at, ended_at')
+    .eq('person_id', personId)
+    .is('ended_at', null)
+    .order('started_at', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as MedicationItem[];
+}
