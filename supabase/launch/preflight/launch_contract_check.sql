@@ -158,7 +158,12 @@ begin
       'review_residence_listing_submission','publish_residence_listing_submission',
       'review_residence_application_intake',
       'record_navigation_service_event','record_residence_support_service_event',
-      'record_my_activity','residence_service_lenses')
+      'record_my_activity','residence_service_lenses',
+      -- Gate B1–B4 (0139–0142): document evidence, consent, conditional data, readiness.
+      'acknowledge_document','record_consent_grant','revoke_consent_grant',
+      'record_consent_disclosure','record_emergency_contact','record_medication_item',
+      'end_medication_item','record_supervision_coordination',
+      'convert_application_intake','application_intake_readiness')
     and not has_function_privilege('authenticated', p.oid, 'EXECUTE');
   if missing is not null then
     raise exception 'LAUNCH-CONTRACT FAIL: authenticated cannot execute client RPC(s): %', missing;

@@ -168,7 +168,14 @@ export async function decideApplication(input: {
     });
     if (admitError) throw admitError;
     const admit = admitData as { ok?: boolean; code?: string; message?: string } | null;
-    if (!admit?.ok) throw new Error(admit?.message ?? String(admit?.code ?? 'admit_failed'));
+    // Gate B3: admission is readiness-gated and approval never creates residency
+    // on its own. An intake_incomplete refusal means the approval stands and the
+    // person proceeds through the intake checklist; admission happens later as
+    // its own deliberate action once the checklist is complete (or via the
+    // narrow audited override). Any other refusal is still an error.
+    if (!admit?.ok && admit?.code !== 'intake_incomplete') {
+      throw new Error(admit?.message ?? String(admit?.code ?? 'admit_failed'));
+    }
   }
 }
 
