@@ -514,7 +514,13 @@ verification; STOP rather than improvise on any authority conflict.
 ## 16. Unresolved policy / legal questions (no policy invented)
 
 1. EJWRH document editions: sign shared GFA/Grace House documents as-is, or EJWRH-specific
-   versions? (House-specific wording is currently Grace House-authored.)
+   versions? (House-specific wording is currently Grace House-authored.) **UPDATE
+   2026-08-24:** the canonical EJWRH program model now exists
+   (`docs/architecture/ejwrh-program-model-v1.0.md` — three phases, curfews, participation,
+   pathway-neutral recovery support, return-to-use human-decision sequence, GFA/Operator
+   split, IRP-as-generated-view, burden test). EJWRH editions are authored FROM that model;
+   the retired four-level document is not a drafting source. Two confirmation items remain
+   before edition authoring completes (weekly activity count; executed PSA version).
 2. 42 CFR Part 2 applicability to GFA data flows — needs counsel; policy language currently
    says "alignment."
 3. Retention/deletion schedule for declined/withdrawn/closed intakes and for
