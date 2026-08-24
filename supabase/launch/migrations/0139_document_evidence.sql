@@ -72,7 +72,7 @@ comment on column recoveryos.document_assignments.application_id is
 
 -- 2) Deterministic hash: computed at write time, backfilled for all existing versions.
 create or replace function recoveryos.trg_document_versions_hash()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = recoveryos, public as $$
 begin
   new.content_hash := encode(extensions.digest(convert_to(new.body_markdown, 'UTF8'), 'sha256'), 'hex');
   return new;
@@ -98,7 +98,7 @@ alter table recoveryos.document_versions alter column content_hash set not null;
 
 -- 3) Immutability: published versions and acknowledged/signed assignments are frozen.
 create or replace function recoveryos.trg_document_versions_immutable()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = recoveryos, public as $$
 begin
   if old.published_at is not null and (
        new.body_markdown  is distinct from old.body_markdown
@@ -115,7 +115,7 @@ create trigger document_versions_immutable
   for each row execute function recoveryos.trg_document_versions_immutable();
 
 create or replace function recoveryos.trg_document_assignments_immutable()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = recoveryos, public as $$
 begin
   if tg_op = 'DELETE' then
     if old.acknowledged_at is not null then

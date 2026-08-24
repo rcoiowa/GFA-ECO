@@ -87,14 +87,14 @@ begin
   where p.id = p_person_id;
   if v_intake_email is not null then
     if v_person_email is not null and v_person_email <> v_intake_email then
-      v_warnings := v_warnings || 'email_mismatch';
+      v_warnings := array_append(v_warnings, 'email_mismatch');
     end if;
     select p.id into v_other_person
     from recoveryos.people p join auth.users u on u.id = p.auth_user_id
     where lower(u.email) = v_intake_email and p.id <> p_person_id
     limit 1;
     if v_other_person is not null then
-      v_warnings := v_warnings || 'email_matches_other_person';
+      v_warnings := array_append(v_warnings, 'email_matches_other_person');
     end if;
   end if;
   if array_length(v_warnings, 1) is not null and not p_confirm then
@@ -352,6 +352,23 @@ begin
   if v_app.status <> 'approved' then
     return jsonb_build_object('ok', false, 'code', 'not_approved',
       'message', 'Only an approved application can be admitted.');
+  end if;
+
+  -- Idempotency FIRST: a person already living somewhere must short-circuit before
+  -- the readiness gate, or a repeated override call would duplicate its follow-up
+  -- and audit side-effects. The unique_violation handler below stays as the
+  -- concurrency arbiter.
+  select id into v_residency_id from recoveryos.residencies
+    where person_id = v_app.person_id
+      and residency_status in ('approved','active','on_pass','transitioning')
+    limit 1;
+  if v_residency_id is not null then
+    if exists (select 1 from recoveryos.residencies
+               where id = v_residency_id and residence_id = v_app.residence_id) then
+      return jsonb_build_object('ok', true, 'code', 'already_resident', 'residency_id', v_residency_id);
+    end if;
+    return jsonb_build_object('ok', false, 'code', 'live_residency_elsewhere',
+      'message', 'They already have a live residency at another residence.');
   end if;
 
   -- §9a readiness gate: derived checklist, no persisted state. Unmet items refuse

@@ -33,17 +33,31 @@ begin
   --    The 0129/0131 domain-vocabulary tables are read-only reference data by design
   --    (SELECT yes; INSERT/UPDATE/DELETE revoked — vocabulary changes are migrations,
   --    never client writes; scripts/verify-domain-vocabulary.mjs guards the content).
+  --    The 0141 medication/supervision tables are read-via-RLS, write-via-audited-RPC
+  --    only (Gate B4 minimization; scripts/verify-intake-minimization.mjs guards them).
   select string_agg(tablename, ', ' order by tablename) into missing
   from pg_tables
   where schemaname = 'recoveryos'
     and tablename not in ('residence_listing_submissions','residence_application_intake',
                           'domains','domain_subcategories','domain_external_mappings',
-                          'resource_domains')
+                          'resource_domains',
+                          'residency_medication_items','supervision_coordination_records')
     and not (has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'SELECT')
          and has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'INSERT')
          and has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'UPDATE'));
   if missing is not null then
     raise exception 'LAUNCH-CONTRACT FAIL: authenticated missing table privileges on: %', missing;
+  end if;
+
+  -- 2b) The Gate B4 RPC-only tables keep RLS-gated SELECT and must never regain
+  --     client writes (their write path is the audited RPCs from 0141).
+  if not (has_table_privilege('authenticated', 'recoveryos.residency_medication_items', 'SELECT')
+      and has_table_privilege('authenticated', 'recoveryos.supervision_coordination_records', 'SELECT')) then
+    raise exception 'LAUNCH-CONTRACT FAIL: Gate B4 RPC-only tables lost RLS-gated SELECT';
+  end if;
+  if has_table_privilege('authenticated', 'recoveryos.residency_medication_items', 'INSERT')
+     or has_table_privilege('authenticated', 'recoveryos.supervision_coordination_records', 'INSERT') then
+    raise exception 'LAUNCH-CONTRACT FAIL: Gate B4 RPC-only tables regained client INSERT';
   end if;
 
   -- 3) anon privileges limited to the explicitly public surface (referral intake).
