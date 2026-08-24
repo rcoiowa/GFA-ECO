@@ -46,11 +46,9 @@ documents at edition-authoring time; nothing here hardcodes day counts.
 - **Recovery-support activities:** weekly **approved recovery-support activity** —
   **pathway-neutral by definition**. The platform never assumes AA/NA-only; any approved
   pathway counts (mutual aid of any tradition, SMART, faith-based, cultural, coaching,
-  peer support). *Confirmation item (§9.1):* the directive says "4 recovery-support meetings
-  per week should mirror Grace House," while the verified Grace House canon tapers by phase
-  (4 → 3 → 2 per week; coaching sessions count toward the total). Whether EJWRH is 4/week
-  flat or mirrors the taper needs one executive confirmation before the EJWRH handbook
-  edition is authored; the pathway-neutral framing is locked either way.
+  peer support). *Resolved (§9.1, executive ratification 2026-08-24):* EJWRH mirrors the
+  Grace House phase taper — **4/week in Phase 1, 3/week in Phase 2, 2/week in Phase 3**;
+  coaching sessions count toward the total; pathway-neutral in every phase.
 - **Sponsor relationship: strongly encouraged, never mandatory.** No 12-Step milestone
   requirements exist anywhere in the model.
 - **Relational support counts:** sponsor contact, coaching, and peer support count as
@@ -169,8 +167,9 @@ never hardcoded around.
 
 ## 9. Confirmation items (small, explicit — nothing else is open)
 
-1. **Weekly recovery-support count:** 4/week flat, or mirror the Grace House 4→3→2 phase
-   taper (coaching counts toward the total either way; pathway-neutral either way).
+1. **Weekly recovery-support count: RESOLVED (executive ratification, 2026-08-24 Gate B
+   implementation authorization):** Phase 1 = 4/week, Phase 2 = 3/week, Phase 3 = 2/week —
+   the Grace House taper (coaching counts toward the total; pathway-neutral).
 2. **Executed PSA version:** confirm which agreement version controls before RecoveryOS
    roles/permissions encode the §4 split.
 3. **EJWRH document editions:** the Gate B §5a reconciliation authors the EJWRH participant
