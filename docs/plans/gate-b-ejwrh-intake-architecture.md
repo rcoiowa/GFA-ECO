@@ -1,10 +1,40 @@
 # Gate B — EJWRH Post-Acceptance Intake, Consent, Document & Admission Architecture
 
-**Status: ARCHITECTURE REVIEW — analysis only. Nothing implemented; no CQCX mutation; no
-Cloudflare activation; no applicant traffic.** Baseline: Gate A at `8e4b07e` (accepted
-canonical EJWRH public-application baseline; CI #102 green; CQCX ledger through
-`0138_ejwrh_containment` — re-verified live this session). Every current-state claim below
-was traced to actual writers/readers/policies in the repo at `8e4b07e` and live CQCX
+**Status: RATIFIED WITH EXECUTIVE CONDITIONS (Gate B Executive Ratification, 2026-08-24,
+amending the `61556d3` review draft). Nothing implemented; no CQCX mutation; no Cloudflare
+activation; no applicant traffic. Implementation awaits separate authorization.**
+
+Executive decisions incorporated (each marked in place below):
+1. **Lifecycle APPROVED** — reuse existing lifecycles; intake readiness DERIVED; no parallel
+   persisted intake-status machine unless implementation evidence proves the model
+   structurally insufficient, in which case STOP for executive review (§3).
+2. **Field disposition APPROVED WITH MINIMIZATION** — Gate A data prefills and is never
+   re-requested except for correction/confirmation; intake collects only
+   current-operational-purpose data (§4).
+3. **Document authority APPROVED SUBJECT TO RECONCILIATION** — every document classified
+   (GFA org-wide / EJWRH-specific / Grace House-only / pending reconciliation) before any
+   EJWRH signing workflow ships; no silent Grace House wording reuse; no
+   unresolved-applicability document may be assigned for EJWRH signature (§5).
+4. **Consent/ROI APPROVED** — canonical `consent_grants` only; the four constructs stay
+   separate; external disclosure is governed by ACTIVE canonical consent, never merely a
+   signed document (§7).
+5. **Conditional data APPROVED** — structured minimum, bounded values over narratives,
+   role-restricted visibility (§8, §11).
+6. **Admission readiness APPROVED WITH NARROW AUDITED OVERRIDE** — six-class requirement
+   taxonomy; override model and non-overridable categories in §9a; STOP if what is legally
+   or operationally non-overridable is uncertain.
+7. **Legal/privacy sequencing APPROVED** — per-phase prerequisite matrix in §16a; unresolved
+   questions do not block unrelated functionality.
+8. **Signature evidence APPROVED IN PRINCIPLE** — full chain per §6; never reconstruct
+   signed terms from the current/latest document.
+9. **Frontline principle** — natural actions generate evidence; no raw Supabase; no
+   duplicate documentation for reporting (§10).
+10. **Evidence semantics** — administrative/governance transitions are never service_events;
+    P2 provenance preserved exactly (§12).
+
+Baseline: Gate A at `8e4b07e` (accepted canonical EJWRH public-application baseline; CI #102
+green; CQCX ledger through `0138_ejwrh_containment` — re-verified live). Every current-state
+claim below was traced to actual writers/readers/policies in the repo and live CQCX
 (read-only); nothing is assumed from a table name.
 
 Standing note preserved per directive: the **Platform Launch Gate** (production frontends
@@ -82,8 +112,12 @@ The directive's lifecycle maps onto the two existing machines plus derived intak
 
 Rules: `approved` on the canonical application means "cleared to complete intake," never
 auto-residency. Admission is exactly one human action: **`admit_applicant`, gated on
-intake-complete** (the RPC gains a readiness check — see §14). A person may stall or step
-away at any stage without data loss; `closed` is always available without admission.
+intake-complete** (the RPC gains a readiness check — see §9a/§14). A person may stall or
+step away at any stage without data loss; `closed` is always available without admission.
+
+**RATIFIED constraint:** no parallel persisted intake-status state machine may be created.
+If implementation evidence ever proves the derived model structurally insufficient, the
+implementer STOPS and returns for executive review rather than persisting new states.
 
 ## 4. Application-to-intake field disposition
 
@@ -130,11 +164,28 @@ date = `document_versions.version` + `published_at`):
 | intake_forms_package | — | superseded as a monolith by this architecture (its content becomes the structured intake items); keep informational |
 | code_of_ethics, complete_operational_system, incident_report_system, narr_ii_self_assessment, change_course_leaders_policy, form_application_prescreening | — | staff/operational — NOT assigned to residents |
 
-Open authority item (§16/§17): the live set is the **Grace House** edition. Whether EJWRH
-signs the shared org documents as-is or requires EJWRH-specific versions (house name,
-men's-residence specifics, house rules) is a policy decision; the version machinery supports
-either (new versions per template, or EJWRH-keyed templates). **No policy wording is
-invented here.**
+### 5a. Document-authority reconciliation (RATIFIED requirement — blocks EJWRH signing UX)
+
+Before any EJWRH resident-signing workflow ships, **every** document above must be
+classified as exactly one of:
+
+- **GFA organization-wide canonical** (EJWRH residents sign/ack the shared edition);
+- **EJWRH-specific canonical** (an EJWRH edition exists or is authored);
+- **Grace House-specific / not applicable to EJWRH** (never assigned at EJWRH);
+- **PENDING executive/policy reconciliation.**
+
+Binding rules: Grace House wording is never silently reused for EJWRH; **no document with
+unresolved residence applicability may be assigned for EJWRH signature**; the version
+machinery supports either outcome (new versions per template or EJWRH-keyed templates).
+
+Preliminary assessment (all resident-facing items start **PENDING** — nothing below is a
+policy determination, only a reconciliation aid): plausibly org-wide — code_of_conduct,
+grievance_policy_form, resident_rights, medication_mat_moud_policy,
+return_to_use_response_policy, screening_policy_consent; plausibly house-edition-specific
+(house name, rules, fees, neighborhood) — resident_handbook, participant_agreement,
+fee_schedule_financial_agreement, good_neighbor_policy, curfew_pass_policy,
+emergency_response_protocols, exit_transition_policy; staff/operational set — not assigned
+to residents at any house.
 
 Assignment model: universal items above assign at intake start; conditional assignment
 stays possible per template (future flag) but nothing currently requires it.
@@ -242,6 +293,34 @@ The missing link is one RPC. Full chain:
    navigation connection remains a human offer through existing assignment RPCs — never
    automatic.
 
+## 9a. Readiness taxonomy & admission override (RATIFIED)
+
+Every checklist requirement carries exactly one classification:
+
+| Class | Meaning | Initial assignment (subject to §5a reconciliation) |
+|---|---|---|
+| **REQUIRED FOR INTAKE COMPLETION** | must exist before intake counts complete | emergency contact (≥1); acknowledgment of resident rights + grievance procedure; medication items recorded per the medication policy where the person has medications |
+| **REQUIRED BEFORE ADMISSION** | blocking at `admit_applicant` | signed participant agreement; signed handbook/code of conduct; signed fee schedule & financial agreement; signed medication policy; signed return-to-use policy; screening policy signature **+ current `residence_screening` consent grant** |
+| **CONDITIONALLY REQUIRED** | required only when the condition holds | supervision-coordination authorization + officer contact (when coordination applies); accommodation plan (when a need is raised); MOUD care-coordination flag (when on MOUD); actionable health/safety items (when disclosed) |
+| **RECOMMENDED / NON-BLOCKING** | encouraged, never gating | second emergency contact; why-EJWRH context confirmation |
+| **DEFERRED WITH FOLLOW-UP** | may complete after admission, tracked via `follow_ups` | items the manager defers under the override model below |
+| **NOT APPLICABLE** | condition absent | conditional items whose condition does not hold |
+
+**Override model (narrow, audited):** a residence manager or platform admin may admit with
+specific unmet items **only** when every unmet item is non-safety-critical and
+non-legally-required. Each override records: authorized actor, timestamp, the exact unmet
+requirement(s), reason, a concrete follow-up obligation (a `follow_ups` row is created —
+the deferral is not complete without it), and an `audit_log` event.
+
+**Non-overridable, categorically:** immediate safety requirements (emergency contact,
+actionable health/safety items where disclosed); mandatory consent/rights requirements
+(resident-rights acknowledgment; screening consent where screening will occur); legally
+required documentation; and any item policy explicitly marks non-overridable.
+
+**STOP condition:** if implementation reveals uncertainty about what is legally or
+operationally non-overridable for a specific item, implementation STOPS for executive
+review rather than deciding.
+
 ## 10. Frontline staff workflow (no raw Supabase, ever)
 
 IntakeQueuePage (exists) gains the action rail; one new Intake Checklist view:
@@ -308,31 +387,113 @@ medication, SUD, justice, or medical visibility from Gate B. Aggregates only for
 | `public.housing_applications` | unchanged — DEPRECATED (Gate A); REMOVE at a future cleanup gate |
 | Parallel consent/document/residency/applicant stores | **REMOVE from consideration — none created** |
 
-## 14. Proposed implementation plan (plan only — numbers reserved, nothing applied)
+## 14. Ratified implementation plan (REVISED per the Gate B Executive Ratification — plan
+only; migrations 0139+ NOT created in this turn; live applies only under a Gate B
+implementation authorization)
 
-- **B1 (0139) — document evidence hardening**: `content_hash` on versions (deterministic
-  backfill from bodies; abort on hash failure); `signed_at` + `application_id` on
-  assignments; immutability triggers (published versions; acknowledged/signed assignments);
-  `acknowledge_document` RPC (audited; sets ack and, for sig-required, signed_at +
-  signature_name); seed generator emits hashes; CI guard `verify-document-evidence.mjs`
-  (package ↔ seed hash ↔ sig-required list; negative-tested). Rollback per column/trigger.
-- **B2 (0140) — consent extension**: 3 consent types seeded; `record_consent_grant` /
-  `revoke_consent_grant` RPCs with ROI scope validation + audit; disclosure audit helper;
-  staff read policy scoped per §11. No change to existing grants.
-- **B3 (0141) — conversion + readiness**: `convert_application_intake` (dedup-warning,
-  pre-fill, audited); `application_intake_readiness`; participant-purpose invitation path
-  (after the 0117 trace item resolves); `admit_applicant` readiness gate + override audit.
-- **B4 (0142) — conditional intake tables**: `emergency_contacts`,
-  `residency_medication_items`, supervision-coordination storage rule, RLS per §11, RPC-only
-  writes where staff-recorded.
-- **B5 — frontline UI**: IntakeQueuePage action rail; Intake Checklist view; Documents UI
-  unlock for approved applicants; consent panel; admit gate UX. Tests per page.
-- **B6 — staged signing cutover**: UI → RPC; narrow then drop `ack_self` (telemetry-gated,
-  P2 pattern).
-- Every migration: additive, rollback in header, preflight after apply (step additions where
-  new RPCs land), full guards/tests/CI; synthetic-only E2E (application → conversion →
-  documents → consents → readiness → admission) with fixture people; live apply only under a
-  Gate B implementation authorization.
+Shared discipline for every step: additive-first; rollback in the migration header;
+pre-mutation checklist + full preflight after each live apply; guards/typecheck/tests/build
++ remote CI green before any push is called done; synthetic/fixture data only in
+verification; STOP rather than improvise on any authority conflict.
+
+**B1 (migration 0139) — document evidence hardening**
+- *Purpose:* make the signed artifact provable and immutable (§6 chain).
+- *Dependencies:* none (first step). *Legal/policy prerequisite:* **none** — evidence
+  hardening is edition-agnostic; §5a reconciliation is NOT required for B1.
+- *Data touched:* `document_versions` (+`content_hash`, deterministic sha256 backfill from
+  existing bodies — migration ABORTS if any published version fails to hash),
+  `document_assignments` (+`signed_at`, +`application_id` FK); immutability triggers
+  (published version body/version/published_at frozen; acknowledged/signed assignment rows
+  frozen); new `acknowledge_document(p_assignment_id, p_signature_name default null)`
+  definer RPC (ack always; signed_at+name only for sig-required templates) writing
+  `audit_log`; seed generator emits hashes; CI guard `verify-document-evidence.mjs`
+  (package ↔ seed ↔ hash ↔ sig-required list; negative-tested).
+- *Authorization boundary:* RPC = the assignee only (`person_id = current_person_id()`);
+  existing `ack_self` policy untouched in B1 (retired in B6).
+- *Rollback:* drop RPC, triggers, three columns; guard step revert.
+- *Verification:* hash backfill counts; immutability negative tests (UPDATE of published
+  body / signed row raises); RPC positive + cross-person negative; preflight (step-8 gains
+  `acknowledge_document`).
+- *STOP:* any published version fails deterministic hashing, or live bodies diverge from
+  the content package.
+
+**B2 (migration 0140) — consent extension**
+- *Purpose:* canonical scoped/revocable/auditable consent for residence + ROI (§7).
+- *Dependencies:* none on B1. *Legal/policy prerequisite:* creating types/RPCs — none;
+  **activating any external disclosure workflow** — blocked until Part 2 analysis +
+  retention rules (§16a).
+- *Data touched:* seed 3 `consent_types` (`residence_screening`,
+  `information_disclosure`, `supervision_coordination`); `record_consent_grant` /
+  `revoke_consent_grant` definer RPCs (ROI scope validation: recipient, organization,
+  enumerated information categories, purpose; method incl. verbal_witnessed/paper with
+  creator identity); disclosure-audit helper (`consent_disclosure_recorded` audit rows);
+  staff read policy per §11. Existing grants untouched.
+- *Authorization boundary:* grant = self, or staff-of-residence recording a witnessed
+  grant (creator stamped); revoke = self or recording staff; reads per §11 matrix.
+- *Rollback:* drop RPCs + policy; deactivate the 3 types (rows kept).
+- *Verification:* grant/revoke lifecycle with fixture person; scope-validation negatives;
+  expiry behavior; cross-role read negatives; preflight step-8 additions.
+- *STOP:* any need to widen existing consent RLS beyond the §11 matrix.
+
+**B3 (migration 0141) — conversion + readiness + admission gate**
+- *Purpose:* close the intake→person→application chain; derived readiness; gated admission
+  (§3, §9, §9a).
+- *Dependencies:* B1 (readiness reads signed_at), B2 (readiness reads grants). *Legal/policy
+  prerequisite:* none for the RPCs; the readiness item LIST for signature items follows §5a
+  reconciliation before EJWRH signing activates.
+- *Data touched:* `convert_application_intake(p_intake_id, p_person_id)` (staff, audited,
+  email/phone dedup warning, answers pre-fill, sets converted_* and `converted` status —
+  never creates auth users); `application_intake_readiness(p_application_id)` (derived
+  checklist per §9a taxonomy; aggregate-only return); participant-purpose invitation path
+  (first: trace 0117's signup trigger purposes — if participant purpose is absent, extend;
+  STOP if the trigger's behavior contradicts the trace); `admit_applicant` re-created with
+  the readiness gate + narrow audited override per §9a (override writes actor/timestamp/
+  unmet items/reason + creates the follow-up obligation + audit row).
+- *Authorization boundary:* convert/readiness = staff-of-residence or care-ops; admit =
+  existing manager gate; override = manager/platform-admin only.
+- *Rollback:* re-create prior `admit_applicant` body (embedded in header); drop new RPCs.
+- *Verification:* full synthetic chain (intake → convert → application → readiness states →
+  blocked admit → completed checklist → admit; override path with follow-up + audit;
+  non-overridable item refusal); identity-dedup warning test; preflight.
+- *STOP:* §9a uncertainty about non-overridable classification; signup-trigger contradiction;
+  any evidence the derived readiness model is structurally insufficient (per ratified §3 —
+  return for executive review, do not persist new states).
+
+**B4 (migration 0142) — conditional intake tables**
+- *Purpose:* structured-minimum conditional data (§8).
+- *Dependencies:* B2 (supervision storage is grant-anchored). *Legal/policy prerequisite:*
+  none to create; retention rules (§16.3) before records outlive residency.
+- *Data touched:* `emergency_contacts`, `residency_medication_items` (+ supervision
+  storage rule), RLS per §11 (self + residence staff; nobody else), RPC-only writes where
+  staff-recorded; MOUD flag never referenced by any eligibility/queue logic (guard-tested).
+- *Authorization boundary:* self + residence staff of the person's residence; coach/
+  navigator/external: none.
+- *Rollback:* drop tables/policies (0 rows at rollback point).
+- *Verification:* role-matrix positives/negatives incl. cross-residence; MOUD-not-eligibility
+  guard test; preflight.
+- *STOP:* any pressure to add narrative fields — return to §4 dispositions.
+
+**B5 — frontline UI (no migration)**
+- *Purpose:* staff operate entirely in RecoveryOS (§10).
+- *Dependencies:* B1–B4 live. *Legal/policy prerequisite:* **EJWRH signing UX ships only
+  after §5a reconciliation + Iowa e-signature review (§16a)**; the queue/checklist/consent
+  panels do not wait on those.
+- *Changes:* IntakeQueuePage action rail; Intake Checklist view (readiness RPC); Documents
+  UI unlocked for approved applicants (application-anchored assignments); consent panel;
+  admit-gate UX with override flow; post-admission follow-up prompt. Tests per surface,
+  including override-audit rendering and non-overridable refusal.
+- *Rollback:* revert commits (server state unaffected).
+- *STOP:* any surface requiring raw-table staff writes.
+
+**B6 — staged signing cutover (final)**
+- *Purpose:* retire the direct-UPDATE `ack_self` path so all signing evidence flows through
+  the audited RPC (P2 cutover pattern).
+- *Dependencies:* B5 deployed; RPC path verified in use. *Legal/policy prerequisite:* same
+  as B5 signing UX.
+- *Sequence:* RPC live (B1) → UI switched (B5) → telemetry window (zero direct
+  acknowledgment UPDATEs) → narrow then drop `ack_self` (migration; rollback = recreate the
+  0013 policy).
+- *STOP:* any direct-update traffic during the telemetry window.
 
 ## 15. Privacy / compliance risks
 
@@ -365,22 +526,39 @@ medication, SUD, justice, or medical visibility from Gate B. Aggregates only for
 6. Participant-purpose invitation behavior in the 0117 signup trigger (technical trace to
    complete at B3; extension designed if absent).
 
-## 17. Executive Director decisions requiring ratification
+### 16a. Phase-blocking matrix (RATIFIED sequencing — unresolved items block only what
+depends on them)
 
-1. **Lifecycle mapping** (§3): `account_offered` = conditional acceptance; intake progress
-   derived, not persisted; admission = readiness-gated `admit_applicant` with audited
-   override. 
-2. **Field dispositions** (§4) — especially: no DOB, no SUD/treatment history collection,
-   references not collected, medication structured-minimum set.
-3. **Document intake set** (§5 table) and the EJWRH-edition question (§16.1).
-4. **Consent types + ROI scope categories** (§7), and that screening enforcement reads the
-   grant, not the signed document alone.
-5. **Conditional data model** (§8), including that `is_moud` is care coordination only.
-6. **Admission override** existence (manager may admit with an audited reason despite an
-   incomplete checklist) — or strict no-override.
-7. Sequence approval (§14) and which of §16's questions must resolve before B1 starts
-   (recommendation: §16.1 and §16.5 before B5's signing UX ships; §16.2/16.3 before any
-   external disclosure workflow activates).
+| Unresolved item | Blocks | Does NOT block |
+|---|---|---|
+| §16.1 EJWRH document editions/applicability (§5a reconciliation) | EJWRH resident-**signing** UX (B5 signing surfaces, B6) and any EJWRH signature assignment | B1–B4 entirely; queue/checklist/consent panels in B5 |
+| §16.5 Iowa e-signature sufficiency review | same as above (signing UX activation) | B1's evidence plumbing itself |
+| §16.2 42 CFR Part 2 applicability analysis | activation of any **external ROI/disclosure workflow** | creating consent types/RPCs (B2); internal consent recording |
+| §16.3 retention/deletion rules | records outliving residency; external disclosure activation | table creation (B4) with 0 rows; intake-period use |
+| §16.4 references requirement | nothing (not collected unless required) | everything |
+| §16.6 participant-invitation trace | B3's invite step (traced first inside B3; STOP on contradiction) | B1, B2, B4 |
+
+Voluntary GFA privacy practices are never presented as legal requirements unless verified.
+
+## 17. Executive Director decisions — RESOLVED (Gate B Executive Ratification, 2026-08-24)
+
+1. **Lifecycle mapping** — APPROVED (derived readiness; no parallel persisted machine;
+   STOP-for-review escape hatch; approval never creates residency; `admit_applicant` stays
+   the human action).
+2. **Field dispositions** — APPROVED WITH MINIMIZATION (prefill mandatory; only
+   current-operational-purpose intake data; no universal SUD/treatment/trauma/broad-medical
+   narratives or unrelated justice history; MOUD never a negative eligibility signal).
+3. **Document intake set** — APPROVED SUBJECT TO §5a RECONCILIATION (four-way authority
+   classification before any EJWRH signing; no silent Grace House reuse; unresolved
+   applicability = never assigned for EJWRH signature).
+4. **Consent/ROI model** — APPROVED (canonical `consent_grants` only; four constructs
+   separate; external disclosure governed by ACTIVE consent, never a signed document alone).
+5. **Conditional data model** — APPROVED (structured minimum; bounded values over
+   narratives; role-restricted per §11).
+6. **Admission override** — APPROVED, NARROW AND AUDITED, per §9a (non-overridable
+   categories fixed; STOP on classification uncertainty).
+7. **Sequencing** — APPROVED per §16a (per-phase prerequisites; unresolved questions block
+   only dependent functionality).
 
 ## 18. Implementation sequence & rollback gates
 
@@ -393,5 +571,6 @@ Gate B **plus** browser-level HTTP verification of the public path; the Platform
 
 ---
 
-*Architecture gate complete. No implementation, no CQCX mutation, no Cloudflare activation,
-no applicant traffic. Awaiting Gate B ratification.*
+*Architecture RATIFIED with executive conditions (2026-08-24). No implementation, no CQCX
+mutation, no Cloudflare activation, no applicant traffic. Migrations 0139+ are reserved,
+not created. Awaiting Gate B implementation authorization.*
