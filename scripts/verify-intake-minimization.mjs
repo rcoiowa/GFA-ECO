@@ -43,6 +43,7 @@ const M = {
   consent: 'supabase/launch/migrations/0140_consent_extension.sql',
   conditional: 'supabase/launch/migrations/0141_conditional_intake_data.sql',
   readiness: 'supabase/launch/migrations/0142_intake_conversion_readiness.sql',
+  medreview: 'supabase/launch/migrations/0143_medication_status_review.sql',
 };
 
 // ---- B4: banned over-collection vocabulary across all four migrations ----------------------
@@ -117,6 +118,21 @@ if (has(repo)) {
     fail(`${repo} must acknowledge via the acknowledge_document RPC`);
   if (/from\('document_assignments'\)\s*\.\s*update/.test(ts.replace(/\s+/g, ' ')))
     fail(`${repo} still updates document_assignments directly`);
+}
+
+// ---- 0143: medication review is a state record, never a fabricated item ---------------------
+if (has(M.medreview)) {
+  const sql = read(M.medreview);
+  if (/insert into recoveryos\.residency_medication_items[\s\S]{0,400}'none/i.test(sql))
+    fail("0143 must never fabricate a medication row representing 'none'");
+  if (!/'reviewed_none'/.test(sql))
+    fail("0143 readiness must surface the distinct 'reviewed_none' state");
+  if (!/medication_status_reviewed/.test(sql))
+    fail('0143 confirm action must be audited');
+  if (!/set superseded_at = now\(\)/.test(sql))
+    fail('0143 must supersede a standing none-review when an item is recorded');
+  if (/is_moud[^\n]*(eligib|readiness|deny|refuse|block)/i.test(readSql(M.medreview)))
+    fail('0143 ties is_moud to eligibility language');
 }
 
 // ---- B3: gated admission + narrow override ----------------------------------------------------

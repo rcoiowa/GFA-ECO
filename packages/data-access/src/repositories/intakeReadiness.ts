@@ -111,6 +111,17 @@ export async function endMedicationItem(itemId: number): Promise<IntakeRpcResult
   return callRpc('end_medication_item', { p_item_id: itemId });
 }
 
+/**
+ * One-tap outcome of the medication conversation when the person has NO current
+ * medications (0143). A normal satisfied intake state — never an override, never
+ * a fabricated medication row. Superseded automatically if an item is recorded.
+ */
+export async function confirmNoCurrentMedications(
+  personId: number,
+): Promise<IntakeRpcResult & { review_id?: number }> {
+  return callRpc('confirm_no_current_medications', { p_person_id: personId });
+}
+
 export async function recordSupervisionCoordination(input: {
   personId: number;
   consentGrantId: number;
@@ -164,6 +175,7 @@ export interface ReadinessItem {
     | 'met'
     | 'missing'
     | 'unconfirmed'
+    | 'reviewed_none'
     | 'needs_staff_review'
     | 'pending_document_edition'
     | 'not_applicable';
