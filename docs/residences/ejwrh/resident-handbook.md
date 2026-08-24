@@ -1,10 +1,10 @@
 <!--
-EJWRH EDITION — PREPARED, NOT ACTIVATED (EJWRH Document Edition & B5 Readiness Gate, 2026-08-24)
+EJWRH EDITION — PREPARED, NOT ACTIVATED (B5B final reconciliation, 2026-08-24)
 Proposed template key: ejwrh_resident_handbook · requires_signature: FALSE · requires_acknowledgment: TRUE
-Authored FROM docs/architecture/ejwrh-program-model-v1.0.md. Absorbs (for EJWRH) what Grace House
-carries as separate documents: curfew & pass procedure, emergency response overview, exit/transition
-overview, good-neighbor commitments, day-to-day conduct — ONE acknowledgment instead of six.
-[PENDING — …] items must be resolved by the residence operator before activation.
+Authored FROM docs/architecture/ejwrh-program-model-v1.0.md + the B5B executive-ratified operating
+values. Absorbs (for EJWRH) what Grace House carries as separate documents: curfew & pass
+procedure, emergency response overview, exit/transition overview, good-neighbor commitments,
+day-to-day conduct — ONE acknowledgment instead of six. No [PENDING] items remain in this document.
 -->
 
 # EJWRH Resident Handbook
@@ -53,29 +53,34 @@ the same thing twice.
 
 ## 4. House life
 
-- **House meetings:** attendance is expected; the schedule is posted in the house.
+- **House meeting: Sunday at 6:30 PM.** Attendance is expected — it's where the week gets
+  sorted together, including any outstanding weekly payment.
+- **Quiet hours: 9:00 PM to 9:00 AM, every day.** Quiet hours are about noise and
+  consideration; they are separate from your phase curfew (Section 1).
 - **Chores:** everyone carries a share; assignments are posted and rotate.
 - **Guests:** common areas only, during posted hours, sober; no overnight guests.
-- **Quiet hours:** [PENDING — OPERATOR: posted quiet hours.]
 - **Rooms:** keep your space clean; room and bed assignments can change with notice.
-- **House communication:** house announcements currently run through the house GroupMe.
-  Over time announcements move into RecoveryOS — and the commitment is that it will never
-  be more work than GroupMe.
+- **House communication:** house announcements run through the house GroupMe. Over time
+  announcements move into RecoveryOS — and the commitment is that it will never be more work
+  than GroupMe. Screening results and personal matters are never posted in GroupMe.
 - **Neighbors:** we are guests of this neighborhood — noise, parking, and property lines
   are respected; being a good neighbor is part of recovery leadership.
 
 ## 5. Money
 
-Program fees and payment schedule are in your Participant & Residency Agreement. One rule
-worth repeating: if paying is going to be hard this week, say so **before** it is missed.
-It is a conversation, and there is always a conversation to have.
+Program fees, payment timing, the first-30-days grace, the late-charge rules, and the
+hardship path are all in your Participant & Residency Agreement — one place, no surprises.
+The rule worth repeating: if paying is going to be hard this week, say so **before** it is
+missed. A written arrangement suspends any late charge while you keep to it, and the Sunday
+house meeting is where an outstanding weekly payment gets sorted.
 
 ## 6. Safety and emergencies
 
 - **Emergency: call 911 first**, then notify staff.
 - **Crisis support: call or text 988** (Suicide & Crisis Lifeline), any time.
 - **Iowa Warm Line (non-crisis peer support): 844-775-9276.**
-- Naloxone (Narcan) location: [PENDING — OPERATOR: posted location in the house.]
+- **Naloxone (Narcan): the house supply is kept near the thermostat.** Additional stock may
+  exist elsewhere, but near the thermostat is the location to remember.
 - Fire evacuation routes and the severe-weather shelter location are posted in the house.
   Staff walk every new resident through them during intake week.
 - If you are worried about another resident's immediate safety, tell staff right away —
@@ -84,10 +89,11 @@ It is a conversation, and there is always a conversation to have.
 ## 7. Alcohol, drugs, and medications
 
 The house is alcohol- and illicit-drug-free. Screening happens per the Screening Policy you
-acknowledged. Your prescribed medications — including MOUD — are yours, are never a
-violation, and are stored per the Medication & MOUD Policy. If you return to use, what
-happens next starts with a care conversation, not a discharge — the Return-to-Use Response
-Policy explains the sequence.
+acknowledged. Your prescribed medications — including MOUD — are yours: **you keep them and
+take them yourself**, securely in your own possession, per the Medication & MOUD Policy;
+just let the House Manager know about new prescriptions or changes. If you return to use,
+what happens next starts with a care conversation, not a discharge — the Return-to-Use
+Response Policy explains the sequence.
 
 ## 8. Your recovery plan
 

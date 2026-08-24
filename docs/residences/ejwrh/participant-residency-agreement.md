@@ -1,14 +1,13 @@
 <!--
-EJWRH EDITION — PREPARED, NOT ACTIVATED (EJWRH Document Edition & B5 Readiness Gate, 2026-08-24)
+EJWRH EDITION — PREPARED, NOT ACTIVATED (B5B final reconciliation, 2026-08-24)
 Proposed template key: ejwrh_participant_agreement · requires_signature: TRUE (the ONLY resident signature)
-Authored FROM docs/architecture/ejwrh-program-model-v1.0.md. The retired four-level document is
-not a drafting source. This file is the authoring copy; it is seeded into document_templates /
-document_versions only at the signing-activation gate, after executive ratification and the
-signing-method review (plan §7). Bracketed [PENDING — …] items are unresolved authority and MUST
-be resolved before activation; the document is not signable while any remain.
-Authority note: residency and financial terms are residence-operator authority; recovery-support
-services are provided by Grace For Addictions as contracted services. This edition names the roles
-without asserting unconfirmed contract details (executed PSA version is an open confirmation item).
+Authored FROM docs/architecture/ejwrh-program-model-v1.0.md + the B5B executive-ratified operating
+values (fees, hardship standard, quiet hours, screening, grievance SLA, medication model). The
+retired four-level document is not a drafting source. Seeded into document_templates/versions only
+at the signing-activation gate. Remaining [PENDING — …] items (each blocks activation):
+  1. contracting-party legal naming — executed PSA not established in repository;
+  2. e-signature consent clause wording — signing-method legal review;
+  3. late-charge maximum cap — flagged for final operator ratification.
 -->
 
 # EJWRH Participant & Residency Agreement
@@ -29,10 +28,16 @@ Policy**, and the **Return-to-Use Response Policy**.
 
 ## 1. Who we are and what you can expect
 
-EJWRH is a recovery residence operated by the Ernest & Johnnie White Recovery House. Recovery
-support services — peer coaching, recovery navigation, recovery planning, and the RecoveryOS
-platform — are provided by Grace For Addictions as contracted services. The residence is
-pursuing NARR Level II certification through the Iowa affiliate (MCRSP).
+EJWRH is a recovery residence. The residence operator holds the housing side of this
+agreement — housing operations, resident agreements, financial management, staffing, property,
+and housing compliance. Grace For Addictions provides the contracted recovery-support side —
+peer coaching, recovery navigation, recovery planning, program development, and the RecoveryOS
+platform — and does not manage resident funds. The residence is pursuing NARR Level II
+certification through the Iowa affiliate (MCRSP).
+
+[PENDING — EXECUTED PSA: the operator's exact legal name as the contracting party is inserted
+only after the executed Professional Services Agreement is verified; this agreement is not
+signable until then.]
 
 You can expect: a safe, alcohol- and illicit-drug-free home; respect and dignity without
 regard to your recovery pathway; staff and peers who walk beside you; and honest, documented
@@ -74,18 +79,55 @@ Curfew never extends past midnight in any phase.
 
 ## 5. Financial terms
 
-[PENDING — OPERATOR AUTHORITY: program fee amount, payment schedule, deposit/move-in amounts,
-refund terms, and financial-hardship process are set by the residence operator and must be
-inserted and verified before this agreement is activated for signature. Fees will be disclosed
-in writing before any funds are accepted, and the refund policy before this agreement binds.]
+Fees are program fees, not rent. They are set and managed by the residence operator (resident
+program fees are an operator financial function, not a Grace For Addictions function), and they
+are disclosed here, in writing, before any funds are accepted.
 
-Fees are program fees, not rent. Inability to pay is a conversation first — talk to staff
-before a payment is missed, not after.
+**Program fees:**
+
+| Fee | Amount |
+|---|---|
+| Shared room | **$175 per week**, or **$650 per month** when paid in advance |
+| Private room | **$200 per week**, or **$750 per month** when paid in advance |
+| One-time move-in fee | **$250** (nonrefundable) |
+| Live-Out participation | **$25 per week** |
+
+There are no grandfathered rates: these are the fees for every resident under this agreement.
+
+**When payment is due:**
+
+- Weekly payments may be made at any point during the week; a weekly payment still outstanding
+  is addressed at the Sunday house meeting.
+- Monthly payments are due on or before the 1st of the month.
+
+**Late payments — grace first:**
+
+- During your **first 30 days** of residency, no late charge applies at all.
+- After the first 30 days, a delinquent payment may incur **$5 per day** — but the charge is
+  **waived** when you communicated in advance or have an approved hardship/payment
+  arrangement in place. [PENDING — OPERATOR RATIFICATION: whether the $5/day charge carries a
+  maximum cap.]
+- **A late payment never automatically ends residency.** Persistent nonpayment is addressed
+  through the same documented human process as everything else in this agreement.
+
+**If paying gets hard — the hardship path:**
+
+Financial difficulty is met the way everything here is met: with a conversation first.
+Tell staff → agree a written payment arrangement together → the late charge is suspended
+while you keep to the arrangement → staff follow up with you → and the arrangement is
+modified if your circumstances change. Talking to staff *before* a payment is missed is
+always enough to start this path.
+
+**Refunds:** fees are generally nonrefundable. Exceptional refunds are considered case by
+case; an approved refund is prorated based on unused residency days. The move-in fee is
+nonrefundable.
 
 ## 6. A substance-free home: screening
 
-You agree to participate in the drug and alcohol screening described in the Screening Policy.
-Two protections are permanent:
+You agree to participate in the drug and alcohol screening described in the Screening Policy —
+random or otherwise under the approved policy, requested only by the House Manager, the
+designated Liaison, or Executive Leadership, using approved methods (urine screen,
+breathalyzer, or oral fluid). Two protections are permanent:
 
 - **Medications you are lawfully prescribed — including MOUD (such as buprenorphine,
   methadone, or naltrexone) — are never a violation.** A screening result consistent with
