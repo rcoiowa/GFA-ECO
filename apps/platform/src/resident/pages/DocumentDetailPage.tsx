@@ -53,10 +53,11 @@ export function DocumentDetailPage() {
     setSigning(true);
     setSignError(false);
     try {
-      await acknowledgeDocumentAssignment({
+      const result = await acknowledgeDocumentAssignment({
         assignmentId: myAssignment.id,
         signatureName: signatureName.trim(),
       });
+      if (!result.ok && result.code !== 'already_acknowledged') throw new Error(result.code);
       setJustSigned(true);
       await load();
     } catch {

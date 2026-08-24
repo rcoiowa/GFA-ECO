@@ -30,23 +30,20 @@ export async function listMyDocumentAssignments(
 }
 
 /**
- * Sign/acknowledge a pending assignment. The typed signature name is the
- * resident's e-signature; RLS only permits this on the person's own
- * unacknowledged rows.
+ * Sign/acknowledge a pending assignment through the audited RPC (Gate B1):
+ * the server pins the exact document version + content hash into the audit
+ * trail, distinguishes acknowledgment from signature, and only ever acts on
+ * the person's own unacknowledged assignment. (The legacy direct-update path
+ * is retired in Gate B6.)
  */
 export async function acknowledgeDocumentAssignment(input: {
   assignmentId: number;
-  signatureName: string;
-}): Promise<DocumentAssignment> {
-  const { data, error } = await getSupabase()
-    .from('document_assignments')
-    .update({
-      acknowledged_at: new Date().toISOString(),
-      signature_name: input.signatureName,
-    })
-    .eq('id', input.assignmentId)
-    .select()
-    .single();
+  signatureName?: string;
+}): Promise<{ ok: boolean; code?: string; content_hash?: string }> {
+  const { data, error } = await getSupabase().rpc('acknowledge_document', {
+    p_assignment_id: input.assignmentId,
+    p_signature_name: input.signatureName ?? null,
+  });
   if (error) throw error;
-  return data;
+  return (data as { ok: boolean; code?: string; content_hash?: string }) ?? { ok: false, code: 'empty' };
 }
