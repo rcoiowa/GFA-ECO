@@ -40,6 +40,8 @@ jobs:
         run: node scripts/verify-domain-vocabulary.mjs
       - name: Service provenance guard (ratified canon — sources/authorities/whitelist, P2)
         run: node scripts/verify-service-provenance.mjs
+      - name: Intake minimization guard (Gate B — evidence chain, MOUD never gates, narrow override)
+        run: node scripts/verify-intake-minimization.mjs
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
