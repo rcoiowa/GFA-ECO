@@ -1,6 +1,34 @@
 # EJWRH B5B — Final Document Ratification & Activation Readiness Record
 
-**Status: PREPARED FOR EXECUTIVE/LEGAL CONTENT RATIFICATION — ACTIVATION CLOSED
+## ⬥ EXECUTIVE RATIFICATION ENTRY (2026-08-24)
+
+The Executive Director ratified the following as the **approved resident-facing policy
+editions**, at their content as of commit `cffedfd`, subject only to correction of clerical
+errors or conflicts discovered against already-ratified decisions. **Activation remains
+closed** — ratification approves the text; activation is a separate future act.
+
+| Document | Ratified content hash (frozen) |
+|---|---|
+| EJWRH Resident Handbook | `834773861098c23b4a36785952498d157da39d568cdc015ca41667ff627690ba` |
+| EJWRH Resident Rights & Grievance | `285ce0974c803eb8afb134df20ba21175995c320520c9ccc513822fb44167024` |
+| EJWRH Screening Policy | `a835849688a9515e5a0adb4d7d43941717fdaefb415748e2b8f98106612cd6c7` |
+| EJWRH Medication/MOUD Policy | `6412db49cfe42cbfdfb81beb2d70e2310c42837407820ff90ad1f4dfdd7d605f` |
+| EJWRH Return-to-Use Response Policy | `c4cbe7669007474cb9e6a4c5178ab4968277ec4cfa28efbb0f050fa07ad86a97` |
+
+Ratified in the same act, the **late-fee terms** (Agreement §5, updated accordingly —
+new Agreement hash `045135c6be78d76d826e084f665f3417a0e48b125ffbff25ac9bf45d28d218b2`):
+$5/day with a **maximum of $50 per delinquent payment period**; no late fee during the first
+30 days of residency; late fees **suspended** while the resident complies with an approved
+hardship/payment plan and **waivable** on timely prior communication or documented
+circumstances; **late payment alone never automatically results in discharge**.
+
+The Participant & Residency Agreement remains **content substantially complete, activation
+blocked** on two items: contracting-party naming (executed PSA) and the e-signature consent
+clause (legal review).
+
+---
+
+**Status: FIVE EDITIONS EXECUTIVE-RATIFIED — ACTIVATION CLOSED
 (2026-08-24).** B5A (`ee9b042`) accepted. This record incorporates the B5B
 executive-ratified operating values into the six EJWRH editions, proves single-source
 consistency, maps incorporated documents, designs the accommodation evidence loop, packages
@@ -22,7 +50,7 @@ document activation, no resident signatures, no B6, no Cloudflare, no external d
 | Monthly due on/before the 1st | Agreement §5 | RATIFIED, drafted |
 | No late charge in first 30 days | Agreement §5 | RATIFIED, drafted |
 | $5/day after 30 days, waived on advance communication / arrangement | Agreement §5 | RATIFIED, drafted |
-| $5/day maximum cap | Agreement §5 | **PENDING operator ratification** (flagged in text) |
+| $5/day maximum cap: **$50 per delinquent payment period** | Agreement §5 | RATIFIED 2026-08-24, drafted |
 | Refunds generally nonrefundable; exceptions case-by-case, prorated by unused days | Agreement §5 | RATIFIED, drafted |
 | Fees = Operator financial function, not GFA | Agreement §1 + §5 | RATIFIED, drafted |
 | Hardship/payment-plan standard (dignity-centered, 6 steps) | Agreement §5 "the hardship path" | RATIFIED, drafted |
@@ -224,12 +252,14 @@ runbook post-run SQL for version/hash/audit). Double-gated (`RECOVERYOS_E2E_LIVE
 1. **Executed PSA** → contracting-party naming in Agreement §1 (blocks Agreement activation).
 2. **E-sign legal review** (§7 packet, Q1–Q4) → Agreement §13 wording (blocks Agreement
    e-sign activation; paper-first activation would still need Q2/Q3).
-3. **Late-charge cap** → one operator ratification line in Agreement §5.
+3. ~~Late-charge cap~~ — **RESOLVED by executive ratification 2026-08-24** ($5/day, max $50
+   per delinquent payment period; drafted into Agreement §5).
 4. **Grievance appeal named contact** → optional; the role-based rule is complete without it.
 5. **Accommodation evidence loop** → narrow implementation (one table + one RPC + one
    readiness block), authorized at a future gate; interim behavior is honest.
 6. **Activation seed finalization** → body-generator script + recomputed hashes + effective
    date, then ledger entry + apply + preflight + B5B E2E green.
 
-Items 1–3 gate the Agreement; the five acknowledgment documents carry **zero** pending items
-and are blocked only by the executive ratification act itself.
+Items 1–2 gate the Agreement only. The five acknowledgment documents are
+**EXECUTIVE-RATIFIED** (entry above) and now await only the activation act itself
+(seed finalization + apply + E2E, per the activation gate).

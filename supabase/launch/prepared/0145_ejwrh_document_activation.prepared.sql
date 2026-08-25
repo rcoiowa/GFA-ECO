@@ -5,10 +5,12 @@
 -- migrations ledger) precisely so it CANNOT be applied by routine tooling.
 -- It moves to supabase/launch/migrations/0145_ejwrh_document_activation.sql
 -- and is applied ONLY when every condition below is met:
---   1. Executive ratification of the six EJWRH edition texts (B5B reconciled,
---      2026-08-24) with the three remaining [PENDING] items resolved:
---      contracting-party naming (executed PSA), e-signature consent clause
---      (legal review), late-charge cap (operator ratification).
+--   1. Executive ratification of the edition texts. STATUS: the FIVE
+--      acknowledgment documents were EXECUTIVE-RATIFIED 2026-08-24 (content as
+--      of cffedfd; hashes below are frozen). The late-charge cap was ratified
+--      ($5/day, max $50 per delinquent payment period — Agreement hash updated
+--      below). The Agreement remains blocked on TWO items: contracting-party
+--      naming (executed PSA) and the e-signature consent clause (legal review).
 --   2. Signing-method legal review outcome recorded (at minimum for the
 --      Participant Agreement).
 --   3. B5A UI verified (done, ee9b042) + the B5B browser E2E run green against
@@ -26,16 +28,18 @@
 -- trigger); this migration ABORTS if any computed hash differs from the
 -- expected hash pinned below — the seeded text is provably the ratified text.
 --
--- Expected sha256 content hashes (B5B reconciliation, 2026-08-24):
---   ejwrh_participant_agreement          1833e3933792d2320f3e7402d27da57559655a68089ee2513e282c48816becf4
+-- Expected sha256 content hashes (five ratified 2026-08-24 at cffedfd — FROZEN;
+-- Agreement hash reflects the ratified late-charge cap and will change again
+-- when the two remaining Agreement blockers resolve):
+--   ejwrh_participant_agreement          045135c6be78d76d826e084f665f3417a0e48b125ffbff25ac9bf45d28d218b2
 --   ejwrh_resident_handbook              834773861098c23b4a36785952498d157da39d568cdc015ca41667ff627690ba
 --   ejwrh_resident_rights_grievance      285ce0974c803eb8afb134df20ba21175995c320520c9ccc513822fb44167024
 --   ejwrh_screening_policy               a835849688a9515e5a0adb4d7d43941717fdaefb415748e2b8f98106612cd6c7
 --   ejwrh_medication_moud_policy         6412db49cfe42cbfdfb81beb2d70e2310c42837407820ff90ad1f4dfdd7d605f
 --   ejwrh_return_to_use_response_policy  c4cbe7669007474cb9e6a4c5178ab4968277ec4cfa28efbb0f050fa07ad86a97
--- NOTE: resolving the [PENDING] items changes the Agreement (and possibly the
--- Rights) text — RECOMPUTE the affected hashes at finalization; stale hashes
--- make the apply abort, by design.
+-- NOTE: the five ratified hashes are FROZEN (changes only for clerical
+-- corrections, re-ratified). Resolving the Agreement's two remaining blockers
+-- changes its hash — RECOMPUTE at finalization; stale hashes abort, by design.
 --
 -- ROLLBACK (activation is reversible without deleting evidence):
 --   update recoveryos.document_versions dv set published_at = null
@@ -94,7 +98,7 @@ begin
   join recoveryos.document_versions dv on dv.template_id = t.id and dv.version = '1.0'
   where t.key like 'ejwrh_%'
     and dv.content_hash not in (
-      '1833e3933792d2320f3e7402d27da57559655a68089ee2513e282c48816becf4',
+      '045135c6be78d76d826e084f665f3417a0e48b125ffbff25ac9bf45d28d218b2',
       '834773861098c23b4a36785952498d157da39d568cdc015ca41667ff627690ba',
       '285ce0974c803eb8afb134df20ba21175995c320520c9ccc513822fb44167024',
       'a835849688a9515e5a0adb4d7d43941717fdaefb415748e2b8f98106612cd6c7',

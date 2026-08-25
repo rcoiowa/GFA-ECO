@@ -1,5 +1,7 @@
 <!--
-EJWRH EDITION — PREPARED, NOT ACTIVATED (B5B final reconciliation, 2026-08-24)
+EJWRH EDITION — EXECUTIVE-RATIFIED 2026-08-24 (content as of cffedfd) — NOT ACTIVATED
+Ratified as the approved resident-facing policy edition, subject only to correction of
+clerical errors or conflicts against already-ratified decisions. Activation remains closed.
 Proposed template key: ejwrh_screening_policy · requires_signature: FALSE · requires_acknowledgment: TRUE
 B5B executive-ratified: authorized roles (House Manager / designated Liaison / Executive
 Leadership), approved methods (UA, breathalyzer, oral fluid), refusal nuance, contested-result

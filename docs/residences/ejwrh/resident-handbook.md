@@ -1,5 +1,7 @@
 <!--
-EJWRH EDITION — PREPARED, NOT ACTIVATED (B5B final reconciliation, 2026-08-24)
+EJWRH EDITION — EXECUTIVE-RATIFIED 2026-08-24 (content as of cffedfd) — NOT ACTIVATED
+Ratified as the approved resident-facing policy edition, subject only to correction of
+clerical errors or conflicts against already-ratified decisions. Activation remains closed.
 Proposed template key: ejwrh_resident_handbook · requires_signature: FALSE · requires_acknowledgment: TRUE
 Authored FROM docs/architecture/ejwrh-program-model-v1.0.md + the B5B executive-ratified operating
 values. Absorbs (for EJWRH) what Grace House carries as separate documents: curfew & pass

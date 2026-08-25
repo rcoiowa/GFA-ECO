@@ -4,10 +4,10 @@ Proposed template key: ejwrh_participant_agreement · requires_signature: TRUE (
 Authored FROM docs/architecture/ejwrh-program-model-v1.0.md + the B5B executive-ratified operating
 values (fees, hardship standard, quiet hours, screening, grievance SLA, medication model). The
 retired four-level document is not a drafting source. Seeded into document_templates/versions only
-at the signing-activation gate. Remaining [PENDING — …] items (each blocks activation):
+at the signing-activation gate. Late-charge cap RATIFIED 2026-08-24 ($5/day, max $50 per
+delinquent payment period). Remaining [PENDING — …] items (each blocks activation):
   1. contracting-party legal naming — executed PSA not established in repository;
-  2. e-signature consent clause wording — signing-method legal review;
-  3. late-charge maximum cap — flagged for final operator ratification.
+  2. e-signature consent clause wording — signing-method legal review.
 -->
 
 # EJWRH Participant & Residency Agreement
@@ -103,10 +103,10 @@ There are no grandfathered rates: these are the fees for every resident under th
 **Late payments — grace first:**
 
 - During your **first 30 days** of residency, no late charge applies at all.
-- After the first 30 days, a delinquent payment may incur **$5 per day** — but the charge is
-  **waived** when you communicated in advance or have an approved hardship/payment
-  arrangement in place. [PENDING — OPERATOR RATIFICATION: whether the $5/day charge carries a
-  maximum cap.]
+- After the first 30 days, a delinquent payment may incur **$5 per day, up to a maximum of
+  $50 per delinquent payment period**. The charge is **suspended** while you are keeping to
+  an approved hardship/payment arrangement, and it may be **waived** based on timely prior
+  communication or documented circumstances.
 - **A late payment never automatically ends residency.** Persistent nonpayment is addressed
   through the same documented human process as everything else in this agreement.
 

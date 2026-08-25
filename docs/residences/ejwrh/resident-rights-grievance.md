@@ -1,5 +1,7 @@
 <!--
-EJWRH EDITION — PREPARED, NOT ACTIVATED (B5B final reconciliation, 2026-08-24)
+EJWRH EDITION — EXECUTIVE-RATIFIED 2026-08-24 (content as of cffedfd) — NOT ACTIVATED
+Ratified as the approved resident-facing policy edition, subject only to correction of
+clerical errors or conflicts against already-ratified decisions. Activation remains closed.
 Proposed template key: ejwrh_resident_rights_grievance · requires_signature: FALSE · requires_acknowledgment: TRUE
 Combines rights + grievance — the grievance process IS the enforcement of the rights, and one
 acknowledgment covers both. The live resident_rights v2.0 body is Grace-House-branded and is NOT
