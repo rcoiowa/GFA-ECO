@@ -89,6 +89,53 @@ B5B blocker.
 
 ---
 
+## ⬥ EXECUTIVE/AUTHORITY RECONCILIATION ENTRY (2026-08-25)
+
+Documentation/authority pass only — no activation act occurred. Decisions recorded:
+
+1. **Compensation model — RESOLVED (executive).** Service-volume FMV schedule retained in
+   PSA v4.1 §5.3; flat-retainer alternative declined at this time (reconciliation record §3).
+2. **Three-agreement condition — RESOLVED (executive).** The hard condition precedent is
+   not restored: PSA v4.1 is effective per its own terms upon execution by both parties;
+   the W & W Properties lease and the Entity Structure & NARR Compliance Disclosure remain
+   related instruments verified and maintained separately (reconciliation record §5).
+3. **GFA signing authority — CORRECTED (executive/leadership-confirmed).** Dave Stout is no
+   longer the authorized GFA signer; **Thomas DeGarmeaux, Executive Director**, is the
+   current authorized GFA representative/signing authority. Dave Stout removed from the
+   PSA v4.1 Parties and signature blocks; execution .docx regenerated and reverified. No
+   signature or execution date fabricated (reconciliation record §6).
+4. **Operator operational authorization — LEADERSHIP-CONFIRMED (Evidence Ledger C).**
+   Curtis White personally reviewed the current arrangement and gave Thomas DeGarmeaux
+   explicit approval to proceed, specifically authorizing moving forward with what is
+   necessary to **onboard current and future EJWRH residents through the RecoveryOS intake
+   process**.
+
+   **What it authorizes:** Operator operational permission for GFA to run the RecoveryOS
+   resident-intake/onboarding workflow for EJWRH residents — the non-signature intake
+   machinery already live and approved (conditional acceptance → account offer → person
+   resolution → application conversion → approval → readiness work: screening consent,
+   emergency contact, medication reconciliation, supervision coordination). Under the
+   governance model this **clears the operational-authorization dimension** for
+   building/using the EJWRH intake workflow: no additional Operator permission is needed to
+   proceed with those steps.
+
+   **What it does NOT do:** it is not a PSA signature or execution date (PSA v4.1 remains
+   **UNEXECUTED**); not an executive/Operator attestation that the PSA has been executed
+   (so it does not clear the Agreement §1 `[PENDING — EXECUTED-AUTHORITY VERIFICATION]`
+   block); not a blanket legal delegation; not a ratification or activation of the
+   Participant & Residency Agreement as an electronic contract; and not authority beyond
+   what was actually approved. Document-edition activation (0146), resident signing, B6,
+   Cloudflare, and external disclosure all remain closed.
+
+   **Architectural consequence (verified in 0142/0143):** every intake step **except the
+   final recorded admission** is document-edition-independent and may be used for EJWRH
+   now. The final `admit_applicant` act is blocked by the deliberate, non-overridable
+   `signature_documents → pending_document_edition` readiness placeholder until the EJWRH
+   document edition activates — that gate is activation-blocking by design and is **not**
+   cleared by operational authorization alone.
+
+---
+
 **Status: FIVE EDITIONS EXECUTIVE-RATIFIED — ACTIVATION CLOSED
 (2026-08-24).** B5A (`ee9b042`) accepted. This record incorporates the B5B
 executive-ratified operating values into the six EJWRH editions, proves single-source
@@ -308,22 +355,51 @@ signature (typed name) → screening consent (participant one-tap) → emergency
 runbook post-run SQL for version/hash/audit). Double-gated (`RECOVERYOS_E2E_LIVE=1` +
 `RECOVERYOS_E2E_B5B=1`) — **not executed while activation remains closed.**
 
-## 10. Exact remaining blockers (nothing else is open)
+## 10. Exact remaining blockers (reclassified 2026-08-25 — nothing else is open)
 
-1. **Executed PSA + entity authority** → operative counterparty naming in Agreement §1
-   (expected: Ernest & Johnnie White Recovery House, L.L.C.) — blocks Agreement activation.
-2. ~~E-sign legal review~~ — **RESOLVED: APPROVED WITH ATTACHED REVISIONS (2026-08-24)**;
-   all attached revisions incorporated (Legal-Review Reconciliation entry above). A new
-   blocker emerged from it: **the verified record-retention period** (entry item 7) —
-   unresolved policy/legal item, not invented.
-3. ~~Late-charge cap~~ — **RESOLVED by executive ratification 2026-08-24** ($5/day, max $50
-   per delinquent payment period; drafted into Agreement §5).
-4. **Grievance appeal named contact** → optional; the role-based rule is complete without it.
-5. **Accommodation evidence loop** → narrow implementation (one table + one RPC + one
-   readiness block), authorized at a future gate; interim behavior is honest.
-6. **Activation seed finalization** → body-generator script + recomputed hashes + effective
-   date, then ledger entry + apply + preflight + B5B E2E green.
+Classification key: **[R]** resolved · **[OA/FE]** operationally authorized, formal
+evidence still required · **[C]** counsel/policy determination still required ·
+**[AB]** genuinely activation-blocking.
+
+1. **[OA/FE] Executed PSA + entity authority.** Curtis White's leadership-confirmed
+   approval (entry above) operationally authorizes the intake/onboarding work, but the
+   formal evidence — a PSA v4.1 signed and dated by Curtis White (Sole Member) and Thomas
+   DeGarmeaux (Executive Director) — is still required to clear the Agreement §1
+   `[PENDING — EXECUTED-AUTHORITY VERIFICATION]` counterparty block. Gates Agreement
+   activation only; does not gate non-signature intake use.
+2. **[C] Verified record-retention period** (Legal-Review entry item 7) — counsel/policy
+   determination; not invented. Gates Agreement activation only.
+3. ~~E-sign legal review~~ — **[R] RESOLVED: APPROVED WITH ATTACHED REVISIONS
+   (2026-08-24)**; all attached revisions incorporated.
+4. ~~Late-charge cap~~ — **[R] RESOLVED by executive ratification 2026-08-24.**
+5. ~~Compensation model~~ — **[R] RESOLVED 2026-08-25** (service-volume FMV schedule
+   retained; reconciliation record §3).
+6. ~~Three-agreement condition precedent~~ — **[R] RESOLVED 2026-08-25** (not restored;
+   reconciliation record §5).
+7. ~~GFA signing authority~~ — **[R] CORRECTED 2026-08-25** (Thomas DeGarmeaux; Dave Stout
+   removed; reconciliation record §6).
+8. **[AB] Agreement §5 fee-wording change + re-ratification** (reconciliation record §7
+   item 1: individualized-reduction rule replacing "no grandfathered rates") — an executive
+   act awaiting authorization; changes the Agreement hash, so it precedes seed finalization.
+9. **[AB] Activation seed finalization + apply** — body-generator script + recomputed
+   hashes + effective date, then ledger entry + apply + preflight + gated B5B E2E; remains
+   **closed by standing prohibition** until expressly authorized.
+10. **Grievance appeal named contact** → optional; the role-based rule is complete without it.
+11. **Accommodation evidence loop** → narrow implementation (one table + one RPC + one
+    readiness block), authorized at a future gate; interim behavior is honest.
+
+**Onboarding vs. activation (the distinction that now matters):** permission to onboard
+EJWRH residents through RecoveryOS is **operationally authorized** (Curtis White,
+leadership-confirmed) and the non-signature intake machinery is live — conditional
+acceptance, account offer, person resolution, conversion, approval, screening consent,
+emergency contact, medication reconciliation, and supervision coordination may all be used
+for EJWRH residents today. Permission to activate the **Participant & Residency Agreement
+as an electronic contract** (and the five ratified acknowledgments) is a separate,
+still-closed act gated by items 1, 2, 8, and 9. Until that activation, the final
+`admit_applicant` step for EJWRH refuses on the deliberate non-overridable
+`pending_document_edition` readiness item — so intake can be worked to
+"everything-but-move-in," and recorded admission completes once the edition activates.
 
 Items 1–2 gate the Agreement only. The five acknowledgment documents are
 **EXECUTIVE-RATIFIED** (entry above) and now await only the activation act itself
-(seed finalization + apply + E2E, per the activation gate).
+(items 8–9, per the activation gate).

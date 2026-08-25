@@ -5,6 +5,8 @@ leadership-supplied v4.0 source instrument, reconciled to the ratified operating
 ratified fee/hardship/late-charge decisions, and the B5B legal-review outcomes. The v4→v4.1
 change record is docs/agreements/ejwrh-psa-v4.1-reconciliation.md. This copy is NOT executed
 authority until signed; no signatures, dates, or amendments are fabricated here.
+2026-08-25 authority correction (executive): Thomas DeGarmeaux, Executive Director, is the
+current authorized GFA signing representative; Dave Stout removed from the signature block.
 -->
 
 # ERNEST & JOHNNIE WHITE RECOVERY HOUSE, L.L.C.
@@ -34,7 +36,7 @@ Hereinafter: **"Operator"**
 
 **CONTRACTED RECOVERY PROGRAM & TECHNICAL SERVICES PROVIDER**
 Grace For Addictions, a 501(c)(3) Recovery Community Organization
-President: Dave Stout · GFA Office: 515-220-8771
+Authorized Representative: Thomas DeGarmeaux, Executive Director · GFA Office: 515-220-8771
 Residents Warmline: 515-310-DIAL (3425) / Toll Free +1 (877) 295-2535
 Hereinafter: **"Service Provider"** or **"GFA"**
 
@@ -365,8 +367,8 @@ L.L.C. (Iowa Business No. 872192)
 Signature: ______________________________ Date: ______________
 
 Authorized Organizational Representative
-Printed name and title: Dave Stout, President — Grace For Addictions, a 501(c)(3) Recovery
-Community Organization
+Printed name and title: Thomas DeGarmeaux, Executive Director — Grace For Addictions, a
+501(c)(3) Recovery Community Organization
 
 *Ernest & Johnnie White Recovery House, L.L.C. · Professional Services Agreement v4.1 ·
 2026 · Confidential*

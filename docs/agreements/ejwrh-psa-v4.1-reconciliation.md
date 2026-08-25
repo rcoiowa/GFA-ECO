@@ -83,12 +83,19 @@ choice.
 | "All participant information protected under 42 CFR Part 2, HIPAA, and Iowa law" (categorical) | "where and to the extent they apply"; Article 11(b): neither party asserts covered-entity/Part 2-program status by this Agreement |
 | (absent) | Article 11(c): nonelectronic legal-notice safeguard (mirrors the resident Agreement §13 and the B5B binding design law) |
 
-**Still needs counsel:** Iowa ch. 562A characterization of program residency (expressly
-open); the emergency/safety-response procedure text itself; confirmation that the
-service-volume retainer framing satisfies nonprofit-integrity/FMV expectations (the model
-choice itself is executively resolved — retained per the 2026-08-25 decision in Section 3;
-counsel confirms the framing, not the choice); the record-retention period (already an open
-B5B blocker); and ordinary execution review of v4.1 as a whole.
+**Still needs counsel (narrowed 2026-08-25 — compensation-model selection and the
+three-agreement decision are executive decisions, not counsel decisions):**
+
+1. Iowa ch. 562A characterization of program residency and its consequences (expressly
+   open in Article 11(a)).
+2. Safety/emergency-removal procedures and legally required notice procedures (the text
+   itself, per Article 11(d)).
+3. Confirmation that the retained service-volume compensation language is appropriately
+   framed (FMV/nonprofit integrity — the framing, not the choice; the model is executively
+   resolved per Section 3).
+4. The applicable record-retention period (open B5B blocker; not invented).
+5. Any remaining execution/e-sign requirements that materially block the Participant &
+   Residency Agreement, plus ordinary execution review of v4.1 as a whole.
 
 ## 5. Three-agreement structure (gate §10)
 
@@ -99,20 +106,35 @@ B5B blocker); and ordinary execution review of v4.1 as a whole.
 - v4's sentence "All three agreements must be executed before operations commence" was
   **revised**: v4.1 keeps the three-agreement context as the parties' stated intent but
   makes this Agreement effective on its own execution, with the related instruments'
-  status "confirmed separately." If leadership intends a hard three-agreement condition
-  precedent, say so and §"Context" gains it back explicitly — it should not survive by
-  default when two of the three instruments are unverified.
+  status "confirmed separately."
+- **EXECUTIVE DECISION — RESOLVED (2026-08-25):** the hard three-agreement condition
+  precedent is **not restored**. Canonically: PSA v4.1 takes effect according to its own
+  terms upon execution by both parties; the W & W Properties lease and the Entity
+  Structure & NARR Compliance Disclosure remain related instruments whose status is
+  verified and maintained separately. The current v4.1 contextual treatment is preserved
+  verbatim — no PSA text change results from this decision.
 
 ## 6. Signing authority (gate §9)
 
 Role-first blocks: *Authorized Member/Manager/Representative* (EJWRH L.L.C.) and
 *Authorized Organizational Representative* (GFA). The v4-named individuals — Curtis White,
-Sole Member; Dave Stout, President — are populated as the printed names because the
-leadership-supplied source names them, with an execution-time authority confirmation clause
-("each signatory confirms that they hold authority to execute in the capacity stated").
-Their current authority is **confirmed at execution, not assumed from the draft**. The
-"Executive Director creates initial documents…" fragments misplaced in v4's party block were
-moved into role-continuity and scope text.
+Sole Member; Dave Stout, President — were initially populated as the printed names because
+the leadership-supplied source named them, with an execution-time authority confirmation
+clause ("each signatory confirms that they hold authority to execute in the capacity
+stated"). The "Executive Director creates initial documents…" fragments misplaced in v4's
+party block were moved into role-continuity and scope text.
+
+**AUTHORITY CORRECTION (2026-08-25, executive/leadership-confirmed):** Dave Stout is no
+longer the authorized GFA signer for this PSA. **Thomas DeGarmeaux, Executive Director, is
+the current authorized GFA organizational representative and signing authority.** The
+canonical v4.1 authoring copy and the execution .docx were updated: Dave Stout is
+**removed** from the Parties block and the Article 14 signature block (obsolete authority
+is not retained), and Thomas DeGarmeaux is printed in his place. Expected signature blocks
+are now: EJWRH L.L.C. — Curtis White, Sole Member / authorized representative; GFA —
+Thomas DeGarmeaux, Executive Director / authorized organizational representative. The
+execution-time authority confirmation clause is unchanged and continues to apply to both
+signatories: current authority is **confirmed at execution, not assumed from the draft**.
+No signature or execution date is fabricated; the instrument remains unexecuted.
 
 ## 7. Downstream document changes required (gate §12 — identified, NOT applied; hashes frozen)
 
@@ -144,12 +166,22 @@ the executed v4.1 (or an executive attestation of execution), never against this
 1. ~~Compensation model (service-volume schedule vs. flat FMV retainer)~~ —
    **RESOLVED 2026-08-25**: Executive Director retained the service-volume FMV schedule
    (Section 3); no PSA text change required.
-2. **Three-agreement condition precedent** — open: confirm whether execution of all three
-   instruments should again be a hard condition precedent (Section 5), or the v4.1
-   "confirmed separately" treatment stands.
-3. **Counsel review** — open: ch. 562A characterization; safety-response procedure text;
-   FMV/nonprofit-integrity confirmation of the retained schedule's framing; record-retention
-   period; ordinary execution review (Section 4).
-4. **Signer authority confirmation** — open: confirm at execution that Curtis White (Sole
-   Member, EJWRH L.L.C.) and Dave Stout (President, GFA) hold current authority in the
-   stated capacities (Section 6).
+2. ~~Three-agreement condition precedent~~ — **RESOLVED 2026-08-25**: not restored; PSA
+   v4.1 effective on its own execution; related instruments verified separately
+   (Section 5). No PSA text change required.
+3. **Counsel review** — open, narrowed to the five items in Section 4.
+4. **Signer authority** — corrected 2026-08-25 (Section 6): GFA signer is Thomas
+   DeGarmeaux, Executive Director (Dave Stout removed). Execution-time confirmation of
+   both signatories' authority remains, as a clause of the instrument itself — this is an
+   act performed at signing, not an open pre-signature decision.
+
+**Operator operational authorization (leadership-confirmed, 2026-08-25):** Curtis White
+personally reviewed the current arrangement and gave Thomas DeGarmeaux explicit approval to
+proceed, specifically authorizing moving forward with what is necessary to onboard current
+and future EJWRH residents through the RecoveryOS intake process. This is recorded as
+**leadership-confirmed Operator operational authorization** (Evidence Ledger C) for the
+RecoveryOS resident-intake/onboarding process. It is **not** a PSA signature, an execution
+date, a blanket legal delegation, or authority beyond what was approved; PSA v4.1 remains
+**UNEXECUTED** until actually signed and dated by both authorized representatives. The
+full scope analysis and blocker reclassification live in the B5B ratification record
+(Executive/Authority Reconciliation entry, 2026-08-25).
