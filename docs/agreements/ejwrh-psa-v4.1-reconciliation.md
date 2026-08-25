@@ -58,13 +58,21 @@ removed. The garbled v4 §4.1 installment text was rewritten to its evident inte
 $1,500 installments triggered at 70% occupancy; deferral on dip; retainer independent and
 starting from first occupancy month).
 
-**Recommendation + preserved executive option:** the cleanest structure remains *defined
-services → defined flat FMV compensation* (e.g., flat $1,200/mo after a defined launch
-ramp). That change **would materially alter the negotiated commercial deal** (Operator would
-owe the full retainer regardless of census), so per the gate's STOP rule it was **not** made
-unilaterally: v4.1 preserves the negotiated schedule with corrected legal semantics, and the
-flat-FMV alternative is presented here for executive/counsel consideration at signature. If
-leadership prefers the flat model, §5.3 is a one-table replacement.
+**Recommendation + preserved executive option (as presented):** the cleanest structure
+remains *defined services → defined flat FMV compensation* (e.g., flat $1,200/mo after a
+defined launch ramp). That change **would materially alter the negotiated commercial deal**
+(Operator would owe the full retainer regardless of census), so per the gate's STOP rule it
+was **not** made unilaterally: v4.1 preserves the negotiated schedule with corrected legal
+semantics, and the flat-FMV alternative was presented for executive/counsel consideration
+at signature.
+
+**EXECUTIVE DECISION — RESOLVED (2026-08-25):** the Executive Director confirmed retention
+of the **service-volume FMV compensation schedule** in PSA v4.1 §5.3 and declined the
+flat-retainer alternative at this time. §5.3 as authored already embodies this decision —
+no text change to the PSA results from it. The flat-FMV note above is retained as
+historical analysis only; counsel review of the retained schedule's FMV/nonprofit-integrity
+framing (Section 4) remains open as ordinary execution review, not as a pending model
+choice.
 
 ## 4. Legal-claim hygiene (gate §11)
 
@@ -77,9 +85,10 @@ leadership prefers the flat model, §5.3 is a one-table replacement.
 
 **Still needs counsel:** Iowa ch. 562A characterization of program residency (expressly
 open); the emergency/safety-response procedure text itself; confirmation that the
-service-volume retainer framing satisfies nonprofit-integrity/FMV expectations (or adoption
-of the flat-FMV alternative); the record-retention period (already an open B5B blocker); and
-ordinary execution review of v4.1 as a whole.
+service-volume retainer framing satisfies nonprofit-integrity/FMV expectations (the model
+choice itself is executively resolved — retained per the 2026-08-25 decision in Section 3;
+counsel confirms the framing, not the choice); the record-retention period (already an open
+B5B blocker); and ordinary execution review of v4.1 as a whole.
 
 ## 5. Three-agreement structure (gate §10)
 
@@ -129,3 +138,18 @@ v4.1 is drafted execution-ready **text**. It becomes executed authority only whe
 dated by both authorized representatives and the executed copy is returned as evidence. The
 resident Agreement's `[PENDING — EXECUTED-AUTHORITY VERIFICATION]` block clears only against
 the executed v4.1 (or an executive attestation of execution), never against this draft.
+
+**Human decisions before signature — tracking:**
+
+1. ~~Compensation model (service-volume schedule vs. flat FMV retainer)~~ —
+   **RESOLVED 2026-08-25**: Executive Director retained the service-volume FMV schedule
+   (Section 3); no PSA text change required.
+2. **Three-agreement condition precedent** — open: confirm whether execution of all three
+   instruments should again be a hard condition precedent (Section 5), or the v4.1
+   "confirmed separately" treatment stands.
+3. **Counsel review** — open: ch. 562A characterization; safety-response procedure text;
+   FMV/nonprofit-integrity confirmation of the retained schedule's framing; record-retention
+   period; ordinary execution review (Section 4).
+4. **Signer authority confirmation** — open: confirm at execution that Curtis White (Sole
+   Member, EJWRH L.L.C.) and Dave Stout (President, GFA) hold current authority in the
+   stated capacities (Section 6).
