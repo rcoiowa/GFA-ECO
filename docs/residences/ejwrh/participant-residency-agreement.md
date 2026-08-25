@@ -5,9 +5,12 @@ Authored FROM docs/architecture/ejwrh-program-model-v1.0.md + the B5B executive-
 values (fees, hardship standard, quiet hours, screening, grievance SLA, medication model). The
 retired four-level document is not a drafting source. Seeded into document_templates/versions only
 at the signing-activation gate. Late-charge cap RATIFIED 2026-08-24 ($5/day, max $50 per
-delinquent payment period). Remaining [PENDING — …] items (each blocks activation):
-  1. contracting-party legal naming — executed PSA not established in repository;
-  2. e-signature consent clause wording — signing-method legal review.
+delinquent payment period). §13 electronic-records disclosure incorporated per the legal
+review (APPROVED WITH ATTACHED REVISIONS, 2026-08-24). Remaining [PENDING — …] item blocking
+activation:
+  1. contracting-party operative naming — executed PSA + entity authority verification
+     (expected party per legal review: Ernest & Johnnie White Recovery House, L.L.C.).
+Also open before activation (record §10): the verified record-retention period.
 -->
 
 # EJWRH Participant & Residency Agreement
@@ -35,9 +38,12 @@ peer coaching, recovery navigation, recovery planning, program development, and 
 platform — and does not manage resident funds. The residence is pursuing NARR Level II
 certification through the Iowa affiliate (MCRSP).
 
-[PENDING — EXECUTED PSA: the operator's exact legal name as the contracting party is inserted
-only after the executed Professional Services Agreement is verified; this agreement is not
-signable until then.]
+[PENDING — EXECUTED-AUTHORITY VERIFICATION: the resident contracting party is expected to be
+**Ernest & Johnnie White Recovery House, L.L.C.** per the legal review; that name becomes
+operative in this agreement only after the executed Professional Services Agreement and
+supporting entity authority are verified — never inferred from a draft. This agreement is
+not signable until then. Grace For Addictions is the contracted recovery-support, program,
+and technical service provider — not the housing contracting party.]
 
 You can expect: a safe, alcohol- and illicit-drug-free home; respect and dignity without
 regard to your recovery pathway; staff and peers who walk beside you; and honest, documented
@@ -181,14 +187,50 @@ Your participation records live in RecoveryOS. What is collected is the minimum 
 support you; who can see it is limited by role; information leaves the organization only
 with your specific, revocable, written authorization or as required by law.
 
-## 13. Signing
+## 13. Signing, and your electronic-records choices
 
 By signing you confirm you have read this agreement, had your questions answered, received
 the referenced documents, and agree to these terms.
 
-[PENDING — SIGNING-METHOD REVIEW: the electronic-signature consent clause and record-delivery
-language are inserted after the signing-method review (plan §7) determines the final wording.]
+**You choose how to sign.** You may sign electronically in the app, or on paper with staff —
+**choosing paper never affects your eligibility, your intake progress, or your move-in.**
 
-Resident signature: typed-name electronic signature, recorded with the exact document
-version, date and time. You may request a paper copy at any time, and staff can print one
-whenever you ask.
+**Electronic records disclosure.** If you choose to sign electronically, the following
+applies:
+
+- **Scope of your electronic consent.** Your consent covers this agreement and the residence
+  documents and records connected to your residency in RecoveryOS. It does not cover
+  anything else, and it is not a blanket consent to everything electronic.
+- **Your right to paper.** You may have any document — including this agreement — on paper
+  instead, at any time.
+- **Withdrawing electronic consent.** You may withdraw your consent to electronic records at
+  any time by telling any staff member or withdrawing it in the app. Withdrawal takes effect
+  going forward: records you already signed remain valid, and future documents are then
+  handled on paper.
+- **Keeping your contact information current.** Tell staff or update your profile in the app
+  when your email address or phone number changes, so records reach you.
+- **Paper copies.** You may request a paper copy of any document, including your signed
+  agreement, at any time — **at no charge**. Staff will print it for you.
+- **What you need to use electronic records.** A current web browser on a phone, tablet, or
+  computer with internet access; house devices and staff help are available if you don't
+  have your own.
+- **If the technology materially changes.** If a change to the system would materially
+  affect your ability to access your electronic records, you will be notified and asked to
+  re-confirm your consent before it applies to you.
+- **Keeping your own copy.** You can view your signed agreement in the app whenever you
+  want, print it or save it from your device where the device permits, and always ask staff
+  for a paper copy.
+- **Persistent access.** Your signed documents remain available to you in the app throughout
+  your residency, without restriction, expiration, or copy protection.
+
+**Your electronic signature and intent to be bound.** If you choose electronic signing, you
+will first affirmatively confirm the electronic-records consent above, then type your full
+name and select **"Sign Participant & Residency Agreement."** Selecting that control is your
+electronic signature and your statement of intent to be bound by this agreement, recorded
+with the exact document version, its content fingerprint, your identity, and the date and
+time.
+
+**Legal notices.** Some notices — where applicable law requires it, including any applicable
+eviction, termination, default, or right-to-cure notice — must be delivered to you in
+nonelectronic form. Electronic delivery alone is never treated as legally sufficient for
+such a notice; the required delivery is made and recorded separately.

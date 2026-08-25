@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
   applicationIntakeReadiness: vi.fn(),
   acknowledgeDocumentAssignment: vi.fn(),
   recordResidenceConsentGrant: vi.fn(),
+  hasElectronicRecordsConsent: vi.fn(),
 }));
 vi.mock('@recoveryos/auth', () => ({ useAuth: mocks.useAuth }));
 vi.mock('@recoveryos/data-access', () => mocks);
@@ -68,6 +69,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.useAuth.mockReturnValue({ person: { id: 144, first_name: 'Jordan' } });
   mocks.ensureMyDocumentAssignments.mockResolvedValue([]);
+  mocks.hasElectronicRecordsConsent.mockResolvedValue(true);
   mocks.applicationIntakeReadiness.mockResolvedValue({
     ok: true,
     items: [{ key: 'screening_consent', met: false }],
@@ -111,7 +113,9 @@ describe('GettingSettledPage', () => {
     render(<GettingSettledPage />);
     expect(await screen.findByText('To sign')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Read & sign'));
-    const sign = screen.getByText('Sign the Participant Agreement');
+    // Intent-to-be-bound statement accompanies the signing control (legal review §3).
+    expect(screen.getByText(/is your electronic signature and your agreement to be bound/)).toBeInTheDocument();
+    const sign = screen.getByText('Sign Participant Agreement');
     expect(sign).toBeDisabled();
     fireEvent.change(screen.getByLabelText(/Type your full name/), {
       target: { value: 'Jordan Fixture' },
@@ -121,6 +125,42 @@ describe('GettingSettledPage', () => {
       expect(mocks.acknowledgeDocumentAssignment).toHaveBeenCalledWith({
         assignmentId: 1,
         signatureName: 'Jordan Fixture',
+      }),
+    );
+  });
+
+  it('e-signing is gated on affirmative electronic-records consent, with a paper path', async () => {
+    mocks.hasElectronicRecordsConsent.mockResolvedValue(false);
+    mocks.getMyLatestApplication.mockResolvedValue(approvedApp);
+    mocks.listMyDocumentAssignments.mockResolvedValue([
+      assignment({
+        document_version: {
+          ...assignment({}).document_version,
+          template: {
+            ...assignment({}).document_version.template,
+            key: 'participant_agreement',
+            name: 'Participant Agreement',
+            requires_signature: true,
+            requires_acknowledgment: false,
+          },
+        },
+      }),
+    ]);
+    mocks.recordResidenceConsentGrant.mockResolvedValue({ ok: true, code: 'granted', grant_id: 9 });
+    render(<GettingSettledPage />);
+    fireEvent.click(await screen.findByText('Read & sign'));
+    // No signature field until the affirmative consent action.
+    expect(screen.getByTestId('e-consent-step')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Type your full name/)).not.toBeInTheDocument();
+    // The paper path is clearly accessible and framed with no adverse consequence.
+    fireEvent.click(screen.getByText('I prefer to sign on paper'));
+    expect(screen.getByText(/never affects your eligibility/)).toBeInTheDocument();
+    // Affirmative consent action records the self-only electronic_records grant.
+    fireEvent.click(screen.getByText('I agree to use electronic records and signatures'));
+    await waitFor(() =>
+      expect(mocks.recordResidenceConsentGrant).toHaveBeenCalledWith({
+        personId: 144,
+        typeKey: 'electronic_records',
       }),
     );
   });

@@ -5,6 +5,7 @@ import {
   applicationIntakeReadiness,
   ensureMyDocumentAssignments,
   getMyLatestApplication,
+  hasElectronicRecordsConsent,
   listMyDocumentAssignments,
   recordResidenceConsentGrant,
   type AssignmentWithDocument,
@@ -37,6 +38,8 @@ export function GettingSettledPage() {
   const [application, setApplication] = useState<MyApplication | null>(null);
   const [assignments, setAssignments] = useState<AssignmentWithDocument[]>([]);
   const [screeningConsentMet, setScreeningConsentMet] = useState<boolean | null>(null);
+  const [eConsent, setEConsent] = useState(false);
+  const [paperInfoFor, setPaperInfoFor] = useState<string | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [signatureName, setSignatureName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -52,6 +55,11 @@ export function GettingSettledPage() {
       if (app && app.status === 'approved') {
         await ensureMyDocumentAssignments();
         setAssignments(await listMyDocumentAssignments(person.id));
+        try {
+          setEConsent(await hasElectronicRecordsConsent(person.id));
+        } catch {
+          setEConsent(false);
+        }
         try {
           const r = await applicationIntakeReadiness(app.id);
           const item = (r.items ?? []).find((i) => i.key === 'screening_consent');
@@ -172,26 +180,89 @@ export function GettingSettledPage() {
                                 available from staff.
                               </p>
                               {t.requires_signature ? (
-                                <div className="mt-3 flex flex-col gap-2 sm:max-w-md">
-                                  <TextField
-                                    label="Type your full name as your signature"
-                                    value={signatureName}
-                                    onChange={(e) => setSignatureName(e.target.value)}
-                                    autoComplete="name"
-                                  />
-                                  <Button
-                                    disabled={busy || !signatureName.trim()}
+                                <div className="mt-3 flex flex-col gap-3 sm:max-w-md">
+                                  {!eConsent ? (
+                                    <div data-testid="e-consent-step">
+                                      <p className="text-sm font-medium text-ink">
+                                        Before signing electronically
+                                      </p>
+                                      <ul className="mt-1 list-disc pl-5 text-sm text-ink-muted">
+                                        <li>You can sign on paper with staff instead — always.</li>
+                                        <li>
+                                          You can withdraw electronic consent at any time; anything
+                                          already signed stays valid.
+                                        </li>
+                                        <li>
+                                          You can view your signed documents here whenever you
+                                          want, and get a paper copy free any time.
+                                        </li>
+                                      </ul>
+                                      <p className="mt-1 text-sm text-ink-faint">
+                                        The full electronic-records disclosure is Section 13 of
+                                        this agreement.
+                                      </p>
+                                      <Button
+                                        className="mt-2"
+                                        disabled={busy}
+                                        onClick={() =>
+                                          void act(async () => {
+                                            const r = await recordResidenceConsentGrant({
+                                              personId: person!.id,
+                                              typeKey: 'electronic_records',
+                                            });
+                                            if (r.ok || r.code === 'already_granted')
+                                              setEConsent(true);
+                                            return r;
+                                          })
+                                        }
+                                      >
+                                        I agree to use electronic records and signatures
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <TextField
+                                        label="Type your full name as your signature"
+                                        value={signatureName}
+                                        onChange={(e) => setSignatureName(e.target.value)}
+                                        autoComplete="name"
+                                      />
+                                      <p className="text-sm text-ink-muted">
+                                        Selecting &ldquo;Sign {t.name}&rdquo; is your electronic
+                                        signature and your agreement to be bound by this document.
+                                      </p>
+                                      <Button
+                                        disabled={busy || !signatureName.trim()}
+                                        onClick={() =>
+                                          void act(() =>
+                                            acknowledgeDocumentAssignment({
+                                              assignmentId: a.id,
+                                              signatureName: signatureName.trim(),
+                                            }),
+                                          )
+                                        }
+                                      >
+                                        {busy ? 'Signing…' : `Sign ${t.name}`}
+                                      </Button>
+                                    </>
+                                  )}
+                                  <button
+                                    type="button"
+                                    className="self-start text-sm text-experience-700 underline underline-offset-2"
                                     onClick={() =>
-                                      void act(() =>
-                                        acknowledgeDocumentAssignment({
-                                          assignmentId: a.id,
-                                          signatureName: signatureName.trim(),
-                                        }),
-                                      )
+                                      setPaperInfoFor(paperInfoFor === t.key ? null : t.key)
                                     }
                                   >
-                                    {busy ? 'Signing…' : `Sign the ${t.name}`}
-                                  </Button>
+                                    I prefer to sign on paper
+                                  </button>
+                                  {paperInfoFor === t.key ? (
+                                    <Alert tone="info">
+                                      No problem — tell any staff member. They&rsquo;ll print it,
+                                      you sign with them, and they record your paper signature.
+                                      Choosing paper never affects your eligibility, your intake
+                                      progress, or your move-in.
+                                    </Alert>
+                                  ) : null}
                                 </div>
                               ) : (
                                 <Button
@@ -231,16 +302,52 @@ export function GettingSettledPage() {
               {done.length > 0 ? (
                 <Card>
                   <CardTitle>Done</CardTitle>
+                  <p className="mb-2 text-sm text-ink-muted">
+                    Your signed documents stay available here for your whole residency — no
+                    expiration, no restrictions. Open one to read it again or print/save a copy;
+                    staff will print a paper copy free any time you ask.
+                  </p>
                   <ul className="flex flex-col gap-1">
-                    {done.map((a) => (
-                      <li key={a.id} className="flex items-center justify-between py-1 text-sm">
-                        <span className="text-ink">{a.document_version.template.name}</span>
-                        <span className="text-ink-muted">
-                          {a.signed_at ? 'Signed' : 'Read'}{' '}
-                          {new Date(a.acknowledged_at as string).toLocaleDateString()}
-                        </span>
-                      </li>
-                    ))}
+                    {done.map((a) => {
+                      const t = a.document_version.template;
+                      const isOpen = openKey === `done:${t.key}`;
+                      return (
+                        <li key={a.id} className="border-b border-line py-1.5 text-sm">
+                          <div className="flex items-center justify-between">
+                            <button
+                              type="button"
+                              className="font-medium text-experience-700 underline underline-offset-2"
+                              onClick={() => setOpenKey(isOpen ? null : `done:${t.key}`)}
+                            >
+                              {t.name}
+                            </button>
+                            <span className="text-ink-muted">
+                              {a.signed_at ? 'Signed' : 'Read'}{' '}
+                              {new Date(a.acknowledged_at as string).toLocaleDateString()}
+                              {a.signature_name ? ` as “${a.signature_name}”` : ''}
+                            </span>
+                          </div>
+                          {isOpen ? (
+                            <div className="mt-2">
+                              <MarkdownView markdown={a.document_version.body_markdown} />
+                              <p className="mt-2 text-sm text-ink-faint">
+                                Version {a.document_version.version}
+                                {a.signed_at
+                                  ? ` · signed ${new Date(a.signed_at).toLocaleString()}`
+                                  : ''}
+                              </p>
+                              <Button
+                                variant="secondary"
+                                className="mt-2"
+                                onClick={() => window.print()}
+                              >
+                                Print or save a copy
+                              </Button>
+                            </div>
+                          ) : null}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </Card>
               ) : null}

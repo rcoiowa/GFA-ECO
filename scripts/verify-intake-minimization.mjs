@@ -45,6 +45,7 @@ const M = {
   readiness: 'supabase/launch/migrations/0142_intake_conversion_readiness.sql',
   medreview: 'supabase/launch/migrations/0143_medication_status_review.sql',
   lookup: 'supabase/launch/migrations/0144_intake_conversion_lookup.sql',
+  econsent: 'supabase/launch/migrations/0145_electronic_records_consent.sql',
 };
 
 // ---- B4: banned over-collection vocabulary across all four migrations ----------------------
@@ -134,6 +135,19 @@ if (has(M.medreview)) {
     fail('0143 must supersede a standing none-review when an item is recorded');
   if (/is_moud[^\n]*(eligib|readiness|deny|refuse|block)/i.test(readSql(M.medreview)))
     fail('0143 ties is_moud to eligibility language');
+}
+
+// ---- 0145: legal-review invariants — e-consent gates e-signing; paper has parity -------------
+if (has(M.econsent)) {
+  const sql = read(M.econsent);
+  if (!/electronic_consent_required/.test(sql))
+    fail('0145 acknowledge_document must refuse e-signing without electronic-records consent');
+  if (!/'self_only'/.test(sql))
+    fail('0145 electronic-records consent must be self-only, in-app');
+  if (!/signature_method = 'paper'/.test(sql) || !/document_signed_paper/.test(sql))
+    fail('0145 must provide the audited paper-signature path with method recording');
+  if (/electronic_records[^\n]{0,120}(readiness|eligib)/i.test(readSql(M.econsent)))
+    fail('0145 must never make e-consent a readiness/eligibility item (paper has parity)');
 }
 
 // ---- B3: gated admission + narrow override ----------------------------------------------------

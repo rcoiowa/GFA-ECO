@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   confirmNoCurrentMedications: vi.fn(),
   recordMedicationItem: vi.fn(),
   recordEmergencyContact: vi.fn(),
+  recordPaperSignature: vi.fn(),
   recordResidenceConsentGrant: vi.fn(),
   recordSupervisionCoordination: vi.fn(),
 }));
@@ -214,6 +215,27 @@ describe('IntakeChecklist', () => {
     render(<IntakeChecklist {...props} />);
     fireEvent.click(await screen.findByText('Move Jordan in'));
     expect(await screen.findByText(/residence-manager decision/)).toBeInTheDocument();
+  });
+
+  it('paper signature path: staff record a witnessed paper signature for an unmet document', async () => {
+    mocks.applicationIntakeReadiness.mockResolvedValue(readiness([signMissing]));
+    mocks.recordPaperSignature.mockResolvedValue({ ok: true, code: 'signed_paper' });
+    render(<IntakeChecklist {...props} />);
+    fireEvent.click(await screen.findByText('Record a paper signature…'));
+    fireEvent.change(screen.getByLabelText('Document'), {
+      target: { value: 'participant_agreement' },
+    });
+    fireEvent.change(screen.getByLabelText(/exactly as signed on paper/), {
+      target: { value: 'Jordan Fixture' },
+    });
+    fireEvent.click(screen.getByText('Record paper signature'));
+    await waitFor(() =>
+      expect(mocks.recordPaperSignature).toHaveBeenCalledWith({
+        personId: 144,
+        templateKey: 'participant_agreement',
+        signatureName: 'Jordan Fixture',
+      }),
+    );
   });
 
   it('before approval the checklist works but move-in is not offered', async () => {

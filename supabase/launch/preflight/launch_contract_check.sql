@@ -181,7 +181,8 @@ begin
       'record_consent_disclosure','record_emergency_contact','record_medication_item',
       'end_medication_item','record_supervision_coordination',
       'convert_application_intake','application_intake_readiness',
-      'confirm_no_current_medications','find_person_for_intake_conversion')
+      'confirm_no_current_medications','find_person_for_intake_conversion',
+      'record_paper_signature')
     and not has_function_privilege('authenticated', p.oid, 'EXECUTE');
   if missing is not null then
     raise exception 'LAUNCH-CONTRACT FAIL: authenticated cannot execute client RPC(s): %', missing;

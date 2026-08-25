@@ -23,8 +23,69 @@ hardship/payment plan and **waivable** on timely prior communication or document
 circumstances; **late payment alone never automatically results in discharge**.
 
 The Participant & Residency Agreement remains **content substantially complete, activation
-blocked** on two items: contracting-party naming (executed PSA) and the e-signature consent
-clause (legal review).
+blocked** (see the Legal-Review Reconciliation entry below for the current blocker set).
+
+---
+
+## ⬥ LEGAL-REVIEW RECONCILIATION ENTRY (2026-08-24)
+
+**Qualified review disposition: APPROVED WITH ATTACHED REVISIONS** — applied as
+authoritative review input for the Participant & Residency Agreement and the B5B activation
+architecture. Revisions incorporated:
+
+1. **Agreement §13 replaced** with the complete electronic-records disclosure: scope of
+   electronic consent; right to paper; withdrawal procedure (prospective — signed records
+   stand); contact-information update; free paper-copy process; hardware/software
+   requirements; material-technology-change notification and re-consent; retain/download/
+   print rights; persistent unrestricted access; and the explicit intent-to-sign statement.
+   New Agreement hash: `fb1d7c9bf2927f8f79b1e6f338d5bd64e11e98dc4c23d075ddcd9fb2f79c4214`.
+2. **Affirmative electronic consent before e-signing** — implemented live (0145): canonical
+   consent type `electronic_records` (account_identity), grantable ONLY by the person
+   themself, in-app; `acknowledge_document` refuses signature documents with
+   `electronic_consent_required` absent an active grant; withdrawal via the existing revoke
+   path. Verified live: gate refusal, self-only refusal of a staff-recorded grant,
+   idempotency, post-consent signing, withdrawal.
+3. **Signing-intent control** — the signing button reads "Sign {document name}" (for the
+   agreement: "Sign … Participant & Residency Agreement") with the adjacent statement that
+   selecting it constitutes the resident's electronic signature and intent to be bound —
+   in both signing surfaces (Getting settled + resident Documents).
+4. **Paper pathway with parity** — "I prefer to sign on paper" is visible in both signing
+   surfaces with explicit no-adverse-consequence language; staff record the witnessed paper
+   signature via `record_paper_signature` (0145) onto the SAME assignment — verified live to
+   produce the identical pinned version + content hash, `signature_method='paper'`, and the
+   `document_signed_paper` audit event with the witnessing staff identity. Readiness effect
+   identical to e-signing.
+5. **Nonelectronic legal-notice safeguard** — Agreement §13 "Legal notices" states that
+   electronic delivery alone is never treated as legally sufficient where law requires
+   nonelectronic delivery (eviction, termination, default, right-to-cure). RecoveryOS has
+   no notice-delivery workflow that could violate this today (verified: discharge is a staff
+   RPC with no electronic-notice semantics); the constraint is recorded as binding design
+   law for any future notice feature — delivery evidence may be created/retained, and the
+   required nonelectronic delivery must be recordable.
+6. **Counterparty** — expected party per the review: **Ernest & Johnnie White Recovery
+   House, L.L.C.**, named in Agreement §1 as expected-but-not-operative until the executed
+   PSA and supporting entity authority are verified (never inferred from the v2 draft). GFA
+   remains the contracted recovery-support/program/technical provider, not the housing
+   party.
+7. **Record retention — UNRESOLVED policy/legal blocker (not invented).** Research notes
+   (Evidence class E, requires qualified confirmation): Iowa's limitations period for
+   actions on written contracts is commonly cited as ten years (Iowa Code ch. 614), which
+   would be the natural retention anchor for the signed agreement; no recovery-residence-
+   specific statutory retention requirement was identified; NARR/MCRSP documentation
+   standards may add expectations. The verified retention period must be supplied by
+   counsel/policy before activation; the platform preserves signed artifacts indefinitely
+   (immutable) in the meantime, so no evidence is at risk while this is open.
+8. **Signed-agreement access verified**: view (pinned version in-app), print/save where the
+   device permits ("Print or save a copy" control), paper copy on request at no charge, no
+   DRM or expiry anywhere in the machinery, persistent access during residency (intake
+   Getting-settled + resident Documents both read the person's own assignments), and
+   indefinite immutable preservation pending the verified retention rule.
+
+**NARR Agreement-review status:** the EJWRH Agreement has not yet been reviewed by the Iowa
+affiliate (MCRSP); it is drafted to NARR fee-disclosure and resident-rights expectations
+(fees disclosed in writing before funds are accepted; refund policy before binding; rights
+never waived), and affiliate review occurs within the certification process — tracked, not a
+B5B blocker.
 
 ---
 
@@ -225,14 +286,14 @@ name + 5 taps + 1 consent tap.**
 
 ## 8. Prepared activation migration
 
-`supabase/launch/prepared/0145_ejwrh_document_activation.prepared.sql` — **prepared only,
+`supabase/launch/prepared/0146_ejwrh_document_activation.prepared.sql` — **prepared only,
 outside the migrations ledger so routine tooling cannot apply it.** Contains: the six
 template keys with signature/ack classification and residence-2 scope; version `1.0` with
 the effective date set at ratification; the six pinned sha256 content hashes (recomputed
 automatically-aborting verification — the seeded text is provably the ratified text);
 body inlining deferred to a generator script at finalization (never hand-transcribed);
 rollback that unpublishes only unsigned versions and deactivates templates while preserving
-every signed artifact. The number 0145 is reserved by this file; renumber against the live
+every signed artifact. The number 0146 is reserved by this file; renumber against the live
 ledger at apply time if anything lands first.
 
 ## 9. B5B E2E readiness
@@ -249,9 +310,12 @@ runbook post-run SQL for version/hash/audit). Double-gated (`RECOVERYOS_E2E_LIVE
 
 ## 10. Exact remaining blockers (nothing else is open)
 
-1. **Executed PSA** → contracting-party naming in Agreement §1 (blocks Agreement activation).
-2. **E-sign legal review** (§7 packet, Q1–Q4) → Agreement §13 wording (blocks Agreement
-   e-sign activation; paper-first activation would still need Q2/Q3).
+1. **Executed PSA + entity authority** → operative counterparty naming in Agreement §1
+   (expected: Ernest & Johnnie White Recovery House, L.L.C.) — blocks Agreement activation.
+2. ~~E-sign legal review~~ — **RESOLVED: APPROVED WITH ATTACHED REVISIONS (2026-08-24)**;
+   all attached revisions incorporated (Legal-Review Reconciliation entry above). A new
+   blocker emerged from it: **the verified record-retention period** (entry item 7) —
+   unresolved policy/legal item, not invented.
 3. ~~Late-charge cap~~ — **RESOLVED by executive ratification 2026-08-24** ($5/day, max $50
    per delinquent payment period; drafted into Agreement §5).
 4. **Grievance appeal named contact** → optional; the role-based rule is complete without it.

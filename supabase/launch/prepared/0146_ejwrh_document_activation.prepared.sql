@@ -1,16 +1,20 @@
--- 0145_ejwrh_document_activation.prepared.sql — PREPARED ONLY, DO NOT APPLY.
+-- 0146_ejwrh_document_activation.prepared.sql — PREPARED ONLY, DO NOT APPLY.
 --
 -- ============================================================================
 -- ACTIVATION GATE: this file lives in supabase/launch/prepared/ (outside the
 -- migrations ledger) precisely so it CANNOT be applied by routine tooling.
--- It moves to supabase/launch/migrations/0145_ejwrh_document_activation.sql
+-- It moves to supabase/launch/migrations/0146_ejwrh_document_activation.sql
 -- and is applied ONLY when every condition below is met:
 --   1. Executive ratification of the edition texts. STATUS: the FIVE
 --      acknowledgment documents were EXECUTIVE-RATIFIED 2026-08-24 (content as
 --      of cffedfd; hashes below are frozen). The late-charge cap was ratified
---      ($5/day, max $50 per delinquent payment period — Agreement hash updated
---      below). The Agreement remains blocked on TWO items: contracting-party
---      naming (executed PSA) and the e-signature consent clause (legal review).
+--      ($5/day, max $50 per delinquent payment period). The §13 electronic-
+--      records disclosure is INCORPORATED per the legal review (APPROVED WITH
+--      ATTACHED REVISIONS, 2026-08-24; e-consent + paper parity live via 0145).
+--      The Agreement remains blocked on: contracting-party operative naming
+--      (executed PSA + entity authority; expected party per legal review:
+--      Ernest & Johnnie White Recovery House, L.L.C.) and the verified
+--      record-retention period (unresolved policy/legal item).
 --   2. Signing-method legal review outcome recorded (at minimum for the
 --      Participant Agreement).
 --   3. B5A UI verified (done, ee9b042) + the B5B browser E2E run green against
@@ -31,7 +35,7 @@
 -- Expected sha256 content hashes (five ratified 2026-08-24 at cffedfd — FROZEN;
 -- Agreement hash reflects the ratified late-charge cap and will change again
 -- when the two remaining Agreement blockers resolve):
---   ejwrh_participant_agreement          045135c6be78d76d826e084f665f3417a0e48b125ffbff25ac9bf45d28d218b2
+--   ejwrh_participant_agreement          fb1d7c9bf2927f8f79b1e6f338d5bd64e11e98dc4c23d075ddcd9fb2f79c4214
 --   ejwrh_resident_handbook              834773861098c23b4a36785952498d157da39d568cdc015ca41667ff627690ba
 --   ejwrh_resident_rights_grievance      285ce0974c803eb8afb134df20ba21175995c320520c9ccc513822fb44167024
 --   ejwrh_screening_policy               a835849688a9515e5a0adb4d7d43941717fdaefb415748e2b8f98106612cd6c7
@@ -98,7 +102,7 @@ begin
   join recoveryos.document_versions dv on dv.template_id = t.id and dv.version = '1.0'
   where t.key like 'ejwrh_%'
     and dv.content_hash not in (
-      '045135c6be78d76d826e084f665f3417a0e48b125ffbff25ac9bf45d28d218b2',
+      'fb1d7c9bf2927f8f79b1e6f338d5bd64e11e98dc4c23d075ddcd9fb2f79c4214',
       '834773861098c23b4a36785952498d157da39d568cdc015ca41667ff627690ba',
       '285ce0974c803eb8afb134df20ba21175995c320520c9ccc513822fb44167024',
       'a835849688a9515e5a0adb4d7d43941717fdaefb415748e2b8f98106612cd6c7',

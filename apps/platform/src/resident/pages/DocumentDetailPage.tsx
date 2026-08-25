@@ -3,7 +3,9 @@ import { useParams } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import {
   acknowledgeDocumentAssignment,
+  hasElectronicRecordsConsent,
   listMyDocumentAssignments,
+  recordResidenceConsentGrant,
   type AssignmentWithDocument,
 } from '@recoveryos/data-access';
 import { getDocument } from '@recoveryos/residence-content';
@@ -26,11 +28,14 @@ export function DocumentDetailPage() {
   const [signing, setSigning] = useState(false);
   const [signError, setSignError] = useState(false);
   const [justSigned, setJustSigned] = useState(false);
+  const [eConsent, setEConsent] = useState(false);
+  const [paperInfo, setPaperInfo] = useState(false);
 
   const load = useCallback(async () => {
     if (!person) return;
     try {
       setAssignments(await listMyDocumentAssignments(person.id));
+      setEConsent(await hasElectronicRecordsConsent(person.id));
     } catch {
       // Signature state is progressive enhancement on this page; the
       // document itself always renders from the bundled library.
@@ -119,16 +124,73 @@ export function DocumentDetailPage() {
               </Alert>
             ) : null}
             <div className="flex flex-col gap-3 sm:max-w-md">
-              <TextField
-                label="Type your full name as your signature"
-                value={signatureName}
-                onChange={(e) => setSignatureName(e.target.value)}
-                placeholder={person ? `${person.first_name} ${person.last_name}` : ''}
-                autoComplete="name"
-              />
-              <Button onClick={() => void sign()} disabled={signing || !signatureName.trim()}>
-                {signing ? 'Signing…' : `Sign the ${document.name}`}
-              </Button>
+              {!eConsent ? (
+                <div data-testid="e-consent-step">
+                  <p className="text-sm font-medium text-ink">Before signing electronically</p>
+                  <ul className="mt-1 list-disc pl-5 text-sm text-ink-muted">
+                    <li>You can sign on paper with staff instead — always, at no cost.</li>
+                    <li>
+                      You can withdraw electronic consent at any time; anything already signed
+                      stays valid.
+                    </li>
+                    <li>Your signed documents stay available to you here, unrestricted.</li>
+                  </ul>
+                  <Button
+                    className="mt-2"
+                    disabled={signing}
+                    onClick={() =>
+                      void (async () => {
+                        if (!person) return;
+                        setSigning(true);
+                        try {
+                          const r = await recordResidenceConsentGrant({
+                            personId: person.id,
+                            typeKey: 'electronic_records',
+                          });
+                          if (r.ok || r.code === 'already_granted') setEConsent(true);
+                        } catch {
+                          setSignError(true);
+                        } finally {
+                          setSigning(false);
+                        }
+                      })()
+                    }
+                  >
+                    I agree to use electronic records and signatures
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <TextField
+                    label="Type your full name as your signature"
+                    value={signatureName}
+                    onChange={(e) => setSignatureName(e.target.value)}
+                    placeholder={person ? `${person.first_name} ${person.last_name}` : ''}
+                    autoComplete="name"
+                  />
+                  <p className="text-sm text-ink-muted">
+                    Selecting &ldquo;Sign {document.name}&rdquo; is your electronic signature and
+                    your agreement to be bound by this document.
+                  </p>
+                  <Button onClick={() => void sign()} disabled={signing || !signatureName.trim()}>
+                    {signing ? 'Signing…' : `Sign ${document.name}`}
+                  </Button>
+                </>
+              )}
+              <button
+                type="button"
+                className="self-start text-sm text-experience-700 underline underline-offset-2"
+                onClick={() => setPaperInfo(!paperInfo)}
+              >
+                I prefer to sign on paper
+              </button>
+              {paperInfo ? (
+                <Alert tone="info">
+                  No problem — tell any staff member. They&rsquo;ll print it, you sign with them,
+                  and they record your paper signature. Choosing paper never affects your
+                  standing, your eligibility, or anything else.
+                </Alert>
+              ) : null}
             </div>
           </Card>
         ) : null}

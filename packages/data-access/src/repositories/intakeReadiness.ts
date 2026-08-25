@@ -28,7 +28,9 @@ async function callRpc(fn: string, args: Record<string, unknown>): Promise<Intak
 export type ResidenceConsentTypeKey =
   | 'residence_screening'
   | 'information_disclosure'
-  | 'supervision_coordination';
+  | 'supervision_coordination'
+  /** Self-only, in-app affirmative consent to electronic records & signatures (0145). */
+  | 'electronic_records';
 
 export type DisclosureInformationCategory =
   | 'residency_status'
@@ -61,6 +63,22 @@ export async function recordResidenceConsentGrant(input: {
     p_method: input.method ?? 'in_app',
     p_expires_at: input.expiresAt ?? null,
   });
+}
+
+/** Whether the person currently holds an active electronic-records consent (0145). */
+export async function hasElectronicRecordsConsent(personId: number): Promise<boolean> {
+  const { data, error } = await getSupabase()
+    .from('consent_grants')
+    .select('id, revoked_at, expires_at, status, consent_types!inner(key)')
+    .eq('person_id', personId)
+    .eq('consent_types.key', 'electronic_records')
+    .eq('status', 'granted')
+    .is('revoked_at', null);
+  if (error) throw error;
+  const now = Date.now();
+  return (data ?? []).some(
+    (g: { expires_at: string | null }) => !g.expires_at || new Date(g.expires_at).getTime() > now,
+  );
 }
 
 export async function revokeConsentGrant(input: {
@@ -137,6 +155,23 @@ export async function recordSupervisionCoordination(input: {
     p_officer_phone: input.officerPhone ?? null,
     p_agency: input.agency ?? null,
     p_obligations_summary: input.obligationsSummary ?? null,
+  });
+}
+
+/**
+ * Staff-witnessed PAPER signature onto the person's pending assignment (0145):
+ * same pinned version + hash + immutability + readiness effect as e-signing.
+ * The paper path never carries an adverse eligibility/readiness consequence.
+ */
+export async function recordPaperSignature(input: {
+  personId: number;
+  templateKey: string;
+  signatureName: string;
+}): Promise<IntakeRpcResult & { content_hash?: string }> {
+  return callRpc('record_paper_signature', {
+    p_person_id: input.personId,
+    p_template_key: input.templateKey,
+    p_signature_name: input.signatureName,
   });
 }
 
