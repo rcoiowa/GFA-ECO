@@ -106,7 +106,7 @@ document activation, no resident signatures, no B6, no Cloudflare, no external d
 | Private room $200/wk · $750/mo advance | Agreement §5 | RATIFIED, drafted |
 | Move-in fee $250 nonrefundable | Agreement §5 | RATIFIED, drafted |
 | Live-Out $25/wk | Agreement §5 | RATIFIED, drafted |
-| No grandfathered rates | Agreement §5 | RATIFIED, drafted |
+| Fee individualization (PSA v4.1, 2026-08-25, supersedes "no grandfathered rates"): standard rates apply unless EJWRH approves an individualized arrangement; prior agreements may be honored; a reduction never changes the published rate for others | PSA v4.1 Art 4; resident Agreement §5 wording change identified (not yet applied — hash frozen) | RECONCILED in PSA v4.1; resident-doc edit awaits re-ratification |
 | Weekly payment any day; outstanding → Sunday house meeting | Agreement §5 + Handbook §4/§5 | RATIFIED, drafted |
 | Monthly due on/before the 1st | Agreement §5 | RATIFIED, drafted |
 | No late charge in first 30 days | Agreement §5 | RATIFIED, drafted |
