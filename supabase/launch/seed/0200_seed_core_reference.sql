@@ -196,7 +196,7 @@ from (values
   ('form_application_prescreening', 'Application & Pre-Screening Form', true, false),
   ('intake_forms_package', 'Intake Forms Package', true, false),
   ('complete_operational_system', 'Complete Operational System (Staff Manual)', true, false),
-  ('resident_rights', 'Resident Rights & Responsibilities', true, false)
+  ('resident_rights', 'Resident Rights & Responsibilities', true, true)
 ) as v(key, name, is_active, requires_signature)
 cross join (select id from recoveryos.organizations where name = 'Grace For Addictions') o
 on conflict (organization_id, key) do update set

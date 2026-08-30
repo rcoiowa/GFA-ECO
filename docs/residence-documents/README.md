@@ -17,6 +17,7 @@ canonical library in `packages/residence-content`. Regenerate with
 | [Medication & MAT/MOUD Policy](./medication_mat_moud_policy.md) | 2.0 | All FDA-approved medications for SUD and mental health affirmed and supported — storage, disclosure, and prescription-consistent screening protections. |
 | [Return-to-Use Response Policy](./return_to_use_response_policy.md) | 2.0 | A return to use is a medical and recovery event — not a moral failure and not automatic discharge. Safety first, dignity always, individualized support. |
 | [Good Neighbor Policy](./good_neighbor_policy.md) | 2.0 | Among the best-kept, quietest, most considerate homes on the block — with neighbor concerns acknowledged within 24 hours and logged. |
+| [Resident Rights & Responsibilities](./resident_rights.md) | 2.0 | Your rights as a resident — non-negotiable, never waivable as a condition of residency — and the responsibilities of living in community. |
 
 ## Rights
 

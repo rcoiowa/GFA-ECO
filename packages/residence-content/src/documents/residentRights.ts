@@ -1,6 +1,32 @@
-<!-- GENERATED from packages/residence-content — do not edit by hand. -->
+import type { ResidenceDocument } from '../types';
 
-GRACE HOUSE — RESIDENT RIGHTS & RESPONSIBILITIES
+/**
+ * IMPORTED VERBATIM from the published RecoveryOS document library row
+ * (recoveryos.document_versions: resident_rights v2.0, published 2026-08-03)
+ * so the app-rendered body matches the recorded version byte-for-byte.
+ * Authoritative source: Grace House Complete Operational System v2
+ * (docs/source-documents/grace-house/). Do not hand-edit the body; a content
+ * change means a new version.
+ */
+export const residentRights: ResidenceDocument = {
+  key: 'resident_rights',
+  name: 'Resident Rights & Responsibilities',
+  category: 'agreement',
+  version: '2.0',
+  summary:
+    'Your rights as a resident — non-negotiable, never waivable as a condition of residency — and the responsibilities of living in community.',
+  requiresSignature: true,
+  narrReferences: [
+    '1.C.7.c — rights posted and provided',
+    '1.A.2.d — non-discrimination statement',
+    '1.B.6.b — 42 CFR Part 2-aligned confidentiality',
+  ],
+  iowaChecklist: [
+    'Item 4 — provider of choice',
+    'Item 5 — faith elements by choice, never mandated',
+    'Item 6 — all FDA-approved medications allowed',
+  ],
+  body: `GRACE HOUSE — RESIDENT RIGHTS & RESPONSIBILITIES
 
 Grace House · Grace For Addictions · 1311 9th Street, Des Moines, Iowa 50314
 
@@ -134,15 +160,5 @@ Follow the visitors policy. Comply with the medication policy.
 
 Do not engage in illegal activity inside or outside the home.
 
-Do not remove other residents' belongings without permission.
----
-
-*Compliance references — verify clause codes against the certifying
-affiliate's current NARR 3.0 workbook and Iowa HHS form 470-0025:*
-
-- NARR 3.0: 1.C.7.c — rights posted and provided
-- NARR 3.0: 1.A.2.d — non-discrimination statement
-- NARR 3.0: 1.B.6.b — 42 CFR Part 2-aligned confidentiality
-- Iowa HHS checklist: Item 4 — provider of choice
-- Iowa HHS checklist: Item 5 — faith elements by choice, never mandated
-- Iowa HHS checklist: Item 6 — all FDA-approved medications allowed
+Do not remove other residents' belongings without permission.`,
+};

@@ -11,6 +11,7 @@ import { grievancePolicyForm } from './documents/grievancePolicyForm';
 import { incidentReportSystem } from './documents/incidentReportSystem';
 import { emergencyResponseProtocols } from './documents/emergencyResponseProtocols';
 import { goodNeighborPolicy } from './documents/goodNeighborPolicy';
+import { residentRights } from './documents/residentRights';
 import { exitTransitionPolicy } from './documents/exitTransitionPolicy';
 import { codeOfEthics } from './documents/codeOfEthics';
 import { changeCourseLeadersPolicy } from './documents/changeCourseLeadersPolicy';
@@ -37,6 +38,7 @@ export const allDocuments: ResidenceDocument[] = [
   incidentReportSystem,
   emergencyResponseProtocols,
   goodNeighborPolicy,
+  residentRights,
   exitTransitionPolicy,
   codeOfEthics,
   changeCourseLeadersPolicy,
