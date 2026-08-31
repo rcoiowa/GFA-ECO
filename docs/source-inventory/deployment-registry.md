@@ -57,6 +57,16 @@ supplied by GFA:
    Pages projects. The consolidation end-state is unchanged: one canonical
    platform (this repo) serving `vrcc.app`, everything else ARCHIVED.
 
+## 2026-08-31 CLASSIFICATION: `recoveryos-staging` is ACTIVE PILOT, not disposable staging
+
+Executive notice 2026-08-31: real residents and coaches were given
+`recoveryos-staging.thomas-499.workers.dev` and created accounts/onboarding activity there.
+Verified: all of it lives in canonical CQCX (66 auth users = 66 people, roles, consents,
+activity; backend identical to the production candidate). Treat the Worker as an **active
+pilot surface**: never redeploy it with a non-CQCX backend, never tear it down while pilot
+users depend on it. Full evidence and the URL-transition plan:
+`docs/operations/staging-pilot-reconciliation-2026-08-31.md`.
+
 ## 2026-08-31 deployment (executive order: deploy updates to Cloudflare)
 
 Commit `ec36922` (Gate B intake experience + 0146 EJWRH document-edition activation)
