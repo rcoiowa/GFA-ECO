@@ -324,6 +324,112 @@ Cutover remains paused at step 6; posture unchanged (staging = ACTIVE PILOT unto
 candidate ready, virtualrecovery intact as rollback, no retired-backend access, no code
 work, no mutations performed in this pass).
 
+## DELTA / CONTRADICTION ADDENDUM (2026-08-31, third pass)
+
+Reconciles this record against (a) newer human-observed Cloudflare evidence and (b) the
+**parallel reconciliation report `f45f714`** (branch
+`claude/recoveryos-state-reconciliation-7ed7so`, built atop `115934d`, main+2) — a separate
+session's read-only report, now accepted by the Executive Director as an evidence source.
+It is NOT this session's work; where it reports things this session was prohibited from
+doing (YKY census), its findings are preserved at reported-evidence level without expansion.
+
+### 1. New evidence (human-observed, Cloudflare account home)
+
+One visible account holds zones vrcc.app (PENDING, expects candy/devin),
+recoveryresidence.app, recoveryresidence.org, justgraceforaddictions.org — and Workers
+gfa-eco-recovery-residence-os, recoveryos-staging, vrcc-app, virtualrecovery. No second
+account selector visible in that session. The vrcc.app zone's Worker Routes page: none
+configured; its DNS table shows a root Worker custom-domain record →
+gfa-eco-recovery-residence-os — **inside the PENDING zone, therefore not proof of public
+cutover**. recoveryos-staging: workers.dev only, no custom domains/routes (consistent with
+ACTIVE PILOT).
+
+### 2. Findings still valid (re-affirmed)
+
+Public delegation = ryan/vera (recursive NS/SOA, serial 2411666283); a fresh-random-label
+query returns authoritative NXDOMAIN — **a live zone answers for vrcc.app right now**; the
+live zone serves no email records (apex MX/TXT none; send/_dmarc NXDOMAIN); both canonical
+Workers at `ec36922`; residence-intake v2 verified byte-equal to repo head; CQCX census
+66 = 60 fixtures + 6 real/staff; cutover PARTIAL/BLOCKED at step 6; staging untouched;
+`main` 61 commits behind the canonical line; recoveryos.pages.dev = stale manual zip
+upload (~08-04), no Git connection. **Newly verified this pass:** the GitHub **default
+branch setting** is `claude/supabase-mcp-setup-ep29rp` (the stale July setup branch) — the
+"four-file husk" claim is CURRENT truth. Four distinct concepts, not to be collapsed:
+default-branch setting (stale husk) ≠ branch `main` (61 behind) ≠ canonical working line
+(`…canonical-audit-1pvcwr`, HEAD `ef884b7`+docs) ≠ deployed source (`ec36922`).
+
+### 3. Findings downgraded
+
+- "Leading hypothesis: second Cloudflare account" → **downgraded to one of four open
+  hypotheses, not currently evidenced** (no second account selector observed). All four
+  remain open: (1) stale registrar delegation to an older ryan/vera assignment; (2) zone
+  delete/re-add with delegation left on the old pair; (3) an older
+  hidden/deactivated/orphaned zone state; (4) a second account. Standing constraint the
+  registrar screen must explain: hypotheses 2 and 3, as normally understood, predict the
+  ryan/vera servers would stop answering — yet a live zone demonstrably serves; this
+  tension is recorded, not resolved.
+- "vrcc.app apex is served via a cross-account proxied CNAME to virtualrecovery" →
+  **downgraded to speculation**; what publicly serves vrcc.app remains INFERRED-legacy
+  pending one human browser check.
+- recoveryos.pages.dev backend "YKY-era" → remains **INFERRED ("possibly YKY-pointing")**,
+  not upgradable without deployment evidence.
+- Auth Site URL "= https://vrcc.app" → **downgraded to UNVERIFIED** (set during cutover
+  step 4 per human confirmation, but current live value must be human-re-verified).
+  Conditional operational warning stands: if it is still `https://vrcc.app`, CQCX
+  confirmation links may land on the legacy public surface until cutover completes. Do
+  not change without authorization.
+
+### 4. New material finding (from `f45f714`, preserved at reported-evidence level)
+
+**A separate legacy cohort still uses the YKY-backed legacy VRCC surface**: ~26
+real-domain accounts with sign-ins through 2026-08-31 01:12Z. Minimum supported
+conclusion, and no more: *there is evidence of an active legacy cohort on YKY; their
+disposition must be resolved before virtualrecovery/YKY retirement.* This does **not**
+compromise the CQCX pilot cohort. It creates a distinct future
+**LEGACY USER CONTINUITY GATE** (before any legacy retirement: identify genuinely active
+legacy users; what they depend on; migration/invitation/reconciliation/new-account path;
+no duplicate identities; intentional communication; consent/provenance preserved). Not to
+be solved now, and not to be conflated with the DNS/zone problem. YKY is not to be
+accessed again under this task (this session never accessed it; the census came from the
+parallel session).
+
+Also from `f45f714`: the `115934d` rights-acknowledgment commit carries a **migration
+0125 numbering collision** against the canonical line — reinforcing the standing verdict:
+real value (residentRights content), **must NOT merge or cherry-pick as-is**; no
+renumbering, no consolidation PR, no default-branch change, no merge of the audit line
+into main until separately authorized.
+
+### 5. Immediate blocker (unchanged, sharpened)
+
+Cloudflare registrar/zone delegation mismatch: registry delegation ryan/vera (live,
+serving) vs the visible account's PENDING candy/devin zone (holds the inert step-6
+binding and the staged email records).
+
+### 6. Next evidence needed
+
+Exactly one item: **Cloudflare Registrar / Domain Registration / Manage Domains →
+vrcc.app** — whether the registration appears there, and which nameservers the
+registration record carries.
+
+### 7. No-action list (explicit)
+
+No code, DNS, Auth, Supabase, Git (merge/default-branch/cherry-pick/PR/renumber),
+deployment, migration, fixture-cleanup, or retirement action occurs yet. No zone
+deletion/recreation/transfer, no route creation, no nameserver change, no rollback merely
+because the pending-zone binding is inert, no virtualrecovery changes, no YKY access, no
+legacy-user contact. The only change made this pass is this documentation addendum.
+
+RECOVERYOS CURRENT STATE — DELTA
+Overall: YELLOW
+Canonical RecoveryOS: unchanged (GFA-ECO · canonical-audit line · CQCX)
+Active pilot: unchanged (recoveryos-staging, untouched)
+Production candidate: unchanged (gfa-eco-recovery-residence-os @ ec36922)
+Public vrcc.app: legacy / not yet cut over
+Cutover: BLOCKED at Step 6
+Cloudflare diagnosis: UNDER RECONCILIATION (four open hypotheses)
+Legacy cohort: NEW FUTURE CONTINUITY GATE (YKY; reported via f45f714)
+Immediate next action: inspect Cloudflare Registrar registration state for vrcc.app
+
 ## Evidence limitations
 
 Cloudflare zones/DNS records/Pages projects are not enumerable with available tooling
