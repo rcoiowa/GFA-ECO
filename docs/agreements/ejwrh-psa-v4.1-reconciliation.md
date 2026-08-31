@@ -161,6 +161,13 @@ dated by both authorized representatives and the executed copy is returned as ev
 resident Agreement's `[PENDING — EXECUTED-AUTHORITY VERIFICATION]` block clears only against
 the executed v4.1 (or an executive attestation of execution), never against this draft.
 
+**EXECUTED — per executive attestation (2026-08-31).** The Executive Director attested
+execution ("Everything is executed") in the activation order. The resident Agreement's
+counterparty block was cleared on that attestation and the EJWRH document edition activated
+(0146; see the B5B ratification record's Activation Entry). Evidence status: attestation is
+Evidence Ledger C; archiving the signed PSA copy into `docs/agreements/` upgrades it to
+A-level primary evidence — recommended, not blocking.
+
 **Human decisions before signature — tracking:**
 
 1. ~~Compensation model (service-volume schedule vs. flat FMV retainer)~~ —

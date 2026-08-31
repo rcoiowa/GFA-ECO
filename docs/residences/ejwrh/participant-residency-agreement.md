@@ -6,11 +6,14 @@ values (fees, hardship standard, quiet hours, screening, grievance SLA, medicati
 retired four-level document is not a drafting source. Seeded into document_templates/versions only
 at the signing-activation gate. Late-charge cap RATIFIED 2026-08-24 ($5/day, max $50 per
 delinquent payment period). §13 electronic-records disclosure incorporated per the legal
-review (APPROVED WITH ATTACHED REVISIONS, 2026-08-24). Remaining [PENDING — …] item blocking
-activation:
-  1. contracting-party operative naming — executed PSA + entity authority verification
-     (expected party per legal review: Ernest & Johnnie White Recovery House, L.L.C.).
-Also open before activation (record §10): the verified record-retention period.
+review (APPROVED WITH ATTACHED REVISIONS, 2026-08-24).
+ACTIVATED 2026-08-31 by executive order: PSA execution attested by the Executive Director
+("Everything is executed"); counterparty named operatively (Ernest & Johnnie White Recovery
+House, L.L.C.); fee wording updated to the PSA v4.1 individualized-reduction rule
+(reconciliation record section 7 item 1); participant-facing text executively approved
+2026-08-31. Record-retention period remains an open records-policy item — no period is
+stated or invented in this text; signed artifacts are preserved immutably and indefinitely
+pending that determination. Seeded as ejwrh_participant_agreement v1.0 by 0146.
 -->
 
 # EJWRH Participant & Residency Agreement
@@ -38,12 +41,10 @@ peer coaching, recovery navigation, recovery planning, program development, and 
 platform — and does not manage resident funds. The residence is pursuing NARR Level II
 certification through the Iowa affiliate (MCRSP).
 
-[PENDING — EXECUTED-AUTHORITY VERIFICATION: the resident contracting party is expected to be
-**Ernest & Johnnie White Recovery House, L.L.C.** per the legal review; that name becomes
-operative in this agreement only after the executed Professional Services Agreement and
-supporting entity authority are verified — never inferred from a draft. This agreement is
-not signable until then. Grace For Addictions is the contracted recovery-support, program,
-and technical service provider — not the housing contracting party.]
+This agreement is between you and **Ernest & Johnnie White Recovery House, L.L.C.** — the
+residence operator and your contracting party for housing and residency. Grace For
+Addictions is the contracted recovery-support, program, and technical service provider —
+not the housing contracting party.
 
 You can expect: a safe, alcohol- and illicit-drug-free home; respect and dignity without
 regard to your recovery pathway; staff and peers who walk beside you; and honest, documented
@@ -98,7 +99,10 @@ are disclosed here, in writing, before any funds are accepted.
 | One-time move-in fee | **$250** (nonrefundable) |
 | Live-Out participation | **$25 per week** |
 
-There are no grandfathered rates: these are the fees for every resident under this agreement.
+Standard rates apply unless EJWRH has approved an individualized fee arrangement (a reduced
+rate, waiver, scholarship, or payment accommodation). Existing prior agreements may be
+honored. An individualized reduction never changes the standard published rate for other
+residents.
 
 **When payment is due:**
 
