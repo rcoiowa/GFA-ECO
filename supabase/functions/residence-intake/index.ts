@@ -39,12 +39,16 @@ const ALLOWED_ORIGINS = new Set([
   "https://www.recoveryresidence.org",
   "https://recoveryresidence.app",
   "https://www.recoveryresidence.app",
-  // vrcc.app becomes the canonical platform front door at Phase 9 cutover; the
-  // in-app referral/listing forms (publicIntake.ts) submit here from that origin.
-  // PREPARED in-repo 2026-08-31; takes effect only when the function is redeployed
-  // (cutover runbook step — docs/operations/vrcc-production-readiness-2026-08-31.md).
+  "https://gracehouse4.pages.dev",
+  // Canonical platform surfaces (vrcc.app is the production front door from the
+  // 2026-08-31 cutover; the two workers.dev origins are the pilot and candidate
+  // Workers). Reconciled 2026-08-31 with the origins found live in deployed v1 —
+  // union only, nothing removed (docs/operations/vrcc-production-readiness-2026-08-31.md).
   "https://vrcc.app",
   "https://www.vrcc.app",
+  "https://recoveryos-staging.thomas-499.workers.dev",
+  "https://gfa-eco-recovery-residence-os.thomas-499.workers.dev",
+  "http://localhost:5173",
   "https://gracehouse4.pages.dev",
   "https://vrcc.app",
   "https://recoveryos-staging.thomas-499.workers.dev",
