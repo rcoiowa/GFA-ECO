@@ -99,3 +99,5 @@ deployment order of 2026-08-31:
 | Pages `gfa-vrcc`                       | ARCHIVED (stale duplicate of vrcc.app)   | retire after confirming no bookmarks                        |
 | Pages `gracehouse4`                    | SOURCE                                   | ARCHIVED                                                    |
 | Pages `gfaconnection`                  | SOURCE                                   | ARCHIVED (experiential concepts mined)                      |
+
+> **2026-08-31: superseded for current state by `docs/operations/recoveryos-canonical-state-2026-08-31.md`** — the authoritative estate reconciliation (kept here as history).
