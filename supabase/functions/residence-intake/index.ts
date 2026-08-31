@@ -39,6 +39,12 @@ const ALLOWED_ORIGINS = new Set([
   "https://www.recoveryresidence.org",
   "https://recoveryresidence.app",
   "https://www.recoveryresidence.app",
+  // vrcc.app becomes the canonical platform front door at Phase 9 cutover; the
+  // in-app referral/listing forms (publicIntake.ts) submit here from that origin.
+  // PREPARED in-repo 2026-08-31; takes effect only when the function is redeployed
+  // (cutover runbook step — docs/operations/vrcc-production-readiness-2026-08-31.md).
+  "https://vrcc.app",
+  "https://www.vrcc.app",
   "https://gracehouse4.pages.dev",
   "https://vrcc.app",
   "https://recoveryos-staging.thomas-499.workers.dev",

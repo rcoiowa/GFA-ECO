@@ -50,6 +50,23 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY != '' && vars.VITE_SUPABASE_ANON_KEY || 'sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x' }}
           VITE_RELEASE: ${{ github.sha }}
 
+      # recoveryos-staging is an ACTIVE PILOT surface with real participant data
+      # (docs/operations/staging-pilot-reconciliation-2026-08-31.md). The same
+      # canonical-backend guard as the production-candidate workflow runs here so a
+      # staging deploy can never silently point real users at a noncanonical backend.
+      - name: Enforce canonical RecoveryOS backend in staging assets
+        run: |
+          RETIRED_REF='ykykeioydvtxpyreshhs'
+          CANONICAL_REF='cqcxvwoukyhxyokfwnjm'
+          if grep -R -n --fixed-strings "$RETIRED_REF" apps/platform/dist; then
+            echo "::error::Staging bundle contains retired Supabase project ref $RETIRED_REF"
+            exit 1
+          fi
+          if ! grep -R -q --fixed-strings "$CANONICAL_REF" apps/platform/dist; then
+            echo "::error::Staging bundle does not contain canonical RecoveryOS-Launch ref $CANONICAL_REF"
+            exit 1
+          fi
+
       - name: Deploy to Cloudflare (recoveryos-staging)
         run: npx wrangler@4 deploy --config wrangler.staging.jsonc
 

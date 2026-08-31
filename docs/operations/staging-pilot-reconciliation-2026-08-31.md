@@ -1,5 +1,16 @@
 # Staging Pilot Reconciliation (2026-08-31)
 
+> **CORRECTION (2026-08-31, readiness review):** deeper cohort analysis shows **60 of the
+> 66 accounts are `@fixtures.recoveryos.test` live-suite fixtures** (created in machine-
+> cadence bursts 08-08→08-10 by the P4H live suite, which writes to CQCX directly — not
+> through the staging front end). The **real human cohort is 6 accounts**: 2 staff
+> (2026-08-09 / 08-11) and 4 participants/coaches created 2026-08-31. Every continuity
+> conclusion below stands (all real accounts are canonical CQCX, email+password, 1:1
+> person join, confirmed); the "66 pilot users" phrasing overstated the human population.
+> The unconfirmed account and the zero-consent observations belong to fixtures, not real
+> users. Authoritative going forward:
+> `docs/operations/vrcc-production-readiness-2026-08-31.md`.
+
 **Operational fact (executive notice, 2026-08-31):** `recoveryos-staging.thomas-499.workers.dev`
 was given to real residents and coaches, who created accounts and completed onboarding
 activity there. Effective immediately, `recoveryos-staging` is classified as an
