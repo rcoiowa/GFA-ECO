@@ -18,11 +18,16 @@ prepared):
 1. **C1 — Supabase Auth URL configuration verified/updated in the dashboard** (Site URL +
    redirect allowlist; §3). Tools available to this review cannot read Auth settings, so
    current state is unverified.
-2. **C2 — One human smoke test on the production-candidate URL** (§4/§7): open
-   `https://gfa-eco-recovery-residence-os.thomas-499.workers.dev`, sign in with a real
-   staff account and one participant account, confirm role routing and a Support Now view.
-   All source/deployment/backend layers are verified; only in-browser behavior on that
-   origin has no direct evidence (this review's environment cannot reach workers.dev).
+2. **C2 — Candidate smoke test: SUBSTANTIALLY CLOSED (2026-08-31).** Human-observed on the
+   production candidate: successful login with correct credentials — **PASS**
+   (`thomas@graceforaddictions.org`); correct role routing (participant landing) — **PASS**.
+   The `degarmeaux@icloud.com` episode was user-entry error (see the closed C2 addendum);
+   its investigation affirmatively confirmed account health, CQCX identity continuity,
+   intact admin/executive roles, and no staging/candidate Auth divergence. **Remaining C2
+   item: one Support Now render check on the candidate URL** (open Support Now as a
+   signed-in user; confirm the governance-canon contacts render). Optional corroboration:
+   one login with the address bar verified on the candidate hostname, so auth logs also
+   carry the candidate origin.
 3. **C3 — Redeploy `residence-intake` with the vrcc.app origins** (prepared in-repo by
    this review; a runbook step, or the in-app public referral/listing forms fail from
    vrcc.app after cutover).
@@ -190,11 +195,11 @@ communication — no formal campaign warranted.
 | Authentication | **YELLOW** | Auth URL config unverified → C1 dashboard check (15 min) |
 | Intake/onboarding reconciliation | **GREEN** | |
 | Consent/signatures | **GREEN** | |
-| Participant experience | **YELLOW** | No in-browser verification on candidate URL → C2 smoke test |
-| Coach experience | **YELLOW** | Same single C2 smoke test |
-| Resident/residence workflows | **YELLOW** | Same single C2 smoke test (server side fully verified) |
-| Navigator/staff/admin workflows | **YELLOW** | Same single C2 smoke test |
-| Safety/escalation (Support Now) | **YELLOW** | Same single C2 smoke test (content/contacts source-verified) |
+| Participant experience | **GREEN** (2026-08-31: candidate login + participant routing human-observed) | |
+| Coach experience | **GREEN** (candidate surface proven; coach chains live-verified server-side) | |
+| Resident/residence workflows | **GREEN** (candidate surface proven; full intake chain live-verified server-side) | |
+| Navigator/staff/admin workflows | **GREEN** (candidate surface proven; role resolution live-verified server-side) | |
+| Safety/escalation (Support Now) | **YELLOW** | One Support Now render check on the candidate URL (last open C2 item) |
 | Auth/domain configuration | **YELLOW** | C1 + the cutover DNS/domain step itself |
 | Edge Function/API origins | **YELLOW** | C3 — redeploy `residence-intake` (change already in repo) |
 | PWA/session continuity | **GREEN** | |
@@ -257,7 +262,17 @@ no deployment, no backend, no frontend, no branch beyond the existing working br
 no architecture. The legacy Workers remain the rollback substrate until after cutover
 stabilizes; their retirement is a future [DR] decision, not part of this plan.
 
-## C2 addendum (2026-08-31, auth-log investigation)
+## C2 addendum (2026-08-31, auth-log investigation) — CLOSED AS FALSE ALARM
+
+> **EXECUTIVE CORRECTION (2026-08-31):** the `degarmeaux@icloud.com` sign-in failures were
+> **user-entry error** (wrong login information typed), not an account, Auth, staging, or
+> production-candidate defect. This matches the server-side evidence below exactly (the
+> stored password succeeded four times the same night; failures were `invalid_credentials`
+> on the submitted value). **This account is NOT an authentication blocker of any kind.**
+> The investigation is retained below because it affirmatively confirmed: account health;
+> canonical CQCX identity continuity; intact administrator/executive roles; and no
+> staging/candidate Auth divergence. The credential question is closed and is not to be
+> reopened absent new contradicting evidence.
 
 Human-observed updates accepted: candidate login surface PASS; real participant
 authentication PASS (`thomas@graceforaddictions.org`); participant role routing PASS;
