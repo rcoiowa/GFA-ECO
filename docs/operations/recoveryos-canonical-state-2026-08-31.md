@@ -226,7 +226,7 @@ deleted or altered.
 
 | # | Severity | Class | Blocker | Minimum action |
 |---|---|---|---|---|
-| 1 | **CRITICAL** | DNS/CLOUDFLARE/DOMAIN | vrcc.app zone/registrar split: live zone ryan/vera vs pending candy/devin zone holding the cutover binding; likely two Cloudflare accounts | Thomas (dashboard): identify which account holds the **Registrar registration** and the ryan/vera zone; then either (a) Cloudflare's move-domain-between-accounts path so registration+zone+Workers share one account, or (b) if both zones turn out to be in one account, delete the pending duplicate and bind the custom domain in the active zone. **Before any authority change: verify email DNS record parity in the target zone.** Do NOT create a third zone; do NOT leave email records behind. |
+| 1 | **CRITICAL** | DNS/CLOUDFLARE/DOMAIN | vrcc.app zone split (REFINED — see Zone follow-up addendum): the live ryan/vera zone is alive and serving but is NOT the visible account's zone (candy/devin, PENDING, holds the inert step-6 binding); leading hypothesis: live zone under a different Cloudflare login | Thomas: complete the Registrar → Manage Domains → vrcc.app check (decisive); then choose Path A (repoint apex record in the live zone — minimal change) or Path B (registrar delegation → candy/devin, after email-parity + www re-point). Do NOT create a third zone; do NOT change anything until the registrar evidence is in. |
 | 2 | **HIGH** | AUTH/OPERATIONS | Site URL now `https://vrcc.app` while vrcc.app publicly serves the legacy app → new signup confirmation emails land users on the legacy app (confirmation itself still completes at Supabase; the landing is wrong/confusing) | Either resolve #1 promptly, or revert Site URL to the staging origin until cutover unblocks (single field; REQUIRES AUTHORIZATION) |
 | 3 | MEDIUM | CODE | `/residence/documents/resident_rights` NotFound in deployed candidate (missing residence-content module) | Mine `residentRights.ts` (from the published DB v2.0 body) into the canonical line; redeploy with the next build |
 | 4 | MEDIUM | DOCUMENTATION/GOVERNANCE | `main` 61 commits stale; a stray commit landed on a side branch | Fast-forward main to the canonical line at the next natural point (REQUIRES AUTHORIZATION; branch-protection choice), and treat the canonical line as the only base for new work |
@@ -234,6 +234,7 @@ deleted or altered.
 | 6 | LOW | DOMAIN | www.vrcc.app → stale Pages deploy | Fold into cutover step 6 (bind www with apex) |
 | 7 | INFORMATIONAL | DATA | recoveryresidence.org/.app do not resolve | Prospective domains; activate only as a separate decision |
 | 8 | INFORMATIONAL | GOVERNANCE | GFAVRCC repos unreachable cross-tier | Investigate from a GFAVRCC-sourced session once |
+| 9 | MEDIUM | DNS/OPERATIONS | No public email DNS for vrcc.app (no MX/SPF/DKIM/DMARC anywhere in the live zone; records staged only in the inert pending zone) while `notify-fanout` sends from `notify@vrcc.app` → degraded notification deliverability today (pre-existing; Supabase auth emails unaffected) | Add the staged email records to whichever zone ends up authoritative (folds into Path A or B); until then expect notification emails to spam-fold |
 
 ## M. Smallest ordered action set to finish convergence
 
@@ -249,6 +250,79 @@ deleted or altered.
    disposition review as its own future gate).
 
 No new deployment surface, backend, branch, or architecture is needed for any of this.
+
+## Zone follow-up addendum (2026-08-31, second pass — refined diagnosis)
+
+**New human evidence:** ONE visible Cloudflare account holds all four zones (vrcc.app
+[PENDING, candy/devin], recoveryresidence.app, recoveryresidence.org,
+justgraceforaddictions.org) AND all four relevant Workers; no second account selector in
+that session; the vrcc.app zone's Worker Routes page is empty; recoveryos-staging has no
+custom domains.
+
+**Evidence correction (owed):** the first pass asserted the ryan/vera NS finding as
+"verified via three resolvers" without a recorded NS query — the recorded probes were
+A-records only. It has now been genuinely verified: recursive NS = ryan/vera, SOA primary
+ryan (serial 2411666283). Additionally discovered: this container intercepts port 53, so
+"direct" queries to any nameserver return recursive answers (aa=false) — direct
+authoritative probing is impossible from here; recursive-view findings below are still
+decisive where noted.
+
+**New DNS facts (VERIFIED via recursive resolution):**
+
+1. **The ryan/vera zone is ALIVE and actively served** — a never-before-queried random
+   label under vrcc.app returned authoritative NXDOMAIN through recursion, which requires
+   a live authoritative zone. It is not a deleted-zone remnant and delegation is not
+   dangling.
+2. **The live zone serves no email records at all**: apex MX — none; apex TXT/SPF — none;
+   `send.vrcc.app` — NXDOMAIN; `_dmarc` — NXDOMAIN. The MX/SPF/DKIM records observed
+   during cutover exist only in the PENDING zone and are publicly inert.
+   Consequence: `notify-fanout` sends from `notify@vrcc.app` with no public SPF/DKIM →
+   degraded deliverability today (pre-existing; unrelated to the cutover; Supabase auth
+   emails use Supabase's sender and are unaffected). New blocker L-9.
+3. The live zone publicly serves only proxied A answers for apex and www.
+
+**Hypothesis status (the four options posed):**
+
+1. *Stale registrar delegation after zone delete/re-add (old zone gone)* — **REFUTED**:
+   a deleted zone stops being served; this zone answers live.
+2. *Zone re-assignment inside the same account* — **NOT SUPPORTED**: the visible account
+   shows exactly one vrcc.app zone (candy/devin PENDING), and Cloudflare does not hold two
+   zone objects for one domain in one account.
+3. *Older hidden/deactivated zone state* — **REFUTED**: deactivated zones do not serve;
+   this one does.
+4. *Another supported registrar/zone mismatch* — **LEADING HYPOTHESIS**: the live
+   ryan/vera zone exists under a **different Cloudflare login/account** (the dashboard
+   account selector only lists accounts the current login belongs to — an old email,
+   Base44-era, or partner login would be invisible). Supporting mechanics: the visible
+   account shows no route/custom-domain carrying vrcc.app traffic, yet `virtualrecovery`
+   (this account) serves it — exactly what a **proxied CNAME in the other-account live
+   zone → `virtualrecovery.thomas-499.workers.dev`** would produce (cross-account proxied
+   CNAMEs to workers.dev are supported and flatten to the proxy A records we observe;
+   www → `gfa-vrcc.pages.dev` the same way).
+
+**Decisive next check (in progress, Thomas):** Registrar / Domain Registration → Manage
+Domains → vrcc.app — (a) is the registration in this account at all, and (b) what
+nameservers does the registration record carry. If the registration is absent there, the
+domain (registrar + live zone) lives under another login. If present with ryan/vera NS,
+Cloudflare support can say which account those were assigned to.
+
+**Candidate resolution paths (for later authorization — listed, not recommended-executed):**
+
+- **Path A (minimal change):** locate the login holding the live zone; complete the
+  cutover *in that zone* by repointing the existing apex record from
+  `virtualrecovery.thomas-499.workers.dev` to
+  `gfa-eco-recovery-residence-os.thomas-499.workers.dev` (and www alongside) — the same
+  serving mechanism vrcc.app uses today; rollback is repointing back; email records should
+  then be added to the live zone (they are already drafted in the pending zone).
+- **Path B (consolidation):** keep the visible account authoritative — change the
+  registrar delegation to candy/devin, activating the PENDING zone (the step-6 custom
+  domain then goes live). Preconditions: registrar access, email-record parity (staged ✓),
+  and re-pointing the pending zone's www record (it currently targets the stale
+  `gfa-vrcc.pages.dev`).
+
+Cutover remains paused at step 6; posture unchanged (staging = ACTIVE PILOT untouched,
+candidate ready, virtualrecovery intact as rollback, no retired-backend access, no code
+work, no mutations performed in this pass).
 
 ## Evidence limitations
 
