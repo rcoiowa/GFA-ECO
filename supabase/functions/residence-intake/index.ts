@@ -49,10 +49,6 @@ const ALLOWED_ORIGINS = new Set([
   "https://recoveryos-staging.thomas-499.workers.dev",
   "https://gfa-eco-recovery-residence-os.thomas-499.workers.dev",
   "http://localhost:5173",
-  "https://gracehouse4.pages.dev",
-  "https://vrcc.app",
-  "https://recoveryos-staging.thomas-499.workers.dev",
-  "http://localhost:5173",
 ]);
 
 function corsHeaders(origin: string | null): Record<string, string> {
