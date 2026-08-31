@@ -10,27 +10,39 @@ review.** Architecture preserved: GFA-ECO canonical repo → `recoveryos-staging
 `gfa-eco-recovery-residence-os` (candidate) → `vrcc.app`. No new deployment surface was or
 will be created.
 
-## DECISION: **CONDITIONAL GO**
+## DECISION: **GO** (issued 2026-08-31 on human-verified C1 + C2)
 
-Cutover is safe once three conditions close (none requires code beyond what this review
-prepared):
+All readiness conditions are closed; the only remaining acts are the cutover steps
+themselves, under separate execution authorization.
 
-1. **C1 — Supabase Auth URL configuration verified/updated in the dashboard** (Site URL +
-   redirect allowlist; §3). Tools available to this review cannot read Auth settings, so
-   current state is unverified.
-2. **C2 — Candidate smoke test: SUBSTANTIALLY CLOSED (2026-08-31).** Human-observed on the
-   production candidate: successful login with correct credentials — **PASS**
-   (`thomas@graceforaddictions.org`); correct role routing (participant landing) — **PASS**.
-   The `degarmeaux@icloud.com` episode was user-entry error (see the closed C2 addendum);
-   its investigation affirmatively confirmed account health, CQCX identity continuity,
-   intact admin/executive roles, and no staging/candidate Auth divergence. **Remaining C2
-   item: one Support Now render check on the candidate URL** (open Support Now as a
-   signed-in user; confirm the governance-canon contacts render). Optional corroboration:
-   one login with the address bar verified on the candidate hostname, so auth logs also
-   carry the candidate origin.
-3. **C3 — Redeploy `residence-intake` with the vrcc.app origins** (prepared in-repo by
-   this review; a runbook step, or the in-app public referral/listing forms fail from
-   vrcc.app after cutover).
+1. **C1 — GREEN (human-verified 2026-08-31).** Supabase RecoveryOS-Launch Auth redirect
+   allowlist verified to contain all three origins, each **PRESENT**:
+   `https://recoveryos-staging.thomas-499.workers.dev/**`,
+   `https://gfa-eco-recovery-residence-os.thomas-499.workers.dev/**`, and
+   `https://vrcc.app/**`. Current Site URL:
+   `https://recoveryos-staging.thomas-499.workers.dev/` — the move to `https://vrcc.app`
+   is **intentionally deferred to cutover runbook step 4** (correct: staging signups'
+   confirmation emails follow the Site URL until cutover).
+2. **C2 — GREEN (human-verified 2026-08-31).** On
+   `https://gfa-eco-recovery-residence-os.thomas-499.workers.dev`: login with correct
+   credentials PASS; participant role landing PASS; Support Now / Connect route PASS
+   (observed at `/vrcc/connect`); support contacts/resources rendered correctly; candidate
+   hostname remained in the address bar throughout. The earlier credential concern remains
+   closed as user-entry error; its investigation stands as affirmative confirmation of
+   account health, CQCX identity continuity, intact admin/executive roles, and no
+   staging/candidate Auth divergence.
+3. **C3 — PREPARED / executes under cutover authorization.** vrcc.app origins are
+   committed in `supabase/functions/residence-intake/index.ts`; they take effect via the
+   function redeploy at cutover runbook step 5.
+
+**Remaining production mutations (all inside the authorized cutover, none before it):**
+① Auth Site URL → `https://vrcc.app` (runbook step 4, reversible single field);
+② `residence-intake` function redeploy from the repo (step 5);
+③ `vrcc.app` custom-domain binding → Worker `gfa-eco-recovery-residence-os` (step 6 — the
+cutover act; simultaneously detaches the legacy `virtualrecovery` Worker). Everything else
+in the runbook is read-only verification or reversible coexistence handling; rollback is
+steps 13–14 (re-point domain, revert Site URL). Staging is not redirected or altered; the
+retired backend is never touched.
 
 ---
 
@@ -192,21 +204,23 @@ communication — no formal campaign warranted.
 |---|---|---|
 | Identity continuity | **GREEN** | |
 | Data continuity | **GREEN** | |
-| Authentication | **YELLOW** | Auth URL config unverified → C1 dashboard check (15 min) |
+| Authentication | **GREEN** (C1 human-verified 2026-08-31; Site URL move deferred to cutover step 4 by design) | |
 | Intake/onboarding reconciliation | **GREEN** | |
 | Consent/signatures | **GREEN** | |
 | Participant experience | **GREEN** (2026-08-31: candidate login + participant routing human-observed) | |
 | Coach experience | **GREEN** (candidate surface proven; coach chains live-verified server-side) | |
 | Resident/residence workflows | **GREEN** (candidate surface proven; full intake chain live-verified server-side) | |
 | Navigator/staff/admin workflows | **GREEN** (candidate surface proven; role resolution live-verified server-side) | |
-| Safety/escalation (Support Now) | **YELLOW** | One Support Now render check on the candidate URL (last open C2 item) |
-| Auth/domain configuration | **YELLOW** | C1 + the cutover DNS/domain step itself |
-| Edge Function/API origins | **YELLOW** | C3 — redeploy `residence-intake` (change already in repo) |
+| Safety/escalation (Support Now) | **GREEN** (human-verified on the candidate at `/vrcc/connect`, contacts rendered) | |
+| Auth/domain configuration | **GREEN** (allowlist verified; the domain binding and Site URL move ARE the cutover, not readiness gaps) | |
+| Edge Function/API origins | **GREEN — PREPARED** (vrcc.app origins committed; applied by the redeploy at cutover step 5) | |
 | PWA/session continuity | **GREEN** | |
 | Operational support | **GREEN** | Runbook + coexistence plan below |
 | Rollback readiness | **GREEN** | Legacy Worker untouched; DNS repoint is the whole rollback |
 
-No RED. No UNKNOWN. Every YELLOW closes with C1 + C2 + C3 plus the cutover act itself.
+All domains GREEN (2026-08-31, after human verification of C1 and C2). No RED, no YELLOW,
+no UNKNOWN. The only remaining acts are the three cutover mutations listed under the GO
+decision, executed via the runbook under separate authorization.
 
 ## 8. Cutover runbook (PREPARED — not executed)
 
