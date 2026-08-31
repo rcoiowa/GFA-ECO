@@ -257,6 +257,50 @@ no deployment, no backend, no frontend, no branch beyond the existing working br
 no architecture. The legacy Workers remain the rollback substrate until after cutover
 stabilizes; their retirement is a future [DR] decision, not part of this plan.
 
+## C2 addendum (2026-08-31, auth-log investigation)
+
+Human-observed updates accepted: candidate login surface PASS; real participant
+authentication PASS (`thomas@graceforaddictions.org`); participant role routing PASS;
+deployment-wide auth continuity — no failure demonstrated.
+
+**`degarmeaux@icloud.com` — ACCOUNT-SPECIFIC CREDENTIAL-ENTRY ISSUE, account healthy.**
+Read-only findings (auth.users + auth service logs):
+
+- Single auth user `0a1449f5-340f-49a5-80d9-570e9920cb99`; email/password signup
+  2026-08-11 14:17:39Z; confirmed 76 s later via the emailed link; sole `email` identity;
+  not banned/disabled/deleted/SSO; bcrypt hash present; never had a password reset
+  (`recovery_sent_at` null). Maps to exactly one person (234) — no duplicate users,
+  identities, or profile mappings. Active roles: participant, resident, coach, navigator,
+  residence_staff, residence_manager, program_manager, administrator, executive (several
+  duplicate role rows — harmless to RLS; tidy under a future hygiene pass).
+- **The stored password WORKS.** Four successful password grants on 2026-08-31 alone
+  (01:16:13, 01:21:24, 03:20:42, 03:32:36 UTC), interleaved with ~17 failures between
+  03:06 and 03:33 whose exact server-side error is `400 invalid_credentials — "Invalid
+  login credentials"` (wrong password submitted; not a ban, confirmation, or rate-limit
+  error). Successes and failures alternate from the same device/IP — the signature of
+  typo/autofill/variant entry, not of a broken account. Failed attempts do not log the
+  email, so some 400s in that window may target either tested account; both tested
+  accounts have same-day successful password grants.
+- **Not a staging/candidate divergence:** the backend accepts the account's password;
+  origin plays no role in password verification. Log caveat: **no auth request carrying
+  the candidate origin appears in the last 24 h** — every recorded login (including the
+  successful thomas@ logins) shows the staging referer. The human-observed candidate PASS
+  stands, but one more candidate-URL login with the address bar verified
+  (`gfa-eco-recovery-residence-os.thomas-499.workers.dev`) would let server logs
+  corroborate it.
+- **Discovered in passing:** email confirmation IS enforced (new residents hit
+  `email_not_confirmed` until clicking their link, then succeed) — so confirmation email
+  delivery and redirect are proven working for the staging origin, and C1's remaining work
+  is exactly the candidate + vrcc.app entries.
+- **Remediation:** normal self-service password reset ("Forgot password" on staging, whose
+  email-link path is proven) — safe and appropriate; or simply retype carefully, since the
+  current password verifiably works. A reset updates only the password hash **on the same
+  auth user row**: same auth user id, same person 234, all role assignments (including
+  admin/executive), and all data/relationships preserved; no new identity is or can be
+  created by the reset flow. Other active sessions for the account are signed out on
+  reset — the only side effect.
+- **Cutover impact: none.** This is not a blocker for vrcc.app cutover.
+
 ## Evidence limitations (explicit)
 
 1. Supabase Auth URL configuration is not readable with available tools → C1.
