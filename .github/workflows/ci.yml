@@ -42,6 +42,8 @@ jobs:
         run: node scripts/verify-service-provenance.mjs
       - name: Intake minimization guard (Gate B — evidence chain, MOUD never gates, narrow override)
         run: node scripts/verify-intake-minimization.mjs
+      - name: Contact Connect intake foundation (0147 — additive, deny-by-default, no identity inference)
+        run: node scripts/verify-intake-workflow-foundation.mjs
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
