@@ -1,5 +1,15 @@
 # EJWRH B5B — Final Document Ratification & Activation Readiness Record
 
+> **READING ORDER (added 2026-09-01).** This is a layered, append-only record: the ⬥ dated
+> entries at the top are the decision log, and the LATEST entry governs. The numbered
+> sections below them are the original B5B gate report (2026-08-24/25) preserved as
+> history; where a later entry superseded one, a banner on that section says so.
+> **Current state in one line:** the EJWRH document edition is ACTIVE (0146 applied
+> 2026-08-31); EJWRH intake is open end-to-end including recorded move-in; still open —
+> record-retention period (counsel/policy, non-blocking), executed-PSA paper copy archival
+> (evidence filing), grievance named contact (optional), accommodation evidence loop
+> (future gate).
+
 ## ⬥ EXECUTIVE RATIFICATION ENTRY (2026-08-24)
 
 The Executive Director ratified the following as the **approved resident-facing policy
@@ -225,7 +235,14 @@ retirement), Cloudflare, and external disclosure remain closed.
 
 ## 2. Executed PSA status
 
-**Not established.** The repository contains no executed EJWRH Professional Services
+> **SUPERSEDED (2026-08-31 Activation Entry).** PSA v4.1 was authored and reconciled
+> (2026-08-25, signer corrected to Thomas DeGarmeaux), and the Executive Director attested
+> execution on 2026-08-31; the counterparty (Ernest & Johnnie White Recovery House,
+> L.L.C.) is named operatively in Agreement §1 and the Agreement is active and signable.
+> Remaining evidence-filing step only: archive the executed paper copy into
+> `docs/agreements/`. The text below is the 2026-08-24 state, kept as history.
+
+**Not established (as of 2026-08-24).** The repository contains no executed EJWRH Professional Services
 Agreement — `EJWRH_ProfessionalServices_Agreement_v2.docx` is ED-cited (Evidence class C)
 and absent (verified sweep: `docs/source-documents/` holds Grace House and org material
 only; no EJWRH PSA file anywhere in the repo). Parties, signatures, effective date, and
@@ -329,6 +346,12 @@ name + 5 taps + 1 consent tap.**
 
 ## 7. E-sign legal review packet (Participant Agreement)
 
+> **SUPERSEDED (2026-08-24 Legal-Review Reconciliation entry).** The review returned
+> APPROVED WITH ATTACHED REVISIONS and every revision was incorporated (§13 full
+> disclosure, live e-consent gate, signing-intent control, paper parity, notice
+> safeguard). The packet below is preserved as the record of what was submitted; of its
+> questions, Q4's retention period remains the one open item.
+
 **The packet** (everything a qualified reviewer needs, nothing more):
 
 1. *Intended agreement:* `docs/residences/ejwrh/participant-residency-agreement.md`
@@ -373,6 +396,11 @@ name + 5 taps + 1 consent tap.**
 
 ## 8. Prepared activation migration
 
+> **SUPERSEDED (2026-08-31 Activation Entry).** 0146 was finalized by the generator
+> script, moved into the migrations ledger, and APPLIED to CQCX with the in-migration
+> hash gate passing; the prepared placeholder file no longer exists. Description below is
+> historical.
+
 `supabase/launch/prepared/0146_ejwrh_document_activation.prepared.sql` — **prepared only,
 outside the migrations ledger so routine tooling cannot apply it.** Contains: the six
 template keys with signature/ack classification and residence-2 scope; version `1.0` with
@@ -385,6 +413,11 @@ ledger at apply time if anything lands first.
 
 ## 9. B5B E2E readiness
 
+> **PARTIALLY SUPERSEDED (2026-08-31).** The full chain below ran GREEN as a synthetic
+> SQL-level E2E against live CQCX in a rolled-back transaction at activation (see the
+> Activation Entry). The Playwright browser spec itself remains double-gated and has not
+> been executed — that distinction stands.
+
 `apps/platform/e2e/live/06-b5b-intake-activation.spec.ts` re-verified against the required
 chain: conditional acceptance (queue → contacted → account offered) → account/person
 resolution (0144 lookup by stated email + "This is them") → canonical application (convert)
@@ -396,6 +429,15 @@ runbook post-run SQL for version/hash/audit). Double-gated (`RECOVERYOS_E2E_LIVE
 `RECOVERYOS_E2E_B5B=1`) — **not executed while activation remains closed.**
 
 ## 10. Exact remaining blockers (reclassified 2026-08-25 — nothing else is open)
+
+> **SUPERSEDED (2026-08-31 Activation Entry).** Items 1 (executed-PSA evidence) was
+> cleared for activation by the executive attestation of execution (paper-copy archival
+> remains as evidence filing); item 2 (retention period) was reclassified as an open
+> records-policy item that no longer blocks anything (artifacts preserved immutably and
+> indefinitely meanwhile); items 8–9 were performed (§5 wording applied and ratified in
+> the participant-facing approval; 0146 finalized and applied). Still open from this
+> list: item 10 (optional named contact) and item 11 (accommodation loop, future gate).
+> The classification below is the 2026-08-25 state, kept as history.
 
 Classification key: **[R]** resolved · **[OA/FE]** operationally authorized, formal
 evidence still required · **[C]** counsel/policy determination still required ·
