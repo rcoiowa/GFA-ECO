@@ -56,8 +56,10 @@ values
    '{}'::text[], null),
   (2, (select id from recoveryos.organizations where name = 'Grace For Addictions'), null, 'Ernest & Johnnie White Recovery House', 'Des Moines', 'IA', null, true, '2026-07-30 16:53:06.870896+00',
    '1414 12th Street', '50314', '515-220-8771', 'ejwrh@rcoiowa.org', 'Men', 'II', 'in_preparation',
-   'MCRSP', 175, 200, 660,
-   760, true, true, 'Men''s recovery residence with wraparound recovery support services from Grace For Addictions; Iowa DOC approved placement.', null,
+   -- Monthly fees per the executively ratified EJWRH fee schedule ($650/$750);
+   -- earlier 660/760 values were superseded by the ratified Participant & Residency Agreement §5.
+   'MCRSP', 175, 200, 650,
+   750, true, true, 'Men''s recovery residence with wraparound recovery support services from Grace For Addictions; Iowa DOC approved placement.', null,
    '{}'::text[], null)
 on conflict (id) do update set
   organization_id = excluded.organization_id,

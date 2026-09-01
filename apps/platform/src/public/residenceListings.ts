@@ -44,6 +44,7 @@ export const GFA_RESIDENCES: ResidenceListing[] = [
     contact: '515-220-8771 · ejwrh@rcoiowa.org',
     description:
       "Men's recovery residence with wraparound recovery support services; Iowa DOC approved placement.",
+    applyUrl: 'https://cqcxvwoukyhxyokfwnjm.supabase.co/functions/v1/ejwrh',
   },
   {
     name: "Jerry's House",

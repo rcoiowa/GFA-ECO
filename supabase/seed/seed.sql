@@ -63,8 +63,9 @@ update residences set
   narr_affiliate = 'MCRSP',
   shared_room_fee_weekly = 175,
   private_room_fee_weekly = 200,
-  shared_room_fee_monthly = 660,
-  private_room_fee_monthly = 760,
+  -- Ratified EJWRH fee schedule (Participant & Residency Agreement §5); 660/760 superseded.
+  shared_room_fee_monthly = 650,
+  private_room_fee_monthly = 750,
   accepts_mat = true,
   accepts_supervision = true,
   public_description = 'Men''s recovery residence with wraparound recovery support services from Grace For Addictions; Iowa DOC approved placement.'
