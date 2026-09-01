@@ -15,8 +15,19 @@
 //   RESEND_API_KEY, RESEND_FROM, LEAD_ALERT_TO (comma-separated staff addresses)
 //
 // Payload (JSON, all fields optional strings unless noted):
-//   { first_name, last_name, email, phone, message, interest, readiness, source }
+//   { first_name, last_name, email, phone, message, interest, readiness, source,
+//     submission_id, submitted_at, organization_inquiry, residence_interest }
 // Legacy Wix field names (pathway_interest) are accepted and mapped.
+//
+// 0147 additions (REPO-PREPARED — redeploy this function only AFTER migration 0147 is
+// applied, since it writes the new columns):
+//   submission_id      stable Wix submission id -> idempotency (duplicate POSTs return
+//                      the existing lead instead of creating a second record)
+//   submitted_at       source timestamp from Wix
+//   organization_inquiry  true = partnership/outside-organization request (priority)
+//   residence_interest    EXPLICIT self-selected pathway only: 'grace_house' | 'ejwrh'.
+//                      Anything else stored as 'unspecified' (coordinator confirm-route).
+//                      Never inferred from names or message text.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -43,6 +54,19 @@ Deno.serve(async (req: Request) => {
   let p: Record<string, unknown>;
   try { p = await req.json(); } catch { return json({ ok: false, code: "bad_json" }, 400); }
 
+  // Residence interest is honored ONLY as an explicit self-selected value.
+  const rawInterestPath = clip(p.residence_interest, 40);
+  const residence_interest =
+    rawInterestPath === "grace_house" || rawInterestPath === "ejwrh"
+      ? rawInterestPath
+      : "unspecified";
+  const organization_inquiry = p.organization_inquiry === true || p.organization_inquiry === "true";
+  const submittedAtRaw = clip(p.submitted_at, 40);
+  const submitted_at =
+    submittedAtRaw && !Number.isNaN(Date.parse(submittedAtRaw))
+      ? new Date(submittedAtRaw).toISOString()
+      : null;
+
   const lead = {
     first_name: clip(p.first_name, 120),
     last_name: clip(p.last_name, 120),
@@ -52,12 +76,32 @@ Deno.serve(async (req: Request) => {
     interest: clip(p.interest ?? p.pathway_interest, 200),
     readiness: clip(p.readiness, 200),
     source: clip(p.source, 60) ?? "website",
+    wix_submission_id: clip(p.submission_id, 120),
+    submitted_at,
+    organization_inquiry,
+    residence_interest,
+    // Proposed deadlines pending ratification: partnership 4h, standard 24h.
+    response_due_at: new Date(
+      Date.now() + (organization_inquiry ? 4 : 24) * 60 * 60 * 1000,
+    ).toISOString(),
   };
   if (!lead.email && !lead.phone && !lead.message) {
     return json({ ok: false, code: "empty_lead" }, 400);
   }
 
   const admin = createClient(SB_URL, SERVICE_KEY, { db: { schema: "recoveryos" } });
+
+  // Idempotency: a repeated Wix submission returns the existing record — one inquiry,
+  // one thread, never a disconnected duplicate.
+  if (lead.wix_submission_id) {
+    const { data: existing } = await admin
+      .from("leads")
+      .select("id")
+      .eq("wix_submission_id", lead.wix_submission_id)
+      .maybeSingle();
+    if (existing) return json({ ok: true, code: "duplicate_submission", id: existing.id }, 200);
+  }
+
   const { data, error } = await admin.from("leads").insert(lead).select("id").single();
   if (error) return json({ ok: false, code: "insert_error", message: error.message }, 500);
 

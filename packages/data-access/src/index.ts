@@ -28,3 +28,4 @@ export * from './repositories/navigation';
 export * from './repositories/residenceSupport';
 export * from './repositories/admin';
 export * from './repositories/intakeReadiness';
+export * from './repositories/leadsQueue';

@@ -17,13 +17,21 @@ import { NotFoundPage } from '../../pages/StatusPages';
  * A single document, rendered in full, with the signing flow when this
  * document is pending for the current resident. Signing is a typed-name
  * e-signature recorded on the person's assignment row.
+ *
+ * Rendering source: when the person has an assignment for this key, the page
+ * renders the assignment's PINNED published version — the exact text they act
+ * on or signed — and the bundled residence-content library is only a metadata
+ * fallback. This is what makes residence-scoped editions (all six EJWRH
+ * documents, Grace House Resident Rights) render here without a bundled copy,
+ * with provenance guaranteed by the version's content hash.
  */
 export function DocumentDetailPage() {
   const { key } = useParams<{ key: string }>();
   const { person } = useAuth();
-  const document = key ? getDocument(key) : undefined;
+  const staticDocument = key ? getDocument(key) : undefined;
 
   const [assignments, setAssignments] = useState<AssignmentWithDocument[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [signatureName, setSignatureName] = useState('');
   const [signing, setSigning] = useState(false);
   const [signError, setSignError] = useState(false);
@@ -32,13 +40,18 @@ export function DocumentDetailPage() {
   const [paperInfo, setPaperInfo] = useState(false);
 
   const load = useCallback(async () => {
-    if (!person) return;
+    if (!person) {
+      setLoaded(true);
+      return;
+    }
     try {
       setAssignments(await listMyDocumentAssignments(person.id));
       setEConsent(await hasElectronicRecordsConsent(person.id));
     } catch {
-      // Signature state is progressive enhancement on this page; the
-      // document itself always renders from the bundled library.
+      // Signature state is progressive enhancement when a bundled copy
+      // exists; the pinned-version fallback simply won't be available.
+    } finally {
+      setLoaded(true);
     }
   }, [person]);
 
@@ -51,7 +64,32 @@ export function DocumentDetailPage() {
     [assignments, key],
   );
 
-  if (!document) return <NotFoundPage />;
+  // The person's pinned version wins; the bundled library is the fallback for
+  // documents the person has no assignment for (e.g. browsing before intake).
+  const display = myAssignment
+    ? {
+        name: myAssignment.document_version.template.name,
+        summary: staticDocument?.summary,
+        body: myAssignment.document_version.body_markdown,
+        version: myAssignment.document_version.version,
+        requiresSignature: myAssignment.document_version.template.requires_signature,
+      }
+    : staticDocument
+      ? {
+          name: staticDocument.name,
+          summary: staticDocument.summary,
+          body: staticDocument.body,
+          version: staticDocument.version,
+          requiresSignature: staticDocument.requiresSignature,
+        }
+      : undefined;
+
+  if (!display) {
+    // Don't flash NotFound while the assignment (the only source for
+    // residence-scoped editions) is still loading.
+    return loaded ? <NotFoundPage /> : null;
+  }
+  const document = display;
 
   const sign = async () => {
     if (!myAssignment || !signatureName.trim()) return;

@@ -42,7 +42,9 @@ begin
                           'domains','domain_subcategories','domain_external_mappings',
                           'resource_domains',
                           'residency_medication_items','supervision_coordination_records',
-                          'medication_status_reviews')
+                          'medication_status_reviews',
+                          -- 0147 (prepared): append-only contact log, RPC-only writes.
+                          'lead_contact_events')
     and not (has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'SELECT')
          and has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'INSERT')
          and has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'UPDATE'));
@@ -182,7 +184,10 @@ begin
       'end_medication_item','record_supervision_coordination',
       'convert_application_intake','application_intake_readiness',
       'confirm_no_current_medications','find_person_for_intake_conversion',
-      'record_paper_signature')
+      'record_paper_signature',
+      -- 0147 shared intake workflow (prepared; names are no-ops until applied)
+      'assign_lead','record_lead_contact','set_lead_status','route_lead',
+      'find_duplicate_leads','list_intake_assignees')
     and not has_function_privilege('authenticated', p.oid, 'EXECUTE');
   if missing is not null then
     raise exception 'LAUNCH-CONTRACT FAIL: authenticated cannot execute client RPC(s): %', missing;

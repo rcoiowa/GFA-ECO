@@ -7,6 +7,7 @@ import { BedBoardPage } from './pages/BedBoardPage';
 import { ResidentsPage } from './pages/ResidentsPage';
 import { HouseOpsPage } from './pages/HouseOpsPage';
 import { ApplicationsPage } from './pages/ApplicationsPage';
+import { InquiriesPage } from './pages/InquiriesPage';
 import { ScreeningsPage } from './pages/ScreeningsPage';
 import { IncidentsPage } from './pages/IncidentsPage';
 import { GrievancesPage } from './pages/GrievancesPage';
@@ -38,6 +39,7 @@ export function StaffArea() {
             <Route path="residents" element={<ResidentsPage />} />
             <Route path="house-ops" element={<HouseOpsPage />} />
             <Route path="applications" element={<ApplicationsPage />} />
+            <Route path="inquiries" element={<InquiriesPage />} />
             <Route path="screenings" element={<ScreeningsPage />} />
             <Route path="incidents" element={<IncidentsPage />} />
             <Route path="grievances" element={<GrievancesPage />} />
