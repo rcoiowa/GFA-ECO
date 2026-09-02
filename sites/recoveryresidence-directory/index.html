@@ -429,7 +429,7 @@ footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
         <li><b>Fees:</b> shared room $175/week or $650/month prepaid · private room $200/week or $750/month prepaid · one-time $250 move-in fee (nonrefundable). Hardship payment arrangements are always available — start with a conversation before a due date.</li>
       </ul>
       <h4>Apply</h4>
-      <p><a class="btn btn-gold" href="https://cqcxvwoukyhxyokfwnjm.supabase.co/functions/v1/ejwrh">START YOUR EJWRH APPLICATION</a></p>
+      <p><button class="btn btn-gold" onclick="go('ejwrh-apply')">START YOUR EJWRH APPLICATION</button></p>
       <p style="margin-top:.8rem">Prefer to apply by phone or email? Email <b>ejwrh@rcoiowa.org</b> or call the GFA office at <b>515-220-8771</b> to request an application and schedule a conversation. Applying by contact is always equal — it never affects your eligibility or your place in line.</p>
       <p style="margin-top:.8rem"><button class="btn btn-purple" onclick="openReferral(2, 'Ernest & Johnnie White Recovery House')">Submit a Partner Referral</button> <span style="font-size:.85rem;color:var(--muted)">Probation, parole, IDOC, and treatment partners — delivered straight to the intake queue.</span></p>
     </div>
@@ -460,136 +460,94 @@ footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
   </div>
 </main>
 
-<!-- ==================== GRACE HOUSE — ONLINE APPLICATION ==================== -->
+<!-- ==================== GRACE HOUSE — APPLICATION ==================== -->
+<!-- R1: distinct, residence-bound (residence_id=1) public application. Minimized
+     Gate-B contract — only what's needed to start the conversation; no clinical,
+     SUD, safety, or legal detail is collected before an account and consent exist.
+     Submits through the shared canonical residence-intake boundary. -->
 <main id="pg-apply" class="hidden">
   <div class="page-hero"><div class="wrap">
-    <div class="crumb" onclick="go('grace')">← Grace House / Online Application</div>
-    <h1>Grace House Online Application</h1>
-    <div class="sub">Takes about 10–15 minutes. Your answers are confidential and reviewed only by Grace House staff. There are no wrong answers here — honesty helps us welcome you well.</div>
+    <div class="crumb" onclick="go('grace')">← Grace House / Apply</div>
+    <h1>Apply to Grace House</h1>
+    <div class="sub">A women's recovery residence operated by Grace For Addictions. Just a few minutes — only what we need to start the conversation. A real person reads every application, and every program document is presented for your review before anything is signed.</div>
   </div></div>
-
-  <div class="wrap" style="max-width:840px">
-    <div class="notice" style="margin-top:1.6rem"><b>You can pause anytime.</b> Nothing is submitted until you review and sign at the final step. Prefer paper? <a href="docs/GraceHouse_Application_and_PreScreening_Form.docx" download>Download the printable form</a>.</div>
-
-    <!-- progress -->
-    <div class="app-progress" id="appProg">
-      <div class="ap-step on" data-s="0"><span>A</span>About You</div>
-      <div class="ap-step" data-s="1"><span>B</span>Eligibility</div>
-      <div class="ap-step" data-s="2"><span>C</span>Recovery &amp; Support</div>
-      <div class="ap-step" data-s="3"><span>D</span>Safety</div>
-      <div class="ap-step" data-s="4"><span>E</span>Your Goals</div>
-      <div class="ap-step" data-s="5"><span>F</span>Review &amp; Sign</div>
-    </div>
-
-    <!-- PART A -->
-    <div class="stage app-card" id="as0">
-      <h3>Part A — About You</h3>
+  <div class="wrap" style="max-width:680px">
+    <div class="stage app-card" id="gh_form" style="margin-top:1.6rem">
+      <div class="notice" style="margin-bottom:1.2rem">Prefer paper, or want to apply by phone? <a href="docs/GraceHouse_Application_and_PreScreening_Form.docx" download>Download the printable form</a> or call <b>515-220-8771</b>. Applying by contact is always equal — it never affects your eligibility or your place in line.</div>
+      <div class="afield"><label>Your name *</label><input id="gh_name" maxlength="200" autocomplete="name"></div>
       <div class="agrid2">
-        <div class="afield"><label>Full legal name *</label><input id="a_name" placeholder="First Middle Last"></div>
-        <div class="afield"><label>Preferred name</label><input id="a_pref" placeholder="What should we call you?"></div>
+        <div class="afield"><label>Phone <span style="text-transform:none;font-weight:400;color:var(--muted)">(this or email)</span></label><input id="gh_phone" type="tel" maxlength="40" autocomplete="tel"></div>
+        <div class="afield"><label>Email <span style="text-transform:none;font-weight:400;color:var(--muted)">(this or phone)</span></label><input id="gh_email" type="email" maxlength="320" autocomplete="email"></div>
       </div>
       <div class="agrid2">
-        <div class="afield"><label>Date of birth *</label><input id="a_dob" type="date"></div>
-        <div class="afield"><label>Phone *</label><input id="a_phone" type="tel" placeholder="(515) 555-0100"></div>
+        <div class="afield"><label>Best way to reach you</label><select id="gh_contact"><option value="phone">Call me</option><option value="text">Text me</option><option value="email">Email me</option></select></div>
+        <div class="afield"><label>Safe to leave a voicemail or text?</label><select id="gh_vm"><option value="">Prefer not to say</option><option value="yes">Yes</option><option value="no">No — speak with me directly</option></select></div>
       </div>
-      <div class="afield"><label>Email</label><input id="a_email" type="email" placeholder="you@email.com"></div>
-      <div class="afield"><label>Current living situation *</label>
-        <select id="a_living"><option value="">Select…</option><option>Own / rent</option><option>Staying with family or friends</option><option>Shelter</option><option>Treatment facility</option><option>Correctional facility</option><option>Unhoused</option><option>Other</option></select>
-      </div>
-      <div class="afield"><label>How did you hear about Grace House?</label>
-        <select id="a_ref"><option value="">Select…</option><option>Treatment provider</option><option>Friend / person in recovery</option><option>Court / probation / parole</option><option>211</option><option>Website / social media</option><option>Other</option></select>
-      </div>
-      <div class="app-nav"><span></span><button class="btn btn-purple" onclick="anext(1)">Continue →</button></div>
-    </div>
-
-    <!-- PART B -->
-    <div class="stage app-card hidden" id="as1">
-      <h3>Part B — Eligibility Pathway</h3>
-      <p style="margin-bottom:1rem">Grace House serves adult women through two pathways. Choose the one that fits your story — both carry the same dignity and the same community membership.</p>
-      <label class="pathway" onclick="pickPath('recovery',this)">
-        <input type="radio" name="path" value="recovery">
-        <div><b>Recovery pathway</b><br><span>I have a personal history of substance use or misuse, and I'm committed to living substance-free while in residence.</span></div>
-      </label>
-      <label class="pathway" onclick="pickPath('family',this)">
-        <input type="radio" name="path" value="family">
-        <div><b>Family pathway</b><br><span>I have a parent, partner, or child with a history of substance use disorder or mental-health-related trauma, and structured recovery-supportive housing supports our family's healing.</span></div>
-      </label>
-      <div class="afield hidden" id="b_famwrap" style="margin-top:1rem"><label>Your relationship (family pathway)</label>
-        <select id="b_famrel"><option value="">Select…</option><option>Parent with SUD/MH-trauma history</option><option>Partner with SUD/MH-trauma history</option><option>Child with SUD/MH-trauma history</option></select>
-      </div>
-      <div class="app-nav"><button class="btn btn-line" onclick="anext(0)">← Back</button><button class="btn btn-purple" onclick="anext(2)">Continue →</button></div>
-    </div>
-
-    <!-- PART C -->
-    <div class="stage app-card hidden" id="as2">
-      <h3>Part C — Recovery &amp; Support</h3>
-      <p style="margin-bottom:1rem;color:var(--muted);font-size:.92rem">If you chose the family pathway, answer what applies and skip the rest.</p>
-      <div class="afield"><label>Substances used (past or present)</label><input id="c_subs" placeholder="You can list generally — e.g., alcohol, opioids"></div>
+      <label class="chk" style="margin:.7rem 0"><input type="checkbox" id="gh_age18"> <span>I am 18 or older. *</span></label>
       <div class="agrid2">
-        <div class="afield"><label>Approximate date of last use</label><input id="c_last" placeholder="e.g., March 2026, or 'over a year'"></div>
-        <div class="afield"><label>Currently connected to treatment or counseling?</label>
-          <select id="c_tx"><option value="">Select…</option><option>Yes</option><option>No</option><option>Starting soon</option></select>
-        </div>
+        <div class="afield"><label>County you're in now</label><input id="gh_county" maxlength="120"></div>
+        <div class="afield"><label>Hoping to move in…</label><select id="gh_timing"><option value="">Not sure yet</option><option value="now">As soon as possible</option><option value="soon">In the next month or so</option><option value="exploring">Just exploring</option></select></div>
       </div>
-      <div class="afield"><label>Provider (your choice of provider is always honored)</label><input id="c_provider" placeholder="Optional"></div>
-      <div class="afield"><label>Are you currently prescribed MAT/MOUD (methadone, buprenorphine/Suboxone, naltrexone/Vivitrol, etc.)?</label>
-        <select id="c_mat" onchange="document.getElementById('c_matwrap').classList.toggle('hidden', this.value!=='Yes')"><option value="">Select…</option><option>Yes</option><option>No</option></select>
-      </div>
-      <div class="afield hidden" id="c_matwrap"><label>Prescriber</label><input id="c_prescriber" placeholder="Clinic or prescriber name">
-        <div class="mat-note">MAT/MOUD is fully supported at Grace House and is never a barrier to admission.</div>
-      </div>
-      <div class="app-nav"><button class="btn btn-line" onclick="anext(1)">← Back</button><button class="btn btn-purple" onclick="anext(3)">Continue →</button></div>
+      <div class="afield"><label>Your housing situation right now <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional, one line)</span></label><input id="gh_housing" maxlength="300"></div>
+      <div class="afield"><label>Anything you'd like us to know? <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional)</span></label><textarea id="gh_why" rows="3" maxlength="600"></textarea></div>
+      <div class="afield"><label>Accessibility or accommodation needs? <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional, high level)</span></label><input id="gh_accom" maxlength="300"></div>
+      <div class="afield"><label>How did you hear about us? <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional)</span></label><input id="gh_ref" maxlength="200"></div>
+      <label class="chk" style="margin:.7rem 0"><input type="checkbox" id="gh_consent"> <span>I agree that Grace For Addictions may process this application and contact me about it using the way I chose above. *</span></label>
+      <div style="position:absolute;left:-5000px" aria-hidden="true"><label>Company website</label><input id="gh_company_website" tabindex="-1" autocomplete="off"></div>
+      <div id="gh_err" class="errmsg hidden"></div>
+      <button class="btn btn-gold" id="gh_submit" onclick="submitHousingApplication({prefix:'gh_',residenceId:1,source:'grace-house-directory',email:'gracehouse@graceforaddictions.org'})">Send my application</button>
     </div>
-
-    <!-- PART D -->
-    <div class="stage app-card hidden" id="as3">
-      <h3>Part D — Safety Screening</h3>
-      <p style="margin-bottom:1rem;color:var(--muted);font-size:.92rem">These questions protect a shared household. A "yes" does not automatically disqualify you — context matters, and we'll talk it through together.</p>
-      <div class="afield"><label>Any current medical needs requiring immediate attention?</label>
-        <select id="d_med" onchange="document.getElementById('d_medwrap').classList.toggle('hidden', this.value!=='Yes')"><option value="">Select…</option><option>Yes</option><option>No</option></select>
-      </div>
-      <div class="afield hidden" id="d_medwrap"><label>Briefly describe</label><textarea id="d_meddesc" rows="2"></textarea></div>
-      <div class="afield"><label>Any history that could affect the safety of a shared household (e.g., recent violence)?</label>
-        <select id="d_safe" onchange="document.getElementById('d_safewrap').classList.toggle('hidden', this.value!=='Yes')"><option value="">Select…</option><option>Yes</option><option>No</option></select>
-      </div>
-      <div class="afield hidden" id="d_safewrap"><label>Please share what you're comfortable with</label><textarea id="d_safedesc" rows="2"></textarea></div>
-      <div class="afield"><label>Any accommodations that would help you live well here (disability, mobility, dietary, other)?</label><input id="d_accom" placeholder="Optional"></div>
-      <div class="app-nav"><button class="btn btn-line" onclick="anext(2)">← Back</button><button class="btn btn-purple" onclick="anext(4)">Continue →</button></div>
-    </div>
-
-    <!-- PART E -->
-    <div class="stage app-card hidden" id="as4">
-      <h3>Part E — Your Goals</h3>
-      <div class="afield"><label>In your own words — why Grace House, and why now? *</label>
-        <textarea id="e_why" rows="5" placeholder="There's no wrong answer. Tell us your story the way you'd tell a friend."></textarea>
-      </div>
-      <div class="afield"><label>What would the next six months look like if things went well for you?</label>
-        <textarea id="e_goals" rows="3" placeholder="Optional — work, family, health, recovery, anything."></textarea>
-      </div>
-      <div class="app-nav"><button class="btn btn-line" onclick="anext(3)">← Back</button><button class="btn btn-purple" onclick="anext(5)">Review &amp; Sign →</button></div>
-    </div>
-
-    <!-- PART F -->
-    <div class="stage app-card hidden" id="as5">
-      <h3>Part F — Review &amp; Sign</h3>
-      <div id="reviewBox" class="review"></div>
-      <div class="cert">
-        <label class="chk"><input type="checkbox" id="f_cert"> <span>I certify the information above is true to the best of my knowledge. I understand Grace House may be able to serve me now, place me on a waitlist, or refer me to a better-fit resource, and that all decisions comply with the Fair Housing Act.</span></label>
-      </div>
-      <div class="agrid2" style="margin-top:1rem">
-        <div class="afield"><label>Electronic signature (type your full name) *</label><input id="f_sig" placeholder="Your full name"></div>
-        <div class="afield"><label>Date</label><input id="f_date" type="date"></div>
-      </div>
-      <div class="app-nav"><button class="btn btn-line" onclick="anext(4)">← Back</button><button class="btn btn-gold" id="submitBtn" onclick="submitApp()">Submit Application ✓</button></div>
-    </div>
-
-    <!-- SUCCESS -->
-    <div class="stage app-card hidden" id="asDone" style="text-align:center;padding:3rem 2rem">
+    <div class="stage app-card hidden" id="gh_ok" style="text-align:center;padding:2.6rem 2rem">
       <div style="font-size:2.6rem">🕊️</div>
-      <h3 style="margin-top:.6rem">Your application is on its way</h3>
-      <p style="max-width:34rem;margin:0.6rem auto 1.4rem;line-height:1.7">Thank you for trusting us with your story. A member of the Grace House team will contact you within <b>2 business days</b>. If a bed isn't immediately available, we'll offer you a place on our waitlist and stay in touch at least every two weeks.</p>
-      <button class="btn btn-line" onclick="printApp()">Print / Save a Copy of My Application</button>
-      <p style="margin-top:1.4rem;font-size:.85rem;color:var(--muted)">Need to reach us sooner? 515-220-8771 · gracehouse@graceforaddictions.org<br>If you're in crisis right now, call or text 988.</p>
+      <h3 style="margin-top:.5rem">Your application is on its way</h3>
+      <p style="max-width:34rem;margin:.6rem auto 1.2rem;line-height:1.7">Thank you for trusting us with your story. A member of the Grace House team will reach out within <b>2 business days</b>, the way you asked us to. If a bed isn't immediately available, we'll offer you a place on our waitlist and stay in touch.</p>
+      <p style="font-size:.85rem;color:var(--muted)">Need us sooner? 515-220-8771 · gracehouse@graceforaddictions.org<br>If you're in crisis right now, call or text 988.</p>
+    </div>
+  </div>
+</main>
+
+<!-- ==================== EJWRH — APPLICATION ==================== -->
+<!-- R1: distinct, residence-bound (residence_id=2) public application. Same
+     minimized Gate-B contract and shared residence-intake boundary as Grace
+     House; a separate experience so no applicant passes through the other
+     house's application. -->
+<main id="pg-ejwrh-apply" class="hidden">
+  <div class="page-hero"><div class="wrap">
+    <div class="crumb" onclick="go('ejwrh')">← EJWRH / Apply</div>
+    <h1>Apply to Ernest &amp; Johnnie White Recovery House</h1>
+    <div class="sub">A men's recovery residence supported by Grace For Addictions. Just a few minutes — only what we need to start the conversation. A real person reads every application, and nothing is signed today.</div>
+  </div></div>
+  <div class="wrap" style="max-width:680px">
+    <div class="stage app-card" id="ej_form" style="margin-top:1.6rem">
+      <div class="notice" style="margin-bottom:1.2rem">Prefer to apply by phone or email? Email <b>ejwrh@rcoiowa.org</b> or call <b>515-220-8771</b>. Applying by contact is always equal — it never affects your eligibility or your place in line.</div>
+      <div class="afield"><label>Your name *</label><input id="ej_name" maxlength="200" autocomplete="name"></div>
+      <div class="agrid2">
+        <div class="afield"><label>Phone <span style="text-transform:none;font-weight:400;color:var(--muted)">(this or email)</span></label><input id="ej_phone" type="tel" maxlength="40" autocomplete="tel"></div>
+        <div class="afield"><label>Email <span style="text-transform:none;font-weight:400;color:var(--muted)">(this or phone)</span></label><input id="ej_email" type="email" maxlength="320" autocomplete="email"></div>
+      </div>
+      <div class="agrid2">
+        <div class="afield"><label>Best way to reach you</label><select id="ej_contact"><option value="phone">Call me</option><option value="text">Text me</option><option value="email">Email me</option></select></div>
+        <div class="afield"><label>Safe to leave a voicemail or text?</label><select id="ej_vm"><option value="">Prefer not to say</option><option value="yes">Yes</option><option value="no">No — speak with me directly</option></select></div>
+      </div>
+      <label class="chk" style="margin:.7rem 0"><input type="checkbox" id="ej_age18"> <span>I am 18 or older. *</span></label>
+      <div class="agrid2">
+        <div class="afield"><label>County you're in now</label><input id="ej_county" maxlength="120"></div>
+        <div class="afield"><label>Hoping to move in…</label><select id="ej_timing"><option value="">Not sure yet</option><option value="now">As soon as possible</option><option value="soon">In the next month or so</option><option value="exploring">Just exploring</option></select></div>
+      </div>
+      <div class="afield"><label>Your housing situation right now <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional, one line)</span></label><input id="ej_housing" maxlength="300"></div>
+      <div class="afield"><label>Anything you'd like us to know? <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional)</span></label><textarea id="ej_why" rows="3" maxlength="600"></textarea></div>
+      <div class="afield"><label>Accessibility or accommodation needs? <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional, high level)</span></label><input id="ej_accom" maxlength="300"></div>
+      <div class="afield"><label>How did you hear about us? <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional)</span></label><input id="ej_ref" maxlength="200"></div>
+      <label class="chk" style="margin:.7rem 0"><input type="checkbox" id="ej_consent"> <span>I agree that Grace For Addictions may process this application and contact me about it using the way I chose above. *</span></label>
+      <div style="position:absolute;left:-5000px" aria-hidden="true"><label>Company website</label><input id="ej_company_website" tabindex="-1" autocomplete="off"></div>
+      <div id="ej_err" class="errmsg hidden"></div>
+      <button class="btn btn-gold" id="ej_submit" onclick="submitHousingApplication({prefix:'ej_',residenceId:2,source:'ejwrh-directory',email:'ejwrh@rcoiowa.org'})">Send my application</button>
+    </div>
+    <div class="stage app-card hidden" id="ej_ok" style="text-align:center;padding:2.6rem 2rem">
+      <div style="font-size:2.6rem">🕊️</div>
+      <h3 style="margin-top:.5rem">Your application is on its way</h3>
+      <p style="max-width:34rem;margin:.6rem auto 1.2rem;line-height:1.7">Thank you. A member of our team will reach out within <b>2 business days</b>, the way you asked us to. If it's a fit, intake happens with staff, at your pace, before move-in.</p>
+      <p style="font-size:.85rem;color:var(--muted)">Need us sooner? 515-220-8771 · ejwrh@rcoiowa.org<br>If you're in crisis right now, call or text 988.</p>
     </div>
   </div>
 </main>
@@ -650,12 +608,21 @@ footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
 
 <script>
 function go(p){
-  ['home','grace','ejwrh','jerrys','apply'].forEach(x=>{
+  ['home','grace','ejwrh','ejwrh-apply','jerrys','apply'].forEach(x=>{
     document.getElementById('pg-'+x).classList.toggle('hidden', x!==p);
   });
   const nb=document.getElementById('nb-home'); if(nb) nb.classList.toggle('on', p==='home');
   window.scrollTo({top:0});
 }
+// Deep link into a specific house's application (e.g. from the in-app directory
+// cards): /residence/directory/?apply=ejwrh or ?apply=grace.
+(function(){
+  try{
+    const q=new URLSearchParams(window.location.search).get('apply');
+    if(q==='ejwrh') go('ejwrh-apply');
+    else if(q==='grace'||q==='grace-house') go('apply');
+  }catch(e){}
+})();
 
 /* ============ IOWA DIRECTORY DATA ============ */
 const DIR = [
@@ -756,94 +723,53 @@ function showListing(i){
 document.addEventListener('DOMContentLoaded',()=>{initCounties();renderDir();});
 
 /* ---------- application wizard ---------- */
-let appStep=0, chosenPath='';
 const $=id=>document.getElementById(id);
-function pickPath(v,el){
-  chosenPath=v;
-  document.querySelectorAll('.pathway').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on'); el.querySelector('input').checked=true;
-  $('b_famwrap').classList.toggle('hidden', v!=='family');
-}
-function clearErr(card){ card.querySelectorAll('.err').forEach(e=>e.classList.remove('err')); const m=card.querySelector('.errmsg'); if(m)m.remove(); }
-function fail(card,msg,fields){
-  clearErr(card);
-  const d=document.createElement('div'); d.className='errmsg'; d.textContent=msg;
-  card.insertBefore(d, card.children[1]);
-  (fields||[]).forEach(f=>$(f)&&$(f).classList.add('err'));
-  card.scrollIntoView({behavior:'smooth',block:'start'});
-}
-function validate(step){
-  const card=$('as'+step);
-  clearErr(card);
-  if(step===0){
-    const miss=['a_name','a_dob','a_phone','a_living'].filter(f=>!$(f).value.trim());
-    if(miss.length){ fail(card,'Please complete the required fields marked below.',miss); return false; }
+
+// ---- Shared public-application submit path (R1) --------------------------------
+// Both houses use this ONE helper: distinct residence-bound forms above, one
+// intake pipe underneath. Writes go ONLY through the canonical residence-intake
+// Edge Function (service-role boundary → recoveryos.residence_application_intake
+// → staff review queue + notifications). Payload is the Gate-B minimized contract
+// — no clinical/SUD/safety/legal detail before an account and consent exist.
+const INTAKE_URL='https://cqcxvwoukyhxyokfwnjm.supabase.co/functions/v1/residence-intake';
+const appVal=(p,id)=>{const el=$(p+id);return el?(el.value||'').trim():'';};
+async function submitHousingApplication(cfg){
+  const p=cfg.prefix, err=$(p+'err'), ok=$(p+'ok'), btn=$(p+'submit');
+  err.classList.add('hidden');
+  const name=appVal(p,'name'), phone=appVal(p,'phone'), email=appVal(p,'email');
+  if(!name || (!phone && !email) || !$(p+'age18').checked || !$(p+'consent').checked){
+    err.textContent='Please add your name, at least one way to reach you, and check the two boxes. Everything else is optional.';
+    err.classList.remove('hidden'); err.scrollIntoView({behavior:'smooth',block:'center'}); return;
   }
-  if(step===1 && !chosenPath){ fail(card,'Please choose the eligibility pathway that fits your story.'); return false; }
-  if(step===4 && !$('e_why').value.trim()){ fail(card,'Please share a few words about why Grace House, and why now.',['e_why']); return false; }
-  return true;
-}
-function anext(n){
-  if(n>appStep && !validate(appStep)) return;
-  appStep=n;
-  for(let i=0;i<6;i++) $('as'+i).classList.toggle('hidden', i!==n);
-  $('asDone').classList.add('hidden');
-  document.querySelectorAll('.ap-step').forEach(s=>{
-    const i=+s.dataset.s;
-    s.classList.toggle('on', i===n);
-    s.classList.toggle('done', i<n);
-  });
-  if(n===5) buildReview();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function appData(){
-  return {
-    'Full legal name':$('a_name').value, 'Preferred name':$('a_pref').value,
-    'Date of birth':$('a_dob').value, 'Phone':$('a_phone').value, 'Email':$('a_email').value,
-    'Living situation':$('a_living').value, 'Referral source':$('a_ref').value,
-    'Eligibility pathway': chosenPath==='family' ? ('Family — '+($('b_famrel').value||'relationship not specified')) : (chosenPath?'Recovery':''),
-    'Substances used':$('c_subs').value, 'Last use (approx.)':$('c_last').value,
-    'In treatment/counseling':$('c_tx').value, 'Provider':$('c_provider').value,
-    'MAT/MOUD prescribed':$('c_mat').value, 'Prescriber':$('c_prescriber').value,
-    'Immediate medical needs':$('d_med').value + ($('d_meddesc').value?' — '+$('d_meddesc').value:''),
-    'Household safety history':$('d_safe').value + ($('d_safedesc').value?' — '+$('d_safedesc').value:''),
-    'Accommodations':$('d_accom').value,
-    'Why Grace House, why now':$('e_why').value, 'Six-month picture':$('e_goals').value
-  };
-}
-function buildReview(){
-  const d=appData();
-  $('reviewBox').innerHTML = Object.entries(d).filter(([k,v])=>v && v.trim && v.trim())
-    .map(([k,v])=>`<div class="rrow"><div class="rk">${k}</div><div>${v.replace(/</g,'&lt;')}</div></div>`).join('') ||
-    '<em>Nothing entered yet — go back and complete the form.</em>';
-  if(!$('f_date').value) $('f_date').value = new Date().toISOString().slice(0,10);
-}
-function submitApp(){
-  const card=$('as5'); clearErr(card);
-  if(!$('f_cert').checked){ fail(card,'Please check the certification box to continue.'); return; }
-  if(!$('f_sig').value.trim()){ fail(card,'Please type your full name as your electronic signature.',['f_sig']); return; }
-  // Deployment integration point: POST appData() to the VRCC intake API endpoint here.
-  // MVP fallback: open a pre-filled confidential email to Grace House staff.
-  const d=appData();
-  const body = 'GRACE HOUSE ONLINE APPLICATION%0D%0A' + '='.repeat(40) + '%0D%0A' +
-    Object.entries(d).filter(([k,v])=>v&&v.trim&&v.trim())
-      .map(([k,v])=>encodeURIComponent(k)+': '+encodeURIComponent(v)).join('%0D%0A') +
-    '%0D%0A%0D%0ASigned: '+encodeURIComponent($('f_sig').value)+' on '+encodeURIComponent($('f_date').value);
-  window.location.href = 'mailto:gracehouse@graceforaddictions.org?subject='+encodeURIComponent('Grace House Application — '+($('a_pref').value||$('a_name').value))+'&body='+body;
-  for(let i=0;i<6;i++) $('as'+i).classList.add('hidden');
-  $('asDone').classList.remove('hidden');
-  document.querySelectorAll('.ap-step').forEach(s=>{s.classList.add('done');s.classList.remove('on');});
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function printApp(){
-  const d=appData();
-  const w=window.open('','_blank');
-  w.document.write('<html><head><title>Grace House Application Copy</title><style>body{font-family:Georgia,serif;max-width:640px;margin:2rem auto;color:#2A2230}h1{color:#5B2C6F;font-size:1.3rem}td{padding:.35rem .6rem;vertical-align:top;border-bottom:1px solid #eee}td:first-child{font-weight:bold;color:#8E4585;width:220px}</style></head><body>');
-  w.document.write('<h1>Grace House Application — Applicant Copy</h1><table>');
-  Object.entries(d).filter(([k,v])=>v&&v.trim&&v.trim()).forEach(([k,v])=>w.document.write('<tr><td>'+k+'</td><td>'+v.replace(/</g,'&lt;')+'</td></tr>'));
-  w.document.write('<tr><td>Signed</td><td>'+$('f_sig').value+' — '+$('f_date').value+'</td></tr></table>');
-  w.document.write('<p style="margin-top:1.5rem;font-size:.85rem;color:#7A6E82">Grace House · 1311 9th Street, Des Moines, Iowa 50314 · 515-220-8771</p></body></html>');
-  w.document.close(); w.print();
+  const answers={age_18_plus:'yes'};
+  const county=appVal(p,'county'); if(county)answers.county=county;
+  const housing=appVal(p,'housing'); if(housing)answers.housing_situation=housing;
+  const timing=appVal(p,'timing'); if(timing)answers.timing=timing;
+  const why=appVal(p,'why'); if(why)answers.why=why;
+  const accom=appVal(p,'accom'); if(accom)answers.accommodation_needs=accom;
+  const vm=appVal(p,'vm'); if(vm)answers.voicemail_ok=vm;
+  btn.disabled=true; btn.textContent='Sending…';
+  try{
+    const res=await fetch(INTAKE_URL,{
+      method:'POST', headers:{'content-type':'application/json'},
+      body:JSON.stringify({
+        kind:'grace_house_application', residence_id:cfg.residenceId,
+        applicant_name:name, applicant_email:email||null, applicant_phone:phone||null,
+        preferred_contact:appVal(p,'contact'), referral_source:appVal(p,'ref')||null,
+        consent_to_contact:true, company_website:appVal(p,'company_website'),
+        answers:answers, source:cfg.source
+      })
+    });
+    const body=await res.json().catch(()=>({}));
+    if(res.ok && body && body.ok){
+      $(p+'form').classList.add('hidden'); ok.classList.remove('hidden');
+      window.scrollTo({top:0,behavior:'smooth'});
+    } else { throw new Error('intake_failed'); }
+  }catch(e){
+    btn.disabled=false; btn.textContent='Send my application';
+    err.innerHTML='We couldn\'t send that just now — but you\'re not stuck. Call <b>515-220-8771</b> or email <b>'+cfg.email+'</b> and we\'ll take your application by phone. What you typed stays here so you can try again.';
+    err.classList.remove('hidden');
+  }
 }
 function gtab(i,el){
   for(let n=0;n<6;n++) document.getElementById('gs'+n).classList.toggle('hidden', n!==i);
