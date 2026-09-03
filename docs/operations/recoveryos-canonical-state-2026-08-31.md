@@ -1,10 +1,60 @@
 # RecoveryOS Canonical State (2026-08-31) — AUTHORITATIVE RECONCILIATION
 
+> **Record note (2026-09-03, not part of the reconciliation text):** this edition
+> incorporates the 2026-09-01 Controlling executive scope update and was committed to git
+> on 2026-09-03 by executive direction; the prior edition remains in git history. Estate
+> facts verified after 2026-09-01 (e.g. Worker redeployments on 09-01/09-02, later branch
+> movement) are recorded in later commits and session records, not retrofitted here.
+
 Full-estate VERIFY → RECONCILE → REPORT pass (no mutations). Evidence levels are marked
 throughout: **VERIFIED** (live tool evidence this pass), **HUMAN VERIFIED** (executive
 observation), **INFERRED** (deduced, stated why), **UNKNOWN**. This document supersedes
 conflicting statements in older registries; the deployment registry and readiness document
 remain as history with pointers here.
+
+## Controlling executive scope update — 2026-09-01
+
+This current explicit executive decision supersedes the priority and next-action assignments
+in the older cutover sections below without deleting their historical evidence.
+
+- **YKY and legacy public system:** frozen/out of scope. Do not access, inspect, migrate,
+  reconcile, preserve, clean up, delete, retire, or conduct legacy-user continuity work.
+- **Current RecoveryOS program:** CQCX active pilot, inactive intake foundation, canonical
+  authority records, verified least-privilege design, and safe local/staged verification.
+- **`vrcc.app`:** remains the intended future public address for RecoveryOS. Cutover is
+  deferred—not retired—until the registrar/nameserver mismatch is explicitly resolved, the
+  exact release is ready for controlled verification, and cutover is separately authorized.
+- **Current priority effect:** DNS/registrar work and legacy continuity are removed from the
+  near-term critical path. No additional YKY, legacy-user, registrar, zone, or route evidence
+  is required for the current intake package.
+- **No-action boundary:** no YKY access; no DNS, nameserver, registration, route, custom
+  domain, Auth URL, legacy deployment, rollback, retirement, or account changes.
+
+The prior DNS and legacy findings remain classified evidence only. They are not current work
+assignments.
+
+## Historical deployment evidence snapshot — 2026-09-01
+
+This snapshot preserves verified deployment evidence. The controlling executive scope update
+above governs priorities and permitted work.
+
+| Surface or fact | Verified state |
+| --- | --- |
+| Repository lineage | `main` = `4959156`; canonical continuation = `7e2cece`, 64 commits ahead and 0 behind; no convergence action authorized |
+| Canonical backend | CQCX `cqcxvwoukyhxyokfwnjm`; migration tail 0146 at the latest read-only verification |
+| Active pilot | `recoveryos-staging`; last verified deployment `ec36922`; preserve unchanged |
+| Production candidate | `gfa-eco-recovery-residence-os`; last verified deployment `ec36922`; not established as the public origin |
+| Public apex and www | At 2026-09-01 09:25 UTC both returned the legacy “GFA VRCC” response and CSP connections to YKY; the underlying Worker route is not verified |
+| Public delegation | Cloudflare DNS-over-HTTPS returned `ryan.ns.cloudflare.com` / `vera.ns.cloudflare.com`, SOA on `ryan` |
+| Visible pending zone | A binding in the PENDING candy/devin zone is not proof of public cutover |
+| Cutover | **BLOCKED** pending registrar/authoritative-zone reconciliation |
+
+Second-account dashboard observations support this STOP decision but remain reported
+evidence unless independently reproduced. They do not establish the live Worker route.
+
+Do not change DNS, Worker routes/custom domains, Auth URLs, deployments, rollbacks,
+repository refs or deployable source, migrations, YKY, or accounts from this evidence. No
+registrar, zone, route, YKY, or legacy-user evidence is required in the current phase.
 
 ## A. Executive answer
 
@@ -14,42 +64,35 @@ remain as history with pointers here.
    `recoveryos-staging` (active pilot) and `gfa-eco-recovery-residence-os` (production
    candidate) — both currently serving build `ec36922`.
 2. **Authoritative repository:** `rcoiowa/GFA-ECO` (VERIFIED).
-3. **Authoritative branch/commit:** `claude/recoveryos-canonical-audit-1pvcwr` at
-   **`ef884b7`** — 61 commits ahead of `main`, 0 behind; `main` (at `4959156`, 2026-08-21)
-   is 61 commits STALE and must not be treated as canonical until fast-forwarded (VERIFIED).
-4. **Authoritative deployment:** Worker `gfa-eco-recovery-residence-os` (deploy commit
-   `ec36922`, modified 2026-08-31T00:31Z, DEPLOYMENT VERIFIED; human smoke test PASS).
+3. **Authoritative source continuation:** `claude/recoveryos-canonical-audit-1pvcwr` at
+   **`7e2cece`** — 64 commits ahead of `main`, 0 behind; `main` remains at `4959156`
+   (VERIFIED 2026-09-01). No convergence action is authorized by this record.
+4. **Canonical production candidate:** Worker `gfa-eco-recovery-residence-os` (deploy
+   commit `ec36922`, modified 2026-08-31T00:31Z, DEPLOYMENT VERIFIED; human smoke test
+   PASS). This is not proof that public `vrcc.app` reaches it.
 5. **Authoritative backend:** CQCX `cqcxvwoukyhxyokfwnjm` — ACTIVE_HEALTHY, PG17, ledger
    tail `0146_ejwrh_document_activation` (VERIFIED).
 6. **Where are real users operating?** On `recoveryos-staging.thomas-499.workers.dev`
    against CQCX — 6 real/staff accounts, latest sign-in 12:26 UTC today (VERIFIED).
-7. **What is vrcc.app currently serving publicly?** Public DNS (three independent
-   resolvers) delegates vrcc.app to **ryan/vera.ns.cloudflare.com**, resolving to
-   Cloudflare proxy IPs (VERIFIED). The application behind it is the **legacy VRCC app via
-   Worker `virtualrecovery`** (INFERRED: the authoritative zone was not the one edited
-   during cutover, so pre-cutover serving is unchanged; last direct observation was the
-   legacy app; container egress prevents fetching the page — one human browser check
-   confirms).
+7. **What is vrcc.app currently serving publicly?** The apex and www returned the legacy
+   “GFA VRCC” HTML response with YKY in the response CSP at 2026-09-01 09:25 UTC
+   (VERIFIED). The exact underlying Worker route remains UNKNOWN.
 8. **Cutover status: PARTIAL / BLOCKED at step 6.** Steps 1–5 complete (4 human-confirmed,
    5 verified); the step-6 Worker custom-domain binding was created in a **PENDING,
    non-authoritative zone** (expects candy/devin NS) and has **no public effect** because
    the live delegation is ryan/vera.
-9. **Single largest blocker:** the vrcc.app **zone/registrar split** — the live zone
-   (ryan/vera) is not the zone (candy/devin, PENDING) in which the cutover binding was
-   created, almost certainly an account-level split (see §J/§L). Cloudflare-account
-   dashboard access, which only Thomas has, is required to resolve it.
-10. **What next:** (i) decide the Site-URL interim posture (it now points at vrcc.app,
-    which still serves the legacy app — new signups' confirmation emails land there);
-    (ii) identify which Cloudflare account holds the domain registration and the ryan/vera
-    zone; (iii) reconcile zone→account so the candidate Worker and the authoritative zone
-    live in the same account, then re-run cutover steps 6–17. Ordered actions in §M.
+9. **Deferred domain condition:** the vrcc.app registrar/zone-delegation mismatch remains
+   unresolved historical evidence. It must be explicitly resolved before a future cutover,
+   but it is not a current RecoveryOS blocker or assignment.
+10. **What next:** continue CQCX intake identity, consent, deadline, routing, notification,
+    least-privilege, and staged-verification gates.
 
 ## B. Repository matrix
 
 | Repository | Default | HEAD | Last activity | Type | Backend | Deploys to | Authority | Disposition | Evidence |
 |---|---|---|---|---|---|---|---|---|---|
-| `rcoiowa/GFA-ECO` | main (stale) | working `ef884b7` / main `4959156` | 2026-08-31, cutover + reconciliation | pnpm monorepo, React19+TS+Vite | **CQCX** | recoveryos-staging + gfa-eco-recovery-residence-os | **CANONICAL** | KEEP | VERIFIED |
-| `Grace-For-Addictions/vrcc.app` | main | `83b2de6` (2026-08-16 chore; last real change 08-02) | legacy VRCC prod source | Base44-export React (Vite) | **YKY** `ykykeioydvtxpyreshhs` | Worker `virtualrecovery` → vrcc.app (public prod today) | LEGACY-SOURCE (live) | **FREEZE** (rollback substrate) | VERIFIED (SHA+backend ref) |
+| `rcoiowa/GFA-ECO` | main (stale) | continuation `7e2cece` / main `4959156` | 2026-09-01, intake + deployment-gate reconciliation | pnpm monorepo, React19+TS+Vite | **CQCX** | recoveryos-staging + gfa-eco-recovery-residence-os | **CANONICAL** | KEEP | VERIFIED |
+| `Grace-For-Addictions/vrcc.app` | main | `83b2de6` (2026-08-16 chore; last real change 08-02) | legacy VRCC source | Base44-export React (Vite) | **YKY** `ykykeioydvtxpyreshhs` | public apex/www return its legacy YKY-pointing response; exact Worker route UNKNOWN | LEGACY-SOURCE (public response live) | **FREEZE** (rollback substrate) | SHA/backend ref + public response VERIFIED; route UNKNOWN |
 | `Grace-For-Addictions/RecoveryResidenceOS` | main | `056d385` (2026-07-30: public directory, profiles, online application) | legacy residence system | React+TS worker | YKY (`gfa_residence`) | Worker `recovery-residence-os` | LEGACY-SOURCE | FREEZE; **MINE-check**: its public residence *profiles* concept — directory + application already superseded by canonical 0122 flows | VERIFIED |
 | `Grace-For-Addictions/contact-connect-dashboard` | main | `c90e6d7` (2026-08-16 chore; real work 07-15/16: coaching MVP + BARC-10 intake) | prototype | Base44-style React | `yqonwnzqtgmnoiymkefk` (own project, INACTIVE in this org list? see §F) | Pages `gfaconnection` | LEGACY/EXPERIMENT (deprecation doc exists) | ARCHIVE-LATER; BARC-10 content governed by ICARE authority — never migrate its threshold logic | VERIFIED |
 | `rcoiowa/Late-Night-Recovery-` | main | `4b65839` (2026-06-08, single commit, GH Pages workflow) | unrelated experiment | static | none | GitHub Pages | EXPERIMENT | ARCHIVE-LATER | VERIFIED |
@@ -59,9 +102,9 @@ remain as history with pointers here.
 
 ## C. GFA-ECO branch matrix (21 remote branches, VERIFIED)
 
-Canonical line: **`claude/recoveryos-canonical-audit-1pvcwr` = `ef884b7`** (61 ahead of
+Canonical line: **`claude/recoveryos-canonical-audit-1pvcwr` = `7e2cece`** (64 ahead of
 main, 0 behind). `deploy-candidate/ejwrh-activation-ec36922` is a pure prefix (deploy
-trigger record). `main` = `4959156` (2026-08-21) — **61 commits behind; STALE**; nothing on
+trigger record). `main` = `4959156` (2026-08-21) — **64 commits behind; STALE**; nothing on
 main is missing from the canonical line.
 
 Branches with commits not in the canonical line, judged by content:
@@ -81,8 +124,8 @@ Branches with commits not in the canonical line, judged by content:
 | Deployment | Platform | Deployed identity | Source | Backend | Domain(s) | Last modified | Real users | Authority | End-state |
 |---|---|---|---|---|---|---|---|---|---|
 | `recoveryos-staging` | Worker | commit `ec36922` (deploy-staging run 71) | GFA-ECO canonical line | CQCX (LIVE VERIFIED: today's signups/sign-ins land there) | workers.dev only | 08-31 00:28Z | **YES — ACTIVE PILOT** | CANONICAL pilot | Keep serving unchanged; 302→301 long after cutover |
-| `gfa-eco-recovery-residence-os` | Worker | commit `ec36922` (candidate run 1; bundle guard passed) | GFA-ECO canonical line | CQCX | workers.dev; vrcc.app binding created in PENDING zone (publicly inert) | 08-31 00:31Z | Smoke-test only | CANONICAL production candidate | Becomes vrcc.app |
-| `virtualrecovery` | Worker | legacy VRCC build | `Grace-For-Addictions/vrcc.app` | **YKY** | **vrcc.app (public production today — INFERRED, one browser check confirms)** | 08-16 | **YES (public)** | LEGACY-LIVE | Rollback substrate; freeze; retire only after stable cutover |
+| `gfa-eco-recovery-residence-os` | Worker | commit `ec36922` (candidate run 1; bundle guard passed) | GFA-ECO canonical line | CQCX | workers.dev; vrcc.app binding created in PENDING zone (publicly inert) | 08-31 00:31Z | Smoke-test only | CANONICAL production candidate | Intended future `vrcc.app` origin after deferred milestone gates |
+| `virtualrecovery` | Worker | legacy VRCC build | `Grace-For-Addictions/vrcc.app` | **YKY** | public response is legacy; exact Worker route UNKNOWN | 08-16 | UNKNOWN without legacy access | LEGACY-FROZEN | Freeze/out of scope; no access, change, migration, or retirement |
 | `vrcc-app` | Worker | UNKNOWN (created 08-02, modified 08-16 — same day as the repos' "backfill" chores) | likely `vrcc.app` repo | UNKNOWN | none known | 08-16 | UNKNOWN | UNKNOWN | INVESTIGATE (probably a duplicate legacy deploy) |
 | `recovery-residence-os` | Worker | legacy residence build | RecoveryResidenceOS repo | YKY | workers.dev | 07-29 | historic | LEGACY | Freeze; archive-later |
 | `vite-react-template{,2,3,5}` | Workers | starter stubs | template repos | none | none | Aug 1–2 | NO | EXPERIMENT | Archive-later |
@@ -161,7 +204,10 @@ targets accounts by anything other than explicit identification; any future fixt
 must key on the fixture domain **only** and requires separate authorization. Nothing
 deleted or altered.
 
-## I. Cutover runbook state (verified, not copied)
+## I. Historical cutover runbook state — deferred and frozen
+
+This section records prior work only. It is not an active runbook under the controlling
+executive scope update.
 
 | Step | State |
 |---|---|
@@ -218,11 +264,13 @@ deleted or altered.
    remains legacy-hosted.
 4. GFAVRCC private repos (icrco/ICRCO-, 2026-03) — unknown; likely pre-RecoveryOS
    experiments; investigate once, then archive.
-5. Legacy YKY data — out of scope of this pass (prohibited); a future authorized
-   YKY→CQCX data-disposition review remains on the long-term list before YKY can ever be
-   truly retired.
+5. Legacy YKY data — frozen/out of scope. No census, migration, preservation, cleanup,
+   deletion, or retirement work is assigned without a new explicit executive decision.
 
-## L. Blockers
+## L. Historical blockers — removed from the current critical path
+
+The table below preserves the 2026-08-31 cutover assessment. Its DNS, Auth, legacy, and
+domain actions are deferred and unauthorized in the current program.
 
 | # | Severity | Class | Blocker | Minimum action |
 |---|---|---|---|---|
@@ -236,20 +284,16 @@ deleted or altered.
 | 8 | INFORMATIONAL | GOVERNANCE | GFAVRCC repos unreachable cross-tier | Investigate from a GFAVRCC-sourced session once |
 | 9 | MEDIUM | DNS/OPERATIONS | No public email DNS for vrcc.app (no MX/SPF/DKIM/DMARC anywhere in the live zone; records staged only in the inert pending zone) while `notify-fanout` sends from `notify@vrcc.app` → degraded notification deliverability today (pre-existing; Supabase auth emails unaffected) | Add the staged email records to whichever zone ends up authoritative (folds into Path A or B); until then expect notification emails to spam-fold |
 
-## M. Smallest ordered action set to finish convergence
+## M. Current ordered action set
 
-1. **[Thomas, dashboard]** Resolve blocker 1 (zone/account) — everything else waits on it.
-2. **[Thomas, one field]** Interim Site-URL decision (blocker 2) if #1 will take more than
-   a day or two.
-3. **[Code, canonical line]** Mine `residentRights.ts` (blocker 3) so the next deploy
-   closes the one known UI gap.
-4. **[Resume runbook]** Re-run step 6 in the authoritative zone (apex + www), then steps
-   7–17 exactly as written.
-5. **[After stable cutover]** Fast-forward `main`; then the already-documented
-   coexistence/wind-down plan (staging serves → 302 → 301; legacy Workers frozen; YKY
-   disposition review as its own future gate).
-
-No new deployment surface, backend, branch, or architecture is needed for any of this.
+1. Preserve the CQCX active pilot and production-candidate distinction.
+2. Continue the inactive Contact Connect intake foundation and canonical authority records.
+3. Verify the five intake identities and least-privilege membership/routing mappings.
+4. Ratify required/optional consent, deadline, round-robin, routing, and minimal-alert policy.
+5. Complete local negative authorization tests and safe staged verification before any
+   activation proposal.
+6. Keep YKY and legacy work frozen. Keep `vrcc.app` as a deferred future milestone until
+   registrar/nameserver reconciliation and release readiness are separately established.
 
 ## Zone follow-up addendum (2026-08-31, second pass — refined diagnosis)
 
@@ -381,17 +425,11 @@ default-branch setting (stale husk) ≠ branch `main` (61 behind) ≠ canonical 
 
 ### 4. New material finding (from `f45f714`, preserved at reported-evidence level)
 
-**A separate legacy cohort still uses the YKY-backed legacy VRCC surface**: ~26
-real-domain accounts with sign-ins through 2026-08-31 01:12Z. Minimum supported
-conclusion, and no more: *there is evidence of an active legacy cohort on YKY; their
-disposition must be resolved before virtualrecovery/YKY retirement.* This does **not**
-compromise the CQCX pilot cohort. It creates a distinct future
-**LEGACY USER CONTINUITY GATE** (before any legacy retirement: identify genuinely active
-legacy users; what they depend on; migration/invitation/reconciliation/new-account path;
-no duplicate identities; intentional communication; consent/provenance preserved). Not to
-be solved now, and not to be conflated with the DNS/zone problem. YKY is not to be
-accessed again under this task (this session never accessed it; the census came from the
-parallel session).
+The parallel report described approximately 26 real-domain YKY accounts with recent sign-ins.
+That remains reported evidence only. Leadership believes YKY is predominantly test data,
+but neither claim will be investigated or resolved in this phase. No legacy-user continuity
+gate, census, migration, preservation, contact, cleanup, deletion, or retirement work is on
+the current critical path. YKY remains frozen and must not be accessed.
 
 Also from `f45f714`: the `115934d` rights-acknowledgment commit carries a **migration
 0125 numbering collision** against the canonical line — reinforcing the standing verdict:
@@ -399,17 +437,17 @@ real value (residentRights content), **must NOT merge or cherry-pick as-is**; no
 renumbering, no consolidation PR, no default-branch change, no merge of the audit line
 into main until separately authorized.
 
-### 5. Immediate blocker (unchanged, sharpened)
+### 5. Historical cutover blocker (deferred)
 
 Cloudflare registrar/zone delegation mismatch: registry delegation ryan/vera (live,
 serving) vs the visible account's PENDING candy/devin zone (holds the inert step-6
 binding and the staged email records).
 
-### 6. Next evidence needed
+### 6. Current evidence needed
 
-Exactly one item: **Cloudflare Registrar / Domain Registration / Manage Domains →
-vrcc.app** — whether the registration appears there, and which nameservers the
-registration record carries.
+No registrar, zone, route, YKY, or legacy-user evidence is required in the current phase.
+The next evidence belongs to the intake package: verified CQCX identities and explicit
+consent, deadline, routing, round-robin, and notification decisions.
 
 ### 7. No-action list (explicit)
 
@@ -424,11 +462,11 @@ Overall: YELLOW
 Canonical RecoveryOS: unchanged (GFA-ECO · canonical-audit line · CQCX)
 Active pilot: unchanged (recoveryos-staging, untouched)
 Production candidate: unchanged (gfa-eco-recovery-residence-os @ ec36922)
-Public vrcc.app: legacy / not yet cut over
-Cutover: BLOCKED at Step 6
-Cloudflare diagnosis: UNDER RECONCILIATION (four open hypotheses)
-Legacy cohort: NEW FUTURE CONTINUITY GATE (YKY; reported via f45f714)
-Immediate next action: inspect Cloudflare Registrar registration state for vrcc.app
+Public vrcc.app: future RecoveryOS address; current cutover DEFERRED
+Cutover: deferred milestone; no action authorized
+Cloudflare diagnosis: preserved historical evidence; not current work
+YKY / legacy cohort: frozen and out of scope; no continuity gate in this phase
+Immediate next action: intake identity and policy verification on CQCX
 
 ## Evidence limitations
 
