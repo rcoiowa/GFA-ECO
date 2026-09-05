@@ -80,10 +80,10 @@ Deno.serve(async (req: Request) => {
     submitted_at,
     organization_inquiry,
     residence_interest,
-    // Proposed deadlines pending ratification: partnership 4h, standard 24h.
-    response_due_at: new Date(
-      Date.now() + (organization_inquiry ? 4 : 24) * 60 * 60 * 1000,
-    ).toISOString(),
+    // response_due_at is deliberately NOT written (ratified 2026-09-05, decision 3):
+    // business-time targets govern operationally, but automated deadline computation is
+    // deferred until GFA's operating calendar is ratified. The queue surfaces age since
+    // receipt; nothing fabricates an overdue determination from assumed hours.
   };
   if (!lead.email && !lead.phone && !lead.message) {
     return json({ ok: false, code: "empty_lead" }, 400);

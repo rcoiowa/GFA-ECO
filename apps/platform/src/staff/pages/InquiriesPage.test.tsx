@@ -4,11 +4,14 @@ import { InquiriesPage } from './InquiriesPage';
 import type { IntakeLead } from '@recoveryos/data-access';
 
 /**
- * Shared inquiry queue pins: six-stage rendering in human language, overdue
- * flagged from the response deadline, partnership inquiries visibly priority,
- * residence routing is explicit-selection language (never inferred traits),
- * outreach is logged through the append-only contact RPC, and the duplicate
- * hint tells staff to check the log before reaching out.
+ * Shared inquiry queue pins: six-stage rendering in human language, partnership
+ * inquiries visibly priority, residence routing is explicit-selection language
+ * (never inferred traits), outreach is logged through the append-only contact
+ * RPC with the attempted-vs-connected distinction (2026-09-05 decision 1),
+ * closing records the human triage classification (decision 6), and — with
+ * response_due_at dormant pending the operating-calendar ratification
+ * (decision 3) — the queue surfaces age since receipt and never fabricates an
+ * overdue state (the badge logic stays, keyed only on a populated deadline).
  */
 
 const mocks = vi.hoisted(() => ({
@@ -37,7 +40,10 @@ const lead = (over: Partial<IntakeLead>): IntakeLead => ({
   assigned_to_person_id: null,
   organization_inquiry: false,
   residence_interest: 'unspecified',
-  response_due_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+  // Dormant by default (decision 3): no writer populates it until the
+  // operating calendar is ratified. Overdue tests set it explicitly.
+  response_due_at: null,
+  triage_classification: null,
   wix_submission_id: null,
   submitted_at: null,
   linked_intake_id: null,
@@ -74,7 +80,11 @@ describe('InquiriesPage', () => {
 
   it('never flags a closed inquiry as overdue', async () => {
     mocks.listIntakeLeads.mockResolvedValue([
-      lead({ id: 8, status: 'closed', response_due_at: new Date(Date.now() - 60_000).toISOString() }),
+      lead({
+        id: 8,
+        status: 'closed',
+        response_due_at: new Date(Date.now() - 60_000).toISOString(),
+      }),
     ]);
     render(<InquiriesPage />);
     fireEvent.click(await screen.findByText('Show closed'));
@@ -91,22 +101,62 @@ describe('InquiriesPage', () => {
   it('shows EJWRH as an explicit selected pathway', async () => {
     mocks.listIntakeLeads.mockResolvedValue([lead({ residence_interest: 'ejwrh' })]);
     render(<InquiriesPage />);
-    expect(
-      await screen.findByText(/Ernest & Johnnie White's Recovery House/),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/Ernest & Johnnie White's Recovery House/)).toBeInTheDocument();
   });
 
-  it('logs an outreach contact through the append-only RPC', async () => {
+  it('logs an outreach contact as an attempt by default — never presumed connected', async () => {
     render(<InquiriesPage />);
     fireEvent.click(await screen.findByText('Work this inquiry'));
     const outcome = await screen.findByLabelText('What happened (outcome)');
+    fireEvent.change(outcome, { target: { value: 'Left a voicemail' } });
+    fireEvent.click(screen.getByText('Log contact'));
+    await waitFor(() =>
+      expect(mocks.recordLeadContact).toHaveBeenCalledWith(
+        expect.objectContaining({
+          leadId: 1,
+          channel: 'phone',
+          contactKind: 'attempted',
+          outcome: 'Left a voicemail',
+        }),
+      ),
+    );
+  });
+
+  it('records an established connection only when staff say so', async () => {
+    render(<InquiriesPage />);
+    fireEvent.click(await screen.findByText('Work this inquiry'));
+    fireEvent.click(await screen.findByText(/Connected — spoke with them/));
+    const outcome = screen.getByLabelText('What happened (outcome)');
     fireEvent.change(outcome, { target: { value: 'Spoke with them' } });
     fireEvent.click(screen.getByText('Log contact'));
     await waitFor(() =>
       expect(mocks.recordLeadContact).toHaveBeenCalledWith(
-        expect.objectContaining({ leadId: 1, channel: 'phone', outcome: 'Spoke with them' }),
+        expect.objectContaining({ contactKind: 'connected' }),
       ),
     );
+  });
+
+  it('closing sends the human triage classification with the status change', async () => {
+    render(<InquiriesPage />);
+    fireEvent.click(await screen.findByText('Work this inquiry'));
+    const select = await screen.findByLabelText('Close as');
+    fireEvent.change(select, { target: { value: 'spam' } });
+    fireEvent.click(screen.getByText('Closed'));
+    await waitFor(() =>
+      expect(mocks.setLeadStatus).toHaveBeenCalledWith(
+        expect.objectContaining({ leadId: 1, status: 'closed', closeClassification: 'spam' }),
+      ),
+    );
+  });
+
+  it('surfaces age since receipt without fabricating an overdue state', async () => {
+    mocks.listIntakeLeads.mockResolvedValue([
+      lead({ created_at: new Date(Date.now() - 3 * 24 * 3_600_000).toISOString() }),
+    ]);
+    render(<InquiriesPage />);
+    expect(await screen.findByText(/waiting 3 days/)).toBeInTheDocument();
+    expect(screen.queryByTestId('overdue-1')).not.toBeInTheDocument();
+    expect(screen.queryByText(/respond by/)).not.toBeInTheDocument();
   });
 
   it('surfaces the duplicate-outreach hint when a matching inquiry exists', async () => {

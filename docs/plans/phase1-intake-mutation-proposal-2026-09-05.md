@@ -25,11 +25,11 @@ now, independent of everything below.
 Three. No matching person records exist under any identity (searched by name patterns
 across `recoveryos.people`; all 8 real-domain auth accounts enumerated — gate-verified):
 
-| Person | Email | Account today | Person record today |
-|---|---|---|---|
-| Jill DeGarmeaux | jill@graceforaddictions.org | none | none |
-| Tara | tara@graceforaddictions.org | none | none |
-| Archaletta | archaletta@graceforaddictions.org | none | none |
+| Person          | Email                             | Account today | Person record today |
+| --------------- | --------------------------------- | ------------- | ------------------- |
+| Jill DeGarmeaux | jill@graceforaddictions.org       | none          | none                |
+| Tara            | tara@graceforaddictions.org       | none          | none                |
+| Archaletta      | archaletta@graceforaddictions.org | none          | none                |
 
 **Creation mechanism — existing, no new machinery:** `recoveryos.create_staff_invitation`
 (0117) writes a scoped, expiring, revocable `staff_preauthorizations` row; when the
@@ -46,23 +46,23 @@ Constraint: invitations carry `role_keys recoveryos.role_key[]`, so invitations 
 
 ## 2. Existing accounts that can be reused
 
-| Person | Identity | Reuse |
-|---|---|---|
-| Thomas | thomas@graceforaddictions.org — person 202, roles today: participant only | Yes — designated operational intake identity; needs the coordinator grant |
+| Person         | Identity                                                                                    | Reuse                                                                                                                                                                                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Thomas         | thomas@graceforaddictions.org — person 202, roles today: participant only                   | Yes — designated operational intake identity; needs the coordinator grant                                                                                                                                                                                                                      |
 | Thomas (admin) | degarmeaux@icloud.com — person 234, all nine roles incl. administrator/system_administrator | Yes — this is the identity that **executes** invitations and grants (`create_staff_invitation`/`grant_role_assignment` require `is_platform_admin()`, which person 202 does not satisfy). Not merged, not modified; least-privilege review stays queued for the separate identity-hygiene gate |
-| Ashlee | ashlee@graceforaddictions.org — account exists, no intake role | Yes — grant only `intake_worker`; all existing roles untouched |
+| Ashlee         | ashlee@graceforaddictions.org — account exists, no intake role                              | Yes — grant only `intake_worker`; all existing roles untouched                                                                                                                                                                                                                                 |
 
 ## 3. Exact role grants proposed
 
 Per the ratified decision (§2), all effective only after 0147 adds the two enum values:
 
-| Person | Grant | Mechanism | Scope notes |
-|---|---|---|---|
+| Person                       | Grant                | Mechanism                                              | Scope notes                                                                                                                                                                                                                    |
+| ---------------------------- | -------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Thomas (person 202, thomas@) | `intake_coordinator` | `grant_role_assignment` executed by the admin identity | Full queue, assign/reassign. Also holds (pending decision-2 ratification) the partnership-responder and men's-housing routing functions — held by function designation in the ratified decision record, not by any schema flag |
-| Jill | `intake_coordinator` | staff invitation → consumed at signup | Full queue, assign/reassign |
-| Tara | `intake_worker` | staff invitation → consumed at signup | Assigned inquiries only |
-| Archaletta | `intake_worker` | staff invitation → consumed at signup | Assigned inquiries only. **No women's-pathway recipient authority is encoded** (ratified §3) |
-| Ashlee | `intake_worker` | `grant_role_assignment` | Existing roles preserved unchanged |
+| Jill                         | `intake_coordinator` | staff invitation → consumed at signup                  | Full queue, assign/reassign                                                                                                                                                                                                    |
+| Tara                         | `intake_worker`      | staff invitation → consumed at signup                  | Assigned inquiries only                                                                                                                                                                                                        |
+| Archaletta                   | `intake_worker`      | staff invitation → consumed at signup                  | Assigned inquiries only. **No women's-pathway recipient authority is encoded** (ratified §3)                                                                                                                                   |
+| Ashlee                       | `intake_worker`      | `grant_role_assignment`                                | Existing roles preserved unchanged                                                                                                                                                                                             |
 
 What these grants do and do not do (verified against prepared 0147 + current RLS):
 
@@ -92,8 +92,7 @@ What these grants do and do not do (verified against prepared 0147 + current RLS
   for residence staff. Coaches (Tara, Archaletta, Ashlee) cannot write them today, and
   the tables lack type/facilitator/topic/held-vs-scheduled. Gap and least-privilege
   design in the Track B review.
-- **Generic service/activity documentation:** the ratified provenance canon (0133/0134/
-  0137) allows exactly four writers: `complete_session` (appointment-keyed, coach-
+- **Generic service/activity documentation:** the ratified provenance canon (0133/0134/ 0137) allows exactly four writers: `complete_session` (appointment-keyed, coach-
   attested), `record_navigation_service_event`, `record_residence_support_service_event`,
   and `record_my_activity` (participant self-report, closed 3-type list). There is no
   writer for an ad-hoc staff-attested interaction or a group occurrence. That is a
@@ -121,11 +120,12 @@ rather than bypassing it.
 
 ## 7. Minimum schema/RLS changes required for Phase 1 (Track A only)
 
-**Zero beyond 0147 itself.** The only pre-apply edit to 0147 is substituting the
-ratified deadline values into `lead_default_due()` (and adding the second deadline field
-only if decision 2 ratifies separate acknowledgment/substantive deadlines). If decision 3
-selects business-time, `lead_default_due()` needs the ratified GFA operating calendar —
-that is the one open item that changes SQL. Track B requires nothing from 0147
+**Zero beyond 0147 itself.** _(Updated 2026-09-05, same day: the six decisions were
+ratified — see `docs/decisions/2026-09-05-phase1-six-deadline-routing-decisions.md`.
+The ratified outcome removed `lead_default_due()` entirely: business-time governs but
+automation is deferred pending the operating-calendar ratification, so no writer
+computes deadlines; `response_due_at` ships dormant. The pre-apply edits are done —
+that decision log records the exact delta.)_ Track B requires nothing from 0147
 (dependency table in the architecture review: all rows "no dependency").
 
 ## 8. Exact mutations proposed (ordered; each separately gated; none executed)
@@ -151,8 +151,8 @@ decisions** (restated below). Steps A–C are repository-only; D onward touch li
   3. `create_staff_invitation('archaletta@graceforaddictions.org', '{intake_worker}')`
   4. `grant_role_assignment(202, 'intake_coordinator')` (thomas@)
   5. `grant_role_assignment(<ashlee person id — re-verify>, 'intake_worker')`
-  Then Jill/Tara/Archaletta sign up with those emails (their acceptance completes the
-  human-authority loop); invitations expire in 30 days and are revocable.
+     Then Jill/Tara/Archaletta sign up with those emails (their acceptance completes the
+     human-authority loop); invitations expire in 30 days and are revocable.
 - **F. [STAGING-AUTH]** Redeploy `lead-intake` v3 — strictly **after** D (the receiver
   writes 0147 columns).
 - **G. [STAGING-AUTH]** Staging deploy (`recoveryos-staging` is an ACTIVE PILOT — its
@@ -164,7 +164,17 @@ decisions** (restated below). Steps A–C are repository-only; D onward touch li
 - **I. [REPO-ONLY]** Close reconciliation-queue items Q1/Q3a/Q4/Q5 with evidence from
   D–G; Q2/Q3b/Q3c stay open per their deferrals.
 
-## 9. The six open decisions (restated for the six-line ratification — not resolved here)
+## 9. The six open decisions — RESOLVED 2026-09-05
+
+_(Ratified same day with modifications — the governing record is
+`docs/decisions/2026-09-05-phase1-six-deadline-routing-decisions.md`, which supersedes
+the proposed defaults below. Material changes from the proposals: business-time governs
+but automated deadline computation is deferred pending the operating-calendar
+ratification; decision 1 adds the attempted-vs-connected evidence distinction;
+decision 6 adds the close-time triage classification. Step A of §8 is complete; steps
+B onward remain gated.)_
+
+Original restatement as proposed (historical):
 
 1. Standard first-response deadline (proposed default for ratification: 1 business day
    to first human contact attempt).

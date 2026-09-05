@@ -11,11 +11,14 @@
 -- What this adds (all additive; no data destroyed):
 --   * leads: six-stage lifecycle (new/assigned/contacted/waiting/scheduled/closed; the
 --     legacy 'converted' value remains valid for lineage), explicit residence interest
---     (self-selected only — never inferred), organization/partnership flag, response
---     deadline, Wix idempotency key, link to a converted residence_application_intake
---     record so an inquiry and an application stay ONE thread, never duplicates.
+--     (self-selected only — never inferred), organization/partnership flag, a DORMANT
+--     response-deadline column (see policy below), close-time human triage
+--     classification, Wix idempotency key, link to a converted
+--     residence_application_intake record so an inquiry and an application stay ONE
+--     thread, never duplicates.
 --   * lead_contact_events: shared APPEND-ONLY contact log (responder, time, channel,
---     outcome, minutes, next follow-up). RPC-only writes; no UPDATE/DELETE path exists.
+--     attempted-vs-connected kind, outcome, minutes, next follow-up). RPC-only writes;
+--     no UPDATE/DELETE path exists.
 --   * Intake-only roles: intake_coordinator (full queue, assign/reassign) and
 --     intake_worker (assigned inquiries only). Least privilege: this migration also
 --     NARROWS lead visibility — coaches/navigators lose generic lead access; access is
@@ -25,8 +28,23 @@
 --     assign_lead, record_lead_contact, set_lead_status, route_lead,
 --     find_duplicate_leads, list_intake_assignees.
 --
--- Deadlines encoded here are the PROPOSED values pending executive ratification
--- (standard: 24h to first contact; partnership/organization: 4h acknowledgment).
+-- Response-time policy (RATIFIED 2026-09-05, docs/decisions/2026-09-05-phase1-six-deadline-routing-decisions.md):
+--   * BUSINESS-TIME targets govern operationally (standard: first human contact attempt
+--     within 1 business day; partnership: 4-business-hour acknowledgment + 2-business-day
+--     substantive response), but AUTOMATED business-time computation is DEFERRED until
+--     GFA's authoritative operating calendar is separately ratified.
+--   * Therefore NO writer computes a deadline: `response_due_at` ships DORMANT (never
+--     written), timestamps are preserved, and surfaces show age/time-since-receipt
+--     without fabricating an overdue determination from assumed hours.
+--   * Decision 1: an attempted contact is never represented as an established human
+--     connection — lead_contact_events.contact_kind carries the distinction.
+--   * Decision 5: assignment is a manual coordinator act; no round-robin machinery.
+--   * Decision 6: technical acceptance admits to the queue; the first authorized human
+--     triage action is the quality gate — leads.triage_classification (set at close)
+--     keeps nonqualified records from silently inflating qualified-request measures.
+--   * Decision 2: the partnership responder is a FUNCTION designation recorded in the
+--     decision log (initially Thomas via thomas@graceforaddictions.org), deliberately
+--     NOT a schema concept — reassignment must need no schema change.
 
 set check_function_bodies = off;
 
@@ -88,7 +106,24 @@ alter table recoveryos.leads
   add column if not exists residence_interest text not null default 'unspecified'
     check (residence_interest in ('unspecified','grace_house','ejwrh','confirm_route')),
   add column if not exists response_due_at timestamptz,
-  add column if not exists linked_intake_id bigint references recoveryos.residence_application_intake(id);
+  add column if not exists linked_intake_id bigint references recoveryos.residence_application_intake(id),
+  -- Decision 6: set by the first authorized human triage act (recorded at close).
+  -- NULL = not yet human-classified. Vocabulary mirrors the ratified decision text.
+  add column if not exists triage_classification text
+    check (triage_classification in ('qualified_recovery_support','organization_partnership',
+                                     'spam','duplicate','test','unrelated_solicitation',
+                                     'other_nonqualified'));
+
+comment on column recoveryos.leads.response_due_at is
+  'DORMANT (2026-09-05 decision 3): business-time targets govern operationally, but no '
+  'writer computes this until GFA''s authoritative operating calendar is ratified. Never '
+  'derive overdue state from assumed hours; surface age since receipt instead.';
+
+comment on column recoveryos.leads.triage_classification is
+  'Human quality/relevance determination (2026-09-05 decision 6), recorded by the closing '
+  'triage act. Technical acceptance admits to the queue; only this human classification '
+  'marks an inquiry qualified. Nonqualified values keep spam/duplicates/tests from '
+  'inflating qualified-recovery-request measures. NULL = not yet human-classified.';
 
 create unique index if not exists leads_wix_submission_id_key
   on recoveryos.leads (wix_submission_id) where wix_submission_id is not null;
@@ -111,6 +146,10 @@ create table if not exists recoveryos.lead_contact_events (
   responder_person_id bigint not null references recoveryos.people(id),
   occurred_at         timestamptz not null default now(),
   channel             text not null check (channel in ('phone','text','email','in_person','other')),
+  -- Decision 1: inquiry received -> contact ATTEMPTED -> human CONNECTION established
+  -- are distinct facts. An attempt is never represented as a connection.
+  contact_kind        text not null default 'attempted'
+                        check (contact_kind in ('attempted','connected')),
   outcome             text not null,
   minutes_spent       int check (minutes_spent between 0 and 600),
   next_follow_up_at   timestamptz,
@@ -139,11 +178,10 @@ create trigger lead_contact_events_no_update
 -- 4) RPCs.
 -- ---------------------------------------------------------------------------
 
--- Proposed defaults pending ratification: partnership 4h, standard 24h.
-create or replace function recoveryos.lead_default_due(p_organization boolean)
-returns timestamptz language sql stable set search_path = recoveryos, public as $$
-  select now() + case when p_organization then interval '4 hours' else interval '24 hours' end;
-$$;
+-- No deadline-derivation function ships (decision 3): business-time computation is
+-- deferred until the GFA operating calendar is ratified. When it is, the calendar-aware
+-- function + a policy for populating the dormant response_due_at arrive as their own
+-- reviewed migration — no schema change needed here.
 
 create or replace function recoveryos.assign_lead(p_lead_id bigint, p_assignee_person_id bigint)
 returns jsonb language plpgsql security definer set search_path = recoveryos, public as $$
@@ -166,7 +204,7 @@ begin
   update recoveryos.leads
      set assigned_to_person_id = p_assignee_person_id,
          status = case when status = 'new' then 'assigned' else status end,
-         response_due_at = coalesce(response_due_at, recoveryos.lead_default_due(organization_inquiry)),
+         -- response_due_at deliberately untouched (dormant; decision 3).
          updated_at = now()
    where id = p_lead_id;
   insert into recoveryos.audit_log (actor_person_id, action, entity_table, entity_id, detail)
@@ -175,10 +213,13 @@ begin
   return jsonb_build_object('ok', true, 'code', 'assigned');
 end $$;
 
+-- 'contacted' stage = at least one human contact ATTEMPT is on record (a human
+-- response). Whether a connection was ESTABLISHED is read from the events'
+-- contact_kind, never from the stage (decision 1).
 create or replace function recoveryos.record_lead_contact(
   p_lead_id bigint, p_channel text, p_outcome text,
   p_minutes int default null, p_next_follow_up_at timestamptz default null,
-  p_note text default null)
+  p_note text default null, p_contact_kind text default 'attempted')
 returns jsonb language plpgsql security definer set search_path = recoveryos, public as $$
 declare
   v_me bigint := recoveryos.current_person_id();
@@ -191,9 +232,13 @@ begin
   if p_outcome is null or length(trim(p_outcome)) = 0 then
     return jsonb_build_object('ok', false, 'code', 'outcome_required');
   end if;
+  if p_contact_kind not in ('attempted','connected') then
+    return jsonb_build_object('ok', false, 'code', 'invalid_contact_kind');
+  end if;
   insert into recoveryos.lead_contact_events
-    (lead_id, responder_person_id, channel, outcome, minutes_spent, next_follow_up_at, note)
-  values (p_lead_id, v_me, p_channel, left(trim(p_outcome), 500), p_minutes,
+    (lead_id, responder_person_id, channel, contact_kind, outcome, minutes_spent,
+     next_follow_up_at, note)
+  values (p_lead_id, v_me, p_channel, p_contact_kind, left(trim(p_outcome), 500), p_minutes,
           p_next_follow_up_at, nullif(left(coalesce(p_note,''), 2000), ''))
   returning id into v_event_id;
   update recoveryos.leads
@@ -203,7 +248,11 @@ begin
   return jsonb_build_object('ok', true, 'code', 'recorded', 'event_id', v_event_id);
 end $$;
 
-create or replace function recoveryos.set_lead_status(p_lead_id bigint, p_status text)
+-- Closing carries the human triage classification (decision 6): required on close so
+-- nonqualified records (spam/duplicate/test/unrelated) never silently blend into
+-- qualified-recovery-request measures. Ignored (and rejected) for non-close moves.
+create or replace function recoveryos.set_lead_status(
+  p_lead_id bigint, p_status text, p_close_classification text default null)
 returns jsonb language plpgsql security definer set search_path = recoveryos, public as $$
 declare v_me bigint := recoveryos.current_person_id();
 begin
@@ -214,11 +263,29 @@ begin
   if not recoveryos.can_work_lead(p_lead_id) then
     return jsonb_build_object('ok', false, 'code', 'not_authorized');
   end if;
-  update recoveryos.leads set status = p_status, updated_at = now() where id = p_lead_id;
+  if p_status = 'closed' then
+    if p_close_classification is null
+       or p_close_classification not in ('qualified_recovery_support','organization_partnership',
+                                         'spam','duplicate','test','unrelated_solicitation',
+                                         'other_nonqualified') then
+      return jsonb_build_object('ok', false, 'code', 'classification_required',
+        'message', 'Closing an inquiry records the human quality determination.');
+    end if;
+  elsif p_close_classification is not null then
+    return jsonb_build_object('ok', false, 'code', 'classification_only_on_close');
+  end if;
+  update recoveryos.leads
+     set status = p_status,
+         triage_classification = case when p_status = 'closed'
+                                      then p_close_classification
+                                      else triage_classification end,
+         updated_at = now()
+   where id = p_lead_id;
   if not found then return jsonb_build_object('ok', false, 'code', 'not_found'); end if;
   if p_status = 'closed' then
     insert into recoveryos.audit_log (actor_person_id, action, entity_table, entity_id, detail)
-    values (v_me, 'lead.closed', 'leads', p_lead_id, '{}'::jsonb);
+    values (v_me, 'lead.closed', 'leads', p_lead_id,
+            jsonb_build_object('triage_classification', p_close_classification));
   end if;
   return jsonb_build_object('ok', true, 'code', 'status_set');
 end $$;
@@ -290,17 +357,16 @@ $$;
 
 revoke execute on function
   recoveryos.assign_lead(bigint, bigint),
-  recoveryos.record_lead_contact(bigint, text, text, int, timestamptz, text),
-  recoveryos.set_lead_status(bigint, text),
+  recoveryos.record_lead_contact(bigint, text, text, int, timestamptz, text, text),
+  recoveryos.set_lead_status(bigint, text, text),
   recoveryos.route_lead(bigint, text, bigint),
   recoveryos.find_duplicate_leads(bigint),
-  recoveryos.list_intake_assignees(),
-  recoveryos.lead_default_due(boolean)
+  recoveryos.list_intake_assignees()
 from public, anon;
 grant execute on function
   recoveryos.assign_lead(bigint, bigint),
-  recoveryos.record_lead_contact(bigint, text, text, int, timestamptz, text),
-  recoveryos.set_lead_status(bigint, text),
+  recoveryos.record_lead_contact(bigint, text, text, int, timestamptz, text, text),
+  recoveryos.set_lead_status(bigint, text, text),
   recoveryos.route_lead(bigint, text, bigint),
   recoveryos.find_duplicate_leads(bigint),
   recoveryos.list_intake_assignees()
