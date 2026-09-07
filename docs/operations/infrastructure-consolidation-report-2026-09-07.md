@@ -102,9 +102,10 @@ step.
 - The `staging` and `production-candidate` environment names are referenced
   by the workflows, so environment protection rules apply to every run.
 
-### Requires the GitHub UI (this session's tool surface has no
+### Requires the GitHub UI — Settings → Environments
 
-environments/branch-protection API): Settings → Environments
+This session's tool surface has no environments/branch-protection API, so
+these are exact manual steps:
 
 - `production-candidate`: add **Required reviewers** (at least one human),
   restrict deployment branches/tags to the canonical branch, and store
