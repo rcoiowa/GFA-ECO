@@ -1,3 +1,5 @@
+# DORMANT / DO NOT DEPLOY. Retained for provenance only.
+# Canonical public-intake execution lives in supabase/functions.
 # RecoveryOS shared API gateway (api.vrcc.app).
 # Secrets (SUPABASE_SERVICE_ROLE_KEY etc.) are set via `wrangler secret put`,
 # never committed.

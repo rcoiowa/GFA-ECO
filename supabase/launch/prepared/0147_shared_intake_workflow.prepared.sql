@@ -52,8 +52,8 @@ set check_function_bodies = off;
 -- 1) Roles. New enum values are only ever USED after this transaction commits
 --    (helpers compare as text precisely so nothing casts the new literals here).
 -- ---------------------------------------------------------------------------
-alter type role_key add value if not exists 'intake_coordinator';
-alter type role_key add value if not exists 'intake_worker';
+alter type recoveryos.role_key add value if not exists 'intake_coordinator';
+alter type recoveryos.role_key add value if not exists 'intake_worker';
 
 create or replace function recoveryos.is_intake_coordinator()
 returns boolean language sql stable security definer set search_path = recoveryos, public as $$
@@ -142,15 +142,49 @@ comment on column recoveryos.leads.triage_classification_note is
   'Optional short note accompanying triage_classification = ''other'' only (what kind '
   'of legitimate inquiry). Never required; other classifications carry no narrative.';
 
+-- Protect privileged/import paths as well as the RPC surface. response_due_at remains
+-- dormant until a separately ratified operating calendar ships in a later migration.
+do $constraints$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'leads_triage_note_other_check'
+      and conrelid = 'recoveryos.leads'::regclass
+  ) then
+    alter table recoveryos.leads add constraint leads_triage_note_other_check
+      check (
+        triage_classification_note is null
+        or (
+          triage_classification = 'other'
+          and length(trim(triage_classification_note)) between 1 and 300
+        )
+      );
+  end if;
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'leads_response_due_dormant_check'
+      and conrelid = 'recoveryos.leads'::regclass
+  ) then
+    alter table recoveryos.leads add constraint leads_response_due_dormant_check
+      check (response_due_at is null);
+  end if;
+end
+$constraints$;
+
 create unique index if not exists leads_wix_submission_id_key
   on recoveryos.leads (wix_submission_id) where wix_submission_id is not null;
+create index if not exists leads_linked_intake_id_idx
+  on recoveryos.leads (linked_intake_id) where linked_intake_id is not null;
+create index if not exists leads_assignee_status_created_idx
+  on recoveryos.leads (assigned_to_person_id, status, created_at desc)
+  where assigned_to_person_id is not null;
 
 -- Least-privilege visibility (replaces the broad staff policies from 0102).
 drop policy if exists leads_staff_select on recoveryos.leads;
 drop policy if exists leads_staff_update on recoveryos.leads;
 create policy leads_intake_select on recoveryos.leads for select to authenticated
-  using (recoveryos.is_intake_coordinator()
-         or assigned_to_person_id = recoveryos.current_person_id());
+  using ((select recoveryos.is_intake_coordinator())
+         or assigned_to_person_id = (select recoveryos.current_person_id()));
 -- No UPDATE policy: every mutation goes through the audited RPCs below.
 -- No INSERT policy: inserts come only from the lead-intake Edge Function (service role).
 
@@ -172,9 +206,14 @@ create table if not exists recoveryos.lead_contact_events (
   next_follow_up_at   timestamptz,
   note                text
 );
+create index if not exists lead_contact_events_lead_occurred_idx
+  on recoveryos.lead_contact_events (lead_id, occurred_at desc);
+create index if not exists lead_contact_events_responder_idx
+  on recoveryos.lead_contact_events (responder_person_id);
+
 alter table recoveryos.lead_contact_events enable row level security;
 create policy lead_contact_events_select on recoveryos.lead_contact_events
-  for select to authenticated using (recoveryos.can_work_lead(lead_id));
+  for select to authenticated using ((select recoveryos.can_work_lead(lead_id)));
 -- Append-only by construction: SELECT-only client privileges; no UPDATE/DELETE
 -- policies exist anywhere; writes happen inside record_lead_contact (definer).
 revoke insert, update, delete on recoveryos.lead_contact_events from authenticated, anon;
@@ -249,8 +288,15 @@ begin
   if p_outcome is null or length(trim(p_outcome)) = 0 then
     return jsonb_build_object('ok', false, 'code', 'outcome_required');
   end if;
-  if p_contact_kind not in ('attempted','connected') then
+  if p_channel is null
+     or p_channel not in ('phone','text','email','in_person','other') then
+    return jsonb_build_object('ok', false, 'code', 'invalid_channel');
+  end if;
+  if p_contact_kind is null or p_contact_kind not in ('attempted','connected') then
     return jsonb_build_object('ok', false, 'code', 'invalid_contact_kind');
+  end if;
+  if p_minutes is not null and (p_minutes < 0 or p_minutes > 600) then
+    return jsonb_build_object('ok', false, 'code', 'invalid_minutes');
   end if;
   insert into recoveryos.lead_contact_events
     (lead_id, responder_person_id, channel, contact_kind, outcome, minutes_spent,
@@ -371,7 +417,7 @@ end $$;
 -- Assignable intake staff (coordinators need a picker; minimal fields).
 create or replace function recoveryos.list_intake_assignees()
 returns jsonb language sql stable security definer set search_path = recoveryos, public as $$
-  select case when not recoveryos.is_intake_coordinator()
+  select case when not (select recoveryos.is_intake_coordinator())
     then jsonb_build_object('ok', false, 'code', 'not_authorized')
     else jsonb_build_object('ok', true, 'code', 'listed', 'assignees',
       coalesce((select jsonb_agg(distinct jsonb_build_object(

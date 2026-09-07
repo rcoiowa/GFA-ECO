@@ -42,6 +42,10 @@ jobs:
         run: node scripts/verify-service-provenance.mjs
       - name: Intake minimization guard (Gate B — evidence chain, MOUD never gates, narrow override)
         run: node scripts/verify-intake-minimization.mjs
+      - name: Prepared 0147 migration invariants
+        run: node scripts/verify-0147-prepared.mjs
+      - name: Cloudflare execution and deployment boundaries
+        run: node scripts/verify-cloudflare-boundaries.mjs
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
