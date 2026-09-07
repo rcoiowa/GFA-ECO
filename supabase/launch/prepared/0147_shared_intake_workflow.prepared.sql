@@ -173,7 +173,10 @@ $constraints$;
 
 create unique index if not exists leads_wix_submission_id_key
   on recoveryos.leads (wix_submission_id) where wix_submission_id is not null;
-create index if not exists leads_linked_intake_id_idx
+-- UNIQUE: an application intake is ONE thread — it may be linked from at most one
+-- inquiry (design review 2026-09-07; enforces the "one thread, never duplicates"
+-- doctrine at the schema layer, not just in RPC logic).
+create unique index if not exists leads_linked_intake_id_idx
   on recoveryos.leads (linked_intake_id) where linked_intake_id is not null;
 create index if not exists leads_assignee_status_created_idx
   on recoveryos.leads (assigned_to_person_id, status, created_at desc)
@@ -285,6 +288,11 @@ begin
   if not recoveryos.can_work_lead(p_lead_id) then
     return jsonb_build_object('ok', false, 'code', 'not_authorized');
   end if;
+  -- Explicit existence check: a coordinator passes can_work_lead for ANY id, so the
+  -- FK alone would surface a raw SQL error here ({ok,code} envelope discipline).
+  if not exists (select 1 from recoveryos.leads where id = p_lead_id) then
+    return jsonb_build_object('ok', false, 'code', 'not_found');
+  end if;
   if p_outcome is null or length(trim(p_outcome)) = 0 then
     return jsonb_build_object('ok', false, 'code', 'outcome_required');
   end if;
@@ -317,11 +325,21 @@ end $$;
 -- inquiries outside recovery support/partnership. A short optional note is permitted
 -- only with 'other'; no classification requires narrative. Classification is rejected
 -- on non-close moves.
+-- Reopen semantics (design review 2026-09-07, awaiting ratification before promotion):
+-- a closed inquiry MAY reopen (people return, and a mistaken close must be correctable
+-- without a privileged path), but the close-time classification never describes an
+-- active lead — reopening CLEARS triage_classification/note and records a
+-- 'lead.reopened' audit event carrying the cleared value, so the evidence chain is
+-- audit_log, not a stale label. Closing an already-closed lead re-records the
+-- classification (the correction path) with a fresh 'lead.closed' audit event.
 create or replace function recoveryos.set_lead_status(
   p_lead_id bigint, p_status text, p_close_classification text default null,
   p_close_note text default null)
 returns jsonb language plpgsql security definer set search_path = recoveryos, public as $$
-declare v_me bigint := recoveryos.current_person_id();
+declare
+  v_me bigint := recoveryos.current_person_id();
+  v_prior_status text;
+  v_prior_class text;
 begin
   if v_me is null then return jsonb_build_object('ok', false, 'code', 'no_person'); end if;
   if p_status not in ('new','assigned','contacted','waiting','scheduled','closed') then
@@ -330,6 +348,9 @@ begin
   if not recoveryos.can_work_lead(p_lead_id) then
     return jsonb_build_object('ok', false, 'code', 'not_authorized');
   end if;
+  select status, triage_classification into v_prior_status, v_prior_class
+    from recoveryos.leads where id = p_lead_id for update;
+  if not found then return jsonb_build_object('ok', false, 'code', 'not_found'); end if;
   if p_status = 'closed' then
     if p_close_classification is null
        or p_close_classification not in ('qualified_recovery_support','organization_partnership',
@@ -347,28 +368,42 @@ begin
   end if;
   update recoveryos.leads
      set status = p_status,
-         triage_classification = case when p_status = 'closed'
-                                      then p_close_classification
+         triage_classification = case when p_status = 'closed' then p_close_classification
+                                      when v_prior_status = 'closed' then null
                                       else triage_classification end,
          triage_classification_note = case when p_status = 'closed'
                                            then nullif(left(trim(coalesce(p_close_note,'')), 300), '')
+                                           when v_prior_status = 'closed' then null
                                            else triage_classification_note end,
          updated_at = now()
    where id = p_lead_id;
-  if not found then return jsonb_build_object('ok', false, 'code', 'not_found'); end if;
   if p_status = 'closed' then
     insert into recoveryos.audit_log (actor_person_id, action, entity_table, entity_id, detail)
     values (v_me, 'lead.closed', 'leads', p_lead_id,
             jsonb_build_object('triage_classification', p_close_classification));
+  elsif v_prior_status = 'closed' then
+    insert into recoveryos.audit_log (actor_person_id, action, entity_table, entity_id, detail)
+    values (v_me, 'lead.reopened', 'leads', p_lead_id,
+            jsonb_build_object('reopened_to', p_status,
+                               'cleared_classification', v_prior_class));
   end if;
   return jsonb_build_object('ok', true, 'code', 'status_set');
 end $$;
 
+-- Linking rules (design review 2026-09-07, awaiting ratification before promotion):
+-- a linked intake must EXIST, may accompany only an explicit residence selection
+-- ('grace_house'/'ejwrh'), and must belong to that residence (canonical seed ids:
+-- Grace House = 1, EJWRH = 2 — the same pinned mapping the EJWRH Edge Function uses).
+-- The unique partial index keeps an intake linked from at most one inquiry; the
+-- violation surfaces as {ok:false, code:'intake_already_linked'}, never a SQL error.
 create or replace function recoveryos.route_lead(
   p_lead_id bigint, p_residence_interest text,
   p_linked_intake_id bigint default null)
 returns jsonb language plpgsql security definer set search_path = recoveryos, public as $$
-declare v_me bigint := recoveryos.current_person_id();
+declare
+  v_me bigint := recoveryos.current_person_id();
+  v_intake_residence_id bigint;
+  v_expected_residence_id bigint;
 begin
   if v_me is null then return jsonb_build_object('ok', false, 'code', 'no_person'); end if;
   if not recoveryos.is_intake_coordinator() then
@@ -377,11 +412,34 @@ begin
   if p_residence_interest not in ('unspecified','grace_house','ejwrh','confirm_route') then
     return jsonb_build_object('ok', false, 'code', 'invalid_residence_interest');
   end if;
-  update recoveryos.leads
-     set residence_interest = p_residence_interest,
-         linked_intake_id = coalesce(p_linked_intake_id, linked_intake_id),
-         updated_at = now()
-   where id = p_lead_id;
+  if p_linked_intake_id is not null then
+    v_expected_residence_id := case p_residence_interest
+                                 when 'grace_house' then 1
+                                 when 'ejwrh' then 2
+                                 else null end;
+    if v_expected_residence_id is null then
+      return jsonb_build_object('ok', false, 'code', 'interest_required_for_link',
+        'message', 'Linking an application requires an explicit residence selection.');
+    end if;
+    select residence_id into v_intake_residence_id
+      from recoveryos.residence_application_intake where id = p_linked_intake_id;
+    if not found then
+      return jsonb_build_object('ok', false, 'code', 'intake_not_found');
+    end if;
+    if v_intake_residence_id <> v_expected_residence_id then
+      return jsonb_build_object('ok', false, 'code', 'intake_residence_mismatch');
+    end if;
+  end if;
+  begin
+    update recoveryos.leads
+       set residence_interest = p_residence_interest,
+           linked_intake_id = coalesce(p_linked_intake_id, linked_intake_id),
+           updated_at = now()
+     where id = p_lead_id;
+  exception when unique_violation then
+    return jsonb_build_object('ok', false, 'code', 'intake_already_linked',
+      'message', 'That application is already linked to another inquiry.');
+  end;
   if not found then return jsonb_build_object('ok', false, 'code', 'not_found'); end if;
   insert into recoveryos.audit_log (actor_person_id, action, entity_table, entity_id, detail)
   values (v_me, 'lead.routed', 'leads', p_lead_id,
