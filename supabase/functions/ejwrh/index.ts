@@ -20,6 +20,18 @@
 //   * This Supabase URL is NOT the public production address. Cloudflare deployment
 //     remains CLOSED; the prepared (unactivated) route is recoveryresidence.org/ejwrh.
 //
+// SUBMISSION MAPPING RECONCILIATION (2026-09-07): this page's inline form posts
+// kind 'residence_application' (canonical since the same-day residence-intake
+// reconciliation; 'grace_house_application' remains the accepted legacy alias) hard
+// bound to residence_id 2 (EJWRH). NOTE the deployed reality recorded by the R1
+// front-door work: residence-intake rejects submissions whose Origin is not
+// allowlisted, and this page is served from the Supabase functions origin, which is
+// deliberately NOT allowlisted — so the WORKING public application path for both
+// houses is the recoveryresidence.org directory form (bound residence forms posting
+// to residence-intake); this page's phone/email fallback always works. Redeploy
+// ordering if this page is ever promoted: residence-intake (which accepts the
+// canonical kind) deploys BEFORE this page.
+//
 // APPLICATION-STAGE DATA CONTRACT (everything this page may collect — nothing else):
 //   canonical columns: applicant_name (required); applicant_email and/or applicant_phone
 //     (at least one required); preferred_contact ('phone'|'text'|'email');
@@ -263,7 +275,7 @@ const PAGE = `<!doctype html>
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        kind: 'grace_house_application',
+        kind: 'residence_application',
         residence_id: ${EJWRH_RESIDENCE_ID},
         applicant_name: v('name'),
         applicant_email: v('email') || null,

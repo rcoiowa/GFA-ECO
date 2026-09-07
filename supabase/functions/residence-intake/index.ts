@@ -16,22 +16,29 @@
 //
 // Unlike lead-intake (called server-to-server by a Wix automation holding a
 // shared secret), this endpoint is invoked from PUBLIC BROWSERS, which cannot
-// safely hold a secret. Its abuse controls are therefore: an origin allowlist,
-// a honeypot field, strict payload caps, field allowlisting, and an OPTIONAL
-// Cloudflare Turnstile check (enabled only when TURNSTILE_SECRET is set). The
-// intake tables have NO anon grant, so even a leaked anon key cannot write to
-// them directly — this function (service role) is the only door.
+// safely hold a secret. Its abuse controls are therefore: a MANDATORY origin
+// allowlist (a missing Origin header is rejected, not just an unapproved one),
+// a honeypot field, strict payload caps, field allowlisting, residence
+// validation against active canonical rows, and Cloudflare Turnstile — which is
+// MANDATORY in production (2026-09-07 hardening): the function fails closed with
+// 503 when TURNSTILE_SECRET is unset unless INTAKE_TURNSTILE_OPTIONAL="true" is
+// explicitly set (pre-production/local only; never set it on CQCX). The intake
+// tables have NO anon grant, so even a leaked anon key cannot write to them
+// directly — this function (service role) is the only door. Public error bodies
+// are generic {ok,code}; diagnostic detail goes only to server logs.
 //
 // Required secrets:
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (Edge runtime provides these)
-// Optional secrets:
-//   TURNSTILE_SECRET   when set, a valid `turnstile_token` is required per submit
+//   TURNSTILE_SECRET   a valid `turnstile_token` is required per submit
+// Escape hatch (NEVER in production):
+//   INTAKE_TURNSTILE_OPTIONAL="true"  skips the Turnstile requirement
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const TURNSTILE_SECRET = Deno.env.get("TURNSTILE_SECRET") ?? "";
+const TURNSTILE_OPTIONAL = Deno.env.get("INTAKE_TURNSTILE_OPTIONAL") === "true";
 
 // Origins allowed to submit. Public discovery + Grace House frontends only.
 const ALLOWED_ORIGINS = new Set([
@@ -91,7 +98,7 @@ function boundedAnswers(raw: unknown): Record<string, string> {
 }
 
 async function turnstileOk(token: unknown, ip: string | null): Promise<boolean> {
-  if (!TURNSTILE_SECRET) return true; // disabled → skip
+  if (!TURNSTILE_SECRET) return TURNSTILE_OPTIONAL; // fail closed unless explicitly opted out
   if (typeof token !== "string" || !token) return false;
   try {
     const form = new FormData();
@@ -115,9 +122,15 @@ Deno.serve(async (req: Request) => {
 
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
   if (req.method !== "POST") return json({ ok: false, code: "method_not_allowed" }, 405, cors);
-  // Reject cross-origin submissions from origins we do not recognize.
-  if (origin && !ALLOWED_ORIGINS.has(origin)) {
+  // Reject a MISSING Origin as well as an unapproved one: every legitimate submit
+  // comes from a browser form on an allowlisted origin, which always sends Origin
+  // on POST. Origin-less requests are non-browser clients this door is not for.
+  if (!origin || !ALLOWED_ORIGINS.has(origin)) {
     return json({ ok: false, code: "forbidden_origin" }, 403, cors);
+  }
+  if (!TURNSTILE_SECRET && !TURNSTILE_OPTIONAL) {
+    console.error("residence-intake misconfigured: TURNSTILE_SECRET unset and not opted out");
+    return json({ ok: false, code: "intake_unavailable" }, 503, cors);
   }
 
   let p: Record<string, unknown>;
@@ -172,12 +185,21 @@ Deno.serve(async (req: Request) => {
       .insert(row)
       .select("id")
       .single();
-    if (error) return json({ ok: false, code: "insert_error", message: error.message }, 500, cors);
+    if (error) {
+      // Diagnostic detail stays in server logs only; the public body is generic.
+      console.error("residence-intake listing insert failed:", error.message);
+      return json({ ok: false, code: "intake_failed" }, 500, cors);
+    }
     return json({ ok: true, code: "received", submission_id: data.id }, 201, cors);
   }
 
-  // ---- FLOW 2: Grace House pre-account application ------------------------
-  if (kind === "grace_house_application") {
+  // ---- FLOW 2: pre-account residence application ---------------------------
+  // Canonical kind: 'residence_application' (any residence, bound by residence_id).
+  // 'grace_house_application' is the deployed legacy alias — same flow since the R1
+  // front-door work bound both houses' forms to this receiver — and stays accepted
+  // so live forms keep working across redeploy ordering (2026-09-07 reconciliation
+  // of the ambiguous EJWRH submission kind/residence mapping).
+  if (kind === "residence_application" || kind === "grace_house_application") {
     const residence_id = asInt(p.residence_id);
     const applicant_name = clip(p.applicant_name, 200);
     if (residence_id === null) return json({ ok: false, code: "residence_required" }, 400, cors);
@@ -186,6 +208,20 @@ Deno.serve(async (req: Request) => {
     const applicant_phone = clip(p.applicant_phone, 40);
     if (!applicant_email && !applicant_phone) {
       return json({ ok: false, code: "contact_required" }, 400, cors);
+    }
+    // The residence must be a real, active canonical row — an application can never
+    // bind to a retired, inactive, or invented residence id.
+    const { data: residence, error: residenceError } = await admin
+      .from("residences")
+      .select("id, is_active")
+      .eq("id", residence_id)
+      .maybeSingle();
+    if (residenceError) {
+      console.error("residence-intake residence lookup failed:", residenceError.message);
+      return json({ ok: false, code: "intake_failed" }, 500, cors);
+    }
+    if (!residence || residence.is_active !== true) {
+      return json({ ok: false, code: "invalid_residence" }, 400, cors);
     }
     const row = {
       residence_id,
@@ -203,7 +239,10 @@ Deno.serve(async (req: Request) => {
       .insert(row)
       .select("id")
       .single();
-    if (error) return json({ ok: false, code: "insert_error", message: error.message }, 500, cors);
+    if (error) {
+      console.error("residence-intake application insert failed:", error.message);
+      return json({ ok: false, code: "intake_failed" }, 500, cors);
+    }
     // Deliberately return only an id — the sensitive row is never read back.
     return json({ ok: true, code: "received", intake_id: data.id }, 201, cors);
   }

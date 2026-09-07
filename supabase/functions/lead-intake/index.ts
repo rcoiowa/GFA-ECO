@@ -103,28 +103,41 @@ Deno.serve(async (req: Request) => {
   }
 
   const { data, error } = await admin.from("leads").insert(lead).select("id").single();
-  if (error) return json({ ok: false, code: "insert_error", message: error.message }, 500);
+  if (error) {
+    // Diagnostic detail stays in server logs; the caller gets a generic envelope.
+    console.error("lead-intake insert failed:", error.message);
+    return json({ ok: false, code: "intake_failed" }, 500);
+  }
 
   // Optional internal staff email alert (never participant-facing).
+  //
+  // DATA-FLOW BOUNDARY (2026-09-07 hardening): the alert is a MINIMAL notification —
+  // it deliberately carries NO free text and NO contact detail (no message, no
+  // readiness, no email/phone). Sending the person's message or contact information
+  // through Resend (an external processor) requires a documented data-flow decision
+  // first; until one is ratified, staff read the full inquiry only inside the
+  // RecoveryOS lead queue, which is RLS/role-bounded.
   if (RESEND_API_KEY && RESEND_FROM && LEAD_ALERT_TO.length > 0) {
-    const name = [lead.first_name, lead.last_name].filter(Boolean).join(" ").trim() || lead.email || "Someone";
-    const rows: [string, unknown][] = [
-      ["Name", name], ["Email", lead.email], ["Phone", lead.phone],
-      ["Interested in", lead.interest], ["Where they are", lead.readiness], ["Message", lead.message],
-    ];
+    const name = [lead.first_name, lead.last_name].filter(Boolean).join(" ").trim() || "A new inquiry";
     const html = `<div style="font-family:Arial,sans-serif;max-width:560px">
-      <h2 style="margin:0 0 4px">New website lead</h2>
-      <table style="border-collapse:collapse">${rows
-        .filter(([, v]) => v)
-        .map(([k, v]) => `<tr><td style="padding:4px 10px;color:#666;white-space:nowrap">${esc(k)}</td><td style="padding:4px 10px">${esc(v)}</td></tr>`)
-        .join("")}</table>
-      <p style="color:#666;font-size:12px">Follow up in the RecoveryOS admin lead queue.</p></div>`;
-    // Fire-and-forget; email failure must not fail the intake.
-    fetch("https://api.resend.com/emails", {
+      <h2 style="margin:0 0 4px">New website inquiry</h2>
+      <p>${esc(name)} is waiting in the RecoveryOS lead queue (lead #${esc(data.id)}).</p>
+      <p style="color:#666;font-size:12px">Open the admin lead queue for the full inquiry and contact details.</p></div>`;
+    const alert = fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: RESEND_FROM, to: LEAD_ALERT_TO, subject: `New website lead: ${name}`, html }),
-    }).catch(() => {});
+      body: JSON.stringify({ from: RESEND_FROM, to: LEAD_ALERT_TO, subject: "New website inquiry in the lead queue", html }),
+    }).then(async (res) => {
+      if (!res.ok) console.error("lead-intake alert email failed:", res.status, await res.text().catch(() => ""));
+    }).catch((e) => console.error("lead-intake alert email failed:", e));
+    // Deferred reliably past the response instead of fire-and-forget: the Edge
+    // runtime may otherwise terminate the isolate before the send completes.
+    try {
+      // @ts-ignore EdgeRuntime is provided by the Supabase Edge runtime.
+      EdgeRuntime.waitUntil(alert);
+    } catch {
+      await alert;
+    }
   }
 
   return json({ ok: true, code: "received", lead_id: data.id });
