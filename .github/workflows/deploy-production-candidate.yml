@@ -16,6 +16,10 @@ concurrency:
   group: recoveryos-production-candidate
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   deploy-candidate:
     if: ${{ inputs.confirmation == 'DEPLOY_CANDIDATE' }}
@@ -37,6 +41,15 @@ jobs:
           ref: ${{ inputs.release_ref }}
       - name: Resolve immutable release SHA
         run: echo "RELEASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Require successful CI for the exact release commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          successes=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=$RELEASE_SHA&status=success" --jq '.total_count')
+          if [ "${successes:-0}" -eq 0 ]; then
+            echo "::error::No successful CI run exists for commit $RELEASE_SHA. Deploy only CI-green commits."
+            exit 1
+          fi
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
