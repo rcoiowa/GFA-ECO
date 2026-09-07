@@ -107,12 +107,18 @@ alter table recoveryos.leads
     check (residence_interest in ('unspecified','grace_house','ejwrh','confirm_route')),
   add column if not exists response_due_at timestamptz,
   add column if not exists linked_intake_id bigint references recoveryos.residence_application_intake(id),
-  -- Decision 6: set by the first authorized human triage act (recorded at close).
-  -- NULL = not yet human-classified. Vocabulary mirrors the ratified decision text.
+  -- Decision 6 (as confirmed with modification, 2026-09-07): set by the first
+  -- authorized human triage act (recorded at close). NULL = not yet human-classified.
+  -- 'other' = a LEGITIMATE inquiry that is neither recovery support nor partnership
+  -- (speaker invitation, training request, family general information, media/research,
+  -- resource table, ...) — never forced into a nonqualified value.
   add column if not exists triage_classification text
     check (triage_classification in ('qualified_recovery_support','organization_partnership',
-                                     'spam','duplicate','test','unrelated_solicitation',
-                                     'other_nonqualified'));
+                                     'other','spam','duplicate','test',
+                                     'unrelated_solicitation','other_nonqualified')),
+  -- Short optional note permitted only with 'other' (what kind of legitimate inquiry
+  -- it was). No classification requires narrative.
+  add column if not exists triage_classification_note text;
 
 comment on column recoveryos.leads.response_due_at is
   'DORMANT (2026-09-05 decision 3): business-time targets govern operationally, but no '
@@ -120,10 +126,21 @@ comment on column recoveryos.leads.response_due_at is
   'derive overdue state from assumed hours; surface age since receipt instead.';
 
 comment on column recoveryos.leads.triage_classification is
-  'Human quality/relevance determination (2026-09-05 decision 6), recorded by the closing '
-  'triage act. Technical acceptance admits to the queue; only this human classification '
-  'marks an inquiry qualified. Nonqualified values keep spam/duplicates/tests from '
-  'inflating qualified-recovery-request measures. NULL = not yet human-classified.';
+  'Administrative measurement/routing classification recorded by the closing human '
+  'triage act (2026-09-05 decision 6, confirmed with modification 2026-09-07). NOT a '
+  'clinical assessment, diagnosis, participant label, or determination of the '
+  'legitimacy of a person''s need. qualified_recovery_support = sufficiently related to '
+  'GFA recovery-support work to enter the qualified-inquiry measurement layer — it does '
+  'NOT mean service was delivered, the person became a participant, eligibility was '
+  'established, or human connection occurred. other = legitimate inquiry outside '
+  'recovery support and partnership (community reach), distinct from the nonqualified '
+  'values. duplicate closes the redundant record while the original submission/event '
+  'evidence is retained untouched (append-only; never deleted or silently merged). '
+  'NULL = not yet human-classified.';
+
+comment on column recoveryos.leads.triage_classification_note is
+  'Optional short note accompanying triage_classification = ''other'' only (what kind '
+  'of legitimate inquiry). Never required; other classifications carry no narrative.';
 
 create unique index if not exists leads_wix_submission_id_key
   on recoveryos.leads (wix_submission_id) where wix_submission_id is not null;
@@ -248,11 +265,15 @@ begin
   return jsonb_build_object('ok', true, 'code', 'recorded', 'event_id', v_event_id);
 end $$;
 
--- Closing carries the human triage classification (decision 6): required on close so
--- nonqualified records (spam/duplicate/test/unrelated) never silently blend into
--- qualified-recovery-request measures. Ignored (and rejected) for non-close moves.
+-- Closing carries the human triage classification (decision 6, confirmed with
+-- modification 2026-09-07): required on close so nonqualified records never silently
+-- blend into qualified-recovery-request measures, with 'other' for legitimate
+-- inquiries outside recovery support/partnership. A short optional note is permitted
+-- only with 'other'; no classification requires narrative. Classification is rejected
+-- on non-close moves.
 create or replace function recoveryos.set_lead_status(
-  p_lead_id bigint, p_status text, p_close_classification text default null)
+  p_lead_id bigint, p_status text, p_close_classification text default null,
+  p_close_note text default null)
 returns jsonb language plpgsql security definer set search_path = recoveryos, public as $$
 declare v_me bigint := recoveryos.current_person_id();
 begin
@@ -266,12 +287,16 @@ begin
   if p_status = 'closed' then
     if p_close_classification is null
        or p_close_classification not in ('qualified_recovery_support','organization_partnership',
-                                         'spam','duplicate','test','unrelated_solicitation',
-                                         'other_nonqualified') then
+                                         'other','spam','duplicate','test',
+                                         'unrelated_solicitation','other_nonqualified') then
       return jsonb_build_object('ok', false, 'code', 'classification_required',
         'message', 'Closing an inquiry records the human quality determination.');
     end if;
-  elsif p_close_classification is not null then
+    if p_close_note is not null and p_close_classification <> 'other' then
+      return jsonb_build_object('ok', false, 'code', 'note_only_with_other',
+        'message', 'The classification note accompanies ''other'' only.');
+    end if;
+  elsif p_close_classification is not null or p_close_note is not null then
     return jsonb_build_object('ok', false, 'code', 'classification_only_on_close');
   end if;
   update recoveryos.leads
@@ -279,6 +304,9 @@ begin
          triage_classification = case when p_status = 'closed'
                                       then p_close_classification
                                       else triage_classification end,
+         triage_classification_note = case when p_status = 'closed'
+                                           then nullif(left(trim(coalesce(p_close_note,'')), 300), '')
+                                           else triage_classification_note end,
          updated_at = now()
    where id = p_lead_id;
   if not found then return jsonb_build_object('ok', false, 'code', 'not_found'); end if;
@@ -358,7 +386,7 @@ $$;
 revoke execute on function
   recoveryos.assign_lead(bigint, bigint),
   recoveryos.record_lead_contact(bigint, text, text, int, timestamptz, text, text),
-  recoveryos.set_lead_status(bigint, text, text),
+  recoveryos.set_lead_status(bigint, text, text, text),
   recoveryos.route_lead(bigint, text, bigint),
   recoveryos.find_duplicate_leads(bigint),
   recoveryos.list_intake_assignees()
@@ -366,7 +394,7 @@ from public, anon;
 grant execute on function
   recoveryos.assign_lead(bigint, bigint),
   recoveryos.record_lead_contact(bigint, text, text, int, timestamptz, text, text),
-  recoveryos.set_lead_status(bigint, text, text),
+  recoveryos.set_lead_status(bigint, text, text, text),
   recoveryos.route_lead(bigint, text, bigint),
   recoveryos.find_duplicate_leads(bigint),
   recoveryos.list_intake_assignees()

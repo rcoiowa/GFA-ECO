@@ -24,13 +24,18 @@ export type ResidenceInterest = 'unspecified' | 'grace_house' | 'ejwrh' | 'confi
 export type ContactKind = 'attempted' | 'connected';
 
 /**
- * Decision 6 (2026-09-05): the closing human triage act records the
- * quality/relevance determination; nonqualified records never silently inflate
- * qualified-recovery-request measures.
+ * Decision 6 (2026-09-05, confirmed with modification 2026-09-07): the closing
+ * human triage act records the quality/relevance determination — an
+ * administrative measurement/routing classification, never a clinical
+ * assessment, diagnosis, participant label, or judgment of a person's need.
+ * 'other' = a legitimate inquiry outside recovery support and partnership
+ * (community reach), distinct from the nonqualified values, so nonqualified
+ * records never silently inflate qualified-recovery-request measures.
  */
 export type TriageClassification =
   | 'qualified_recovery_support'
   | 'organization_partnership'
+  | 'other'
   | 'spam'
   | 'duplicate'
   | 'test'
@@ -55,6 +60,8 @@ export type IntakeLead = {
   response_due_at: string | null;
   /** Human triage determination recorded at close (2026-09-05 decision 6). */
   triage_classification: TriageClassification | null;
+  /** Optional short note accompanying triage_classification = 'other' only. */
+  triage_classification_note: string | null;
   wix_submission_id: string | null;
   submitted_at: string | null;
   linked_intake_id: number | null;
@@ -143,11 +150,14 @@ export async function setLeadStatus(input: {
   status: Exclude<LeadStatus, 'converted'>;
   /** Required by the RPC when status is 'closed'; rejected otherwise (decision 6). */
   closeClassification?: TriageClassification;
+  /** Optional short note; the RPC accepts it only with closeClassification 'other'. */
+  closeNote?: string;
 }): Promise<LeadRpcResult> {
   const { data, error } = await getSupabase().rpc('set_lead_status', {
     p_lead_id: input.leadId,
     p_status: input.status,
     p_close_classification: input.closeClassification ?? null,
+    p_close_note: input.closeNote ?? null,
   });
   if (error) throw error;
   return data as LeadRpcResult;

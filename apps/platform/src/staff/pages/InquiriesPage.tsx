@@ -70,11 +70,12 @@ type Assignee = { person_id: number; first_name: string | null; last_name: strin
 const CLASSIFICATION_LABELS: Record<TriageClassification, string> = {
   qualified_recovery_support: 'Qualified recovery-support inquiry',
   organization_partnership: 'Organization / partnership inquiry',
+  other: 'Other legitimate inquiry (not recovery support)',
   spam: 'Spam',
   duplicate: 'Duplicate',
   test: 'Test submission',
   unrelated_solicitation: 'Unrelated solicitation',
-  other_nonqualified: 'Other — not a recovery-support request',
+  other_nonqualified: 'Nonqualified — none of the above',
 };
 
 /** Plain-language age since the inquiry reached GFA (decision 3: age, not fabricated overdue). */
@@ -114,6 +115,7 @@ export function InquiriesPage() {
   const [closeClassification, setCloseClassification] = useState<TriageClassification>(
     'qualified_recovery_support',
   );
+  const [closeNote, setCloseNote] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -150,6 +152,7 @@ export function InquiriesPage() {
     setMinutes('');
     setNextFollowUp('');
     setCloseClassification('qualified_recovery_support');
+    setCloseNote('');
     try {
       setContacts(await listLeadContacts(lead.id));
       const dup = await findDuplicateLeads(lead.id);
@@ -367,6 +370,14 @@ export function InquiriesPage() {
                               ),
                             )}
                           </select>
+                          {closeClassification === 'other' ? (
+                            <TextField
+                              label="What kind of inquiry? (optional)"
+                              value={closeNote}
+                              onChange={(e) => setCloseNote(e.target.value)}
+                              placeholder="Speaker invitation; training request; media contact"
+                            />
+                          ) : null}
                           <Button
                             variant={lead.status === 'closed' ? 'primary' : 'secondary'}
                             onClick={() =>
@@ -375,6 +386,10 @@ export function InquiriesPage() {
                                   leadId: lead.id,
                                   status: 'closed',
                                   closeClassification,
+                                  closeNote:
+                                    closeClassification === 'other' && closeNote.trim()
+                                      ? closeNote.trim()
+                                      : undefined,
                                 }),
                               )
                             }

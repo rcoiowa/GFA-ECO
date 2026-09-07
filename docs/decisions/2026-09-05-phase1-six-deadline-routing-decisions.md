@@ -130,3 +130,49 @@ no roles granted, no deploy, no CQCX mutation. Next gates, in order, per
 `docs/plans/phase1-intake-mutation-proposal-2026-09-05.md` §8: ledger move + PR (B),
 apply to CQCX (D), identity mutations (E), receiver redeploy (F), staging + synthetic
 battery (G), Wix edit (H).
+
+## Addendum (2026-09-07): triage classification CONFIRMED with modification
+
+- **Decision:** The Executive Director confirmed the required-at-close triage
+  classification with one modification: add **`other`** for legitimate inquiries that
+  are neither recovery support nor partnership (speaker invitations, training requests,
+  family general-information contacts, media/research, resource tables, and similar) —
+  a legitimate inquiry is never forced into a nonqualified value. When `other` is
+  selected, a **short optional classification note** is permitted
+  (`triage_classification_note`); no classification requires narrative.
+- **Date / decision-maker:** 2026-09-07; Executive Director, Grace For Addictions
+  (Thomas DeGarmeaux), authenticated executive-directed working session.
+- **Ratified semantics:**
+  - The classification is an **administrative measurement/routing classification** —
+    not a clinical assessment, diagnosis, participant label, or determination of the
+    legitimacy of a person's need.
+  - `qualified_recovery_support` means the inquiry is sufficiently related to GFA
+    recovery-support work to enter the qualified-inquiry measurement layer. It does
+    **not** mean service was delivered, the person became a participant, eligibility
+    was established, or human connection occurred.
+  - `duplicate` closes the redundant record while the original submission/event
+    evidence is retained untouched — never deleted or silently merged; where safely
+    resolvable it may later reference the canonical person/inquiry (a future
+    measurement-layer concern, deliberately not schema today).
+  - Reporting architecture direction (for the measurement work, not schema now):
+    All Contact Connect activity → Human-reviewed inquiries → Recovery Support /
+    Partnership / Other Legitimate / Nonqualified — everything outside recovery
+    support is not conceptually "nonqualified"; `other` preserves GFA's community
+    reach in reporting.
+- **Reconciliation queue:** item **Q3c (`verified_at`) is CLOSED as intentionally
+  unnecessary** for this architecture (evidence: ratified decision 6 + this
+  confirmation). Technical acceptance, human triage classification, contact attempt,
+  human connection, service delivery, and outcome remain separately evidenced
+  events/states; a verification timestamp column would duplicate the classification
+  act without adding evidence.
+- **Resulting delta (same STOP boundary; recorded in the confirming commit):** final
+  vocabulary `qualified_recovery_support / organization_partnership / other / spam /
+duplicate / test / unrelated_solicitation / other_nonqualified`; new nullable
+  `leads.triage_classification_note` (≤300 chars, accepted by `set_lead_status` only
+  with `other`, error `note_only_with_other` otherwise); `set_lead_status` signature is
+  now `(bigint, text, text, text)` in the grant/revoke lists; data-access and queue UI
+  updated (note field appears only when "Other legitimate inquiry" is selected); tests
+  pin the `other`+note path and that no other classification offers narrative.
+- **Next authorization on deck:** step B only (promote 0147 into the migrations ledger
+  and prepare the PR), contingent on the CI gate analysis recorded alongside this
+  addendum. Everything from D onward remains separately gated.

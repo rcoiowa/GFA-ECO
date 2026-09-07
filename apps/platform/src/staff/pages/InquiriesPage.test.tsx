@@ -44,6 +44,7 @@ const lead = (over: Partial<IntakeLead>): IntakeLead => ({
   // operating calendar is ratified. Overdue tests set it explicitly.
   response_due_at: null,
   triage_classification: null,
+  triage_classification_note: null,
   wix_submission_id: null,
   submitted_at: null,
   linked_intake_id: null,
@@ -147,6 +148,32 @@ describe('InquiriesPage', () => {
         expect.objectContaining({ leadId: 1, status: 'closed', closeClassification: 'spam' }),
       ),
     );
+  });
+
+  it("closing as 'other' keeps a legitimate inquiry out of nonqualified and carries the optional note", async () => {
+    render(<InquiriesPage />);
+    fireEvent.click(await screen.findByText('Work this inquiry'));
+    const select = await screen.findByLabelText('Close as');
+    fireEvent.change(select, { target: { value: 'other' } });
+    const note = await screen.findByLabelText('What kind of inquiry? (optional)');
+    fireEvent.change(note, { target: { value: 'Speaker invitation for Job Corps' } });
+    fireEvent.click(screen.getByText('Closed'));
+    await waitFor(() =>
+      expect(mocks.setLeadStatus).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'closed',
+          closeClassification: 'other',
+          closeNote: 'Speaker invitation for Job Corps',
+        }),
+      ),
+    );
+  });
+
+  it('the classification note is offered only for other — no narrative elsewhere', async () => {
+    render(<InquiriesPage />);
+    fireEvent.click(await screen.findByText('Work this inquiry'));
+    await screen.findByLabelText('Close as');
+    expect(screen.queryByLabelText('What kind of inquiry? (optional)')).not.toBeInTheDocument();
   });
 
   it('surfaces age since receipt without fabricating an overdue state', async () => {

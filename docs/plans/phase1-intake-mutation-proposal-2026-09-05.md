@@ -15,10 +15,15 @@ connector is not authorized in the recording session, so they could not be re-ve
 today and **must be re-verified immediately before mutation** (each mutation step below
 begins with its own verification).
 
-**Standing operational item (people first):** the gate found 2 real inquiries in
-`recoveryos.leads`, both `new`, both unassigned, submitted 2026-09-01. Manual outreach
-via the existing staff surface, logged in the current machinery, remains recommended
-now, independent of everything below.
+**Operational observation (last verified 2026-09-05, not re-verified since):** at the
+Phase 1 gate's CQCX check, 2 real inquiries sat in `recoveryos.leads`, both `new` and
+unassigned, submitted 2026-09-01. That evidence establishes their status **at that
+observation only** — whether contact has since occurred outside the system, the current
+schema cannot record, and this document does not assert their present state. The next
+authorized CQCX session should re-verify them first and, only if still unworked,
+recommend manual outreach via the existing staff surface. (Framing corrected 2026-09-07
+by executive direction: do not carry these as "still needing outreach" without fresh
+verification.)
 
 ## 1. Accounts / person records that must actually be created
 
@@ -192,3 +197,41 @@ Original restatement as proposed (historical):
 
 A "KEEP" per line ratifies the proposed default; any "MODIFY" replaces it. Decisions are
 recorded as a decision log before step A executes.
+
+## 10. CI / formatting gate analysis before step B (read-only, 2026-09-07)
+
+Question: would the intended activation PR fail CI because of the reported prettier
+drift? **No.** Evidence:
+
+1. **Why the failures exist:** running `prettier --check "**/*.{ts,tsx,css,md,json}"`
+   on the canonical merge target itself (`claude/recoveryos-canonical-audit-1pvcwr` @
+   `08b979f`, clean worktree, same lockfile-pinned prettier) reports **180 files**
+   failing. The canonical line was never kept prettier-clean; the repo's CI has never
+   enforced it. (The earlier "182" on this branch was those 180 plus two then-unformatted
+   new decision docs, since formatted.)
+2. **Merge target status:** fails `format:check` (180 files) on its own, before any
+   work from this branch.
+3. **Origin of the failures:** entirely pre-existing on the merge target. File-list
+   comparison: **zero** failures exist only on this branch; this branch's list (177) is
+   a strict subset of the target's — three files (`InquiriesPage.tsx`, its test,
+   `leadsQueue.ts`) fail on the target but pass here because this branch formatted
+   them. The receiver (`supabase/functions/lead-intake/index.ts`) fails on both sides
+   — its drift predates the delta (verified against the pre-delta blob). Prettier has
+   no SQL parser, so the prepared migration is outside `format:check` scope entirely.
+4. **Would the PR fail CI?** `.github/workflows/ci.yml` contains **no format/prettier
+   step**. Its actual steps were all run locally on this branch, post-delta, and pass:
+   all 12 governance/guard scripts (canonical-backend, ICARE lock + regression,
+   intake boundary, booking integrity, Grace model lock + safety floor + disclosure
+   sync, view privileges, domain vocabulary, service provenance, intake minimization),
+   `pnpm typecheck` (10/10 projects), `pnpm test` (277 tests: platform 164, domain 92,
+   recovery-content 21), `pnpm build`, and the production-bundle backend guard
+   (canonical CQCX ref present, retired ref absent).
+5. **No mass formatting performed** — a 180-file reformat would bury the activation
+   diff and belongs, if ever, to a separate dedicated commit under its own review.
+6. **Minimum corrective action: none required for CI.** Optional hygiene (not a
+   blocker, separate from the activation PR): add `format:check` to CI only after a
+   one-time dedicated formatting commit on the canonical line, or scope it to changed
+   files; decision deferred — nothing in this workflow depends on it.
+
+Conclusion: step B is CI-safe on formatting grounds. Step B remains **not authorized**
+by this analysis; it awaits its own explicit instruction.
