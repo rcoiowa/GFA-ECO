@@ -11,7 +11,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250410.0",
     "typescript": "^5.8.0",
-    "wrangler": "4.14.0"
+    "wrangler": "^4.14.0"
   },
   "description": "DORMANT provenance-only prototype; Supabase Edge Functions own public intake."
 }
