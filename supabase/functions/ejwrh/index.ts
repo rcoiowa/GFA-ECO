@@ -45,8 +45,12 @@
 //     voicemail_ok ('yes'|'no' — safe-contact), timing ('now'|'soon'|'exploring').
 //   plus the honeypot field (never stored).
 
-const INTAKE_URL = "https://cqcxvwoukyhxyokfwnjm.supabase.co/functions/v1/residence-intake";
+const INTAKE_URL = 'https://cqcxvwoukyhxyokfwnjm.supabase.co/functions/v1/residence-intake';
 const EJWRH_RESIDENCE_ID = 2;
+// Public Turnstile site key. Set together with the receiver's TURNSTILE_SECRET at
+// activation; while empty, no widget renders and submissions carry no token
+// (accepted only while the receiver runs with INTAKE_TURNSTILE_OPTIONAL).
+const TURNSTILE_SITE_KEY = Deno.env.get('TURNSTILE_SITE_KEY') ?? '';
 
 const PAGE = `<!doctype html>
 <html lang="en">
@@ -218,6 +222,7 @@ const PAGE = `<!doctype html>
         about it using the method I chose above. <span class="opt">(required)</span></span>
       </div>
 
+      <div id="turnstileBox" style="margin-top:1rem"></div>
       <button type="submit" id="submitBtn">Send my application</button>
       <div class="notice ok" id="okNotice" role="status">
         <strong>We received your application.</strong> A member of our team will reach out
@@ -249,6 +254,28 @@ const PAGE = `<!doctype html>
   var err = document.getElementById('errNotice');
   var v = function (id) { return (document.getElementById(id).value || '').trim(); };
 
+  // Cloudflare Turnstile — mandatory abuse control on the shared intake pipe.
+  var TS_KEY = '${TURNSTILE_SITE_KEY}';
+  var tsWidget;
+  function tsToken() {
+    if (!TS_KEY) return null;
+    try { return (window.turnstile && tsWidget !== undefined) ? window.turnstile.getResponse(tsWidget) : null; }
+    catch (e) { return null; }
+  }
+  function tsReset() {
+    try { if (window.turnstile && tsWidget !== undefined) window.turnstile.reset(tsWidget); } catch (e) {}
+  }
+  if (TS_KEY) {
+    window.__tsReady = function () {
+      tsWidget = window.turnstile.render(document.getElementById('turnstileBox'),
+        { sitekey: TS_KEY, action: 'residence_application' });
+    };
+    var s = document.createElement('script');
+    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=__tsReady';
+    s.async = true;
+    document.head.appendChild(s);
+  }
+
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     ok.classList.remove('ok'); err.classList.remove('err');
@@ -258,6 +285,13 @@ const PAGE = `<!doctype html>
       err.classList.add('err');
       err.innerHTML = '<strong>Almost there.</strong> We need your name, at least one way to '
         + 'reach you, and the two checkboxes. Everything else is optional.';
+      return;
+    }
+    var tst = tsToken();
+    if (TS_KEY && !tst) {
+      err.classList.add('err');
+      err.innerHTML = '<strong>One more step.</strong> Please complete the security check above '
+        + 'the send button, then try again.';
       return;
     }
     var answers = {};
@@ -284,6 +318,7 @@ const PAGE = `<!doctype html>
         referral_source: v('referral_source') || null,
         consent_to_contact: true,
         company_website: v('company_website'),
+        turnstile_token: tst,
         answers: answers,
         source: 'ejwrh-portal'
       })
@@ -292,11 +327,11 @@ const PAGE = `<!doctype html>
         form.querySelectorAll('input, select, textarea, button').forEach(function (el) { el.disabled = true; });
         ok.classList.add('ok');
       } else {
-        btn.disabled = false; btn.textContent = 'Send my application';
+        btn.disabled = false; btn.textContent = 'Send my application'; tsReset();
         err.classList.add('err');
       }
     }); }).catch(function () {
-      btn.disabled = false; btn.textContent = 'Send my application';
+      btn.disabled = false; btn.textContent = 'Send my application'; tsReset();
       err.classList.add('err');
     });
   });
@@ -306,22 +341,26 @@ const PAGE = `<!doctype html>
 </html>`;
 
 Deno.serve((req: Request) => {
-  if (req.method !== "GET" && req.method !== "HEAD") {
-    return new Response("Method not allowed", { status: 405 });
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return new Response('Method not allowed', { status: 405 });
   }
-  return new Response(req.method === "HEAD" ? null : PAGE, {
+  return new Response(req.method === 'HEAD' ? null : PAGE, {
     status: 200,
     headers: {
-      "content-type": "text/html; charset=utf-8",
-      "cache-control": "public, max-age=300",
-      "content-security-policy":
-        "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; " +
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'public, max-age=300',
+      // script-src/frame-src allow the Cloudflare Turnstile widget (loaded only
+      // when TURNSTILE_SITE_KEY is configured); everything else stays locked down.
+      'content-security-policy':
+        "default-src 'none'; style-src 'unsafe-inline'; " +
+        "script-src 'unsafe-inline' https://challenges.cloudflare.com; " +
+        'frame-src https://challenges.cloudflare.com; ' +
         "connect-src https://cqcxvwoukyhxyokfwnjm.supabase.co; base-uri 'none'; " +
         "form-action 'none'; frame-ancestors 'none'",
-      "strict-transport-security": "max-age=31536000; includeSubDomains",
-      "x-frame-options": "DENY",
-      "x-content-type-options": "nosniff",
-      "referrer-policy": "strict-origin-when-cross-origin",
+      'strict-transport-security': 'max-age=31536000; includeSubDomains',
+      'x-frame-options': 'DENY',
+      'x-content-type-options': 'nosniff',
+      'referrer-policy': 'strict-origin-when-cross-origin',
     },
   });
 });

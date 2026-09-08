@@ -5,7 +5,7 @@ import { Alert, Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@r
 import { useStaff } from '../staffContext';
 
 const STATUS_LABELS: Record<Grievance['status'], string> = {
-  open: 'Open — acknowledge within 2 business days',
+  open: 'Open — acknowledge within 24 hours',
   in_review: 'In review',
   resolved: 'Resolved',
   closed: 'Closed',
@@ -113,7 +113,7 @@ export function GrievancesPage() {
     <>
       <PageHeader
         title="Grievances"
-        lede="Every filing deserves written acknowledgment within 2 business days and a written decision within 7 — no retaliation, ever. This queue tracks that follow-through."
+        lede="Every filing deserves written acknowledgment within 24 hours and a written response within 5 business days (Grievance Policy v1.0) — no retaliation, ever. This queue tracks that follow-through."
         crumbs={[{ to: '/staff/today', label: 'Today' }]}
       />
       {loading ? (

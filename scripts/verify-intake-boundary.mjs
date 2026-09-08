@@ -13,7 +13,11 @@ const repoRoot = join(fileURLToPath(import.meta.url), '..', '..');
 const read = (p) => readFileSync(join(repoRoot, p), 'utf8');
 
 const migration = read('supabase/launch/migrations/0122_public_intake_boundary.sql');
-const fn = read('supabase/functions/residence-intake/index.ts');
+// The receiver's behavior lives in handler.ts (index.ts is the Deno.serve wiring);
+// scan both so the posture holds wherever the logic sits.
+const fn =
+  read('supabase/functions/residence-intake/index.ts') +
+  read('supabase/functions/residence-intake/handler.ts');
 
 const checks = [];
 const assert = (name, cond) => checks.push({ name, ok: !!cond });
@@ -27,12 +31,17 @@ assert(
   'no "grant ... to anon" on residence_application_intake',
   !/grant[\s\S]*residence_application_intake[\s\S]*to\s+anon/i.test(migration),
 );
-assert('no bare "to anon" insert grant in 0122', !/\binsert\b[\s\S]{0,40}\bto\s+anon\b/i.test(migration));
+assert(
+  'no bare "to anon" insert grant in 0122',
+  !/\binsert\b[\s\S]{0,40}\bto\s+anon\b/i.test(migration),
+);
 
 // --- RLS enabled on both intake tables ---------------------------------------
 assert(
   'RLS enabled on residence_listing_submissions',
-  /alter table recoveryos\.residence_listing_submissions enable row level security/i.test(migration),
+  /alter table recoveryos\.residence_listing_submissions enable row level security/i.test(
+    migration,
+  ),
 );
 assert(
   'RLS enabled on residence_application_intake',
@@ -44,7 +53,10 @@ assert(
   'no INSERT policy on either intake table',
   !/create policy[\s\S]*for insert[\s\S]*(residence_listing_submissions|residence_application_intake)/i.test(
     migration,
-  ) && !/(residence_listing_submissions|residence_application_intake)[\s\S]*for insert/i.test(migration),
+  ) &&
+    !/(residence_listing_submissions|residence_application_intake)[\s\S]*for insert/i.test(
+      migration,
+    ),
 );
 
 // --- Sensitive application intake: no public/anon SELECT ----------------------
@@ -110,7 +122,10 @@ assert(
 
 // --- Edge Function: service-role client, no anon table write ------------------
 assert('Edge Function uses SUPABASE_SERVICE_ROLE_KEY', /SUPABASE_SERVICE_ROLE_KEY/.test(fn));
-assert('Edge Function enforces an origin allowlist', /ALLOWED_ORIGINS/.test(fn) && /forbidden_origin/.test(fn));
+assert(
+  'Edge Function enforces an origin allowlist',
+  /ALLOWED_ORIGINS/.test(fn) && /forbidden_origin/.test(fn),
+);
 assert('Edge Function has a honeypot', /honeypot|company_website|hp_field/i.test(fn));
 assert('Edge Function never reads sensitive intake back', !/\.select\('\*'\)/.test(fn));
 

@@ -864,7 +864,7 @@ grievances(){
       </tr>`).join('')||'<tr><td colspan=6><div class="empty"><div class="e-ico">🕊</div><p>No grievances on file.</p></div></td></tr>'}
     </tbody></table>
   </div>
-  <div class="helper">Timeline standard: acknowledge in 2 business days · investigate in 5–10 · written decision in 5 · appeal window 10.</div>`;
+  <div class="helper">Timeline standard (Grievance Policy v1.0): acknowledge within 24 hours · written response in 5 business days · appeal window 10 business days.</div>`;
 },
 
 profile(){
@@ -1119,7 +1119,7 @@ function openGrievanceModal(){
 function saveGrievance(){
   const desc=document.getElementById('m_gdesc').value.trim(); if(!desc){toast('Description required');return;}
   R().grievances.push({id:uid(),from:document.getElementById('m_gfrom').value||'Anonymous',date:today(),type:document.getElementById('m_gtype').value,desc,status:'submitted'});
-  closeModal(); toast('Grievance filed — acknowledgment within 2 business days'); nav('grievances');
+  closeModal(); toast('Grievance filed — acknowledgment within 24 hours'); nav('grievances');
 }
 
 /* ---------- toast ---------- */

@@ -56,7 +56,7 @@ describe('GrievancesPage — staff follow-through queue', () => {
     mocks.listResidenceGrievances.mockResolvedValue([grievance({ id: 1 })]);
     wrap();
     expect(await screen.findByText(/hot water has been out/)).toBeInTheDocument();
-    expect(screen.getByText(/acknowledge within 2 business days/)).toBeInTheDocument();
+    expect(screen.getByText(/acknowledge within 24 hours/)).toBeInTheDocument();
     expect(mocks.listResidenceGrievances).toHaveBeenCalledWith(7);
   });
 

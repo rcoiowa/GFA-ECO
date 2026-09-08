@@ -317,7 +317,7 @@ footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
         <li>Complete the <b>online application</b> through the Grace House portal (button at the bottom of this page), or</li>
         <li><b>Download, print, and return</b> the form to Grace House in person or by email to gracehouse@graceforaddictions.org.</li>
       </ul>
-      <p>Upon receipt of your completed application, a member of the Grace House team will contact you within <b>2 business days</b> to review your submission and schedule an interview. If a bed is not currently available, you may choose to join the waitlist — we'll keep in contact with you at least every two weeks.</p>
+      <p>Upon receipt of your completed application, a member of the Grace House team will contact you to review your submission and schedule an interview. If a bed is not currently available, you may choose to join the waitlist — staff will stay in touch with you while you wait.</p>
       <h4>Stage 2 Documents</h4>
       <div class="doclist">
         <div class="docrow"><div class="doc-no">4</div><div class="doc-info"><div class="doc-name">Application &amp; Pre-Screening Form</div><div class="doc-desc">Applicant information, eligibility pathway selection, recovery &amp; support history, safety screening, and your goals — in your own words.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Application_and_PreScreening_Form.docx" download>Download</a></div>
@@ -366,7 +366,7 @@ footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
       <p>These are the policies that govern life at Grace House after move-in — your voice, your protections, and the standards our staff and leaders hold themselves to. Each is available to you at all times, posted or in the house document library and the VRCC app.</p>
       <h4>Your Voice &amp; Protections</h4>
       <div class="doclist">
-        <div class="docrow"><div class="doc-no">12</div><div class="doc-info"><div class="doc-name">Grievance Policy &amp; Form</div><div class="doc-desc">Your right to be heard: anonymous filing honored, acknowledgment in 2 business days, no retaliation — ever.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Grievance_Policy_and_Form.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">12</div><div class="doc-info"><div class="doc-name">Grievance Policy &amp; Form</div><div class="doc-desc">Your right to be heard: anonymous filing honored, acknowledgment within 24 hours, no retaliation — ever.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Grievance_Policy_and_Form.docx" download>Download</a></div>
         <div class="docrow"><div class="doc-no">13</div><div class="doc-info"><div class="doc-name">Return-to-Use Response Policy</div><div class="doc-desc">A return to use is a medical and recovery event — not a moral failure and not automatic discharge. Safety first, dignity always.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Return_to_Use_Response_Policy.docx" download>Download</a></div>
         <div class="docrow"><div class="doc-no">14</div><div class="doc-info"><div class="doc-name">Incident Report System</div><div class="doc-desc">How safety events are documented, reviewed, and learned from — with confidentiality protections.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Incident_Report_System.docx" download>Download</a></div>
         <div class="docrow"><div class="doc-no">15</div><div class="doc-info"><div class="doc-name">Exit &amp; Transition Policy</div><div class="doc-desc">Completion, voluntary exit, and administrative removal — every exit handled with dignity and a door that stays open.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Exit_and_Transition_Policy.docx" download>Download</a></div>
@@ -494,13 +494,14 @@ footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
       <div class="afield"><label>How did you hear about us? <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional)</span></label><input id="gh_ref" maxlength="200"></div>
       <label class="chk" style="margin:.7rem 0"><input type="checkbox" id="gh_consent"> <span>I agree that Grace For Addictions may process this application and contact me about it using the way I chose above. *</span></label>
       <div style="position:absolute;left:-5000px" aria-hidden="true"><label>Company website</label><input id="gh_company_website" tabindex="-1" autocomplete="off"></div>
+      <div id="gh_turnstile" style="margin:.4rem 0"></div>
       <div id="gh_err" class="errmsg hidden"></div>
       <button class="btn btn-gold" id="gh_submit" onclick="submitHousingApplication({prefix:'gh_',residenceId:1,source:'grace-house-directory',email:'gracehouse@graceforaddictions.org'})">Send my application</button>
     </div>
     <div class="stage app-card hidden" id="gh_ok" style="text-align:center;padding:2.6rem 2rem">
       <div style="font-size:2.6rem">🕊️</div>
       <h3 style="margin-top:.5rem">Your application is on its way</h3>
-      <p style="max-width:34rem;margin:.6rem auto 1.2rem;line-height:1.7">Thank you for trusting us with your story. A member of the Grace House team will reach out within <b>2 business days</b>, the way you asked us to. If a bed isn't immediately available, we'll offer you a place on our waitlist and stay in touch.</p>
+      <p style="max-width:34rem;margin:.6rem auto 1.2rem;line-height:1.7">Thank you for trusting us with your story. A member of the Grace House team will reach out, the way you asked us to. If a bed isn't immediately available, we'll offer you a place on our waitlist and stay in touch.</p>
       <p style="font-size:.85rem;color:var(--muted)">Need us sooner? 515-220-8771 · gracehouse@graceforaddictions.org<br>If you're in crisis right now, call or text 988.</p>
     </div>
   </div>
@@ -540,13 +541,14 @@ footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
       <div class="afield"><label>How did you hear about us? <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional)</span></label><input id="ej_ref" maxlength="200"></div>
       <label class="chk" style="margin:.7rem 0"><input type="checkbox" id="ej_consent"> <span>I agree that Grace For Addictions may process this application and contact me about it using the way I chose above. *</span></label>
       <div style="position:absolute;left:-5000px" aria-hidden="true"><label>Company website</label><input id="ej_company_website" tabindex="-1" autocomplete="off"></div>
+      <div id="ej_turnstile" style="margin:.4rem 0"></div>
       <div id="ej_err" class="errmsg hidden"></div>
       <button class="btn btn-gold" id="ej_submit" onclick="submitHousingApplication({prefix:'ej_',residenceId:2,source:'ejwrh-directory',email:'ejwrh@rcoiowa.org'})">Send my application</button>
     </div>
     <div class="stage app-card hidden" id="ej_ok" style="text-align:center;padding:2.6rem 2rem">
       <div style="font-size:2.6rem">🕊️</div>
       <h3 style="margin-top:.5rem">Your application is on its way</h3>
-      <p style="max-width:34rem;margin:.6rem auto 1.2rem;line-height:1.7">Thank you. A member of our team will reach out within <b>2 business days</b>, the way you asked us to. If it's a fit, intake happens with staff, at your pace, before move-in.</p>
+      <p style="max-width:34rem;margin:.6rem auto 1.2rem;line-height:1.7">Thank you. A member of our team will reach out, the way you asked us to. If it's a fit, intake happens with staff, at your pace, before move-in.</p>
       <p style="font-size:.85rem;color:var(--muted)">Need us sooner? 515-220-8771 · ejwrh@rcoiowa.org<br>If you're in crisis right now, call or text 988.</p>
     </div>
   </div>
@@ -732,6 +734,37 @@ const $=id=>document.getElementById(id);
 // → staff review queue + notifications). Payload is the Gate-B minimized contract
 // — no clinical/SUD/safety/legal detail before an account and consent exist.
 const INTAKE_URL='https://cqcxvwoukyhxyokfwnjm.supabase.co/functions/v1/residence-intake';
+
+// ---- Cloudflare Turnstile (mandatory abuse control on the shared intake pipe) ----
+// The residence-intake receiver requires a turnstile_token in production and
+// verifies its action + hostname server-side. TURNSTILE_SITE_KEY is public
+// configuration: set it together with the receiver's TURNSTILE_SECRET at
+// activation. While it is empty no widget renders and submissions carry no
+// token (accepted only while the receiver runs with INTAKE_TURNSTILE_OPTIONAL).
+const TURNSTILE_SITE_KEY='';
+const TS_WIDGETS={};
+function tsRenderAll(){
+  if(!TURNSTILE_SITE_KEY || !window.turnstile) return;
+  for(const p of ['gh_','ej_']){
+    const el=document.getElementById(p+'turnstile');
+    if(el && !(p in TS_WIDGETS)){
+      TS_WIDGETS[p]=window.turnstile.render(el,{sitekey:TURNSTILE_SITE_KEY,action:'residence_application'});
+    }
+  }
+}
+if(TURNSTILE_SITE_KEY){
+  const s=document.createElement('script');
+  s.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=__tsReady';
+  s.async=true; window.__tsReady=tsRenderAll; document.head.appendChild(s);
+}
+function tsToken(p){
+  if(!TURNSTILE_SITE_KEY) return null;
+  try{ return (window.turnstile && TS_WIDGETS[p]!==undefined) ? window.turnstile.getResponse(TS_WIDGETS[p]) : null; }catch(e){ return null; }
+}
+function tsReset(p){
+  try{ if(window.turnstile && TS_WIDGETS[p]!==undefined) window.turnstile.reset(TS_WIDGETS[p]); }catch(e){}
+}
+
 const appVal=(p,id)=>{const el=$(p+id);return el?(el.value||'').trim():'';};
 async function submitHousingApplication(cfg){
   const p=cfg.prefix, err=$(p+'err'), ok=$(p+'ok'), btn=$(p+'submit');
@@ -739,6 +772,11 @@ async function submitHousingApplication(cfg){
   const name=appVal(p,'name'), phone=appVal(p,'phone'), email=appVal(p,'email');
   if(!name || (!phone && !email) || !$(p+'age18').checked || !$(p+'consent').checked){
     err.textContent='Please add your name, at least one way to reach you, and check the two boxes. Everything else is optional.';
+    err.classList.remove('hidden'); err.scrollIntoView({behavior:'smooth',block:'center'}); return;
+  }
+  const tst=tsToken(p);
+  if(TURNSTILE_SITE_KEY && !tst){
+    err.textContent='Please complete the security check above the send button.';
     err.classList.remove('hidden'); err.scrollIntoView({behavior:'smooth',block:'center'}); return;
   }
   const answers={age_18_plus:'yes'};
@@ -757,6 +795,7 @@ async function submitHousingApplication(cfg){
         applicant_name:name, applicant_email:email||null, applicant_phone:phone||null,
         preferred_contact:appVal(p,'contact'), referral_source:appVal(p,'ref')||null,
         consent_to_contact:true, company_website:appVal(p,'company_website'),
+        turnstile_token:tst,
         answers:answers, source:cfg.source
       })
     });
@@ -766,7 +805,7 @@ async function submitHousingApplication(cfg){
       window.scrollTo({top:0,behavior:'smooth'});
     } else { throw new Error('intake_failed'); }
   }catch(e){
-    btn.disabled=false; btn.textContent='Send my application';
+    btn.disabled=false; btn.textContent='Send my application'; tsReset(p);
     err.innerHTML='We couldn\'t send that just now — but you\'re not stuck. Call <b>515-220-8771</b> or email <b>'+cfg.email+'</b> and we\'ll take your application by phone. What you typed stays here so you can try again.';
     err.classList.remove('hidden');
   }
@@ -806,7 +845,7 @@ function gtab(i,el){
     <div id="refDone" class="hidden" style="text-align:center;padding:1.2rem 0">
       <div style="font-size:2rem">✓</div>
       <p style="font-weight:700;color:#10384F;margin-top:.4rem">Referral received.</p>
-      <p style="font-size:.9rem;color:#4A5560;margin-top:.4rem">It's in the residence intake queue now. A team member will follow up within 2 business days. Need someone sooner? Call 515-220-8771.</p>
+      <p style="font-size:.9rem;color:#4A5560;margin-top:.4rem">It's in the residence intake queue now. A team member will follow up. Need someone sooner? Call 515-220-8771.</p>
       <button class="btn-dir" style="margin-top:.9rem" onclick="document.getElementById('refmo').classList.add('hidden')">Done</button>
     </div>
   </div>
@@ -814,8 +853,8 @@ function gtab(i,el){
 
 <script>
 /* ---------- live referral intake (Provider Hub Room 4) ---------- */
-const VRCC_API = 'https://ykykeioydvtxpyreshhs.supabase.co/rest/v1';
-const VRCC_KEY = 'sb_publishable_9NOklH5Dvj3PcQs2dCLdpg_zx4txe8a';
+const VRCC_API = 'https://cqcxvwoukyhxyokfwnjm.supabase.co/rest/v1';
+const VRCC_KEY = 'sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x';
 let refResidenceId = null;
 function openReferral(residenceId, residenceName){
   refResidenceId = residenceId;

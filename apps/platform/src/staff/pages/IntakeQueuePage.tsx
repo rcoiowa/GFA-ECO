@@ -40,7 +40,10 @@ const STATUS_LABELS: Record<ResidenceApplicationIntake['status'], string> = {
   closed: 'Closed',
 };
 
-const NEXT_STEPS: Record<string, { status: Exclude<ResidenceApplicationIntake['status'], 'received'>; label: string }[]> = {
+const NEXT_STEPS: Record<
+  string,
+  { status: Exclude<ResidenceApplicationIntake['status'], 'received'>; label: string }[]
+> = {
   received: [
     { status: 'contacted', label: 'Mark contacted' },
     { status: 'waitlisted', label: 'Waitlist' },
@@ -125,7 +128,10 @@ export function IntakeQueuePage() {
   const [candidates, setCandidates] = useState<IntakeConversionCandidate[] | null>(null);
   const [lookupEmail, setLookupEmail] = useState('');
   const [lookupNote, setLookupNote] = useState<string | null>(null);
-  const [pendingWarnings, setPendingWarnings] = useState<{ personId: number; warnings: string[] } | null>(null);
+  const [pendingWarnings, setPendingWarnings] = useState<{
+    personId: number;
+    warnings: string[];
+  } | null>(null);
   const [converted, setConverted] = useState<string | null>(null);
 
   const openConvert = async (intakeId: number) => {
@@ -151,7 +157,10 @@ export function IntakeQueuePage() {
   const lookupByEmail = async () => {
     if (convertFor == null || !lookupEmail.trim()) return;
     setLookupNote(null);
-    const r = await findPersonForIntakeConversion({ intakeId: convertFor, email: lookupEmail.trim() });
+    const r = await findPersonForIntakeConversion({
+      intakeId: convertFor,
+      email: lookupEmail.trim(),
+    });
     if (r.ok) {
       setCandidates(r.candidates ?? []);
       if ((r.candidates ?? []).length === 0) setLookupNote('No account uses that email.');
@@ -184,7 +193,7 @@ export function IntakeQueuePage() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <PageHeader
         title="Housing application intake"
-        lede="People who applied before having an account. First contact within 2 business days; conversion to a full application is always a deliberate step."
+        lede="People who applied before having an account. Prompt first contact is the standard; conversion to a full application is always a deliberate step."
       />
       <div className="mb-4">
         <Link to="/home" className="text-sm text-ink-muted underline underline-offset-2">
@@ -227,7 +236,9 @@ export function IntakeQueuePage() {
                         r.applicant_phone,
                         r.applicant_email,
                         r.preferred_contact ? `prefers ${r.preferred_contact}` : null,
-                        r.consent_to_contact ? 'consented to contact' : '⚠ no contact consent recorded',
+                        r.consent_to_contact
+                          ? 'consented to contact'
+                          : '⚠ no contact consent recorded',
                         r.referral_source ? `heard about us: ${r.referral_source}` : null,
                       ]
                         .filter(Boolean)
@@ -281,7 +292,11 @@ export function IntakeQueuePage() {
                       {(NEXT_STEPS[r.status] ?? []).map((step) => (
                         <Button
                           key={step.status}
-                          variant={step.status === 'closed' || step.status === 'declined' ? 'ghost' : 'secondary'}
+                          variant={
+                            step.status === 'closed' || step.status === 'declined'
+                              ? 'ghost'
+                              : 'secondary'
+                          }
                           size="md"
                           onClick={() => void act(r.id, step.status)}
                         >
@@ -290,7 +305,10 @@ export function IntakeQueuePage() {
                       ))}
                     </div>
                     {convertFor === r.id ? (
-                      <div className="mt-3 rounded-md border border-line bg-surface p-3" data-testid="convert-panel">
+                      <div
+                        className="mt-3 rounded-md border border-line bg-surface p-3"
+                        data-testid="convert-panel"
+                      >
                         <p className="text-sm font-medium text-ink">
                           Which account belongs to {r.applicant_name}?
                         </p>

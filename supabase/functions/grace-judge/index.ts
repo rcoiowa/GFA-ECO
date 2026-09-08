@@ -23,7 +23,8 @@
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-grace-eval',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type, x-grace-eval',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 const json = (body: unknown, status = 200) =>
@@ -153,9 +154,10 @@ Deno.serve(async (req: Request) => {
 
   const reply = String(body.candidate_reply ?? '');
   if (!reply.trim()) return json({ ok: false, code: 'empty_candidate' }, 400);
-  const dims = (Array.isArray(body.dimensions) && body.dimensions.length
-    ? body.dimensions.filter((d) => (DIMENSIONS as readonly string[]).includes(d))
-    : [...DIMENSIONS]);
+  const dims =
+    Array.isArray(body.dimensions) && body.dimensions.length
+      ? body.dimensions.filter((d) => (DIMENSIONS as readonly string[]).includes(d))
+      : [...DIMENSIONS];
   const outcomes = Array.isArray(body.policy_outcomes) ? body.policy_outcomes.slice(0, 12) : [];
   const prohibited = Array.isArray(body.prohibited) ? body.prohibited.slice(0, 12) : [];
 
@@ -201,9 +203,22 @@ Deno.serve(async (req: Request) => {
       // Non-sensitive process metadata only (never the body). Propagate
       // retry-after so the harness honors Anthropic's rate-limit instruction.
       const retryAfterSeconds = parseRetryAfter(res.headers.get('retry-after'));
-      const code = res.status === 429 ? 'judge_rate_limited' : res.status === 529 ? 'judge_overloaded' : 'judge_provider_error';
-      logMeta({ status: res.status, retry_after_seconds: retryAfterSeconds, latency_ms: latencyMs, outcome: code });
-      return json({ ok: false, code, meta: { status: res.status, retry_after_seconds: retryAfterSeconds } }, 200);
+      const code =
+        res.status === 429
+          ? 'judge_rate_limited'
+          : res.status === 529
+            ? 'judge_overloaded'
+            : 'judge_provider_error';
+      logMeta({
+        status: res.status,
+        retry_after_seconds: retryAfterSeconds,
+        latency_ms: latencyMs,
+        outcome: code,
+      });
+      return json(
+        { ok: false, code, meta: { status: res.status, retry_after_seconds: retryAfterSeconds } },
+        200,
+      );
     }
     const data = (await res.json()) as {
       model?: string;
@@ -212,7 +227,10 @@ Deno.serve(async (req: Request) => {
       usage?: { input_tokens?: number; output_tokens?: number };
     };
     const text = Array.isArray(data.content)
-      ? data.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('')
+      ? data.content
+          .filter((b) => b.type === 'text')
+          .map((b) => b.text ?? '')
+          .join('')
       : '';
     // Parse the judge's JSON verdict. If the judge refused/truncated/garbled,
     // report that honestly — do NOT invent a score.

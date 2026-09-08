@@ -121,7 +121,7 @@ export function ApplicationsPage() {
     <>
       <PageHeader
         title="Applications"
-        lede="Every applicant gets a real answer within 2 business days — and waitlisted applicants hear from us at least every two weeks."
+        lede="Every applicant gets a real answer, and waitlisted applicants stay in regular contact with staff — this queue tracks that follow-through."
         crumbs={[{ to: '/staff/today', label: 'Today' }]}
       />
       {loading ? (

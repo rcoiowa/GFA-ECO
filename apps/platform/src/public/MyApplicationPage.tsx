@@ -123,9 +123,9 @@ export function MyApplicationPage() {
 
               {application.status === 'submitted' || application.status === 'in_review' ? (
                 <p className="mt-3 text-ink">
-                  <strong>Your application is with staff.</strong> Someone will contact you within 2
-                  business days of your submission — usually sooner. Nothing else is needed from you
-                  right now.
+                  <strong>Your application is with staff.</strong> A real person reads every
+                  application, and someone will contact you about yours. Nothing else is needed from
+                  you right now.
                 </p>
               ) : application.status === 'waitlisted' ? (
                 <p className="mt-3 text-ink">
@@ -175,7 +175,11 @@ export function MyApplicationPage() {
                       <Button variant="secondary" size="md" onClick={() => void withdraw()}>
                         Yes, withdraw it
                       </Button>
-                      <Button variant="ghost" size="md" onClick={() => setConfirmingWithdraw(false)}>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => setConfirmingWithdraw(false)}
+                      >
                         Keep my application
                       </Button>
                     </div>
