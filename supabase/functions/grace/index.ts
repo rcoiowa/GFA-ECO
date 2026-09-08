@@ -162,10 +162,7 @@ Deno.serve(async (req: Request) => {
   }
   if (!consentActive) {
     // Structured, non-sensitive — the frontend explains and offers the consent UX.
-    return json(
-      { ok: false, code: 'consent_required', safety, policy_version: POLICY_VERSION },
-      200,
-    );
+    return json({ ok: false, code: 'consent_required', safety, policy_version: POLICY_VERSION }, 200);
   }
 
   // ---- Minimum-necessary authorized context (directive §8) — own data only.
@@ -468,8 +465,7 @@ async function retrieveCanonical(
     const top = (scored[0]?.score ? scored.filter((x) => x.score > 0) : scored).slice(0, 3);
 
     const lines = top.map(
-      (x) =>
-        `  • [#${x.s.id}] "${x.s.slogan_text}"${x.s.slogan_short ? ` — ${x.s.slogan_short}` : ''}`,
+      (x) => `  • [#${x.s.id}] "${x.s.slogan_text}"${x.s.slogan_short ? ` — ${x.s.slogan_short}` : ''}`,
     );
     const attribution = top[0]?.s.author_credit ?? 'Recovering the Mind, Grace For Addictions';
     const text = `

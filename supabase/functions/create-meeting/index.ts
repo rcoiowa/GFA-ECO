@@ -25,18 +25,11 @@ const cors = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...cors, 'Content-Type': 'application/json' },
-  });
+  new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
 const CODE_STATUS: Record<string, number> = {
-  unauthenticated: 401,
-  not_authorized: 403,
-  not_found: 404,
-  no_coach: 409,
-  bad_state: 409,
-  needs_room_setup: 409,
+  unauthenticated: 401, not_authorized: 403, not_found: 404,
+  no_coach: 409, bad_state: 409, needs_room_setup: 409,
 };
 
 async function zoomMeeting(topic?: string, startsAt?: string, durationMin = 50) {
@@ -53,10 +46,7 @@ async function zoomMeeting(topic?: string, startsAt?: string, durationMin = 50) 
     method: 'POST',
     headers: { Authorization: `Bearer ${access_token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      topic: topic ?? 'GFA session',
-      type: startsAt ? 2 : 1,
-      start_time: startsAt,
-      duration: durationMin,
+      topic: topic ?? 'GFA session', type: startsAt ? 2 : 1, start_time: startsAt, duration: durationMin,
       settings: { waiting_room: true, join_before_host: false },
     }),
   });
@@ -92,25 +82,14 @@ Deno.serve(async (req) => {
       // Only spend a Zoom API call if the caller can even see this request as its
       // coach (cheap RLS-gated pre-check); the RPC still does the authoritative
       // ownership + state check before persisting the URL.
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       const { data: row } = await supabase
-        .from('v2_session_requests')
-        .select('coach_id, status')
-        .eq('id', sessionRequestId)
-        .maybeSingle();
+        .from('v2_session_requests').select('coach_id, status').eq('id', sessionRequestId).maybeSingle();
       if (!row || !user || row.coach_id !== user.id) {
-        return json(
-          { error: 'Only the assigned coach can create this meeting link', code: 'not_authorized' },
-          403,
-        );
+        return json({ error: 'Only the assigned coach can create this meeting link', code: 'not_authorized' }, 403);
       }
       const zoom = await zoomMeeting(`GFA session`, undefined, 50);
-      if (zoom) {
-        explicitUrl = zoom.url;
-        explicitProvider = 'zoom';
-      }
+      if (zoom) { explicitUrl = zoom.url; explicitProvider = 'zoom'; }
       // If Zoom isn't configured, fall through to the coach's Ooma room via the RPC.
     }
 
@@ -121,10 +100,8 @@ Deno.serve(async (req) => {
     });
     if (error) return json({ error: 'Could not create the meeting link', code: 'rpc_error' }, 500);
     if (!data?.ok) {
-      return json(
-        { error: data?.message ?? 'Unavailable', code: data?.code ?? 'error' },
-        CODE_STATUS[data?.code] ?? 400,
-      );
+      return json({ error: data?.message ?? 'Unavailable', code: data?.code ?? 'error' },
+        CODE_STATUS[data?.code] ?? 400);
     }
     return json({ url: data.url, provider: data.provider });
   } catch (_e) {
