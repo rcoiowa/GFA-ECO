@@ -161,22 +161,26 @@ Workers (10, from the live account listing):
 - No workflow performs DNS or vrcc.app cutover (verified by inspection of all
   seven workflow files).
 
-## 5. Prepared migration 0147 — design review complete (Class B)
+## 5. Prepared migration 0147 — design review status (Class B; CORRECTED 2026-09-08)
 
 Testing environment: local PostgreSQL 16.13 (isolated cluster, unix socket
 only), full launch chain 0001–0146 + seed 0200 replayed with a minimal
 Supabase shim (auth schema/roles, pg_cron, storage/legacy-drift stubs). CQCX
 was touched read-only.
 
-All four open questions were reproduced as real defects, then fixed in the
-prepared file (commit `4529d4f`) and re-tested:
+All four open questions were reproduced as real defects on the isolated
+database. Three are fixed in the prepared file and re-tested; the fourth
+(reopening) is **deliberately NOT encoded** — the independent review correctly
+found the 2026-09-07 session had encoded reopen semantics before ratifying a
+transition matrix, and that encoding has been removed (commits `4529d4f`,
+`9b2e90f`):
 
-| Question                       | Empirical finding (before)                                                      | Decision encoded (after)                                                                                                                                                                                     |
-| ------------------------------ | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `linked_intake_id` one-to-one? | Two leads could link the same intake                                            | Partial index is now UNIQUE; violation surfaces as `intake_already_linked`                                                                                                                                   |
-| `route_lead` verifies intake?  | Nonexistent id leaked a raw FK exception; wrong-residence link accepted         | Existence + active-residence match verified (`grace_house`=1, `ejwrh`=2, the pinned canonical mapping); `intake_not_found` / `intake_residence_mismatch` / `interest_required_for_link`                      |
-| Closed leads reopen?           | Reopen allowed silently; stale `spam` label stayed on the active lead; no audit | Reopen allowed; classification + note cleared; `lead.reopened` audit event carries the cleared value; close-closed reclassification remains the correction path. **Awaiting ratification before promotion.** |
-| `{ok, code}` everywhere?       | `route_lead` and `record_lead_contact` leaked SQL exceptions                    | Pre-checks + `unique_violation` handler; all error paths return envelopes (verified for every RPC)                                                                                                           |
+| Question                       | Empirical finding (before)                                                      | Status                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------ | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `linked_intake_id` one-to-one? | Two leads could link the same intake                                            | FIXED — partial index is now UNIQUE; violation surfaces as `intake_already_linked`                                                                                                                                                                                                                                                                                                              |
+| `route_lead` verifies intake?  | Nonexistent id leaked a raw FK exception; wrong-residence link accepted         | FIXED — existence + active-residence match verified (`grace_house`=1, `ejwrh`=2, the pinned canonical mapping); changing interest can never preserve a mismatching existing link (`link_conflicts_with_interest`); unlinking is an explicit, audited act (`p_unlink` → `lead.unlinked`); 8/8 tests pass                                                                                         |
+| Closed leads reopen?           | Reopen allowed silently; stale `spam` label stayed on the active lead; no audit | **NOT DECIDED.** The prepared file now REJECTS reopening (`reopen_not_ratified`); closed→closed reclassification remains as the audited correction path. The complete transition matrix — including the recommended reopen rule and alternatives — is PROPOSED in docs/decisions/proposals/2026-09-08-lead-status-transition-matrix.md and awaits ratification before any reopen behavior ships |
+| `{ok, code}` everywhere?       | `route_lead` and `record_lead_contact` leaked SQL exceptions                    | FIXED — pre-checks + `unique_violation` handler; all error paths return envelopes (verified for every RPC)                                                                                                                                                                                                                                                                                      |
 
 Additional verification: forced-failure apply rolls back atomically (zero
 0147 artifacts, prior 0102 policies intact); clean apply from true 0146 state
@@ -199,15 +203,15 @@ gone. Take a pre-apply `pg_dump --schema-only` snapshot for verification.
 
 ## 6. Public intake hardening (repo-prepared, commit `20d20c1`; redeploys gated)
 
-| Requirement                                 | Disposition                                                                                                                                                                                                                                                                                                                                           |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Reject missing Origin as well as unapproved | Done — `residence-intake` now 403s origin-less POSTs (`lead-intake` is server-to-server behind its shared secret; browser Origin is not its control)                                                                                                                                                                                                  |
-| Turnstile mandatory in production           | Done — fails closed 503 when `TURNSTILE_SECRET` unset unless `INTAKE_TURNSTILE_OPTIONAL=true` (documented as never-production). **Deploy prerequisite: configure the Turnstile secret + site key in the forms first**                                                                                                                                 |
-| Generic public errors                       | Done — `{ok, code}` only; diagnostics to server logs (`console.error`)                                                                                                                                                                                                                                                                                |
-| Residence IDs active + match path           | Done — application binds only to an existing, active `recoveryos.residences` row                                                                                                                                                                                                                                                                      |
-| Reliable deferred work                      | Done — `EdgeRuntime.waitUntil` for the lead-intake alert email, with logged failures                                                                                                                                                                                                                                                                  |
-| Resend data-flow decision                   | Alert email minimized to name + queue pointer (no free text, no message, no contact detail) until a data-flow decision is ratified — documented in-code                                                                                                                                                                                               |
-| EJWRH kind/residence ambiguity              | Reconciled — canonical kind `residence_application` (any residence, bound by validated `residence_id`); `grace_house_application` kept as the deployed legacy alias; the ejwrh page's header documents that the working public application path is the recoveryresidence.org directory form and the redeploy ordering (residence-intake before ejwrh) |
+| Requirement                                 | Disposition                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reject missing Origin as well as unapproved | Done — `residence-intake` now 403s origin-less POSTs (`lead-intake` is server-to-server behind its shared secret; browser Origin is not its control)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Turnstile mandatory in production           | Done END-TO-END (2026-09-08 correction — the 2026-09-07 version required a token no form supplied): the receiver fails closed 503 when `TURNSTILE_SECRET` is unset (escape hatch `INTAKE_TURNSTILE_OPTIONAL=true`, never production), verifies the siteverify-attested **hostname** against the submitting Origin and the per-flow **action**; every surface posting to the receiver (both directory house forms, the EJWRH inline form, the publicIntake adapters) renders the widget and sends the token; ResidenceApplyPage and ListYourResidencePage carry the widget as a client-side gate — NOTE their write paths are authenticated PostgREST, not this receiver, so their tokens are not server-verified today (routing them through a verifying boundary is a separate decision). **Activation prerequisite: configure the site key (VITE_TURNSTILE_SITE_KEY / directory `TURNSTILE_SITE_KEY` / ejwrh env) together with the receiver's `TURNSTILE_SECRET`** |
+| Generic public errors                       | Done — `{ok, code}` only; diagnostics to server logs (`console.error`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Residence IDs active + match path           | Done — application binds only to an existing, active `recoveryos.residences` row                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Reliable deferred work                      | Done — `EdgeRuntime.waitUntil` for the lead-intake alert email, with logged failures                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Resend data-flow decision                   | Alert email minimized to name + queue pointer (no free text, no message, no contact detail) until a data-flow decision is ratified — documented in-code                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| EJWRH kind/residence ambiguity              | Reconciled — canonical kind `residence_application` (any residence, bound by validated `residence_id`); `grace_house_application` kept as the deployed legacy alias; the ejwrh page's header documents that the working public application path is the recoveryresidence.org directory form and the redeploy ordering (residence-intake before ejwrh)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 **Ordering rule (unchanged): migration 0147 applies before the prepared
 lead-intake version redeploys** — the receiver writes the new columns.
@@ -259,19 +263,19 @@ DB change and diff against this baseline.
 
 ## 8. Approval gates — all STOPPED, nothing live was changed
 
-| Gate | Action awaiting explicit approval                                                                                                  |
-| ---- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| L1   | Configure environment required-reviewers + branch protections (GitHub UI steps in §3)                                              |
-| L2   | Merge PR #7 into `claude/resume-previous-session-hbt3xp`                                                                           |
-| L3   | Update `main` via the deterministic unrelated-histories join (§2)                                                                  |
-| L4   | Change the repository default branch to `main`                                                                                     |
-| L5   | Branch protection rules on `main`; any branch archive/delete is separate                                                           |
-| C1   | Any Cloudflare dashboard change (disable Git auto-builds if found, token re-scope, route/domain changes, legacy Worker cleanup)    |
-| S1   | Promote 0147 from `supabase/launch/prepared/` into the ledger and apply to CQCX (requires ratifying the reopen-semantics decision) |
-| S2   | Redeploy Edge Functions (order: 0147 apply → residence-intake → lead-intake → ejwrh; Turnstile configured first)                   |
-| S3   | Enable leaked-password protection (after participant communication)                                                                |
-| S4   | Resend data-flow decision (whether full inquiry text/contact detail may transit Resend)                                            |
-| D1   | Any DNS / vrcc.app cutover (no workflow performs one; unchanged)                                                                   |
+| Gate | Action awaiting explicit approval                                                                                                                                                                                                                                    |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| L1   | Configure environment required-reviewers + branch protections (GitHub UI steps in §3)                                                                                                                                                                                |
+| L2   | Merge PR #7 into `claude/resume-previous-session-hbt3xp`                                                                                                                                                                                                             |
+| L3   | Update `main` via the deterministic unrelated-histories join (§2)                                                                                                                                                                                                    |
+| L4   | Change the repository default branch to `main`                                                                                                                                                                                                                       |
+| L5   | Branch protection rules on `main`; any branch archive/delete is separate                                                                                                                                                                                             |
+| C1   | Any Cloudflare dashboard change (disable Git auto-builds if found, token re-scope, route/domain changes, legacy Worker cleanup)                                                                                                                                      |
+| S1   | Promote 0147 from `supabase/launch/prepared/` into the ledger and apply to CQCX (prerequisite: ratify the lead-status transition matrix proposal — docs/decisions/proposals/2026-09-08-lead-status-transition-matrix.md; until then reopening is rejected by design) |
+| S2   | Redeploy Edge Functions (order: 0147 apply → residence-intake → lead-intake → ejwrh; Turnstile configured first)                                                                                                                                                     |
+| S3   | Enable leaked-password protection (after participant communication)                                                                                                                                                                                                  |
+| S4   | Resend data-flow decision (whether full inquiry text/contact detail may transit Resend)                                                                                                                                                                              |
+| D1   | Any DNS / vrcc.app cutover (no workflow performs one; unchanged)                                                                                                                                                                                                     |
 
 Live deploys of the hardened stack additionally require dispatching the
 manual workflows with typed confirmation against a CI-green SHA — the
@@ -283,8 +287,51 @@ workflows themselves now enforce that.
 | --------- | --------------------------------------------------------------------------- |
 | `0f8306f` | No-ff merge preserving the canonical-audit branch's 2 commits / 3 documents |
 | `2a0647f` | CI-success-for-exact-SHA gate in both deploy workflows + guard enforcement  |
-| `4529d4f` | The four 0147 design-review resolutions (prepared file + CI guard)          |
+| `4529d4f` | 0147 design-review changes (partially superseded by `9b2e90f` — see §10)    |
 | `20d20c1` | Public-intake hardening across the three Edge Functions                     |
+| `9b2e90f` | 2026-09-08 corrective session (independent review findings — see §10)       |
 
 CI: runs 148 (`fdea101`), 149 (`0f8306f`), 150 (`2a0647f`), 151 (`4529d4f`),
 and 152 (`20d20c1`) all concluded `success`.
+
+## 10. 2026-09-08 corrective session (independent review findings)
+
+The independent review found that a green CI result did not resolve several
+substantive matters. Status of each finding:
+
+1. **Turnstile client integration** — CLOSED. The 2026-09-07 receiver required
+   a token that no form supplied (deploying it would have broken every
+   legitimate submission). All submitting surfaces now render the widget and
+   send the token (§6); the two authenticated platform forms carry the widget
+   with the server-verification limitation noted in §6.
+2. **Server-side hostname/action validation** — CLOSED (§6).
+3. **route_lead consistency + explicit unlink** — CLOSED, tested 8/8 on the
+   isolated database (§5).
+4. **Transition matrix before reopen** — OPEN BY DESIGN: the premature reopen
+   encoding was removed; the prepared 0147 rejects reopening
+   (`reopen_not_ratified`) until the matrix proposal is ratified (§5, Gate S1).
+5. **Unsupported "2 business days" promises** — CLOSED. Grievance surfaces now
+   carry the canonical Grievance Policy v1.0 timeline (24-hour acknowledgment,
+   5-business-day written response); application-response deadline promises and
+   the unratified "every two weeks" waitlist cadence were replaced with
+   truthful non-deadline commitments across the platform pages, both directory
+   copies, the EJWRH form, and the preserved prototype.
+6. **Deno compile checks + receiver tests in CI** — CLOSED: `deno check` on
+   all three intake entrypoints and 24 receiver-level tests
+   (`supabase/functions/tests/`, dependency-free fakes) run in CI; the
+   intake receivers were refactored into testable `handler.ts` modules with
+   unchanged `Deno.serve` entrypoints.
+7. **Join plan strengthening** — CLOSED as a plan (execution still Gate L3):
+   docs/plans/main-join-plan-2026-09-08.md adds the backup ref, the committed
+   file manifest (+ regeneration requirement), the mandatory exact-tree proof,
+   and a locally rehearsed rollback (revert reproduces `main`'s tree hash).
+8. **Report corrections** — this section and the corrected §5/§6/§8 rows.
+
+Also in the corrective session: the directory source template
+(`sites/recoveryresidence-directory`) now carries canonical CQCX values
+directly and `scripts/sync-directory-site.mjs` verifies them (hard-failing on
+any retired-project reference) instead of substituting retired markers.
+
+Monitoring posture: per the 2026-09-08 instruction, the PR subscription and
+hourly check-ins are STOPPED; nothing is deployed, merged, applied, or
+changed live, and all §8 gates remain closed.

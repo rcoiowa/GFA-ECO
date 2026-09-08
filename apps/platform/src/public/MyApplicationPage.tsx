@@ -129,9 +129,9 @@ export function MyApplicationPage() {
                 </p>
               ) : application.status === 'waitlisted' ? (
                 <p className="mt-3 text-ink">
-                  <strong>You&rsquo;re on the waitlist for a bed.</strong> You&rsquo;ll hear from
-                  staff at least every two weeks, and the moment a bed opens you&rsquo;ll be first
-                  to know. Staying reachable at your application phone number helps.
+                  <strong>You&rsquo;re on the waitlist for a bed.</strong> Staff will stay in touch
+                  with you while you wait, and the moment a bed opens you&rsquo;ll be first to know.
+                  Staying reachable at your application phone number helps.
                 </p>
               ) : application.status === 'approved' ? (
                 <p className="mt-3 text-ink">
