@@ -21,3 +21,4 @@ apps/platform/public/residence/directory/
 recoveryos-pages-upload.zip
 apps/platform/test-results/
 apps/platform/playwright-report/
+.claude/worktrees/
