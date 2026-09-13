@@ -10,7 +10,7 @@
 
 ## Decision
 
-Retire “Grace Companion,” “Grace AI Companion,” “Grace — Peer Companion,” “peer companion,” “AI peer companion,” and “AI recovery companion” as current human-facing role or product labels.
+Retire “Grace Companion,” “Grace AI Companion,” “Grace — Peer Companion,” “peer companion,” “AI peer companion,” “AI peer-support companion,” and “AI recovery companion” as current human-facing role or product labels.
 
 Use **Grace — AI Support Navigator** where the full identity is needed, **AI support navigator** as the role descriptor, and **Grace** in ordinary short-form references.
 

@@ -17,10 +17,10 @@ export const POLICY_VERSION = 'grace-policy-1.2.0';
 /** Required in-surface disclosure (Authority §4). The frontend also renders a
  *  visible disclosure; this guarantees the model self-identifies on request. */
 export const DISCLOSURE =
-  "I’m Grace, an AI support navigator—not a human peer, counselor, or crisis service. " +
-  "I can help you slow things down, explore your options, find recovery supports, and " +
-  "choose whether to connect with a real person. You remain in control of what you share " +
-  "and what happens next.";
+  'I’m Grace, an AI support navigator—not a human peer, counselor, or crisis service. ' +
+  'I can help you slow things down, explore your options, find recovery supports, and ' +
+  'choose whether to connect with a real person. You remain in control of what you share ' +
+  'and what happens next.';
 
 /**
  * Non-diagnostic safety routing categories (Authority §11). These choose a
@@ -95,8 +95,26 @@ export function deterministicSafetyFloor(text: string): SafetyCategory {
     ]) ||
     // Third-party overdose: unresponsive AND an independent substance/cyanosis
     // cue in the same message (avoids "my coach isn't responding to texts").
-    (has(['not really responding', 'unresponsive', "won't wake up", 'not waking up', 'wont wake up']) &&
-      has(['used and', 'overdose', 'overdosed', 'pills', 'heroin', 'fentanyl', 'oxycodone', 'blue', 'not breathing', 'naloxone', 'narcan']))
+    (has([
+      'not really responding',
+      'unresponsive',
+      "won't wake up",
+      'not waking up',
+      'wont wake up',
+    ]) &&
+      has([
+        'used and',
+        'overdose',
+        'overdosed',
+        'pills',
+        'heroin',
+        'fentanyl',
+        'oxycodone',
+        'blue',
+        'not breathing',
+        'naloxone',
+        'narcan',
+      ]))
   )
     return 'overdose';
 
@@ -180,7 +198,15 @@ export function deterministicSafetyFloor(text: string): SafetyCategory {
     // slept on / already resolving. Require an acuity cue.
     (t.includes('numb') &&
       has(['arm', 'face', 'leg', 'side', 'one side', 'vision']) &&
-      has(['suddenly', 'all of a sudden', "can't move", 'went numb', 'droop', 'slurred', 'blurry'])) ||
+      has([
+        'suddenly',
+        'all of a sudden',
+        "can't move",
+        'went numb',
+        'droop',
+        'slurred',
+        'blurry',
+      ])) ||
     // Alcohol-withdrawal danger: shakes/sweats specifically on stopping drinking.
     (has(['shake', 'sweat', 'the shakes']) &&
       has(['stop drinking', 'quit drinking', 'stopped drinking', 'when i stop drinking']))
