@@ -1,4 +1,4 @@
-> **Historical terminology notice (2026-09-13):** This source audit records labels and identifiers found in prior systems. Quoted UI text, route names, function slugs, field names, and archived authority titles below remain unchanged as evidence. The current canonical role is **Grace — AI Support Navigator**.
+> **Historical terminology notice (2026-09-13):** This source audit is a dated evidence record. Quoted UI text, route names, function slugs, field names, archived authority titles, and the G0/G1-era decision rows and dependency references below remain unchanged as evidence of what existed and what was decided at the time. Effective 2026-09-13 the canonical identity is **Grace — AI Support Navigator** (see `docs/decisions/2026-09-13-grace-ai-support-navigator-naming.md` and `grace-ai-support-navigator-implementation-authority-v1.1.md`); "companion"-based labels below are superseded and must not be treated as current terminology.
 
 # Grace AI — Historical Source Audit & Canonical Migration Decision Gate (G0)
 
@@ -165,7 +165,7 @@ enumerated concerns, since Authority V1.0 was unavailable — §W):
 | Rule area | Historical implementation | Decision |
 |---|---|---|
 | AI disclosure | Absent in V6 & widget; present but buried in GraceChat/consent | **REPLACE** — disclosure must be in the chat surface itself |
-| Peer identity | D1 honest; D2 honest; D3 & D4 claim lived experience / human recovery | **RETIRE** the lived-experience claim; **REPLACE** with "AI support navigator—not a human peer, counselor, or crisis service" |
+| Peer identity | D1 honest; D2 honest; D3 & D4 claim lived experience / human recovery | **RETIRE** the lived-experience claim; **KEEP** "AI peer companion, not a therapist" *(G0-era decision; identity wording superseded 2026-09-13 by the AI Support Navigator disclosure)* |
 | Tone | Warm, person-first, MI-based | **KEEP / REFINE** |
 | Response arc | D1 advisory; D2 5-step REGULATE arc | **KEEP** (D2 arc is a good basis) |
 | Crisis behavior | D1 mandatory protocol (good); deployed = 8-substring keyword, no escalation | **REFINE** (keep protocol; replace detection + wire to Support Now) |
@@ -596,9 +596,10 @@ opt-in, Cloudflare Worker.
 
 ## V. Implementation dependencies
 
-1. **Grace — AI Support Navigator Implementation Authority V1.1** — must be supplied to
-   this session/repo before G1 (see §W); §4 must be re-run section-by-section
-   against it.
+1. **Grace AI Peer Companion Implementation Authority V1.0** *(historical title; now
+   carried forward as Grace — AI Support Navigator Implementation Authority V1.1)* —
+   must be supplied to this session/repo before G1 (see §W); §4 must be re-run
+   section-by-section against it.
 2. **Model selection** — deferred by directive; choose the approved Anthropic model
    in the implementation phase.
 3. **Missing canonical content** — "The Tapes We Carry" and GFARC datasets must be
@@ -669,7 +670,8 @@ documents, never from memory.
 # Authority V1.0 Reconciliation (addendum, 2026-08-09)
 
 Added at G1. Reconciles the G0 recommendations (§D/§T/§U/§X) against the Grace AI
-AI Support Navigator Implementation Authority V1.1. **Process note (carried from G0
+Peer Companion Implementation Authority V1.0 (historical title; naming superseded
+2026-09-13 by Authority V1.1). **Process note (carried from G0
 §W):** the Authority V1.0 document text was again NOT embedded in the session
 message that declared it "loaded"; this reconciliation is therefore performed
 against the Authority's operative content as enumerated and restated in the

@@ -1,3 +1,5 @@
+> **Historical terminology notice (2026-09-13):** This dated implementation report is preserved as evidence. Legacy titles, quoted copy, route names, and function slugs below (including "companion"-based labels) remain unchanged. Effective 2026-09-13 the canonical identity is **Grace — AI Support Navigator** under `grace-ai-support-navigator-implementation-authority-v1.1.md`; this naming amendment changes no behavior, consent, privacy, safety, or deployment boundary recorded here.
+
 # Grace AI — Canonical Implementation Report (G1–G8)
 
 **Date:** 2026-08-09. **Branch:** `claude/grace-coaching-audit-b0fyhq`.
@@ -706,8 +708,9 @@ Edition.** Governance finding (operator, 2026-08-09): a single authoritative
 | inferred psychological profiling (Enneagram/True Colors/etc.) | **No psychographic tables read**; minimum-necessary own-data context only (§G) |
 | staff visibility into conversation | **No staff transcript exposure** (G17/G18) |
 
-**Status: CLEARED (2026-08-09).** The **Grace — AI Support Navigator Implementation
-Authority V1.0 — Ratified Canonical Edition** was ratified by the Executive Director
+**Status: CLEARED (2026-08-09).** The **Grace AI Peer Companion Implementation
+Authority V1.0 — Ratified Canonical Edition** (historical title; naming superseded
+2026-09-13 by Authority V1.1) was ratified by the Executive Director
 and persisted as `docs/product/grace-ai-implementation-authority-v1.0.md` (the
 missing governance artifact — it consolidates the Blueprint + RecoveryOS/VRCC
 architecture + org doctrine + the G0–G8 safety/privacy decisions + evaluated

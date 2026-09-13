@@ -1,3 +1,5 @@
+> **Historical terminology notice (2026-09-13):** "Companion"-based Grace labels and identifiers below are preserved as dated evidence. The current canonical identity is **Grace — AI Support Navigator** (`docs/decisions/2026-09-13-grace-ai-support-navigator-naming.md`).
+
 # RecoveryOS Launch Foundation — Completion Report (A–V)
 
 **Date:** 2026-08-08 · **Launch project:** `cqcxvwoukyhxyokfwnjm` (RecoveryOS-Launch, us-west-1,

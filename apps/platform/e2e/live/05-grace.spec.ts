@@ -36,7 +36,7 @@ test('G1,G2,G13. participant access + AI disclosure + Support Now on /vrcc/grace
   await expect(page.getByText(/an AI support navigator/i)).toBeVisible({
     timeout: 20_000,
   });
-  await expect(page.getByText(/not a human peer, therapist, or crisis service/i)).toBeVisible();
+  await expect(page.getByText(/not a human peer, counselor, or crisis service/i)).toBeVisible();
   // G13: Support Now independently reachable on the page.
   await expect(page.getByRole('button', { name: /support now/i }).first()).toBeVisible();
   await page.context().close();

@@ -43,8 +43,8 @@ trigger a delivery.
 
 Also live but owned elsewhere (not coaching-scope, not captured here):
 `grace-companion`, `grace-companion-v6`, `vrcc-api-gateway`, `vrcc-api-gateway-v6`,
-`slogan-engine`, `notify-new-lead`, `Grace` (Anthropic-proxy peer-companion; makes
-no DB queries).
+`slogan-engine`, `notify-new-lead`, `Grace` (legacy Anthropic-proxy chat function —
+historical "peer companion" label, retired 2026-09-13; makes no DB queries).
 
 Deploy with the Supabase CLI (or the management API):
 

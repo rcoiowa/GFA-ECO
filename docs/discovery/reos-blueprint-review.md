@@ -1,3 +1,5 @@
+> **Historical terminology notice (2026-09-13):** "Companion"-based Grace labels and identifiers below are preserved as dated evidence. The current canonical identity is **Grace — AI Support Navigator** (`docs/decisions/2026-09-13-grace-ai-support-navigator-naming.md`).
+
 # Review — "The Recovery Ecosystem Operating System" blueprint vs. the live platform
 
 Owner uploaded the 75-page "OS Bible" (2026-08-06) asking how it can improve
