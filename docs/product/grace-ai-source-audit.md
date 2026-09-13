@@ -1,3 +1,5 @@
+> **Historical terminology notice (2026-09-13):** This source audit records labels and identifiers found in prior systems. Quoted UI text, route names, function slugs, field names, and archived authority titles below remain unchanged as evidence. The current canonical role is **Grace — AI Support Navigator**.
+
 # Grace AI — Historical Source Audit & Canonical Migration Decision Gate (G0)
 
 **Phase:** GRACE G0 — evidence-producing source audit only. **No implementation.**
@@ -163,7 +165,7 @@ enumerated concerns, since Authority V1.0 was unavailable — §W):
 | Rule area | Historical implementation | Decision |
 |---|---|---|
 | AI disclosure | Absent in V6 & widget; present but buried in GraceChat/consent | **REPLACE** — disclosure must be in the chat surface itself |
-| Peer identity | D1 honest; D2 honest; D3 & D4 claim lived experience / human recovery | **RETIRE** the lived-experience claim; **KEEP** "AI peer companion, not a therapist" |
+| Peer identity | D1 honest; D2 honest; D3 & D4 claim lived experience / human recovery | **RETIRE** the lived-experience claim; **REPLACE** with "AI support navigator—not a human peer, counselor, or crisis service" |
 | Tone | Warm, person-first, MI-based | **KEEP / REFINE** |
 | Response arc | D1 advisory; D2 5-step REGULATE arc | **KEEP** (D2 arc is a good basis) |
 | Crisis behavior | D1 mandatory protocol (good); deployed = 8-substring keyword, no escalation | **REFINE** (keep protocol; replace detection + wire to Support Now) |
@@ -594,7 +596,7 @@ opt-in, Cloudflare Worker.
 
 ## V. Implementation dependencies
 
-1. **Grace AI Peer Companion Implementation Authority V1.0** — must be supplied to
+1. **Grace — AI Support Navigator Implementation Authority V1.1** — must be supplied to
    this session/repo before G1 (see §W); §4 must be re-run section-by-section
    against it.
 2. **Model selection** — deferred by directive; choose the approved Anthropic model
@@ -667,7 +669,7 @@ documents, never from memory.
 # Authority V1.0 Reconciliation (addendum, 2026-08-09)
 
 Added at G1. Reconciles the G0 recommendations (§D/§T/§U/§X) against the Grace AI
-Peer Companion Implementation Authority V1.0. **Process note (carried from G0
+AI Support Navigator Implementation Authority V1.1. **Process note (carried from G0
 §W):** the Authority V1.0 document text was again NOT embedded in the session
 message that declared it "loaded"; this reconciliation is therefore performed
 against the Authority's operative content as enumerated and restated in the

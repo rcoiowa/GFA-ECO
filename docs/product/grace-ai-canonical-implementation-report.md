@@ -706,7 +706,7 @@ Edition.** Governance finding (operator, 2026-08-09): a single authoritative
 | inferred psychological profiling (Enneagram/True Colors/etc.) | **No psychographic tables read**; minimum-necessary own-data context only (§G) |
 | staff visibility into conversation | **No staff transcript exposure** (G17/G18) |
 
-**Status: CLEARED (2026-08-09).** The **Grace AI Peer Companion Implementation
+**Status: CLEARED (2026-08-09).** The **Grace — AI Support Navigator Implementation
 Authority V1.0 — Ratified Canonical Edition** was ratified by the Executive Director
 and persisted as `docs/product/grace-ai-implementation-authority-v1.0.md` (the
 missing governance artifact — it consolidates the Blueprint + RecoveryOS/VRCC

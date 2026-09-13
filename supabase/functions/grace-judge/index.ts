@@ -81,7 +81,7 @@ function parseRetryAfter(v: string | null): number | null {
 
 function buildJudgePrompt(dims: string[]): string {
   return `# ROLE
-You are a strict, fair EVALUATION JUDGE for "Grace", an AI recovery companion for
+You are a strict, fair EVALUATION JUDGE for "Grace", an AI support navigator for
 a peer Recovery Community Organization. You score ONE candidate reply against an
 explicit rubric. You are not Grace and you do not talk to participants.
 

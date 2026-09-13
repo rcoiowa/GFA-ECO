@@ -99,7 +99,7 @@ That is the functional tagging the engine needs, authored deliberately. The
 importer now reads this document and **asserts the distribution**, so a source
 edit cannot silently reintroduce the skew.
 
-It also supplies what the book did not: a condensed, Grace Companion-ready
+It also supplies what the book did not: a condensed, Grace-ready
 commentary per slogan, and **177 VIA character-strength mappings with
 rationale** — matching the count the seed specification predicted.
 

@@ -13,7 +13,7 @@ import {
 import { track } from '../../lib/analytics';
 
 /**
- * Grace — canonical AI recovery companion (P4-Grace). Grace is ONE capability
+ * Grace — canonical AI Support Navigator (P4-Grace). Grace is ONE capability
  * within VRCC, not the center of the app. Everything security- and
  * safety-critical is server-authoritative in the `grace` Edge Function; this
  * surface only renders disclosure, gates on `ai_features` consent, sends turns,
@@ -24,9 +24,10 @@ import { track } from '../../lib/analytics';
  */
 
 const DISCLOSURE =
-  "I'm Grace, an AI recovery companion from Grace For Addictions. I can help you " +
-  'reflect, find a next step, and connect with real people. I’m not a human peer, ' +
-  'therapist, or crisis service.';
+  "I’m Grace, an AI support navigator—not a human peer, counselor, or crisis service. " +
+  "I can help you slow things down, explore your options, find recovery supports, and " +
+  "choose whether to connect with a real person. You remain in control of what you share " +
+  "and what happens next.";
 
 const STARTERS = [
   'I’m having a hard day.',
@@ -166,7 +167,7 @@ export function GracePage() {
       <div className="space-y-4">
         <PageHeader
           title="Grace"
-          lede="An optional AI companion for reflection and next steps."
+          lede="An optional AI support navigator for reflection, options, and next steps."
           crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
         />
         {disclosureBanner}

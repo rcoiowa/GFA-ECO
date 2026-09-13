@@ -40,7 +40,7 @@ export interface Slogan {
   theme: string;
   /** Which of the book's seven movements this slogan belongs to. */
   point: string;
-  /** Grace Companion-ready summary — the short form shown in-app. */
+  /** Grace-ready summary — the short form shown in-app. */
   condensedCommentary: string;
   /** Full commentary, one entry per paragraph. */
   commentary: string[];
