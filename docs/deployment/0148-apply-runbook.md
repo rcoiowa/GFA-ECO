@@ -112,7 +112,14 @@ exploits refuted; read-back 6a–6f, 7, 7b all pass; battery 36/36.
 | Artifact | Commit | SHA-256 |
 |---|---|---|
 | `0148_...prepared.sql` | `f4646ea23ac39a54dc1bd7fa1fcc69a32780b476` | `277824917102dcb74427a66b413c9232f69a39fc169f2fa8404ce326c1d371f4` |
-| `0149_...prepared.sql` | _pinned in the follow-up commit after the final artifact landed_ | _ditto_ |
+| `0149_...prepared.sql` | `2a1c2e5a57c5e9a766b6a8bc81502d9abbb3b71f` | `512f4624ee7c6e13b8fe08c5cc5b27d76b44f9b8e51d5bc017637db91edef174` |
+
+The 0149 pin above supersedes the interim `8e287b5…` reference in the
+authorization message: condition 7 required amending the default-privilege
+statement to the working global `FOR ROLE postgres` form, so the reviewed
+artifact is the `2a1c2e5…` version (amendment rationale in the decision
+record, decision 4). Applying the `8e287b5` version would harden nothing —
+its schema-scoped statement is a no-op against built-in defaults.
 
 ## Step 6 — Close out
 
