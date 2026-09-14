@@ -99,8 +99,9 @@ any credential compromise of a fixture login is a privileged compromise.
   reproduction returned to its vulnerable pre-fix result, and 0148 re-applied
   cleanly. Rolling back restores the vulnerability and requires the same
   authority.
-- No schema/table/data changes: functions only; `create or replace` is
-  transactional (single `begin…commit`), and PostgREST is notified.
+- No table-structure changes and no row-data mutations; authorization-function
+  DDL only. `create or replace` is transactional (single `begin…commit`), and
+  PostgREST is notified.
 
 ## 7. Verification evidence (isolated Postgres 16 replay, 2026-09-14)
 
@@ -146,3 +147,29 @@ G3 surface audit remains open and is not claimed here.
    inoperative pending SEC-P0-002).
 
 Until decision 1 is approved, 0148 remains PREPARED and G2 remains FAIL.
+
+---
+
+## 9. Decision record (2026-09-14)
+
+**Decision-maker:** Thomas (Executive Director), explicit written authorization
+in the Control Tower implementation session, 2026-09-14 (UTC).
+
+| # | Decision | Outcome | Conditions |
+|---|---|---|---|
+| 1 | Apply 0148 to CQCX | **APPROVED** | Apply only the reviewed `f4646ea` artifact (prepared-file SHA-256 `277824917102dcb74427a66b413c9232f69a39fc169f2fa8404ce326c1d371f4`); immediately-before re-verification that the live ledger tail is still `0146_ejwrh_document_activation`; confirmed backup/PITR restore point before mutation; no 0147/R1/PR #7/domain/unrelated content; post-apply live read-back proving fixture privileged predicates fail and production-staff predicates are unchanged; stop and report on any prerequisite or verification failure. |
+| 2 | Revoke existing privileged fixture role assignments | **APPROVED — sequenced after decision 1 is live-verified** | Audited, reversible/traceable revocation only (`revoked_at`, rows preserved); exact aggregate scope + SQL shown before execution, without unnecessary PII; execute only if it matches the approved scope. |
+| 3 | Fixture staff-side E2E consequence | **RATIFIED** | Production/test isolation takes precedence; fixture participant flows may remain operational; restoration is SEC-P0-002, separately designed with world-scoped authorization, and must not weaken the production boundary. |
+
+Not authorized by this record: merging PR #7 or PR #8, applying 0147,
+deploying functions or Workers, DNS/Cloudflare/Wix changes, unrelated
+identity/role changes, or unrelated production-data writes. All other
+STOP/HOLD gates remain closed.
+
+**Execution status:** BLOCKED ON ENVIRONMENT ACCESS at recording time — the
+implementation session holds no authenticated CQCX access path (Supabase
+connector unauthenticated; no CLI/credentials). Lifecycle: 0148 =
+**RATIFIED + PREPARED**, not APPLIED. Execution assets:
+`docs/deployment/0148-apply-runbook.md` (exact gated sequence + live read-back
+script) and `supabase/launch/prepared/p0_fixture_role_revocation.gated.sql`
+(decision 2). The stop rule was honored rather than improvised around.
