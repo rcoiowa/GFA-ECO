@@ -44,6 +44,9 @@ begin
   end if;
   raise notice 'ok: %', label;
 end $$;
+-- Explicit grant: after 0149's default-privilege hardening, new functions no
+-- longer get PUBLIC execute, and the battery calls ok() as `authenticated`.
+grant execute on function pg_temp.ok(text, boolean) to public;
 
 -- ---------------------------------------------------------------------------
 -- Arrange: residence, actors, classifications, role assignments

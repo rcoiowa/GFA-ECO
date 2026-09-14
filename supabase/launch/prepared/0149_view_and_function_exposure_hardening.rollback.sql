@@ -21,9 +21,9 @@ grant execute on function recoveryos.my_assigned_document_template_ids() to publ
 grant execute on function recoveryos.my_assigned_document_version_ids() to public;
 grant execute on function recoveryos.narr_auto_evidence(bigint, text, text) to public;
 
--- Root-cause hardening reversal.
-alter default privileges in schema recoveryos grant execute on functions to public;
-alter default privileges in schema public grant execute on functions to public;
+-- Root-cause hardening reversal (same explicit global FOR ROLE postgres
+-- binding as the prepared file — see its scope note).
+alter default privileges for role postgres grant execute on functions to public;
 
 commit;
 notify pgrst, 'reload schema';

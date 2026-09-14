@@ -166,6 +166,39 @@ deploying functions or Workers, DNS/Cloudflare/Wix changes, unrelated
 identity/role changes, or unrelated production-data writes. All other
 STOP/HOLD gates remain closed.
 
+### Decision 4 (added later on 2026-09-14): G3 remediation 0149
+
+**APPROVED** by the same decision-maker: apply
+`0149_view_and_function_exposure_hardening` to CQCX, **sequenced after 0148 and
+its passing read-back**, based on the G3 replay evidence and the
+decision-maker's independent live verification that CQCX carries the exposure
+conditions. Conditions: pre-apply ledger re-check expecting the post-0148
+state (any drift → STOP); confirmed restore point; exact-artifact pin (see
+runbook); apply 0149 alone; the six post-apply verifications of condition 6
+plus the condition-7 default-privilege verification (both implemented in
+`supabase/launch/prepared/0149_live_readback_verification.sql`); re-run the P0
+regression battery after 0149; stop on any failure. This decision does NOT
+close G3 (live catalog diff, Storage review, Edge Function/service-role review,
+`public.housing_applications` confirmation remain), and does not open any other
+gate.
+
+**Condition-7 artifact amendments (deliberate, reviewed, not silent):**
+1. The default-privilege statement is explicitly bound `FOR ROLE postgres`
+   (the role that owns/creates RecoveryOS functions).
+2. It uses the **global** form (no `IN SCHEMA`): Postgres per-schema
+   default-ACL entries can only add to built-in defaults and cannot remove the
+   built-in PUBLIC EXECUTE — verified empirically on the replay, where the
+   schema-scoped form was a no-op and the read-back's new-function probe
+   failed. The global form covers functions created by role postgres in any
+   schema of the database — exactly the RecoveryOS migration surface; explicit
+   client grants in migrations are unaffected.
+
+**Rehearsal of the final artifact (isolated replay):** applied clean from the
+pre-0149 state; both exploits refuted; read-back 6a–6f, 7 and 7b (new-function
+probe) all pass; P0 battery re-passed 36/36 (the battery's temp helper now
+carries an explicit grant — the hardening removed its implicit PUBLIC execute,
+which is the intended new default posture).
+
 **Execution status:** BLOCKED ON ENVIRONMENT ACCESS at recording time — the
 implementation session holds no authenticated CQCX access path (Supabase
 connector unauthenticated; no CLI/credentials). Lifecycle: 0148 =

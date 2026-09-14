@@ -59,8 +59,16 @@ explicit `revoke … from public`, and default privileges grant PUBLIC execute.
 - revokes client write privileges on both views (anon keeps directory SELECT);
 - replaces default PUBLIC execute with explicit grants (`authenticated` for the
   five helpers; owner/trigger-context only for `narr_auto_evidence`);
-- root-cause hardening: `alter default privileges` in `recoveryos`/`public`
-  stops granting PUBLIC execute on future functions.
+- root-cause hardening: `alter default privileges for role postgres revoke
+  execute on functions from public` (global form) stops granting PUBLIC execute
+  on future functions created by the migration role. The global form is
+  required — a schema-scoped default-privilege entry can only add to built-in
+  defaults, never remove them (empirically verified on the replay: the
+  `IN SCHEMA` revoke left new functions PUBLIC-executable, and the 0149
+  read-back's new-function probe caught it). Consequence, now mandatory by
+  default: every future migration function intended for client roles must
+  grant execute explicitly — already the repo convention everywhere except the
+  six defaulted functions this migration fixes.
 
 Grants/ACL DDL only — no table-structure changes, no row-data mutations, no
 function-body changes.

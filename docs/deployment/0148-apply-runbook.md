@@ -77,7 +77,44 @@ Only after Step 3 passes. Run
 Rehearsal evidence (isolated replay, 2026-09-14): preview showed
 administrator ×1 + navigator ×2; 3 revoked, 3 audit rows, post-condition pass.
 
-## Step 5 — Close out
+## Step 5 — Decision 4: apply 0149 (G3 exposure hardening)
+
+Authorized 2026-09-14 (decision record §9, decision 4), **sequenced after
+Steps 2–3 pass**. Do not combine with anything else.
+
+1. Re-check the ledger: expect exactly the post-0148 state (tail =
+   `0148_classification_authorization_isolation`). Any unexpected migration or
+   drift → STOP and report.
+2. Confirm the restore point (as in Step 1.3).
+3. Verify the artifact pin (below) — hash mismatch → STOP.
+4. Apply `supabase/launch/prepared/0149_view_and_function_exposure_hardening.prepared.sql`
+   as migration `0149_view_and_function_exposure_hardening` via the
+   migration-recording path. Grants/ACL DDL only.
+5. Run `supabase/launch/prepared/0149_live_readback_verification.sql`
+   (conditions 6 + 7: view privileges, anon directory SELECT preserved,
+   narr_auto_evidence locked to owner/trigger context, five helpers
+   authenticated-only, no PUBLIC execute on the six functions, hardened global
+   postgres default ACL, new-function probe). Any exception → STOP; if the
+   cause is 0149 itself, roll back with its rollback file (same authority,
+   reason recorded).
+6. Re-run the P0 regression: `0148_live_readback_verification.sql` live
+   (expect the Step-3 read-back results unchanged), and the full 36-assertion
+   battery on the isolated replay/staging copy (rehearsed result: 36/36 after
+   0149).
+
+**0149 artifact pin:** see "Artifact pins" below.
+
+Rehearsal evidence (isolated replay, 2026-09-14): applied clean; G3-F1/F3
+exploits refuted; read-back 6a–6f, 7, 7b all pass; battery 36/36.
+
+## Artifact pins
+
+| Artifact | Commit | SHA-256 |
+|---|---|---|
+| `0148_...prepared.sql` | `f4646ea23ac39a54dc1bd7fa1fcc69a32780b476` | `277824917102dcb74427a66b413c9232f69a39fc169f2fa8404ce326c1d371f4` |
+| `0149_...prepared.sql` | _pinned in the follow-up commit after the final artifact landed_ | _ditto_ |
+
+## Step 6 — Close out
 
 - Re-run Step 3's script once more (fixture loop will now check 0 actors —
   its warning at that point is expected and correct).

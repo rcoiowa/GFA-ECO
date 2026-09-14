@@ -66,9 +66,19 @@ grant  execute on function recoveryos.my_assigned_document_version_ids() to auth
 -- Owner/trigger-context only: no client role may call the compliance writer.
 revoke execute on function recoveryos.narr_auto_evidence(bigint, text, text) from public, anon, authenticated;
 
--- Root cause: new functions in these schemas no longer default to PUBLIC execute.
-alter default privileges in schema recoveryos revoke execute on functions from public;
-alter default privileges in schema public revoke execute on functions from public;
+-- Root cause: new functions no longer default to PUBLIC execute. Explicitly
+-- bound to role postgres (authorization condition 7), the role that owns and
+-- creates RecoveryOS functions.
+--
+-- SCOPE NOTE (deliberate, not silent): Postgres semantics require the GLOBAL
+-- form here. A schema-scoped ALTER DEFAULT PRIVILEGES ... IN SCHEMA entry can
+-- only ADD to the built-in defaults — it cannot remove the built-in PUBLIC
+-- EXECUTE (empirically verified on the isolated replay: the IN SCHEMA revoke
+-- left new functions PUBLIC-executable). The statement below therefore applies
+-- to functions created by role postgres in ANY schema of this database, which
+-- is exactly the RecoveryOS migration surface. Explicit grants in migrations
+-- (grant execute ... to authenticated/anon) are unaffected.
+alter default privileges for role postgres revoke execute on functions from public;
 
 commit;
 notify pgrst, 'reload schema';

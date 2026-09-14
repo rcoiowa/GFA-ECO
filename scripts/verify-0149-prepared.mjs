@@ -31,12 +31,12 @@ const required = [
     /revoke execute on function recoveryos\.has_role\(recoveryos\.role_key\) from public, anon;/,
   ],
   [
-    'default privileges stop granting PUBLIC execute (recoveryos)',
-    /alter default privileges in schema recoveryos revoke execute on functions from public;/,
+    'global default privileges stop granting PUBLIC execute (FOR ROLE postgres)',
+    /alter default privileges for role postgres revoke execute on functions from public;/,
   ],
   [
-    'default privileges stop granting PUBLIC execute (public)',
-    /alter default privileges in schema public revoke execute on functions from public;/,
+    'scope note documents why the global form is required',
+    /schema-scoped ALTER DEFAULT PRIVILEGES [\s\S]*?cannot remove the built-in PUBLIC/i,
   ],
   ['schema cache reload', /notify pgrst, 'reload schema';/],
 ];
