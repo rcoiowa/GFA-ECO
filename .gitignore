@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.local
+.DS_Store
+coverage/
+.turbo/
+.wrangler/
+supabase/.temp/
+
+# Source-build intake clones (audit material, never production code)
+source-builds/*
+!source-builds/README.md
+
+# Generated copy of sites/recoveryresidence-directory (see scripts/sync-directory-site.mjs)
+apps/platform/public/residence/directory/
+
+# Drag-and-drop deploy package (scripts/package-pages-upload.mjs)
+recoveryos-pages-upload.zip

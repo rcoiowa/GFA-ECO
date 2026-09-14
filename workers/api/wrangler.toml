@@ -1,0 +1,9 @@
+# RecoveryOS shared API gateway (api.vrcc.app).
+# Secrets (SUPABASE_SERVICE_ROLE_KEY etc.) are set via `wrangler secret put`,
+# never committed.
+name = "recoveryos-api"
+main = "src/index.ts"
+compatibility_date = "2025-06-01"
+
+[vars]
+SUPABASE_URL = "https://ykykeioydvtxpyreshhs.supabase.co"

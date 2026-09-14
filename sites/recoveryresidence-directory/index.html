@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RecoveryResidence.org — National Recovery Housing Directory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --purple:#5B2C6F;       /* Recovery Purple — primary */
+  --purple-deep:#3E1D4C;
+  --plum:#8E4585;         /* Plum — accent / emphasis */
+  --plum-soft:#F3E6F1;
+  --lav:#EFE8F3;
+  --cream:#FAF7F2;
+  --paper:#FFFFFF;
+  --ink:#2A2230;
+  --muted:#7A6E82;
+  --gold:#D4A017;
+  --ok:#2E7D4F;
+  --line:#E4DCE8;
+  --shadow:0 2px 8px rgba(62,29,76,.08),0 14px 40px rgba(62,29,76,.10);
+  --shadow-sm:0 1px 4px rgba(62,29,76,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Karla',sans-serif;color:var(--ink);background:var(--cream);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,h5{font-family:'Fraunces',serif;color:var(--purple)}
+a{color:var(--plum)}
+button{font-family:'Karla',sans-serif;cursor:pointer;border:none}
+.hidden{display:none!important}
+.wrap{max-width:1140px;margin:0 auto;padding:0 1.4rem}
+
+/* ---------- header ---------- */
+header{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+.topbar{background:var(--purple-deep);color:#EFE4F5;font-size:.8rem;padding:.4rem 0}
+.topbar .wrap{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 0;gap:1rem}
+.brand{display:flex;align-items:center;gap:.7rem;cursor:pointer}
+.brand-mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--purple),var(--plum));display:grid;place-items:center;color:#fff;font-size:1.3rem;font-family:'Fraunces',serif}
+.brand-name{font-family:'Fraunces',serif;font-weight:700;font-size:1.25rem;color:var(--purple);line-height:1.1}
+.brand-name small{display:block;font-family:'Karla',sans-serif;font-weight:600;font-size:.7rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.nav-links{display:flex;gap:.3rem;flex-wrap:wrap}
+.nav-links button{background:none;padding:.55rem .85rem;border-radius:9px;font-weight:700;font-size:.9rem;color:var(--ink)}
+.nav-links button:hover{background:var(--lav);color:var(--purple)}
+.nav-links button.on{background:var(--purple);color:#fff}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 1.6rem;border-radius:11px;font-weight:700;font-size:.97rem;transition:all .13s;text-decoration:none}
+.btn:active{transform:translateY(1px)}
+.btn-purple{background:var(--purple);color:#fff}
+.btn-purple:hover{background:var(--purple-deep);box-shadow:0 8px 22px rgba(91,44,111,.35)}
+.btn-plum{background:var(--plum);color:#fff}
+.btn-plum:hover{background:#7A3A72}
+.btn-gold{background:var(--gold);color:#3E2A05}
+.btn-gold:hover{background:#E3B02E}
+.btn-line{background:transparent;color:var(--purple);border:1.5px solid var(--purple)}
+.btn-line:hover{background:var(--lav)}
+.btn-sm{padding:.5rem 1rem;font-size:.85rem;border-radius:8px}
+
+/* ---------- landing hero ---------- */
+.hero{background:
+  radial-gradient(900px 480px at 90% -20%, rgba(212,160,23,.18), transparent 55%),
+  radial-gradient(760px 420px at -8% 115%, rgba(142,69,133,.28), transparent 55%),
+  linear-gradient(160deg,var(--purple-deep),var(--purple));
+  color:#F6EFFA;padding:4.2rem 0 4.6rem}
+.hero h1{color:#fff;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:1.1;font-weight:600;max-width:44rem}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero p{margin:1.1rem 0 1.8rem;font-size:1.12rem;line-height:1.65;max-width:38rem;color:rgba(246,239,250,.85)}
+.hero-badges{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.6rem}
+.hbadge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:.4rem .9rem;border-radius:99px;font-size:.82rem;font-weight:700}
+
+/* ---------- residence cards ---------- */
+.section{padding:3.4rem 0}
+.section-head{text-align:center;max-width:44rem;margin:0 auto 2.4rem}
+.section-head h2{font-size:2rem;font-weight:600}
+.section-head p{color:var(--muted);margin-top:.6rem;font-size:1.02rem;line-height:1.6}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.4rem}
+.res-card{background:var(--paper);border-radius:18px;box-shadow:var(--shadow-sm);overflow:hidden;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s;border:1px solid var(--line)}
+.res-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.res-band{height:9px;background:linear-gradient(90deg,var(--purple),var(--plum))}
+.res-body{padding:1.5rem 1.5rem 1.6rem;display:flex;flex-direction:column;flex:1}
+.res-body h3{font-size:1.35rem;font-weight:600;margin-bottom:.2rem}
+.res-sub{font-size:.85rem;font-weight:700;color:var(--plum);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.8rem}
+.res-body p{font-size:.95rem;line-height:1.6;color:var(--ink);flex:1}
+.res-meta{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 1.2rem}
+.rtag{background:var(--plum-soft);color:var(--plum);padding:.3rem .75rem;border-radius:99px;font-size:.76rem;font-weight:700}
+.rtag.gold{background:#F8EFD3;color:#8A6A0D}
+.rtag.green{background:#DEF0E4;color:var(--ok)}
+.future-note{background:var(--lav);border-left:3px solid var(--plum);padding:.7rem .9rem;border-radius:0 9px 9px 0;font-size:.85rem;color:var(--muted);margin-bottom:1.1rem}
+
+/* ---------- application process page ---------- */
+.page-hero{background:linear-gradient(150deg,var(--purple-deep),var(--purple));color:#fff;padding:2.6rem 0 2.4rem}
+.crumb{font-size:.83rem;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:.6rem;cursor:pointer}
+.crumb:hover{color:var(--gold)}
+.page-hero h1{color:#fff;font-size:clamp(1.7rem,3.4vw,2.5rem);font-weight:600}
+.page-hero .sub{color:rgba(246,239,250,.85);margin-top:.5rem;max-width:44rem;line-height:1.6}
+.notice{background:var(--plum-soft);border:1px solid #E2C9DE;border-radius:12px;padding:.95rem 1.2rem;font-size:.95rem;margin:1.6rem 0 0;color:var(--purple-deep)}
+.notice b{color:var(--plum)}
+
+/* tabs — MCRSP-style stage tabs */
+.tabs{display:flex;flex-wrap:wrap;gap:.45rem;margin:2rem 0 0}
+.tab{background:var(--paper);border:1.5px solid var(--line);border-radius:10px;padding:.7rem 1.15rem;font-weight:700;font-size:.9rem;color:var(--ink)}
+.tab:hover{border-color:var(--plum);color:var(--plum)}
+.tab.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.stage{background:var(--paper);border:1px solid var(--line);border-radius:0 14px 14px 14px;box-shadow:var(--shadow-sm);padding:1.9rem 2rem;margin-bottom:2rem}
+.stage h3{font-size:1.35rem;font-weight:600;margin-bottom:.9rem}
+.stage h4{font-size:1.02rem;margin:1.4rem 0 .6rem;color:var(--plum)}
+.stage p,.stage li{font-size:.97rem;line-height:1.68}
+.stage ul,.stage ol{padding-left:1.3rem;margin:.6rem 0}
+.stage li{margin-bottom:.55rem}
+.stage li b{color:var(--plum)}
+.step-note{background:var(--cream);border-radius:10px;padding:.85rem 1rem;font-size:.9rem;color:var(--muted);margin-top:1.2rem}
+
+/* document list rows */
+.doclist{margin-top:1rem}
+.docrow{display:flex;align-items:center;gap:1rem;padding:.85rem 1rem;border:1px solid var(--line);border-radius:11px;margin-bottom:.6rem;background:#FDFBFE;transition:border-color .12s, background .12s}
+.docrow:hover{border-color:var(--plum);background:var(--plum-soft)}
+.doc-no{width:34px;height:34px;flex:none;border-radius:9px;background:var(--purple);color:#fff;display:grid;place-items:center;font-weight:700;font-family:'Fraunces',serif;font-size:.95rem}
+.doc-info{flex:1;min-width:0}
+.doc-name{font-weight:700;font-size:.95rem;color:var(--purple-deep)}
+.doc-desc{font-size:.82rem;color:var(--muted);margin-top:.15rem;line-height:1.45}
+.doc-dl{white-space:nowrap}
+
+/* fee table */
+table{width:100%;border-collapse:collapse;font-size:.95rem;margin-top:.8rem}
+th{background:var(--purple);color:#fff;text-align:left;padding:.7rem .9rem;font-size:.82rem;letter-spacing:.05em;text-transform:uppercase}
+td{padding:.75rem .9rem;border-bottom:1px solid var(--line)}
+tr:nth-child(even) td{background:var(--cream)}
+td b{color:var(--plum)}
+
+/* apply CTA panel */
+.apply-panel{background:linear-gradient(140deg,var(--purple),var(--plum));border-radius:18px;color:#fff;padding:2.4rem;text-align:center;margin:2.4rem 0}
+.apply-panel h3{color:#fff;font-size:1.6rem;font-weight:600;margin-bottom:.6rem}
+.apply-panel p{color:rgba(255,255,255,.88);max-width:36rem;margin:0 auto 1.5rem;line-height:1.65}
+
+/* footer */
+footer{background:var(--purple-deep);color:#D9C8E4;padding:2.6rem 0 2rem;margin-top:2rem}
+footer .wrap{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:2rem}
+footer h5{color:var(--gold);font-size:1rem;margin-bottom:.7rem}
+footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
+.foot-note{grid-column:1/-1;border-top:1px solid rgba(255,255,255,.14);margin-top:1.6rem;padding-top:1.2rem;font-size:.8rem;color:rgba(217,200,228,.7);text-align:center}
+@media(max-width:860px){
+  footer .wrap{grid-template-columns:1fr}
+  .stage{padding:1.3rem 1.1rem}
+  .docrow{flex-wrap:wrap}
+}
+</style>
+<style>
+/* ============ DIRECTORY THEME (neutral national brand) ============ */
+:root{
+  --navy:#10384F; --navy-deep:#0A2536; --teal:#1B7F8E; --teal-soft:#E2F0F2;
+  --sand:#F6F3EC; --coral:#E2725B; --coral-soft:#FBE8E3; --dir-line:#E3DED4;
+}
+.dir-topbar{background:var(--navy-deep);color:#CFE3E9;font-size:.8rem;padding:.4rem 0}
+.dir-topbar .wrap{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.dir-header{background:#fff;border-bottom:1px solid var(--dir-line);position:sticky;top:0;z-index:50}
+.dir-nav{display:flex;align-items:center;justify-content:space-between;padding:.9rem 0;gap:1rem}
+.dir-brand{display:flex;align-items:center;gap:.7rem;cursor:pointer}
+.dir-mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--navy),var(--teal));display:grid;place-items:center;color:#fff;font-size:1.3rem;font-family:'Fraunces',serif}
+.dir-name{font-family:'Fraunces',serif;font-weight:700;font-size:1.25rem;color:var(--navy);line-height:1.1}
+.dir-name small{display:block;font-family:'Karla',sans-serif;font-weight:600;font-size:.7rem;color:#8A8375;letter-spacing:.06em;text-transform:uppercase}
+.dir-links{display:flex;gap:.3rem;flex-wrap:wrap}
+.dir-links button{background:none;padding:.55rem .85rem;border-radius:9px;font-weight:700;font-size:.9rem;color:var(--navy)}
+.dir-links button:hover{background:var(--teal-soft);color:var(--teal)}
+.dir-links button.on{background:var(--navy);color:#fff}
+.dir-hero{background:
+  radial-gradient(900px 460px at 88% -15%, rgba(226,114,91,.20), transparent 55%),
+  radial-gradient(760px 420px at -6% 118%, rgba(27,127,142,.30), transparent 55%),
+  linear-gradient(160deg,var(--navy-deep),var(--navy));
+  color:#EFF7F9;padding:3.6rem 0 2.8rem}
+.dir-hero h1{color:#fff;font-size:clamp(2rem,4.2vw,3.1rem);line-height:1.12;font-weight:600;max-width:46rem}
+.dir-hero h1 em{font-style:italic;color:var(--coral)}
+.dir-hero p{margin:1rem 0 1.6rem;font-size:1.08rem;line-height:1.65;max-width:42rem;color:rgba(239,247,249,.85)}
+.searchbar{background:#fff;border-radius:16px;box-shadow:0 18px 50px rgba(10,37,54,.35);padding:1.1rem;display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:.7rem;margin-top:1.6rem}
+.searchbar input,.searchbar select{padding:.75rem .85rem;border:1.5px solid var(--dir-line);border-radius:10px;font-family:'Karla',sans-serif;font-size:.95rem;color:var(--navy)}
+.searchbar input:focus,.searchbar select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(27,127,142,.15)}
+.searchbar .btn-search{background:var(--coral);color:#fff;border-radius:10px;padding:.75rem 1.3rem;font-weight:700}
+.searchbar .btn-search:hover{background:#C95F49}
+@media(max-width:900px){.searchbar{grid-template-columns:1fr 1fr}.searchbar input{grid-column:1/-1}}
+.dir-section{padding:2.4rem 0 3.4rem;background:var(--sand)}
+.results-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem}
+.results-head h2{color:var(--navy);font-size:1.4rem;font-weight:600}
+.results-count{font-size:.9rem;font-weight:700;color:var(--teal)}
+.dir-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1.1rem}
+.dcard{background:#fff;border:1px solid var(--dir-line);border-radius:15px;padding:1.25rem 1.3rem;display:flex;flex-direction:column;transition:transform .13s, box-shadow .13s}
+.dcard:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(10,37,54,.12)}
+.dcard h3{color:var(--navy);font-size:1.12rem;font-weight:600;line-height:1.3}
+.dcard .dorg{font-size:.8rem;font-weight:700;color:var(--teal);margin-top:.15rem}
+.dtags{display:flex;gap:.4rem;flex-wrap:wrap;margin:.7rem 0}
+.dtag{padding:.24rem .65rem;border-radius:99px;font-size:.73rem;font-weight:700;background:var(--teal-soft);color:var(--teal)}
+.dtag.pop{background:var(--coral-soft);color:#B0492F}
+.dtag.cty{background:#EEF1E9;color:#5C6B4F}
+.dcard .dloc{font-size:.88rem;color:#6E6A5E;margin-bottom:.9rem}
+.dcard .dfoot{margin-top:auto;display:flex;gap:.5rem;flex-wrap:wrap}
+.btn-dir{background:var(--navy);color:#fff;border-radius:9px;padding:.5rem 1rem;font-weight:700;font-size:.85rem}
+.btn-dir:hover{background:var(--teal)}
+.btn-dirline{background:none;border:1.5px solid var(--navy);color:var(--navy);border-radius:9px;padding:.5rem 1rem;font-weight:700;font-size:.85rem}
+.btn-dirline:hover{background:var(--teal-soft)}
+.gfa-flag{font-size:.72rem;font-weight:700;color:var(--plum);background:var(--plum-soft);padding:.24rem .65rem;border-radius:99px}
+.dempty{background:#fff;border:1.5px dashed var(--dir-line);border-radius:15px;padding:2.6rem;text-align:center;color:#8A8375}
+.dir-note{background:#fff;border:1px solid var(--dir-line);border-left:4px solid var(--teal);border-radius:0 12px 12px 0;padding:.95rem 1.2rem;font-size:.9rem;color:#4A5560;margin-top:1.8rem;line-height:1.6}
+/* modal for non-GFA listings */
+.dmodal-overlay{position:fixed;inset:0;background:rgba(10,37,54,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:1.2rem}
+.dmodal{background:#fff;border-radius:16px;max-width:520px;width:100%;padding:1.8rem;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.dmodal h3{color:var(--navy);font-size:1.3rem;margin-bottom:.2rem}
+.dmodal .dorg{color:var(--teal);font-weight:700;font-size:.85rem;margin-bottom:.9rem}
+.dmodal p{font-size:.93rem;line-height:1.65;margin-bottom:.6rem}
+.dmodal .mk{font-weight:700;color:var(--navy)}
+.dir-footer{background:var(--navy-deep);color:#B9CDD6;padding:2.4rem 0 1.8rem}
+.dir-footer h5{color:var(--coral);font-size:1rem;margin-bottom:.6rem;font-family:'Fraunces',serif}
+.dir-footer p,.dir-footer li{font-size:.88rem;line-height:1.75;list-style:none}
+</style>
+</head>
+<body>
+
+<header class="dir-header">
+  <div class="dir-topbar"><div class="wrap">
+    <span>A free national directory of recovery residences</span>
+    <span>In crisis? Call or text <b>988</b> · Iowa: Your Life Iowa 1-855-581-8111</span>
+  </div></div>
+  <div class="wrap dir-nav">
+    <div class="dir-brand" onclick="go('home')">
+      <div class="dir-mark">⌂</div>
+      <div class="dir-name">RecoveryResidence.org<small>National Recovery Housing Directory</small></div>
+    </div>
+    <nav class="dir-links">
+      <button id="nb-home" class="on" onclick="go('home')">Find a Residence</button>
+      <button onclick="alert('Operator listing submissions coming soon. For now, email listings@recoveryresidence.org')">List Your Residence</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ==================== DIRECTORY HOME ==================== -->
+<main id="pg-home">
+  <div class="dir-hero"><div class="wrap">
+    <h1>Find a recovery residence <em>near you</em>.</h1>
+    <p>A free, searchable directory of recovery residences across the United States — peer-run houses, nonprofit programs, and faith-based communities. Search by state and county, compare populations served, and connect directly. Starting with a complete build-out of Iowa; additional states are being added.</p>
+    <div class="searchbar">
+      <input id="q" placeholder="Search by name, city, or organization…" oninput="renderDir()">
+      <select id="fState" onchange="renderDir()">
+        <option value="IA">Iowa</option>
+        <option value="" disabled>More states coming soon…</option>
+      </select>
+      <select id="fCounty" onchange="renderDir()"><option value="">All counties</option></select>
+      <select id="fPop" onchange="renderDir()">
+        <option value="">All populations</option>
+        <option>Men</option><option>Women</option><option>Women & children</option><option>All genders</option>
+      </select>
+      <button class="btn-search" onclick="renderDir()">Search</button>
+    </div>
+  </div></div>
+
+  <div class="dir-section"><div class="wrap">
+    <div class="results-head">
+      <h2>Iowa Recovery Residences</h2>
+      <div class="results-count" id="rCount"></div>
+    </div>
+    <div class="dir-grid" id="dirGrid"></div>
+    <div class="dir-note"><b>About this directory:</b> Listings are independent organizations compiled from public sources and operator submissions; inclusion is not an endorsement, and details can change — always verify current availability, fees, and certification status directly with the residence and with the Iowa HHS recovery housing program (recoveryhousing@hhs.iowa.gov). Oxford House city entries reflect the number of chartered houses in that community; contact Oxford House for current vacancies at oxfordvacancies.com. Know a residence we're missing? Email listings@recoveryresidence.org.</div>
+  </div></div>
+</main>
+
+<!-- non-GFA listing modal -->
+<div class="dmodal-overlay hidden" id="dmo" onclick="if(event.target.id==='dmo')this.classList.add('hidden')">
+  <div class="dmodal" id="dmoBox"></div>
+</div>
+
+<!-- ==================== GRACE HOUSE — APPLICATION PROCESS ==================== -->
+<main id="pg-grace" class="hidden">
+  <div class="page-hero"><div class="wrap">
+    <div class="crumb" onclick="go('home')">← RecoveryResidence.org / Grace House</div>
+    <h1>Grace House Application Process</h1>
+    <div class="sub">A women's recovery residence operated by Grace For Addictions · 1311 9th Street, Des Moines, Iowa 50314. The process below walks you through every stage from first look to move-in — including each document you'll review and sign, in order.</div>
+  </div></div>
+
+  <div class="wrap">
+    <div class="notice"><b>Click each stage tab and scroll down to review and download the documents for that stage.</b> Every document is available before you apply — nothing is a surprise at Grace House.</div>
+
+    <div class="tabs" id="gtabs">
+      <button class="tab on" onclick="gtab(0,this)">1 · Before You Apply</button>
+      <button class="tab" onclick="gtab(1,this)">2 · Application Stage</button>
+      <button class="tab" onclick="gtab(2,this)">3 · Interview &amp; Intake</button>
+      <button class="tab" onclick="gtab(3,this)">4 · Move-In &amp; Orientation</button>
+      <button class="tab" onclick="gtab(4,this)">5 · Community Life &amp; Policies</button>
+      <button class="tab" onclick="gtab(5,this)">6 · Program Fees</button>
+    </div>
+
+    <!-- STAGE 1 -->
+    <div class="stage" id="gs0">
+      <h3>Before You Apply</h3>
+      <p>The three primary components of getting to know Grace House before applying are as follows:</p>
+      <ul>
+        <li>First, read the <b>Resident Handbook</b> to understand daily life, the three-phase program structure, recovery activity expectations, and the community you'd be joining.</li>
+        <li>Second, review the <b>Code of Conduct</b> to ensure you can commit to the community standards every resident lives by.</li>
+        <li>Third, review the <b>Fee Schedule</b> so program costs are clear before you ever fill out a form. Hardship payment plans are always available.</li>
+      </ul>
+      <h4>Eligibility — Two Pathways</h4>
+      <ul>
+        <li><b>Recovery pathway:</b> a personal history of substance use or misuse and a commitment to living substance-free while in residence.</li>
+        <li><b>Family pathway:</b> a parent, partner, or child with a history of substance use disorder or mental-health-related trauma, where structured recovery-supportive housing supports the family's healing.</li>
+      </ul>
+      <p>Grace House is MAT/MOUD-affirming — prescribed medication is never a barrier to admission. All recovery pathways are honored, and you choose your own treatment providers.</p>
+      <h4>Stage 1 Documents</h4>
+      <div class="doclist">
+        <div class="docrow"><div class="doc-no">1</div><div class="doc-info"><div class="doc-name">Grace House Resident Handbook</div><div class="doc-desc">Complete guide to community life: program philosophy, phases, curfew, recovery activities, coaching, and your rights.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Resident_Handbook.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">2</div><div class="doc-info"><div class="doc-name">Code of Conduct</div><div class="doc-desc">The community standards every resident commits to — grace-centered, with safety standards that protect everyone.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Code_of_Conduct.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">3</div><div class="doc-info"><div class="doc-name">Fee Schedule &amp; Financial Agreement</div><div class="doc-desc">Shared room $175/week or $650/month prepaid · Single room $200/week or $700/month prepaid. Hardship provisions included.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Fee_Schedule_and_Financial_Agreement.docx" download>Download</a></div>
+      </div>
+    </div>
+
+    <!-- STAGE 2 -->
+    <div class="stage hidden" id="gs1">
+      <h3>Application Stage</h3>
+      <p>The application is not difficult, but it is thorough — because we take your future seriously. Complete the Application &amp; Pre-Screening Form and submit it in one of two ways:</p>
+      <ul>
+        <li>Complete the <b>online application</b> through the Grace House portal (button at the bottom of this page), or</li>
+        <li><b>Download, print, and return</b> the form to Grace House in person or by email to gracehouse@graceforaddictions.org.</li>
+      </ul>
+      <p>Upon receipt of your completed application, a member of the Grace House team will contact you within <b>2 business days</b> to review your submission and schedule an interview. If a bed is not currently available, you may choose to join the waitlist — we'll keep in contact with you at least every two weeks.</p>
+      <h4>Stage 2 Documents</h4>
+      <div class="doclist">
+        <div class="docrow"><div class="doc-no">4</div><div class="doc-info"><div class="doc-name">Application &amp; Pre-Screening Form</div><div class="doc-desc">Applicant information, eligibility pathway selection, recovery &amp; support history, safety screening, and your goals — in your own words.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Application_and_PreScreening_Form.docx" download>Download</a></div>
+      </div>
+      <div class="step-note">Applying does not obligate you to anything. Admission decisions are made without regard to race, color, religion, national origin, disability, or any other protected status, in full compliance with the Fair Housing Act.</div>
+    </div>
+
+    <!-- STAGE 3 -->
+    <div class="stage hidden" id="gs2">
+      <h3>Interview &amp; Intake</h3>
+      <p>Your interview is a two-way conversation — we learn about you, and you learn whether Grace House feels like home. If Grace House and you agree it's the right fit, intake follows, where you'll complete the full intake packet and sign your Participant Agreement.</p>
+      <ul>
+        <li>The <b>Intake Forms Package</b> gathers your full picture: assessment, emergency contacts, medication disclosure (MAT/MOUD fully supported), releases of information for providers <i>you</i> choose, and communication preferences.</li>
+        <li>The <b>Participant Agreement</b> is a program participation agreement — <b>not a lease</b>. It covers your phase structure, recovery activity requirements (4/week Phase 1 · 3/week Phase 2 · 2/week Phase 3), coach selection with daily check-ins, and your rights.</li>
+        <li>At intake you will also <b>select a life coach or recovery coach</b> — every participant has one from day one.</li>
+      </ul>
+      <h4>Stage 3 Documents</h4>
+      <div class="doclist">
+        <div class="docrow"><div class="doc-no">5</div><div class="doc-info"><div class="doc-name">Intake Forms Package</div><div class="doc-desc">Comprehensive intake: assessment, consents, releases of information, emergency contact &amp; medical consent, communication preferences, orientation checklist.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Intake_Forms_Package.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">6</div><div class="doc-info"><div class="doc-name">Participant Agreement</div><div class="doc-desc">Your program participation agreement — phases, expectations, rights, and accountability with grace. Not a residential lease.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Participant_Agreement.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">7</div><div class="doc-info"><div class="doc-name">Medication &amp; MAT/MOUD Policy</div><div class="doc-desc">All FDA-approved medications supported. Storage, disclosure log, and prescription-consistent screening protections.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Medication_and_MAT_MOUD_Policy.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">8</div><div class="doc-info"><div class="doc-name">Drug &amp; Alcohol Screening Policy &amp; Consent</div><div class="doc-desc">When and how screening happens, dignity standards, and why a positive result opens a support conversation — not automatic discharge.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Drug_and_Alcohol_Screening_Policy_and_Consent.docx" download>Download</a></div>
+      </div>
+    </div>
+
+    <!-- STAGE 4 -->
+    <div class="stage hidden" id="gs3">
+      <h3>Move-In &amp; Orientation</h3>
+      <p>Move-in day includes a guided orientation with your House Manager. You'll walk the house, meet the community, locate safety equipment (including naloxone stations), and review the policies that shape daily life:</p>
+      <ul>
+        <li><b>Curfew &amp; Pass Policy</b> — phase-based curfew (Phase 1: 9 PM weeknights / 10 PM weekends · Phase 2: 10/11 PM · Phase 3: 11 PM/midnight), with employment as the only curfew exception, plus overnight pass and furlough request forms.</li>
+        <li><b>Good Neighbor Policy</b> — how we show up for our neighborhood.</li>
+        <li><b>Emergency Response Protocols</b> — posted in common areas; reviewed with every resident.</li>
+      </ul>
+      <h4>Stage 4 Documents</h4>
+      <div class="doclist">
+        <div class="docrow"><div class="doc-no">9</div><div class="doc-info"><div class="doc-name">Curfew &amp; Pass Policy + Request Form</div><div class="doc-desc">Phase-based curfew table, employment adjustment, and the overnight pass / furlough request form.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Curfew_and_Pass_Policy_with_Request_Form.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">10</div><div class="doc-info"><div class="doc-name">Good Neighbor Policy</div><div class="doc-desc">Property care, quiet hours, parking, and how neighbor concerns are received and resolved.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Good_Neighbor_Policy.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">11</div><div class="doc-info"><div class="doc-name">Emergency Response Protocols</div><div class="doc-desc">Step-by-step response for medical emergencies, overdose (naloxone), mental health crises, and safety events.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Emergency_Response_Protocols.docx" download>Download</a></div>
+      </div>
+    </div>
+
+    <!-- STAGE 5 -->
+    <div class="stage hidden" id="gs4">
+      <h3>Community Life &amp; Policies</h3>
+      <p>These are the policies that govern life at Grace House after move-in — your voice, your protections, and the standards our staff and leaders hold themselves to. Each is available to you at all times, posted or in the house document library and the VRCC app.</p>
+      <h4>Your Voice &amp; Protections</h4>
+      <div class="doclist">
+        <div class="docrow"><div class="doc-no">12</div><div class="doc-info"><div class="doc-name">Grievance Policy &amp; Form</div><div class="doc-desc">Your right to be heard: anonymous filing honored, acknowledgment in 2 business days, no retaliation — ever.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Grievance_Policy_and_Form.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">13</div><div class="doc-info"><div class="doc-name">Return-to-Use Response Policy</div><div class="doc-desc">A return to use is a medical and recovery event — not a moral failure and not automatic discharge. Safety first, dignity always.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Return_to_Use_Response_Policy.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">14</div><div class="doc-info"><div class="doc-name">Incident Report System</div><div class="doc-desc">How safety events are documented, reviewed, and learned from — with confidentiality protections.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Incident_Report_System.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">15</div><div class="doc-info"><div class="doc-name">Exit &amp; Transition Policy</div><div class="doc-desc">Completion, voluntary exit, and administrative removal — every exit handled with dignity and a door that stays open.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Exit_and_Transition_Policy.docx" download>Download</a></div>
+      </div>
+      <h4>Leadership &amp; Standards</h4>
+      <div class="doclist">
+        <div class="docrow"><div class="doc-no">16</div><div class="doc-info"><div class="doc-name">Code of Ethics — Staff, House Leads &amp; Volunteers</div><div class="doc-desc">The commitments every person serving Grace House signs: residents' interests first, boundaries, confidentiality, no exploitation.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Code_of_Ethics.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">17</div><div class="doc-info"><div class="doc-name">Change Course Leaders Policy</div><div class="doc-desc">Change Course is an independent partner program with Leaders only. Grace House requires CC Leaders two additional supportive activities weekly alongside all Change Course requirements.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_Change_Course_Leaders_Policy.docx" download>Download</a></div>
+        <div class="docrow"><div class="doc-no">18</div><div class="doc-info"><div class="doc-name">NARR Level II Self-Assessment &amp; Iowa HHS Alignment</div><div class="doc-desc">Our readiness self-assessment. Grace House is preparing for NARR Level II certification through the Iowa HHS process.</div></div><a class="btn btn-line btn-sm doc-dl" href="docs/GraceHouse_NARR_II_Self_Assessment_and_HHS_Alignment.docx" download>Download</a></div>
+      </div>
+    </div>
+
+    <!-- STAGE 6 -->
+    <div class="stage hidden" id="gs5">
+      <h3>Program Fees</h3>
+      <p>Program fees cover housing, utilities, household supplies, and program participation. Grace House uses a program participation fee model — not a landlord-tenant lease. All fees are disclosed here, in advance, before you apply.</p>
+      <table>
+        <thead><tr><th>Room Type</th><th>Weekly Rate</th><th>Monthly Prepay (due at start of month)</th></tr></thead>
+        <tbody>
+          <tr><td><b>Shared (double) room</b></td><td>$175 / week</td><td>$650 / month</td></tr>
+          <tr><td><b>Single (private) room</b></td><td>$200 / week</td><td>$700 / month</td></tr>
+        </tbody>
+      </table>
+      <h4>Fee Principles</h4>
+      <ul>
+        <li><b>Hardship plans are always available</b> — talk with the House Manager before a due date, never after. Payment plans are never punitive.</li>
+        <li>Fees continue during an approved furlough (your bed is held).</li>
+        <li>Grace House never manages, holds, or controls your personal finances.</li>
+        <li>Receipts are issued for every payment.</li>
+      </ul>
+      <div class="step-note">Refund policy, third-party payment handling, and complete financial terms are detailed in Document 3 — the Fee Schedule &amp; Financial Agreement.</div>
+    </div>
+
+    <!-- APPLY CTA -->
+    <div class="apply-panel">
+      <h3>Ready to Apply to Grace House?</h3>
+      <p>Thank you for considering Grace House as your next chapter. Once you've reviewed the stages above and the documents for each, you're prepared to complete the application. You belong here.</p>
+      <button class="btn btn-gold" onclick="go('apply')">ONLINE APPLICATION</button>
+      <button class="btn btn-line" style="border-color:#fff;color:#fff;margin-left:.6rem" onclick="openReferral(1, 'Grace House')">Partner Referral</button>
+      <p style="margin-top:1rem;font-size:.85rem">Prefer paper? <a href="docs/GraceHouse_Application_and_PreScreening_Form.docx" download style="color:#fff;text-decoration:underline">Download the printable application</a> · Questions? Call 515-220-8771</p>
+    </div>
+  </div>
+</main>
+
+<!-- ==================== EJWRH ==================== -->
+<main id="pg-ejwrh" class="hidden">
+  <div class="page-hero"><div class="wrap">
+    <div class="crumb" onclick="go('home')">← RecoveryResidence.org / EJWRH</div>
+    <h1>Ernest &amp; Johnnie White Recovery House</h1>
+    <div class="sub">A men's recovery residence at 1414 12th Street, Des Moines, Iowa 50314 — supported by Grace For Addictions through wraparound recovery support services. Iowa DOC approved.</div>
+  </div></div>
+  <div class="wrap">
+    <div class="notice"><b>EJWRH's full staged application process is being published here soon.</b> The structure will mirror the Grace House process — every document reviewable before you apply. In the meantime, applications are open by contact below.</div>
+    <div class="stage" style="margin-top:2rem">
+      <h3>About EJWRH</h3>
+      <ul>
+        <li><b>Who we serve:</b> men building a life in recovery, including men returning from incarceration (Iowa DOC approved placement).</li>
+        <li><b>Community model:</b> peer-led with a resident House Manager; Grace For Addictions provides wraparound recovery support services under a professional services agreement.</li>
+        <li><b>Values:</b> trauma-informed, MAT/MOUD-affirming, multiple pathways honored.</li>
+        <li><b>Fees:</b> shared room $175/week or $660/month · private room $200/week or $760/month.</li>
+      </ul>
+      <h4>Contact &amp; Apply</h4>
+      <p>Email <b>ejwrh@rcoiowa.org</b> or call the GFA office at <b>515-220-8771</b> to request an application and schedule a conversation.</p>
+      <p style="margin-top:.8rem"><button class="btn btn-purple" onclick="openReferral(2, 'Ernest & Johnnie White Recovery House')">Submit a Partner Referral</button> <span style="font-size:.85rem;color:var(--muted)">Probation, parole, IDOC, and treatment partners — delivered straight to the intake queue.</span></p>
+    </div>
+  </div>
+</main>
+
+<!-- ==================== JERRY'S HOUSE ==================== -->
+<main id="pg-jerrys" class="hidden">
+  <div class="page-hero"><div class="wrap">
+    <div class="crumb" onclick="go('home')">← RecoveryResidence.org / Jerry's House</div>
+    <h1>Jerry's House</h1>
+    <div class="sub">A future men's recovery residence from Grace For Addictions — carrying forward the legacy of one open door.</div>
+  </div></div>
+  <div class="wrap">
+    <div class="stage" style="margin-top:2rem">
+      <h3>The Story Behind the Name</h3>
+      <p>Jerry's House is named in honor of <b>Jerry Anderson</b>, who opened his home to a young man named Joseph who was experiencing homelessness. Behind that door, Joseph finished high school, gained employment, obtained his driver's license, purchased a vehicle, and is preparing for independent living today.</p>
+      <p style="margin-top:.8rem">One open door changed the whole direction of a life. Jerry's House will hold that door open for men in recovery — with the same structure, dignity, and grace that define every Grace For Addictions residence. Jerry's widow, Jeannie, continues to champion this vision.</p>
+      <h4>What to Expect</h4>
+      <ul>
+        <li>Men's residence following the Grace For Addictions model: trauma-informed, MAT/MOUD-affirming, multiple pathways.</li>
+        <li>Full staged application process published here at launch — every document reviewable before applying, just like Grace House.</li>
+        <li>Phased program structure with life &amp; recovery coaching and daily community connection.</li>
+      </ul>
+      <h4>Stay Connected</h4>
+      <p>To be notified when Jerry's House opens applications — or to support the launch — contact <b>515-220-8771</b> or email <b>gracehouse@graceforaddictions.org</b>.</p>
+    </div>
+  </div>
+</main>
+
+<!-- ==================== GRACE HOUSE — ONLINE APPLICATION ==================== -->
+<main id="pg-apply" class="hidden">
+  <div class="page-hero"><div class="wrap">
+    <div class="crumb" onclick="go('grace')">← Grace House / Online Application</div>
+    <h1>Grace House Online Application</h1>
+    <div class="sub">Takes about 10–15 minutes. Your answers are confidential and reviewed only by Grace House staff. There are no wrong answers here — honesty helps us welcome you well.</div>
+  </div></div>
+
+  <div class="wrap" style="max-width:840px">
+    <div class="notice" style="margin-top:1.6rem"><b>You can pause anytime.</b> Nothing is submitted until you review and sign at the final step. Prefer paper? <a href="docs/GraceHouse_Application_and_PreScreening_Form.docx" download>Download the printable form</a>.</div>
+
+    <!-- progress -->
+    <div class="app-progress" id="appProg">
+      <div class="ap-step on" data-s="0"><span>A</span>About You</div>
+      <div class="ap-step" data-s="1"><span>B</span>Eligibility</div>
+      <div class="ap-step" data-s="2"><span>C</span>Recovery &amp; Support</div>
+      <div class="ap-step" data-s="3"><span>D</span>Safety</div>
+      <div class="ap-step" data-s="4"><span>E</span>Your Goals</div>
+      <div class="ap-step" data-s="5"><span>F</span>Review &amp; Sign</div>
+    </div>
+
+    <!-- PART A -->
+    <div class="stage app-card" id="as0">
+      <h3>Part A — About You</h3>
+      <div class="agrid2">
+        <div class="afield"><label>Full legal name *</label><input id="a_name" placeholder="First Middle Last"></div>
+        <div class="afield"><label>Preferred name</label><input id="a_pref" placeholder="What should we call you?"></div>
+      </div>
+      <div class="agrid2">
+        <div class="afield"><label>Date of birth *</label><input id="a_dob" type="date"></div>
+        <div class="afield"><label>Phone *</label><input id="a_phone" type="tel" placeholder="(515) 555-0100"></div>
+      </div>
+      <div class="afield"><label>Email</label><input id="a_email" type="email" placeholder="you@email.com"></div>
+      <div class="afield"><label>Current living situation *</label>
+        <select id="a_living"><option value="">Select…</option><option>Own / rent</option><option>Staying with family or friends</option><option>Shelter</option><option>Treatment facility</option><option>Correctional facility</option><option>Unhoused</option><option>Other</option></select>
+      </div>
+      <div class="afield"><label>How did you hear about Grace House?</label>
+        <select id="a_ref"><option value="">Select…</option><option>Treatment provider</option><option>Friend / person in recovery</option><option>Court / probation / parole</option><option>211</option><option>Website / social media</option><option>Other</option></select>
+      </div>
+      <div class="app-nav"><span></span><button class="btn btn-purple" onclick="anext(1)">Continue →</button></div>
+    </div>
+
+    <!-- PART B -->
+    <div class="stage app-card hidden" id="as1">
+      <h3>Part B — Eligibility Pathway</h3>
+      <p style="margin-bottom:1rem">Grace House serves adult women through two pathways. Choose the one that fits your story — both carry the same dignity and the same community membership.</p>
+      <label class="pathway" onclick="pickPath('recovery',this)">
+        <input type="radio" name="path" value="recovery">
+        <div><b>Recovery pathway</b><br><span>I have a personal history of substance use or misuse, and I'm committed to living substance-free while in residence.</span></div>
+      </label>
+      <label class="pathway" onclick="pickPath('family',this)">
+        <input type="radio" name="path" value="family">
+        <div><b>Family pathway</b><br><span>I have a parent, partner, or child with a history of substance use disorder or mental-health-related trauma, and structured recovery-supportive housing supports our family's healing.</span></div>
+      </label>
+      <div class="afield hidden" id="b_famwrap" style="margin-top:1rem"><label>Your relationship (family pathway)</label>
+        <select id="b_famrel"><option value="">Select…</option><option>Parent with SUD/MH-trauma history</option><option>Partner with SUD/MH-trauma history</option><option>Child with SUD/MH-trauma history</option></select>
+      </div>
+      <div class="app-nav"><button class="btn btn-line" onclick="anext(0)">← Back</button><button class="btn btn-purple" onclick="anext(2)">Continue →</button></div>
+    </div>
+
+    <!-- PART C -->
+    <div class="stage app-card hidden" id="as2">
+      <h3>Part C — Recovery &amp; Support</h3>
+      <p style="margin-bottom:1rem;color:var(--muted);font-size:.92rem">If you chose the family pathway, answer what applies and skip the rest.</p>
+      <div class="afield"><label>Substances used (past or present)</label><input id="c_subs" placeholder="You can list generally — e.g., alcohol, opioids"></div>
+      <div class="agrid2">
+        <div class="afield"><label>Approximate date of last use</label><input id="c_last" placeholder="e.g., March 2026, or 'over a year'"></div>
+        <div class="afield"><label>Currently connected to treatment or counseling?</label>
+          <select id="c_tx"><option value="">Select…</option><option>Yes</option><option>No</option><option>Starting soon</option></select>
+        </div>
+      </div>
+      <div class="afield"><label>Provider (your choice of provider is always honored)</label><input id="c_provider" placeholder="Optional"></div>
+      <div class="afield"><label>Are you currently prescribed MAT/MOUD (methadone, buprenorphine/Suboxone, naltrexone/Vivitrol, etc.)?</label>
+        <select id="c_mat" onchange="document.getElementById('c_matwrap').classList.toggle('hidden', this.value!=='Yes')"><option value="">Select…</option><option>Yes</option><option>No</option></select>
+      </div>
+      <div class="afield hidden" id="c_matwrap"><label>Prescriber</label><input id="c_prescriber" placeholder="Clinic or prescriber name">
+        <div class="mat-note">MAT/MOUD is fully supported at Grace House and is never a barrier to admission.</div>
+      </div>
+      <div class="app-nav"><button class="btn btn-line" onclick="anext(1)">← Back</button><button class="btn btn-purple" onclick="anext(3)">Continue →</button></div>
+    </div>
+
+    <!-- PART D -->
+    <div class="stage app-card hidden" id="as3">
+      <h3>Part D — Safety Screening</h3>
+      <p style="margin-bottom:1rem;color:var(--muted);font-size:.92rem">These questions protect a shared household. A "yes" does not automatically disqualify you — context matters, and we'll talk it through together.</p>
+      <div class="afield"><label>Any current medical needs requiring immediate attention?</label>
+        <select id="d_med" onchange="document.getElementById('d_medwrap').classList.toggle('hidden', this.value!=='Yes')"><option value="">Select…</option><option>Yes</option><option>No</option></select>
+      </div>
+      <div class="afield hidden" id="d_medwrap"><label>Briefly describe</label><textarea id="d_meddesc" rows="2"></textarea></div>
+      <div class="afield"><label>Any history that could affect the safety of a shared household (e.g., recent violence)?</label>
+        <select id="d_safe" onchange="document.getElementById('d_safewrap').classList.toggle('hidden', this.value!=='Yes')"><option value="">Select…</option><option>Yes</option><option>No</option></select>
+      </div>
+      <div class="afield hidden" id="d_safewrap"><label>Please share what you're comfortable with</label><textarea id="d_safedesc" rows="2"></textarea></div>
+      <div class="afield"><label>Any accommodations that would help you live well here (disability, mobility, dietary, other)?</label><input id="d_accom" placeholder="Optional"></div>
+      <div class="app-nav"><button class="btn btn-line" onclick="anext(2)">← Back</button><button class="btn btn-purple" onclick="anext(4)">Continue →</button></div>
+    </div>
+
+    <!-- PART E -->
+    <div class="stage app-card hidden" id="as4">
+      <h3>Part E — Your Goals</h3>
+      <div class="afield"><label>In your own words — why Grace House, and why now? *</label>
+        <textarea id="e_why" rows="5" placeholder="There's no wrong answer. Tell us your story the way you'd tell a friend."></textarea>
+      </div>
+      <div class="afield"><label>What would the next six months look like if things went well for you?</label>
+        <textarea id="e_goals" rows="3" placeholder="Optional — work, family, health, recovery, anything."></textarea>
+      </div>
+      <div class="app-nav"><button class="btn btn-line" onclick="anext(3)">← Back</button><button class="btn btn-purple" onclick="anext(5)">Review &amp; Sign →</button></div>
+    </div>
+
+    <!-- PART F -->
+    <div class="stage app-card hidden" id="as5">
+      <h3>Part F — Review &amp; Sign</h3>
+      <div id="reviewBox" class="review"></div>
+      <div class="cert">
+        <label class="chk"><input type="checkbox" id="f_cert"> <span>I certify the information above is true to the best of my knowledge. I understand Grace House may be able to serve me now, place me on a waitlist, or refer me to a better-fit resource, and that all decisions comply with the Fair Housing Act.</span></label>
+      </div>
+      <div class="agrid2" style="margin-top:1rem">
+        <div class="afield"><label>Electronic signature (type your full name) *</label><input id="f_sig" placeholder="Your full name"></div>
+        <div class="afield"><label>Date</label><input id="f_date" type="date"></div>
+      </div>
+      <div class="app-nav"><button class="btn btn-line" onclick="anext(4)">← Back</button><button class="btn btn-gold" id="submitBtn" onclick="submitApp()">Submit Application ✓</button></div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="stage app-card hidden" id="asDone" style="text-align:center;padding:3rem 2rem">
+      <div style="font-size:2.6rem">🕊️</div>
+      <h3 style="margin-top:.6rem">Your application is on its way</h3>
+      <p style="max-width:34rem;margin:0.6rem auto 1.4rem;line-height:1.7">Thank you for trusting us with your story. A member of the Grace House team will contact you within <b>2 business days</b>. If a bed isn't immediately available, we'll offer you a place on our waitlist and stay in touch at least every two weeks.</p>
+      <button class="btn btn-line" onclick="printApp()">Print / Save a Copy of My Application</button>
+      <p style="margin-top:1.4rem;font-size:.85rem;color:var(--muted)">Need to reach us sooner? 515-220-8771 · gracehouse@graceforaddictions.org<br>If you're in crisis right now, call or text 988.</p>
+    </div>
+  </div>
+</main>
+
+<style>
+.app-progress{display:flex;gap:.4rem;margin:1.8rem 0 1.4rem;flex-wrap:wrap}
+.ap-step{flex:1;min-width:105px;text-align:center;font-size:.72rem;font-weight:700;color:var(--muted);padding:.55rem .3rem;border-radius:9px;background:var(--paper);border:1.5px solid var(--line)}
+.ap-step span{display:block;font-family:'Fraunces',serif;font-size:1rem;color:var(--plum)}
+.ap-step.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.ap-step.on span{color:var(--gold)}
+.ap-step.done{background:var(--plum-soft);border-color:var(--plum);color:var(--plum)}
+.app-card label{display:block;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--plum);margin-bottom:.35rem}
+.app-card input,.app-card select,.app-card textarea{width:100%;padding:.7rem .85rem;border:1.5px solid var(--line);border-radius:9px;font-family:'Karla',sans-serif;font-size:.96rem;background:#fff}
+.app-card input:focus,.app-card select:focus,.app-card textarea:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px rgba(91,44,111,.14)}
+.afield{margin-bottom:1.05rem}
+.agrid2{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}
+@media(max-width:640px){.agrid2{grid-template-columns:1fr}}
+.app-nav{display:flex;justify-content:space-between;margin-top:1.4rem}
+.pathway{display:flex;gap:.9rem;align-items:flex-start;border:1.5px solid var(--line);border-radius:12px;padding:1rem 1.1rem;margin-bottom:.7rem;cursor:pointer;background:#fff;transition:all .12s}
+.pathway:hover{border-color:var(--plum)}
+.pathway.on{border-color:var(--purple);background:var(--plum-soft);box-shadow:0 0 0 3px rgba(91,44,111,.12)}
+.pathway input{width:auto;margin-top:.3rem}
+.pathway b{color:var(--purple);font-size:1rem;text-transform:none;letter-spacing:0}
+.pathway span{font-size:.9rem;color:var(--ink);line-height:1.55;font-weight:400;text-transform:none;letter-spacing:0}
+.mat-note{background:var(--plum-soft);border-left:3px solid var(--plum);padding:.6rem .8rem;border-radius:0 8px 8px 0;font-size:.85rem;color:var(--purple-deep);margin-top:.5rem}
+.review{background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.2rem;margin-bottom:1.2rem}
+.review .rrow{display:flex;gap:.8rem;padding:.4rem 0;border-bottom:1px dashed var(--line);font-size:.92rem}
+.review .rrow:last-child{border-bottom:none}
+.review .rk{width:200px;flex:none;font-weight:700;color:var(--plum)}
+.cert{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:1rem 1.1rem}
+.chk{display:flex;gap:.7rem;align-items:flex-start;text-transform:none!important;letter-spacing:0!important;font-size:.92rem!important;font-weight:400!important;color:var(--ink)!important;line-height:1.6}
+.chk input{width:auto;margin-top:.25rem}
+.err{border-color:#B3402E!important;box-shadow:0 0 0 3px rgba(179,64,46,.15)!important}
+.errmsg{background:#F8E2DD;color:#B3402E;border-radius:9px;padding:.6rem .9rem;font-size:.88rem;font-weight:700;margin-bottom:1rem}
+</style>
+
+<footer class="dir-footer">
+  <div class="wrap" style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:2rem">
+    <div>
+      <h5>RecoveryResidence.org</h5>
+      <p>A free national directory connecting people to recovery residences across the United States. Listings are independent organizations; inclusion is not an endorsement. Verify certification with your state authority (Iowa: recoveryhousing@hhs.iowa.gov).</p>
+    </div>
+    <div>
+      <h5>Crisis Support</h5>
+      <li>988 Suicide &amp; Crisis Lifeline — call or text 988</li>
+      <li>Your Life Iowa: 1-855-581-8111</li>
+      <li>Crisis Text Line: text HOME to 741741</li>
+    </div>
+    <div>
+      <h5>For Operators</h5>
+      <li>List your residence: listings@recoveryresidence.org</li>
+      <li>Update a listing: same address</li>
+      <li>NARR standards: narronline.org</li>
+    </div>
+    <div style="grid-column:1/-1;border-top:1px solid rgba(255,255,255,.14);margin-top:1.4rem;padding-top:1.1rem;font-size:.8rem;color:rgba(185,205,214,.7);text-align:center">© RecoveryResidence.org · This directory does not provide medical, legal, or clinical advice.</div>
+  </div>
+</footer>
+
+<script>
+function go(p){
+  ['home','grace','ejwrh','jerrys','apply'].forEach(x=>{
+    document.getElementById('pg-'+x).classList.toggle('hidden', x!==p);
+  });
+  const nb=document.getElementById('nb-home'); if(nb) nb.classList.toggle('on', p==='home');
+  window.scrollTo({top:0});
+}
+
+/* ============ IOWA DIRECTORY DATA ============ */
+const DIR = [
+ // --- Grace For Addictions residences (branded profiles) ---
+ {n:"Grace House", org:"Grace For Addictions", city:"Des Moines", county:"Polk", pop:"Women", type:"Nonprofit · NARR Level II in preparation", contact:"515-220-8771 · gracehouse@graceforaddictions.org", gfa:"grace", d:"Women's recovery residence operated by Grace For Addictions. Phased program, life & recovery coaching, MAT/MOUD-affirming."},
+ {n:"Ernest & Johnnie White Recovery House", org:"EJWRH · supported by Grace For Addictions", city:"Des Moines", county:"Polk", pop:"Men", type:"Peer-led · Iowa DOC approved", contact:"515-220-8771 · ejwrh@rcoiowa.org", gfa:"ejwrh", d:"Men's recovery residence with wraparound recovery support services; Iowa DOC approved placement."},
+ {n:"Jerry's House", org:"Grace For Addictions", city:"Des Moines", county:"Polk", pop:"Men", type:"Nonprofit · Coming soon", contact:"515-220-8771", gfa:"jerrys", d:"Future men's residence honoring Jerry Anderson's open door."},
+ // --- Des Moines metro / Polk ---
+ {n:"Beacon of Life", org:"Beacon of Life", city:"Des Moines", county:"Polk", pop:"Women", type:"Nonprofit recovery housing", contact:"515-244-4713 · beaconoflifedsm.org", d:"Long-standing Des Moines women's recovery residence offering structured programming and transitional support."},
+ {n:"House of Mercy", org:"MercyOne", city:"Des Moines", county:"Polk", pop:"Women & children", type:"Nonprofit · treatment-affiliated housing", contact:"515-643-6500", d:"Supportive housing for women and their children alongside recovery services."},
+ {n:"Bridges of Iowa", org:"Bridges of Iowa", city:"Des Moines", county:"Polk", pop:"Men", type:"Nonprofit long-term recovery program", contact:"515-263-9030 · bridgesofiowa.org", d:"Long-term residential recovery program with employment and life-skills pathway."},
+ {n:"Hope Ministries — Door of Faith", org:"Hope Ministries", city:"Des Moines", county:"Polk", pop:"Men", type:"Faith-based recovery residence", contact:"515-265-7272 · hopeiowa.org", d:"Faith-based men's recovery and life-recovery program."},
+ {n:"Hope Ministries — Hope Center for Women & Children", org:"Hope Ministries", city:"Des Moines", county:"Polk", pop:"Women & children", type:"Faith-based recovery residence", contact:"515-265-7272 · hopeiowa.org", d:"Faith-based recovery and housing for women and children."},
+ {n:"Kingdom Living Iowa", org:"Kingdom Living", city:"Des Moines", county:"Polk", pop:"All genders", type:"Sober living", contact:"4000 SW 9th St, Des Moines", d:"Structured sober living; double $110/wk, single $135/wk (verify current rates)."},
+ {n:"Oxford House network — Des Moines", org:"Oxford House, Inc.", city:"Des Moines", county:"Polk", pop:"All genders", type:"Peer-run · democratically governed (7 houses)", contact:"oxfordvacancies.com", d:"Seven chartered Oxford Houses across the Des Moines metro (incl. 1801 Hickman Rd). Self-run, self-supporting, substance-free homes; houses are single-gender — men's and women's houses available."},
+ // --- Jasper ---
+ {n:"Clearview Recovery", org:"Clearview Recovery Inc.", city:"Prairie City", county:"Jasper", pop:"Women", type:"Nonprofit recovery residence", contact:"515-994-2650 · clearviewrecovery.org", d:"Rural women's recovery residence east of Des Moines with structured programming."},
+ {n:"Adult & Teen Challenge of the Midlands", org:"Adult & Teen Challenge", city:"Colfax", county:"Jasper", pop:"Men", type:"Faith-based residential recovery", contact:"515-674-3713", d:"Long-term faith-based residential recovery campus."},
+ // --- Linn ---
+ {n:"Oxford House network — Cedar Rapids", org:"Oxford House, Inc.", city:"Cedar Rapids", county:"Linn", pop:"All genders", type:"Peer-run · democratically governed (5 houses)", contact:"oxfordvacancies.com", d:"Five chartered Oxford Houses (incl. 3601 16th Ave SW). Single-gender houses; contact for current vacancies."},
+ // --- Scott ---
+ {n:"Oxford House network — Davenport", org:"Oxford House, Inc.", city:"Davenport", county:"Scott", pop:"All genders", type:"Peer-run · democratically governed (3 houses)", contact:"oxfordvacancies.com", d:"Three chartered Oxford Houses (incl. 1523 S Fairmount St)."},
+ {n:"One Eighty Sober Living", org:"One Eighty", city:"Davenport", county:"Scott", pop:"All genders", type:"Faith-based recovery community", contact:"563-424-1961 · one-eighty.org", d:"Faith-based recovery community offering sober living homes and recovery programming in the Quad Cities."},
+ // --- Woodbury ---
+ {n:"Oxford House 16th Street", org:"Oxford House, Inc.", city:"Sioux City", county:"Woodbury", pop:"All genders", type:"Peer-run", contact:"712-560-4134 · 209 16th St", d:"Self-run, self-supporting substance-free home (verify current charter/population)."},
+ {n:"Oxford House Douglas Street", org:"Oxford House, Inc.", city:"Sioux City", county:"Woodbury", pop:"Men", type:"Peer-run", contact:"712-560-8351 · 2615 Douglas St", d:"Men's Oxford House — democratically run, self-supporting, substance-free."},
+ {n:"Oxford House Nebraska Street", org:"Oxford House, Inc.", city:"Sioux City", county:"Woodbury", pop:"Women", type:"Peer-run", contact:"712-224-4546 · 2931 Nebraska St", d:"Women's Oxford House — democratically run, self-supporting, substance-free."},
+ {n:"Oxford House network — Sioux City (additional)", org:"Oxford House, Inc.", city:"Sioux City", county:"Woodbury", pop:"All genders", type:"Peer-run (6 houses citywide)", contact:"oxfordvacancies.com", d:"Six chartered houses citywide; see individual listings above and vacancies site."},
+ {n:"Rosecrance Jackson Centers — Recovery Housing", org:"Rosecrance", city:"Sioux City", county:"Woodbury", pop:"All genders", type:"Treatment-affiliated recovery housing", contact:"712-234-2300 · rosecrance.org", d:"Recovery-supportive housing connected to Rosecrance Jackson Centers continuum."},
+ // --- Pottawattamie ---
+ {n:"Oxford House Loess Hills", org:"Oxford House, Inc.", city:"Council Bluffs", county:"Pottawattamie", pop:"Women & children", type:"Peer-run", contact:"712-256-1954 · 200 S 1st St", d:"Women & children Oxford House — residents govern the home democratically."},
+ {n:"Oxford House network — Council Bluffs (additional)", org:"Oxford House, Inc.", city:"Council Bluffs", county:"Pottawattamie", pop:"All genders", type:"Peer-run (3 houses citywide)", contact:"oxfordvacancies.com", d:"Three chartered houses citywide including Loess Hills and Bayliss Park."},
+ // --- Black Hawk ---
+ {n:"Oxford House network — Waterloo", org:"Oxford House, Inc.", city:"Waterloo", county:"Black Hawk", pop:"All genders", type:"Peer-run (2 houses)", contact:"oxfordvacancies.com", d:"Two chartered Oxford Houses serving the Cedar Valley."},
+ // --- Johnson ---
+ {n:"Oxford House — Iowa City", org:"Oxford House, Inc.", city:"Iowa City", county:"Johnson", pop:"All genders", type:"Peer-run", contact:"438 Southgate Ave · oxfordvacancies.com", d:"Chartered Oxford House serving Johnson County."},
+ // --- Muscatine ---
+ {n:"Cedar River Haven", org:"Cedar River Haven", city:"Letts", county:"Muscatine", pop:"Women", type:"Nonprofit · 24-bed rural transitional", contact:"319-726-2360", d:"Rural women's recovery community: safe shelter, employment support, community, and life skills."},
+ // --- Clinton ---
+ {n:"Oxford House network — Clinton", org:"Oxford House, Inc.", city:"Clinton", county:"Clinton", pop:"All genders", type:"Peer-run (2 houses)", contact:"2727 & 2733 S 19th St · oxfordvacancies.com", d:"Two chartered Oxford Houses on South 19th Street."},
+ // --- Des Moines County ---
+ {n:"Oxford House — Burlington", org:"Oxford House, Inc.", city:"Burlington", county:"Des Moines Co.", pop:"All genders", type:"Peer-run", contact:"1340 Mount Pleasant St · oxfordvacancies.com", d:"Chartered Oxford House serving southeast Iowa."},
+ // --- Dubuque ---
+ {n:"Oxford House — Dubuque", org:"Oxford House, Inc.", city:"Dubuque", county:"Dubuque", pop:"All genders", type:"Peer-run", contact:"oxfordvacancies.com", d:"Chartered Oxford House serving Dubuque."},
+ // --- Webster / Cerro Gordo / Clarke / Mahaska / Wapello / Bremer ---
+ {n:"Oxford House — Fort Dodge", org:"Oxford House, Inc.", city:"Fort Dodge", county:"Webster", pop:"All genders", type:"Peer-run", contact:"oxfordvacancies.com", d:"Chartered Oxford House serving Webster County."},
+ {n:"Oxford House — Mason City", org:"Oxford House, Inc.", city:"Mason City", county:"Cerro Gordo", pop:"All genders", type:"Peer-run", contact:"oxfordvacancies.com", d:"Chartered Oxford House serving north-central Iowa."},
+ {n:"Oxford House — Osceola", org:"Oxford House, Inc.", city:"Osceola", county:"Clarke", pop:"All genders", type:"Peer-run", contact:"oxfordvacancies.com", d:"Chartered Oxford House serving Clarke County."},
+ {n:"Oxford House — Oskaloosa", org:"Oxford House, Inc.", city:"Oskaloosa", county:"Mahaska", pop:"All genders", type:"Peer-run", contact:"oxfordvacancies.com", d:"Chartered Oxford House serving Mahaska County."},
+ {n:"Oxford House network — Ottumwa", org:"Oxford House, Inc.", city:"Ottumwa", county:"Wapello", pop:"All genders", type:"Peer-run (2 houses)", contact:"oxfordvacancies.com", d:"Two chartered Oxford Houses serving Wapello County."},
+ {n:"Oxford House — Waverly", org:"Oxford House, Inc.", city:"Waverly", county:"Bremer", pop:"All genders", type:"Peer-run", contact:"oxfordvacancies.com", d:"Chartered Oxford House serving Bremer County."}
+];
+
+function initCounties(){
+  const sel=document.getElementById('fCounty');
+  const counties=[...new Set(DIR.map(r=>r.county))].sort();
+  sel.innerHTML='<option value="">All counties</option>'+counties.map(c=>`<option>${c}</option>`).join('');
+}
+function renderDir(){
+  const q=(document.getElementById('q').value||'').toLowerCase();
+  const county=document.getElementById('fCounty').value;
+  const pop=document.getElementById('fPop').value;
+  const rows=DIR.filter(r=>
+    (!county||r.county===county) &&
+    (!pop||r.pop===pop) &&
+    (!q||(r.n+' '+r.org+' '+r.city+' '+r.county).toLowerCase().includes(q))
+  );
+  document.getElementById('rCount').textContent = rows.length+' residence listing'+(rows.length!==1?'s':'')+' · Iowa';
+  document.getElementById('dirGrid').innerHTML = rows.length ? rows.map((r,i)=>`
+    <div class="dcard">
+      <h3>${r.n}</h3>
+      <div class="dorg">${r.org}</div>
+      <div class="dtags">
+        <span class="dtag cty">${r.county} County</span>
+        <span class="dtag">${r.city}</span>
+        <span class="dtag pop">${r.pop}</span>
+        ${r.gfa?'<span class="gfa-flag">Full profile + online application</span>':''}
+      </div>
+      <div class="dloc">${r.type}</div>
+      <div class="dfoot">
+        ${r.gfa
+          ? `<button class="btn-dir" onclick="go('${r.gfa}')">View Profile & Apply →</button>`
+          : `<button class="btn-dirline" onclick="showListing(${DIR.indexOf(r)})">Details</button>`}
+      </div>
+    </div>`).join('') : '<div class="dempty" style="grid-column:1/-1">No residences match those filters yet. Try broadening your search — or email listings@recoveryresidence.org if we\'re missing one.</div>';
+}
+function showListing(i){
+  const r=DIR[i];
+  document.getElementById('dmoBox').innerHTML=`
+    <h3>${r.n}</h3><div class="dorg">${r.org} · ${r.city}, ${r.county} County, Iowa</div>
+    <p>${r.d}</p>
+    <p><span class="mk">Serves:</span> ${r.pop} · <span class="mk">Type:</span> ${r.type}</p>
+    <p><span class="mk">Contact:</span> ${r.contact}</p>
+    <p style="font-size:.8rem;color:#8A8375;margin-top:.9rem">Independent organization — verify current availability, fees, and certification directly. This listing is informational, not an endorsement.</p>
+    <div style="text-align:right;margin-top:.6rem"><button class="btn-dir" onclick="document.getElementById('dmo').classList.add('hidden')">Close</button></div>`;
+  document.getElementById('dmo').classList.remove('hidden');
+}
+document.addEventListener('DOMContentLoaded',()=>{initCounties();renderDir();});
+
+/* ---------- application wizard ---------- */
+let appStep=0, chosenPath='';
+const $=id=>document.getElementById(id);
+function pickPath(v,el){
+  chosenPath=v;
+  document.querySelectorAll('.pathway').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on'); el.querySelector('input').checked=true;
+  $('b_famwrap').classList.toggle('hidden', v!=='family');
+}
+function clearErr(card){ card.querySelectorAll('.err').forEach(e=>e.classList.remove('err')); const m=card.querySelector('.errmsg'); if(m)m.remove(); }
+function fail(card,msg,fields){
+  clearErr(card);
+  const d=document.createElement('div'); d.className='errmsg'; d.textContent=msg;
+  card.insertBefore(d, card.children[1]);
+  (fields||[]).forEach(f=>$(f)&&$(f).classList.add('err'));
+  card.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function validate(step){
+  const card=$('as'+step);
+  clearErr(card);
+  if(step===0){
+    const miss=['a_name','a_dob','a_phone','a_living'].filter(f=>!$(f).value.trim());
+    if(miss.length){ fail(card,'Please complete the required fields marked below.',miss); return false; }
+  }
+  if(step===1 && !chosenPath){ fail(card,'Please choose the eligibility pathway that fits your story.'); return false; }
+  if(step===4 && !$('e_why').value.trim()){ fail(card,'Please share a few words about why Grace House, and why now.',['e_why']); return false; }
+  return true;
+}
+function anext(n){
+  if(n>appStep && !validate(appStep)) return;
+  appStep=n;
+  for(let i=0;i<6;i++) $('as'+i).classList.toggle('hidden', i!==n);
+  $('asDone').classList.add('hidden');
+  document.querySelectorAll('.ap-step').forEach(s=>{
+    const i=+s.dataset.s;
+    s.classList.toggle('on', i===n);
+    s.classList.toggle('done', i<n);
+  });
+  if(n===5) buildReview();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function appData(){
+  return {
+    'Full legal name':$('a_name').value, 'Preferred name':$('a_pref').value,
+    'Date of birth':$('a_dob').value, 'Phone':$('a_phone').value, 'Email':$('a_email').value,
+    'Living situation':$('a_living').value, 'Referral source':$('a_ref').value,
+    'Eligibility pathway': chosenPath==='family' ? ('Family — '+($('b_famrel').value||'relationship not specified')) : (chosenPath?'Recovery':''),
+    'Substances used':$('c_subs').value, 'Last use (approx.)':$('c_last').value,
+    'In treatment/counseling':$('c_tx').value, 'Provider':$('c_provider').value,
+    'MAT/MOUD prescribed':$('c_mat').value, 'Prescriber':$('c_prescriber').value,
+    'Immediate medical needs':$('d_med').value + ($('d_meddesc').value?' — '+$('d_meddesc').value:''),
+    'Household safety history':$('d_safe').value + ($('d_safedesc').value?' — '+$('d_safedesc').value:''),
+    'Accommodations':$('d_accom').value,
+    'Why Grace House, why now':$('e_why').value, 'Six-month picture':$('e_goals').value
+  };
+}
+function buildReview(){
+  const d=appData();
+  $('reviewBox').innerHTML = Object.entries(d).filter(([k,v])=>v && v.trim && v.trim())
+    .map(([k,v])=>`<div class="rrow"><div class="rk">${k}</div><div>${v.replace(/</g,'&lt;')}</div></div>`).join('') ||
+    '<em>Nothing entered yet — go back and complete the form.</em>';
+  if(!$('f_date').value) $('f_date').value = new Date().toISOString().slice(0,10);
+}
+function submitApp(){
+  const card=$('as5'); clearErr(card);
+  if(!$('f_cert').checked){ fail(card,'Please check the certification box to continue.'); return; }
+  if(!$('f_sig').value.trim()){ fail(card,'Please type your full name as your electronic signature.',['f_sig']); return; }
+  // Deployment integration point: POST appData() to the VRCC intake API endpoint here.
+  // MVP fallback: open a pre-filled confidential email to Grace House staff.
+  const d=appData();
+  const body = 'GRACE HOUSE ONLINE APPLICATION%0D%0A' + '='.repeat(40) + '%0D%0A' +
+    Object.entries(d).filter(([k,v])=>v&&v.trim&&v.trim())
+      .map(([k,v])=>encodeURIComponent(k)+': '+encodeURIComponent(v)).join('%0D%0A') +
+    '%0D%0A%0D%0ASigned: '+encodeURIComponent($('f_sig').value)+' on '+encodeURIComponent($('f_date').value);
+  window.location.href = 'mailto:gracehouse@graceforaddictions.org?subject='+encodeURIComponent('Grace House Application — '+($('a_pref').value||$('a_name').value))+'&body='+body;
+  for(let i=0;i<6;i++) $('as'+i).classList.add('hidden');
+  $('asDone').classList.remove('hidden');
+  document.querySelectorAll('.ap-step').forEach(s=>{s.classList.add('done');s.classList.remove('on');});
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function printApp(){
+  const d=appData();
+  const w=window.open('','_blank');
+  w.document.write('<html><head><title>Grace House Application Copy</title><style>body{font-family:Georgia,serif;max-width:640px;margin:2rem auto;color:#2A2230}h1{color:#5B2C6F;font-size:1.3rem}td{padding:.35rem .6rem;vertical-align:top;border-bottom:1px solid #eee}td:first-child{font-weight:bold;color:#8E4585;width:220px}</style></head><body>');
+  w.document.write('<h1>Grace House Application — Applicant Copy</h1><table>');
+  Object.entries(d).filter(([k,v])=>v&&v.trim&&v.trim()).forEach(([k,v])=>w.document.write('<tr><td>'+k+'</td><td>'+v.replace(/</g,'&lt;')+'</td></tr>'));
+  w.document.write('<tr><td>Signed</td><td>'+$('f_sig').value+' — '+$('f_date').value+'</td></tr></table>');
+  w.document.write('<p style="margin-top:1.5rem;font-size:.85rem;color:#7A6E82">Grace House · 1311 9th Street, Des Moines, Iowa 50314 · 515-220-8771</p></body></html>');
+  w.document.close(); w.print();
+}
+function gtab(i,el){
+  for(let n=0;n<6;n++) document.getElementById('gs'+n).classList.toggle('hidden', n!==i);
+  document.querySelectorAll('#gtabs .tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+}
+</script>
+
+<!-- ==================== PARTNER REFERRAL MODAL ==================== -->
+<div class="dmodal-overlay hidden" id="refmo" onclick="if(event.target.id==='refmo')this.classList.add('hidden')">
+  <div class="dmodal" style="max-width:560px">
+    <h3>Submit a Referral</h3>
+    <div class="dorg" id="refResName"></div>
+    <p style="font-size:.88rem;color:#4A5560;margin-bottom:.9rem">For probation, parole, IDOC, treatment providers, and community partners. Your referral is delivered to the residence intake queue the moment you submit — you'll see confirmation on this page.</p>
+    <div id="refFields">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+        <label style="font-size:.75rem;font-weight:700;color:#10384F">Your name *<input id="rf_name" style="width:100%;padding:.55rem .7rem;border:1.5px solid #E3DED4;border-radius:8px;font-family:'Karla',sans-serif"></label>
+        <label style="font-size:.75rem;font-weight:700;color:#10384F">Organization<input id="rf_org" style="width:100%;padding:.55rem .7rem;border:1.5px solid #E3DED4;border-radius:8px;font-family:'Karla',sans-serif" placeholder="e.g., 5th Judicial District"></label>
+        <label style="font-size:.75rem;font-weight:700;color:#10384F">Your phone<input id="rf_phone" style="width:100%;padding:.55rem .7rem;border:1.5px solid #E3DED4;border-radius:8px;font-family:'Karla',sans-serif"></label>
+        <label style="font-size:.75rem;font-weight:700;color:#10384F">Your email<input id="rf_email" style="width:100%;padding:.55rem .7rem;border:1.5px solid #E3DED4;border-radius:8px;font-family:'Karla',sans-serif"></label>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.6rem">
+        <label style="font-size:.75rem;font-weight:700;color:#10384F">Person referred (name) *<input id="rf_pname" style="width:100%;padding:.55rem .7rem;border:1.5px solid #E3DED4;border-radius:8px;font-family:'Karla',sans-serif"></label>
+        <label style="font-size:.75rem;font-weight:700;color:#10384F">Their phone (if any)<input id="rf_pphone" style="width:100%;padding:.55rem .7rem;border:1.5px solid #E3DED4;border-radius:8px;font-family:'Karla',sans-serif"></label>
+      </div>
+      <label style="display:block;font-size:.75rem;font-weight:700;color:#10384F;margin-top:.6rem">Current location / release date / anything that helps<textarea id="rf_notes" rows="3" style="width:100%;padding:.55rem .7rem;border:1.5px solid #E3DED4;border-radius:8px;font-family:'Karla',sans-serif"></textarea></label>
+      <label style="display:flex;gap:.5rem;align-items:flex-start;font-size:.85rem;color:#2A2230;margin-top:.7rem"><input type="checkbox" id="rf_consent" style="margin-top:.2rem">The person referred knows about and consents to this referral.</label>
+      <div id="rf_err" class="hidden" style="background:#F8E2DD;color:#B3402E;border-radius:9px;padding:.6rem .9rem;font-size:.85rem;font-weight:700;margin-top:.7rem"></div>
+      <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:1rem">
+        <button class="btn-dirline" onclick="document.getElementById('refmo').classList.add('hidden')">Cancel</button>
+        <button class="btn-dir" id="rf_submit" onclick="submitReferral()">Submit referral</button>
+      </div>
+    </div>
+    <div id="refDone" class="hidden" style="text-align:center;padding:1.2rem 0">
+      <div style="font-size:2rem">✓</div>
+      <p style="font-weight:700;color:#10384F;margin-top:.4rem">Referral received.</p>
+      <p style="font-size:.9rem;color:#4A5560;margin-top:.4rem">It's in the residence intake queue now. A team member will follow up within 2 business days. Need someone sooner? Call 515-220-8771.</p>
+      <button class="btn-dir" style="margin-top:.9rem" onclick="document.getElementById('refmo').classList.add('hidden')">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- live referral intake (Provider Hub Room 4) ---------- */
+const VRCC_API = 'https://ykykeioydvtxpyreshhs.supabase.co/rest/v1';
+const VRCC_KEY = 'sb_publishable_9NOklH5Dvj3PcQs2dCLdpg_zx4txe8a';
+let refResidenceId = null;
+function openReferral(residenceId, residenceName){
+  refResidenceId = residenceId;
+  document.getElementById('refResName').textContent = residenceName;
+  document.getElementById('refFields').classList.remove('hidden');
+  document.getElementById('refDone').classList.add('hidden');
+  document.getElementById('rf_err').classList.add('hidden');
+  document.getElementById('refmo').classList.remove('hidden');
+}
+async function submitReferral(){
+  const err = document.getElementById('rf_err');
+  err.classList.add('hidden');
+  const name = document.getElementById('rf_name').value.trim();
+  const pname = document.getElementById('rf_pname').value.trim();
+  if(!name || !pname){
+    err.textContent = 'Please add your name and the name of the person you are referring.';
+    err.classList.remove('hidden');
+    return;
+  }
+  const btn = document.getElementById('rf_submit');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  const payload = {
+    residence_id: refResidenceId,
+    referrer_name: name,
+    referrer_organization: document.getElementById('rf_org').value.trim() || null,
+    referrer_phone: document.getElementById('rf_phone').value.trim() || null,
+    referrer_email: document.getElementById('rf_email').value.trim() || null,
+    participant_name: pname,
+    participant_phone: document.getElementById('rf_pphone').value.trim() || null,
+    notes: document.getElementById('rf_notes').value.trim() || null,
+    consent_attested: document.getElementById('rf_consent').checked
+  };
+  try{
+    const res = await fetch(VRCC_API + '/referrals', {
+      method: 'POST',
+      headers: {
+        'apikey': VRCC_KEY,
+        'Authorization': 'Bearer ' + VRCC_KEY,
+        'Content-Type': 'application/json',
+        'Content-Profile': 'recoveryos',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    document.getElementById('refFields').classList.add('hidden');
+    document.getElementById('refDone').classList.remove('hidden');
+  }catch(e){
+    err.innerHTML = 'We couldn\'t reach the intake system just now. Please email <b>gracehouse@graceforaddictions.org</b> or call <b>515-220-8771</b> — or try again in a moment.';
+    err.classList.remove('hidden');
+  }finally{
+    btn.disabled = false; btn.textContent = 'Submit referral';
+  }
+}
+</script>
+</body>
+</html>

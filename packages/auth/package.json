@@ -1,0 +1,27 @@
+{
+  "name": "@recoveryos/auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@recoveryos/data-access": "workspace:*",
+    "@recoveryos/domain": "workspace:*",
+    "@supabase/supabase-js": "^2.49.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-router": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "react": "^19.1.0",
+    "react-router": "^7.6.0",
+    "typescript": "^5.8.0"
+  }
+}

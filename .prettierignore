@@ -1,0 +1,3 @@
+# Generated files (pnpm generate:residence-docs) — never hand-edited or reformatted
+docs/residence-documents/
+supabase/seed/documents_seed.sql
