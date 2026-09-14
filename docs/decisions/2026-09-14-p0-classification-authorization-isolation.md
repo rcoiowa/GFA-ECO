@@ -193,6 +193,19 @@ gate.
    schema of the database — exactly the RecoveryOS migration surface; explicit
    client grants in migrations are unaffected.
 
+**Pin re-confirmation (2026-09-14, same decision-maker):** the amended
+artifact was re-reviewed and the new pin APPROVED — commit
+`2a1c2e5a57c5e9a766b6a8bc81502d9abbb3b71f`, SHA-256
+`512f4624ee7c6e13b8fe08c5cc5b27d76b44f9b8e51d5bc017637db91edef174`
+(pin recorded in `554cadda8a741b448682b596aa26afe12f44056a`). The prior
+`8e287b5` artifact is SUPERSEDED and must not be applied. Boundary restated:
+this authorizes the global default-function ACL change **for role postgres in
+CQCX only, as part of 0149** — no other default-privilege changes, role
+alterations, schema changes, or unrelated grants. Execution order:
+0148 → live read-back → fixture-role revocation → 0149 (@ `2a1c2e5`) →
+0149 read-back → regression verification. No live execution from a session
+whose CQCX connector is unauthenticated.
+
 **Rehearsal of the final artifact (isolated replay):** applied clean from the
 pre-0149 state; both exploits refuted; read-back 6a–6f, 7 and 7b (new-function
 probe) all pass; P0 battery re-passed 36/36 (the battery's temp helper now
