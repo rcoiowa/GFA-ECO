@@ -30,6 +30,8 @@ jobs:
         run: node scripts/verify-booking-integrity.mjs
       - name: P0 classification-isolation invariants (prepared 0148 — SEC-P0-001)
         run: node scripts/verify-0148-prepared.mjs
+      - name: G3 exposure-hardening invariants (prepared 0149 — SEC-DB-001)
+        run: node scripts/verify-0149-prepared.mjs
       - run: pnpm typecheck
       - run: pnpm build
       - name: Enforce canonical RecoveryOS backend in production assets
