@@ -1,0 +1,197 @@
+-- p0_classification_isolation_negative_tests.sql — SEC-P0-001 / Gate G2 battery.
+--
+-- ISOLATED REPLAY OR DISPOSABLE STAGING ONLY. Never the launch project.
+-- The battery refuses to run unless the operator explicitly sets
+--   set recoveryos.negtest = 'on';
+-- Everything runs in one transaction and ends with ROLLBACK, so no rows persist.
+--
+-- Prerequisites: launch migrations 0001–0146 + prepared 0148 applied; the
+-- auth shim (auth.users + auth.uid() reading request.jwt.claim.sub) present;
+-- run as a superuser/service connection (the battery impersonates
+-- `authenticated` per actor via SET LOCAL ROLE).
+--
+-- What it proves (each assertion raises on failure):
+--   1. A test_fixture actor holding administrator/navigator/residence roles
+--      satisfies NO privileged predicate and holds NO residence staff scope.
+--   2. Production staff predicates are unchanged (admin/navigator/residence
+--      staff access preserved).
+--   3. Fixture actors read ZERO rows from residence_application_intake and
+--      residence_listing_submissions under RLS; production staff read them.
+--   4. Notification fan-out for lead / listing / application events reaches
+--      production staff only.
+--   5. grant_role_assignment refuses privileged grants to fixture identities
+--      (test_fixture_privilege_blocked) and still grants to production staff.
+--   6. Participant-plane behavior for fixtures is preserved (participant role,
+--      0120 same_world semantics).
+
+\set ON_ERROR_STOP on
+
+do $$ begin
+  if coalesce(current_setting('recoveryos.negtest', true), '') <> 'on' then
+    raise exception 'REFUSING TO RUN: set recoveryos.negtest = ''on'' only on an isolated replay or disposable staging database.';
+  end if;
+  if to_regprocedure('recoveryos.is_privileged_role(recoveryos.role_key)') is null then
+    raise exception 'Prepared migration 0148 is not applied to this database; apply it before running the battery.';
+  end if;
+end $$;
+
+begin;
+
+create function pg_temp.ok(label text, cond boolean) returns void language plpgsql as $$
+begin
+  if cond is distinct from true then
+    raise exception 'NEGTEST FAIL: %', label;
+  end if;
+  raise notice 'ok: %', label;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Arrange: residence, actors, classifications, role assignments
+-- ---------------------------------------------------------------------------
+insert into recoveryos.residences (organization_id, name, address_city, address_state, is_active)
+select (select id from recoveryos.organizations order by id limit 1),
+       'NEGTEST-P0 Residence', 'Des Moines', 'IA', true;
+select set_config('negtest.res',
+  (select id from recoveryos.residences where name = 'NEGTEST-P0 Residence')::text, true);
+
+insert into auth.users (id, email) values
+  ('00000000-0000-4000-8000-0000000000f1', 'negtest-p0-fixture-admin@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000f2', 'negtest-p0-fixture-navigator@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000c1', 'negtest-p0-prod-admin@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000c2', 'negtest-p0-prod-navigator@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000c3', 'negtest-p0-prod-rstaff@negtest.p0');
+-- (handle_new_auth_user auto-provisions people + participant role)
+
+select set_config('negtest.fxadmin', (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000f1'), true);
+select set_config('negtest.fxnav',   (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000f2'), true);
+select set_config('negtest.padmin',  (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000c1'), true);
+select set_config('negtest.pnav',    (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000c2'), true);
+select set_config('negtest.prstaff', (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000c3'), true);
+
+insert into recoveryos.person_classification (person_id, classification, reason) values
+  (current_setting('negtest.fxadmin')::bigint, 'test_fixture', 'NEGTEST-P0'),
+  (current_setting('negtest.fxnav')::bigint,   'test_fixture', 'NEGTEST-P0')
+on conflict (person_id) do update set classification = 'test_fixture', reason = 'NEGTEST-P0';
+
+-- Simulate the live defect shape: fixture identities holding privileged roles
+-- (direct inserts on purpose — the RPC now refuses; the live rows predate 0148).
+insert into recoveryos.role_assignments (person_id, role_key, organization_id, residence_id) values
+  (current_setting('negtest.fxadmin')::bigint, 'administrator',     1, null),
+  (current_setting('negtest.fxadmin')::bigint, 'residence_manager', 1, current_setting('negtest.res')::bigint),
+  (current_setting('negtest.fxadmin')::bigint, 'residence_staff',   1, current_setting('negtest.res')::bigint),
+  (current_setting('negtest.fxnav')::bigint,   'navigator',         1, null),
+  (current_setting('negtest.padmin')::bigint,  'administrator',     1, null),
+  (current_setting('negtest.pnav')::bigint,    'navigator',         1, null),
+  (current_setting('negtest.prstaff')::bigint, 'residence_staff',   1, current_setting('negtest.res')::bigint);
+
+-- Sensitive rows + fan-out events (fires the three notify triggers).
+insert into recoveryos.leads (first_name, last_name, email, message)
+values ('NEGTEST-P0', 'Lead', 'negtest-p0-lead@negtest.p0', 'battery');
+insert into recoveryos.residence_listing_submissions (residence_name, contact_email, source, test_fixture)
+values ('NEGTEST-P0 Listing', 'negtest-p0-listing@negtest.p0', 'NEGTEST-P0', true);
+insert into recoveryos.residence_application_intake
+  (residence_id, applicant_name, applicant_email, answers, consent_to_contact, source, test_fixture)
+values (current_setting('negtest.res')::bigint, 'NEGTEST-P0 Applicant',
+        'negtest-p0-applicant@negtest.p0', jsonb_build_object('why','NEGTEST-P0'), true, 'NEGTEST-P0', true);
+
+-- ---------------------------------------------------------------------------
+-- 4) Fan-out reaches production staff only
+-- ---------------------------------------------------------------------------
+select pg_temp.ok('production admin received lead/listing/application notifications',
+  (select count(*) from recoveryos.notifications
+    where recipient_person_id = current_setting('negtest.padmin')::bigint) >= 3);
+select pg_temp.ok('fixture admin received NO notifications',
+  (select count(*) from recoveryos.notifications
+    where recipient_person_id = current_setting('negtest.fxadmin')::bigint) = 0);
+select pg_temp.ok('fixture navigator received NO notifications',
+  (select count(*) from recoveryos.notifications
+    where recipient_person_id = current_setting('negtest.fxnav')::bigint) = 0);
+
+-- ---------------------------------------------------------------------------
+-- 1) Fixture admin: every privileged predicate false, no staff scope
+-- ---------------------------------------------------------------------------
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000f1', true);
+set local role authenticated;
+select pg_temp.ok('fx-admin: has_role(administrator) = false', recoveryos.has_role('administrator') = false);
+select pg_temp.ok('fx-admin: is_platform_admin = false',        recoveryos.is_platform_admin() = false);
+select pg_temp.ok('fx-admin: is_admin_staff = false',           recoveryos.is_admin_staff() = false);
+select pg_temp.ok('fx-admin: is_care_operations_staff = false', recoveryos.is_care_operations_staff() = false);
+select pg_temp.ok('fx-admin: is_support_staff = false',         recoveryos.is_support_staff() = false);
+select pg_temp.ok('fx-admin: is_coach_staff = false',           recoveryos.is_coach_staff() = false);
+select pg_temp.ok('fx-admin: is_navigator_staff = false',       recoveryos.is_navigator_staff() = false);
+select pg_temp.ok('fx-admin: staff_residence_ids empty',
+  not exists (select 1 from recoveryos.staff_residence_ids()));
+select pg_temp.ok('fx-admin: is_residence_manager_of = false',
+  recoveryos.is_residence_manager_of(current_setting('negtest.res')::bigint) = false);
+-- 6) participant plane preserved
+select pg_temp.ok('fx-admin: has_role(participant) still true', recoveryos.has_role('participant') = true);
+select pg_temp.ok('fx-admin: same_world(fixture peer) = true',
+  recoveryos.same_world(current_setting('negtest.fxnav')::bigint) = true);
+select pg_temp.ok('fx-admin: same_world(production person) = false',
+  recoveryos.same_world(current_setting('negtest.padmin')::bigint) = false);
+-- 3) RLS: zero sensitive rows
+select pg_temp.ok('fx-admin: residence_application_intake reads 0 rows',
+  (select count(*) from recoveryos.residence_application_intake) = 0);
+select pg_temp.ok('fx-admin: residence_listing_submissions reads 0 rows',
+  (select count(*) from recoveryos.residence_listing_submissions) = 0);
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- 1) Fixture navigator: care-ops/support predicates false, no intake reads
+-- ---------------------------------------------------------------------------
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000f2', true);
+set local role authenticated;
+select pg_temp.ok('fx-nav: has_role(navigator) = false',        recoveryos.has_role('navigator') = false);
+select pg_temp.ok('fx-nav: is_care_operations_staff = false',   recoveryos.is_care_operations_staff() = false);
+select pg_temp.ok('fx-nav: is_support_staff = false',           recoveryos.is_support_staff() = false);
+select pg_temp.ok('fx-nav: residence_application_intake reads 0 rows',
+  (select count(*) from recoveryos.residence_application_intake) = 0);
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- 2) Production staff unchanged
+-- ---------------------------------------------------------------------------
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000c1', true);
+set local role authenticated;
+select pg_temp.ok('prod-admin: has_role(administrator) = true', recoveryos.has_role('administrator') = true);
+select pg_temp.ok('prod-admin: is_platform_admin = true',       recoveryos.is_platform_admin() = true);
+select pg_temp.ok('prod-admin: is_admin_staff = true',          recoveryos.is_admin_staff() = true);
+select pg_temp.ok('prod-admin: is_care_operations_staff = true',recoveryos.is_care_operations_staff() = true);
+select pg_temp.ok('prod-admin: is_support_staff = true',        recoveryos.is_support_staff() = true);
+select pg_temp.ok('prod-admin: reads listing submissions',
+  (select count(*) from recoveryos.residence_listing_submissions
+    where contact_email = 'negtest-p0-listing@negtest.p0') = 1);
+select pg_temp.ok('prod-admin: reads application intake (care-ops path)',
+  (select count(*) from recoveryos.residence_application_intake
+    where applicant_email = 'negtest-p0-applicant@negtest.p0') = 1);
+-- 5) grant RPC refuses privileged grants to fixtures, allows production
+select pg_temp.ok('grant coach to FIXTURE person → test_fixture_privilege_blocked',
+  (recoveryos.grant_role_assignment(current_setting('negtest.fxnav')::bigint, 'coach')
+     ->> 'code') = 'test_fixture_privilege_blocked');
+select pg_temp.ok('grant participant to FIXTURE person → allowed (non-privileged)',
+  (recoveryos.grant_role_assignment(current_setting('negtest.fxnav')::bigint, 'participant')
+     ->> 'code') in ('granted','already_granted'));
+select pg_temp.ok('grant coach to PRODUCTION person → granted',
+  (recoveryos.grant_role_assignment(current_setting('negtest.pnav')::bigint, 'coach')
+     ->> 'code') in ('granted','already_granted'));
+reset role;
+
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000c2', true);
+set local role authenticated;
+select pg_temp.ok('prod-nav: is_care_operations_staff = true',  recoveryos.is_care_operations_staff() = true);
+select pg_temp.ok('prod-nav: is_navigator_staff = true',        recoveryos.is_navigator_staff() = true);
+select pg_temp.ok('prod-nav: is_platform_admin = false',        recoveryos.is_platform_admin() = false);
+reset role;
+
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000c3', true);
+set local role authenticated;
+select pg_temp.ok('prod-rstaff: staff_residence_ids contains the residence',
+  current_setting('negtest.res')::bigint in (select * from recoveryos.staff_residence_ids()));
+select pg_temp.ok('prod-rstaff: reads application intake for own residence',
+  (select count(*) from recoveryos.residence_application_intake
+    where residence_id = current_setting('negtest.res')::bigint) = 1);
+reset role;
+
+do $$ begin raise notice 'P0 CLASSIFICATION-ISOLATION BATTERY: ALL ASSERTIONS PASSED (transaction will roll back)'; end $$;
+
+rollback;
