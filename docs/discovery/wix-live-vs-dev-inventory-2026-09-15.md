@@ -96,7 +96,10 @@ testimonials):
 - A second small Wix form component (`comp-mm9hnpl41`) appears on at least one
   page — identify at DEV reconciliation (F-3 scope).
 
-F-2 verdict: the live site is **not** operating as a shadow intake database in
-page HTML; the one lead pipe is the known, canonical one. Remaining risk sits
-in Wix-side retention of form submissions and automation configuration —
-review those in the Wix dashboard during DEV acceptance (human step).
+F-2 verdict — precisely scoped: the live site is **not** operating as a shadow
+intake database **at the browser/page layer**; the one visible lead pipe is
+the known, canonical one. F-2 does **not** prove the Wix server-side
+automation's destination, configuration, or Wix-side retention of form
+submissions — those remain explicit **dashboard-verification items**
+(UNKNOWN—EVIDENCE REQUIRED), never to be upgraded to proven facts without
+that review (human step at DEV acceptance).
