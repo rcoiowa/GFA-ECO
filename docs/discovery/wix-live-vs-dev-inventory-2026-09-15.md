@@ -71,3 +71,32 @@ performed page-by-page from this session.
 
 No gate state changes: G14 remains BLOCKED (DEV acceptance program not
 started); this inventory advances WIX-001 evidence only.
+
+## 5. F-2 addendum — live form/endpoint crawl (2026-09-15, read-only)
+
+Twelve live pages crawled (home, services, volunteer, vrcc, app-landing-page,
+donate, grace-addiction, anchor-justice, events-meetings, about, coaches,
+testimonials):
+
+- **One public intake form, site-wide:** the Wix "Contact Connect" form
+  (`form-8ce6b3ab-…`) renders on every crawled page (master/footer section).
+  Its field set — first name, last name, email, phone, readiness dropdown,
+  interest, message — maps one-to-one onto the `lead-intake` receiver payload,
+  consistent with the canonical pipeline (Wix Forms → server-side automation →
+  secret-gated `lead-intake` → `recoveryos.leads`).
+- **No shadow intake found in page HTML:** zero Supabase endpoints, zero
+  external form actions, zero external iframes in any crawled page. Client
+  pages do not write to the backend directly; submission data lives in Wix
+  Forms plus the automation hop (the "approved minimum" question for Wix data
+  retention remains a G14 policy item — what Wix keeps, for how long).
+- **Analytics:** Google Tag Manager / gtag is present site-wide. Governance
+  items: what is measured, whether consent-mode applies, and whether any
+  form-field data reaches analytics (G4 V8 / privacy plane). No other trackers
+  (no Facebook/Hotjar/Clarity/TikTok signatures) were found.
+- A second small Wix form component (`comp-mm9hnpl41`) appears on at least one
+  page — identify at DEV reconciliation (F-3 scope).
+
+F-2 verdict: the live site is **not** operating as a shadow intake database in
+page HTML; the one lead pipe is the known, canonical one. Remaining risk sits
+in Wix-side retention of form submissions and automation configuration —
+review those in the Wix dashboard during DEV acceptance (human step).
