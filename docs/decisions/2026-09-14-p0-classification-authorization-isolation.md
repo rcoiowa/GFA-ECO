@@ -379,6 +379,66 @@ Not authorized by decision 7: receiver deployment, residence opening,
 Cloudflare/DNS/Wix changes, PR merges, unrelated production mutations. All
 other STOP/HOLD gates remain closed.
 
+### Decision 8 (2026-09-15): F-3 checkpoint decisions — architecture/governance
+### + read-only verification authority only
+
+**8A — FiveCRM: RETIRE.** The external FiveCRM IntakeDemographicsForm is not
+ratified and is designated RETIRE; no new GFA intake architecture may depend
+on FiveCRM. No deletion of historical records, account closure, or live-site
+removal is authorized — a bounded retirement packet (eight determinations:
+handoff source, account ownership, historical records, data categories at
+schema level, contractual/retention/export/deletion obligations, staff
+dependencies, RecoveryOS-native replacement, DEV-first plan) precedes any
+mutation, evidence preserved first, live removal under its own Wix approval.
+Packet: `docs/operations/fivecrm-retirement-packet-2026-09-15.md`.
+
+**8B — Contact Connect pipeline: READ-ONLY VERIFICATION AUTHORIZED, executed
+same day.** Findings (full evidence:
+`docs/discovery/8b-contact-connect-verification-2026-09-15.md`):
+- Automations: complete enumeration shows NO webhook/HTTP action anywhere;
+  Contact Connect's only automation emails the SUBMITTER.
+- Velo secrets vault (names/descriptions only, values never recorded):
+  `supa_contact` — "contact connect into supabase" — and `ds_fix` —
+  "supabase dev" — both created 2026-07-05. Velo-side wiring EXISTS in some
+  form; the `ds_fix` description raises a possible retired-dev-project
+  reference that the editor session MUST disprove (any YKY URL in Velo code
+  is a P0-class finding).
+- Aggregate counts: Contact Connect 119 total submissions, **27 unseen**;
+  "My Form" returned no count row.
+- Reconciliation available so far: 119 Wix submissions vs 2 CQCX leads
+  (Sep-7 read-only evidence) — **the hop is NOT proven and the volume
+  discrepancy is reported as a SUSPECTED OPERATIONAL DEFECT** per the 8B stop
+  rule. Not established: whether Velo forwards selectively, started recently,
+  or fails silently — Velo code is not readable via REST; editor inspection
+  required (which URL, which secret, event vs automation path).
+- INTERIM POSTURE (in force now): the Wix submissions inbox is a REQUIRED
+  human-monitored public-inquiry source; inquiries are NOT assumed to reach
+  RecoveryOS automatically. 27 unseen submissions need human review.
+- W-2 remains a dashboard-only capture (no REST surface): Settings → Site
+  History; identify the Sep-13 23:20 change; record the newest prior revision
+  as the rollback reference; restore nothing.
+
+**8C — DEV rebuild scope RESET ACKNOWLEDGED.** DEV is classified an isolated
+clone/reference environment, not an implemented rebuild; G14 planning reset;
+clone parity is never completion; build deliberately toward the ratified IA;
+all RATIFY FIRST gates (phone, roster, availability, partnerships,
+testimonials, legal/privacy) remain in force.
+
+**8D — Community system of record: RecoveryOS.** Wix Groups/Feed/Members are
+not the operational community system. DEV architecture classifies /groups,
+/feed, and operational member surfaces RETIRE/REDIRECT; no new
+recovery-community operations in Wix; Members dependencies preserved until
+dependency analysis completes; no live app uninstalls under this decision;
+future community CTAs route to the RCC/RecoveryOS experience once
+release-ready. Wix stays the public communications/front-door plane.
+
+**F-3 implementation posture:** DEV implementation specification prepared
+(`docs/content/dev-implementation-spec-2026-09-15.md`) — no DEV modification
+or publish without separate authorization. Lifecycle unchanged: 0148 APPROVED
+→ fixture cleanup APPROVED → 0149 APPROVED → 0147R APPROVED → 0150 HELD →
+0151 APPROVED/SEQUENCED → receiver deployment PENDING → residence opening
+CLOSED. All other STOP/HOLD gates remain closed.
+
 **Execution status:** BLOCKED ON ENVIRONMENT ACCESS at recording time — the
 implementation session holds no authenticated CQCX access path (Supabase
 connector unauthenticated; no CLI/credentials). Lifecycle: 0148 =
