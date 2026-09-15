@@ -114,6 +114,8 @@ exploits refuted; read-back 6a–6f, 7, 7b all pass; battery 36/36.
 | `0148_...prepared.sql` | `f4646ea23ac39a54dc1bd7fa1fcc69a32780b476` | `277824917102dcb74427a66b413c9232f69a39fc169f2fa8404ce326c1d371f4` |
 | `0149_...prepared.sql` | `2a1c2e5a57c5e9a766b6a8bc81502d9abbb3b71f` | `512f4624ee7c6e13b8fe08c5cc5b27d76b44f9b8e51d5bc017637db91edef174` |
 | `0147_shared_intake_workflow.prepared.sql` (REVISED) | `da6ecb711f7e59cdb9b29f4daf943dbffb7c1c21` | `6af374bd597b58637159f1dfa623812a54c616d752a5f5d6c095336052b95e2c` |
+| `0150_intake_consent_evidence.prepared.sql` (**APPLICATION HELD** — decision 7) | `2f1a3df5999e3f3090d1a885ce27cc4f8548f116` | `8bf8159f1d98e81adce9ab29c143350412172016427b135495dea72a2516ca6c` |
+| `0151_strict_classification_semantics.prepared.sql` (APPROVED, sequenced behind held 0150) | `2f1a3df5999e3f3090d1a885ce27cc4f8548f116` | `6109e4658b43c67fd6a1bf3109e182b1934e137d86ac0c4685a23ea9180a442d` |
 
 The 0149 pin above supersedes the interim `8e287b5…` reference in the
 authorization message: condition 7 required amending the default-privilege
@@ -157,7 +159,71 @@ functions carry none. `scripts/verify-0147-prepared.mjs` enforces this
 generically for 0147R; keep the same sweep in every future prepared-migration
 guard.
 
-## Step 7 — Close out
+## Steps 7–8 — 0150 (HELD) and 0151 (approved, sequenced): NOT part of the
+## immediately executable sequence
+
+**The immediately executable live sequence ends at Step 6.** Decision 7 holds
+0150's application until the hardened-receiver conditions are met (see the
+decision record — SUPA-FN-001-proven receiver, fail-closed consent, no
+uncontrolled null-evidence window), and 0151 — although APPROVED — follows
+0150 in the ratified lineage and is not applied ahead of it without a
+separate sequencing/renumbering decision.
+
+When the receiver-activation program later reaches these steps:
+
+**Step 7 — 0150** (only under its reconsideration approval): ledger re-check;
+restore point; hash pin (table above); apply alone; verify all pre-existing
+rows still carry NULL evidence columns (LEGACY-UNKNOWN — expected live
+baseline: 3 rows, consent_to_contact true, evidence NULL); then the hardened
+receiver activates with the accepting gate closed, and HTTP/E2E proves
+consent enforcement + atomic evidence stamping.
+
+**Step 8 — 0151** (decision 7 conditions):
+1. Zero-missing checks — BOTH must return 0, else STOP AND INVESTIGATE
+   (never backfill/classify to make the migration pass):
+   ```sql
+   select count(*) from recoveryos.people p
+    where p.auth_user_id is not null
+      and not exists (select 1 from recoveryos.person_classification pc
+                      where pc.person_id = p.id);
+   select count(distinct p.id) from recoveryos.people p
+     join recoveryos.role_assignments ra
+       on ra.person_id = p.id and ra.revoked_at is null
+    where p.auth_user_id is not null
+      and recoveryos.is_privileged_role(ra.role_key)
+      and not exists (select 1 from recoveryos.person_classification pc
+                      where pc.person_id = p.id);
+   ```
+2. Signup provisioning still classifies:
+   ```sql
+   select position('person_classification' in
+     pg_get_functiondef('recoveryos.handle_new_auth_user()'::regprocedure)) > 0;
+   ```
+3. same_world consumer audit — re-run LIVE; every row must pair with an
+   independent production-privileged predicate/self-scope (prepared-lineage
+   result, 2026-09-15: exactly `list_open_support_requests` [is_support_staff]
+   and `claim_support_request` [is_coach_staff / is_navigator_staff]; no
+   policies). Any unguarded cross-person path → STOP:
+   ```sql
+   select n.nspname||'.'||p.proname
+   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname in ('recoveryos','public') and p.prokind = 'f'
+     and p.proname <> 'same_world'
+     and pg_get_functiondef(p.oid) like '%same_world%'
+   union all
+   select schemaname||'.'||tablename||' policy '||policyname
+   from pg_policies
+   where coalesce(qual,'') like '%same_world%'
+      or coalesce(with_check,'') like '%same_world%';
+   ```
+4. Apply 0151 alone (hash pin above); then the 17-assertion strict battery +
+   P0 36/36 + intake 25/25 on the isolated copy; verify production staff
+   access, unclassified fail-closed, no unclassified fan-out, participant
+   plane intact. STOP on any failure. Rollback:
+   `0151_strict_classification_semantics.rollback.sql` (restores lenient
+   semantics — record the reason).
+
+## Step 9 — Close out
 
 - Re-run Step 3's script once more (fixture loop will now check 0 actors —
   its warning at that point is expected and correct).

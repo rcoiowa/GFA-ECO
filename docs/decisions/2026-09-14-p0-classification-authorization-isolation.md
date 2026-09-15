@@ -318,6 +318,67 @@ closed at the end of R1 until per-residence opening authority; Turnstile
 provisioning is an ops/deployment gate; verification uses isolated/ephemeral
 environments, never synthetic CQCX rows. All other STOP/HOLD gates closed.
 
+### Decision 7 (2026-09-15): 0151 APPROVED (sequenced); 0150 accepted, APPLICATION HELD
+
+**0151_strict_classification_semantics — APPROVED**, execution sequenced
+behind 0150 and all preceding approved migrations. Artifact: commit
+`2f1a3df5999e3f3090d1a885ce27cc4f8548f116`, SHA-256
+`6109e4658b43c67fd6a1bf3109e182b1934e137d86ac0c4685a23ea9180a442d`.
+Conditions (verbatim intent):
+1. Immediately before apply, repeat BOTH zero-missing-classification checks
+   (all login-linked people; login-linked people with active privileged
+   roles). Any nonzero → STOP AND INVESTIGATE; never silently backfill or
+   classify to satisfy the migration. Exact queries: runbook Step 8.
+2. Verify signup provisioning still creates an explicit production
+   classification row.
+3. Audit every consumer of `recoveryos.same_world()`: it may never operate as
+   a standalone authorization boundary — every use pairs with an independent
+   production-privileged predicate, self-scope, or explicit guard; any
+   unguarded cross-person path → STOP.
+   **Pre-satisfied on the prepared lineage (2026-09-15 replay-catalog audit):**
+   exactly two consumers exist and no policies —
+   `list_open_support_requests` (paired with `is_support_staff()`) and
+   `claim_support_request` (per-domain `is_coach_staff()` /
+   `is_navigator_staff()` gates); all pair predicates flow through the
+   strict-guarded `has_role`. The audit query is recorded in the runbook and
+   MUST be re-run live at apply time (live drift could add consumers).
+4. Post-apply: the 17-assertion strict battery + P0 36/36 + intake 25/25
+   regressions.
+5. Verify production staff retain access; unclassified privileged actors fail
+   closed; unclassified actors receive no staff fan-out; participant
+   self-service stays in scope.
+6. STOP on any prerequisite or regression failure.
+
+**0150_intake_consent_evidence — PREPARED ARTIFACT ACCEPTED; APPLICATION
+AUTHORITY HELD.** (Artifact as prepared at `2f1a3df`, SHA-256
+`8bf8159f1d98e81adce9ab29c143350412172016427b135495dea72a2516ca6c`.)
+Rationale: 0150 alone does not enforce the future consent boundary — that
+lives in the hardened receiver; applying 0150 while the current receiver can
+still accept submissions would mint new null-evidence rows. Reconsideration
+conditions: SUPA-FN-001 proves the exact hardened receiver source; the
+receiver is pinned and reviewed; `consent_to_contact !== true` proven to fail
+closed; `consent_notice_version` receiver-controlled; `consent_at`
+server-generated; server-authoritative residence binding + closed
+accepting-applications gate present; and the deployment runbook guarantees no
+uncontrolled window in which the old receiver can create new null-evidence
+submissions after 0150. Activation sequence at that time: 0150 schema →
+verify legacy evidence remains NULL/LEGACY-UNKNOWN → hardened receiver
+activation with the accepting gate closed → HTTP/E2E proof of consent
+enforcement and atomic evidence stamping → separate per-residence opening
+authority later.
+
+**Sequencing rule:** because 0151 follows 0150 in the ratified lineage, 0151
+is NOT applied ahead of the held 0150 without a separate
+sequencing/renumbering decision. Practical effect: the immediately executable
+live sequence remains 0148 → read-back → fixture revocation → 0149 →
+read-back → 0147R → read-back → regression; 0150+0151 execute together later
+under the receiver-activation program (or under a future resequencing
+decision).
+
+Not authorized by decision 7: receiver deployment, residence opening,
+Cloudflare/DNS/Wix changes, PR merges, unrelated production mutations. All
+other STOP/HOLD gates remain closed.
+
 **Execution status:** BLOCKED ON ENVIRONMENT ACCESS at recording time — the
 implementation session holds no authenticated CQCX access path (Supabase
 connector unauthenticated; no CLI/credentials). Lifecycle: 0148 =
