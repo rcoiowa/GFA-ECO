@@ -439,6 +439,51 @@ or publish without separate authorization. Lifecycle unchanged: 0148 APPROVED
 0151 APPROVED/SEQUENCED → receiver deployment PENDING → residence opening
 CLOSED. All other STOP/HOLD gates remain closed.
 
+### Decision 9 (2026-09-15): 8B follow-through — evidentiary corrections +
+### bounded human verification authority
+
+Read-only operational verification and minimum-necessary human triage only.
+No Wix/Velo edits, publishing, database mutations, function deploys, secret
+changes, Cloudflare/DNS changes, or PR merges.
+
+- **9A — evidentiary wording corrected** (applied to the 8B record):
+  `supa_contact` / "contact connect into supabase" is evidence of **intended
+  Velo integration configuration** — not proof that current code uses the
+  secret or that the pipeline executes. "119 Wix submissions vs 2 CQCX leads
+  (Sep 7)" is evidence **supporting a suspected operational defect** — not a
+  proven forwarding-failure count; populations and time windows are
+  unreconciled. Interim posture NOT weakened: Contact Connect → RecoveryOS
+  remains UNKNOWN—EVIDENCE REQUIRED.
+- **9B — human triage of the 27 unseen submissions AUTHORIZED NOW** (inside
+  Wix; no export; no PII or narratives into Claude/GitHub/spreadsheets/the
+  Control Tower; minimum necessary; no record alteration; aggregate-only
+  results recorded; timely-contact needs routed through the existing human
+  operational process; no automated outreach). Implementation-environment
+  note: the review is human-by-construction — the assistant did NOT query
+  submission content, and skipped even a metadata-only date query because the
+  API's field projection does not guarantee content exclusion. Recording
+  template: 8B evidence doc §"9B triage record".
+- **9C — human Velo inspection AUTHORIZED READ-ONLY** with the specific
+  search list and the interpretation rule: dead/commented YKY reference =
+  residue to retire; an executable live path capable of routing production
+  submissions to YKY = P0-class canonical-backend violation → STOP, preserve
+  evidence, report, no silent patching, no breach claim without evidence.
+  Secret values never exposed or recorded.
+- **9D — W-2 Site History capture** in the same session (what the Sep-13
+  23:20 update was; the newest preceding revision with enough metadata to be
+  a rollback reference; restore/publish nothing).
+- **9E — fresh CQCX reconciliation required, window-based:** never compare
+  lifetime Wix submissions to a stale point-in-time lead count as one
+  population. Prefer a defined post-integration window on both sides; stable
+  submission IDs if both systems retain them (note: `leads.wix_submission_id`
+  exists only after 0147R applies — until then reconciliation is
+  timestamp/count based); no inquiry content exposed.
+
+Until 9C + 9E prove the path: the Wix submissions inbox remains a required
+human-monitored public-inquiry source, and Contact Connect is never described
+as automatically reaching RecoveryOS. All mutation gates and lifecycle states
+unchanged.
+
 **Execution status:** BLOCKED ON ENVIRONMENT ACCESS at recording time — the
 implementation session holds no authenticated CQCX access path (Supabase
 connector unauthenticated; no CLI/credentials). Lifecycle: 0148 =

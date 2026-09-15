@@ -24,19 +24,26 @@ the one reconciliation available points against a functioning full pipeline.
 | 4 | Submission counts (aggregate) | Contact Connect (`8ce6b3ab…`): **119 total, 27 unseen**. "My Form" (`58582b0f…`): no count row returned (zero or not counted under the queried namespace). |
 | 5 | Cross-system reconciliation (partial) | CQCX held **2 leads, both `new`** at the 2026-09-07 read-only verification (PR #7 record). 119 Wix submissions (form live since 2025-11-28) vs 2 leads is a **large discrepancy**; a fresh CQCX lead count needs the authenticated session (query recorded below). |
 
-## Interpretation (labeled)
+## Interpretation (labeled; wording per decision 9A)
 
-- **Established:** no automation-layer hop exists; a Velo-layer integration
-  exists in some form (the `supa_contact` secret is purpose-described for
-  exactly this pipe); the pipeline is not moving all submissions (unless
-  nearly all 119 predate a recent wiring — not established).
-- **Inference, not established:** the Velo code posts Contact Connect
-  submissions to a Supabase endpoint using `supa_contact` as the shared
-  secret, wired 2026-07-05.
+- **Established:** no automation-layer hop exists. The `supa_contact` secret
+  (purpose-described "contact connect into supabase") is **evidence of
+  INTENDED Velo integration configuration** — it is NOT proof that current
+  Velo code uses the secret, nor that the pipeline executes.
+- **Evidence supporting a suspected operational defect — not a proven
+  forwarding-failure count:** 119 lifetime Wix submissions vs 2 CQCX leads at
+  the Sep-7 point-in-time read. The populations and time windows are
+  unreconciled (the form predates the 2026-07-05 secret by months); the
+  correct comparison is the 9E window-based reconciliation below.
+- **Inference, not established:** Velo code posts Contact Connect submissions
+  to a Supabase endpoint using `supa_contact`, wired around 2026-07-05.
 - **Risk flag (must be disproven in the editor):** `ds_fix` is described
-  "supabase **dev**". If any Velo backend code still targets the retired dev
-  project (YKY) or a non-canonical URL, that is a P0-class finding under the
-  canonical-backend rule. Names alone cannot tell the target.
+  "supabase **dev**". Interpretation rule (decision 9C): a dead/commented
+  historical YKY reference = residue to retire; an executable live path
+  capable of routing production submissions to YKY = **P0-class
+  canonical-backend violation → STOP, preserve evidence, report; no silent
+  patching; no breach claim without evidence.** Names alone cannot tell the
+  target.
 
 ## INTERIM OPERATIONAL POSTURE (in force per decision 8B)
 
@@ -46,24 +53,63 @@ source.** Inquiries must NOT be assumed to reach RecoveryOS automatically.
 submissions inbox promptly (this is an operations action in Wix's UI, outside
 this session's authority; flagged, not performed).
 
-## Remaining conclusive steps (Wix editor/dashboard — human session)
+## Human session checklist (authorized by decision 9; all read-only)
 
-1. Open the Velo editor (Dev Mode) on the LIVE site: locate backend code /
-   event handlers (`events.js` `onFormSubmit`, backend web modules, or
-   `http-functions.js`) referencing the Contact Connect form, `supa_contact`,
-   `ds_fix`, or any `*.supabase.co` URL.
-2. Record: exact target URL(s) (**must be `cqcxvwoukyhxyokfwnjm.supabase.co`
-   only** — any `ykykeioydvtxpyreshhs` reference → STOP, P0-class), which
-   secret is read, the header used (`x-lead-secret` expected by the
-   receiver), the trigger mechanism, and error handling (does a failed POST
-   vanish silently?).
-3. In the same session: the W-2 capture — Settings → Site History; identify
-   the 2026-09-13 23:20 change; record the newest revision BEFORE it as the
-   rollback reference; restore nothing.
-4. Fresh CQCX reconciliation once a connector-authenticated session exists
-   (aggregate only): `select count(*), min(created_at), max(created_at) from
-   recoveryos.leads;` compared with the Wix count/date range — non-PII
-   volumes and timestamps only.
+### 9B — triage of the 27 unseen submissions (inside Wix only)
+
+Purpose: is anyone currently waiting for a human response? Rules: review
+inside Wix; no export; no PII/narratives copied into Claude, GitHub,
+spreadsheets, or the Control Tower; inspect only what response-status
+determination needs; alter/delete nothing; route any timely-contact need
+through the existing authorized human process (no automated outreach).
+
+**9B triage record (aggregate-only; fill in after the review):**
+
+```
+Reviewed (total): __ / 27+ (count at review time: __)
+Already handled: __        Needs human follow-up: __
+Duplicate/spam/test: __    Unable to determine: __
+Oldest outstanding submission date: __________
+Reviewer + date: __________
+Follow-ups routed via (existing human process): __________
+```
+
+### 9C — Velo inspection (read-only; never edit; never expose secret values)
+
+1. Editor Dev Mode on the LIVE site. Establish: (1) what event/handler
+   invokes the integration; (2) whether the Contact Connect submission event
+   actually reaches it; (3) the outbound destination/project/function;
+   (4) which secret/config NAME is referenced; (5) error handling, logging,
+   retries/idempotency, failure behavior (does a failed POST vanish
+   silently?); (6) whether any staff notification occurs.
+2. Search specifically for: `supa_contact`, `ds_fix`, `lead-intake`,
+   `cqcxvwoukyhxyokfwnjm`, `ykykeioydvtxpyreshhs`, any `*.supabase.co`
+   URL/project ref, outbound HTTP/fetch logic, Contact Connect form/submission
+   handler references.
+3. **Interpretation rule (decision 9C):** dead/commented YKY reference →
+   residue to retire. Executable live path capable of routing production
+   submissions to YKY → **P0-class canonical-backend violation: STOP,
+   preserve evidence, report. No silent patching. No breach claim without
+   evidence.**
+
+### 9D — W-2 Site History capture (same session)
+
+Settings → Site History: what can be established about the 2026-09-13 23:20
+update; the newest revision immediately BEFORE it, with enough identifying
+metadata (timestamp/label) to serve as a rollback reference if later
+authorized. Restore/publish nothing.
+
+### 9E — fresh CQCX reconciliation (window-based; needs the authenticated connector)
+
+Never compare lifetime Wix submissions to a stale point-in-time lead count as
+one population. Method: (a) define the post-integration window (start no
+earlier than the 2026-07-05 secret creation, refined by the 9C-found wiring
+date); (b) Wix Contact Connect submission count over that window; (c) CQCX
+`select count(*), min(created_at), max(created_at) from recoveryos.leads
+where created_at >= <window start>;` (d) stable submission IDs when both
+systems retain them — note `leads.wix_submission_id` exists only after 0147R
+applies, so until then reconciliation is timestamp/count based. Aggregates
+only; no inquiry content.
 
 ## Register effect
 
