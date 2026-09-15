@@ -113,6 +113,7 @@ exploits refuted; read-back 6a–6f, 7, 7b all pass; battery 36/36.
 |---|---|---|
 | `0148_...prepared.sql` | `f4646ea23ac39a54dc1bd7fa1fcc69a32780b476` | `277824917102dcb74427a66b413c9232f69a39fc169f2fa8404ce326c1d371f4` |
 | `0149_...prepared.sql` | `2a1c2e5a57c5e9a766b6a8bc81502d9abbb3b71f` | `512f4624ee7c6e13b8fe08c5cc5b27d76b44f9b8e51d5bc017637db91edef174` |
+| `0147_shared_intake_workflow.prepared.sql` (REVISED) | `da6ecb711f7e59cdb9b29f4daf943dbffb7c1c21` | `6af374bd597b58637159f1dfa623812a54c616d752a5f5d6c095336052b95e2c` |
 
 The 0149 pin above supersedes the interim `8e287b5…` reference in the
 authorization message: condition 7 required amending the default-privilege
@@ -121,7 +122,42 @@ artifact is the `2a1c2e5…` version (amendment rationale in the decision
 record, decision 4). Applying the `8e287b5` version would harden nothing —
 its schema-scoped statement is a no-op against built-in defaults.
 
-## Step 6 — Close out
+## Step 6 — Decision 5: apply REVISED 0147 (shared intake workflow)
+
+Authorized 2026-09-15 (decision record §9, decision 5), **strictly after Steps
+2–5 all pass** (0148 + read-back, fixture revocation, 0149 + read-back). The
+pre-revision PR #7 edition is REJECTED FOR ACTIVATION AS WRITTEN — never
+substitute it.
+
+1. Ledger re-check: expect exactly the post-0149 state (tail =
+   `0149_view_and_function_exposure_hardening`). Any drift → STOP.
+2. Confirm the restore/PITR point.
+3. Verify the 0147R artifact pin (table above) — mismatch → STOP.
+4. Apply `supabase/launch/prepared/0147_shared_intake_workflow.prepared.sql`
+   as migration `0147_shared_intake_workflow` via the migration-recording
+   path. Apply it alone. (Ledger note: version timestamps order the ledger;
+   the 0147 number is its design name, landing after 0148/0149 by design.)
+5. Run `supabase/launch/prepared/0147_live_readback_verification.sql` —
+   definitions carry the canonical boundary; every login-linked fixture actor
+   holding a privileged role fails both intake predicates; production
+   coordinators/platform admins pass. Any exception → STOP (rollback file
+   available under the same authority; reason recorded).
+6. Regression: re-run `0148_live_readback_verification.sql` and, on the
+   isolated replay/staging copy, BOTH suites —
+   `p0_classification_isolation_negative_tests.sql` (36 assertions) and
+   `p0_intake_classification_negative_tests.sql` (25 assertions).
+   Rehearsed results: 36/36 and 25/25.
+7. NOT covered by this step: any Edge Function redeploy (lead-intake's
+   updated receiver waits on its own deployment gate + SUPA-FN-001), PR
+   merges, R1, Cloudflare/DNS/Wix, identity/role or data changes.
+
+**Standing static-review control (post-0149):** every client-callable function
+in 0147+ migrations carries an intentional `GRANT EXECUTE`; trigger/internal
+functions carry none. `scripts/verify-0147-prepared.mjs` enforces this
+generically for 0147R; keep the same sweep in every future prepared-migration
+guard.
+
+## Step 7 — Close out
 
 - Re-run Step 3's script once more (fixture loop will now check 0 actors —
   its warning at that point is expected and correct).

@@ -84,6 +84,32 @@ if (/alter type\s+role_key\b/i.test(sql)) {
   failures.push('0147 contains an unqualified role_key enum reference');
 }
 
+// Standing control (decision 5, 2026-09-15): after 0149's default-privilege
+// hardening, every client-callable function must carry an INTENTIONAL grant;
+// trigger/internal-only functions must appear in an explicit revoke or be
+// trigger-returning. No function may rely on default ACLs.
+// Redefinitions whose ACLs are established by an EARLIER applied migration:
+// create-or-replace preserves the existing proacl, so no restatement is needed
+// (and the approved artifact hash must not drift for a no-op). Each entry
+// names its ACL source.
+const aclEstablishedElsewhere = new Set([
+  'is_privileged_role', // 0148: revoke public/anon + grant authenticated
+]);
+for (const m of sql.matchAll(
+  /create (?:or replace )?function recoveryos\.([a-z_]+)\s*\([^)]*\)\s*returns\s+(\w+)/gi,
+)) {
+  const [, fn, returns] = m;
+  if (returns.toLowerCase() === 'trigger') continue;
+  if (aclEstablishedElsewhere.has(fn)) continue;
+  const granted = new RegExp(`grant execute on function[\\s\\S]{0,400}?\\b${fn}\\b`).test(sql);
+  const lockedInternal = new RegExp(
+    `revoke execute on function[\\s\\S]{0,400}?\\b${fn}\\b[\\s\\S]{0,200}?from[^;]*authenticated`,
+  ).test(sql);
+  if (!granted && !lockedInternal) {
+    failures.push(`function ${fn} relies on default ACLs (no intentional grant or internal lockdown)`);
+  }
+}
+
 if (failures.length) {
   console.error('0147 prepared migration guard failed:', failures.join(', '));
   process.exit(1);

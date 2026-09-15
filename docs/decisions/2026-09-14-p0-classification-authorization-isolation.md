@@ -231,6 +231,43 @@ cleanup APPROVED → 0149 APPROVED → revised 0147 PREPARED/PENDING AUTHORITY �
 receiver redeploys PENDING → R1 PENDING. Revised 0147 activates only under a
 new approval checkpoint.
 
+### Decision 5 (2026-09-15): revised 0147 APPROVED
+
+**APPROVED** by the same decision-maker after verifying the pinned artifact:
+apply the revised `0147_shared_intake_workflow` to CQCX.
+
+- **Artifact:** commit `da6ecb711f7e59cdb9b29f4daf943dbffb7c1c21`,
+  `supabase/launch/prepared/0147_shared_intake_workflow.prepared.sql`,
+  SHA-256 `6af374bd597b58637159f1dfa623812a54c616d752a5f5d6c095336052b95e2c`.
+  The pre-revision PR #7 version remains REJECTED FOR ACTIVATION AS WRITTEN and
+  must never be substituted.
+- **Sequence (strict):** 0148 → 0148 live read-back → fixture-role revocation →
+  0149 (@ `2a1c2e5`) → 0149 live read-back → revised 0147 → 0147 live
+  read-back → regression verification. 0147 must not be applied if either 0148
+  or 0149 has not passed its verification.
+- **Per-apply conditions:** ledger re-check expecting the exact post-0149 state
+  (drift → STOP); confirmed restore/PITR point; exact artifact-hash match;
+  apply 0147 alone; run its prepared live read-back; verify fixture admins,
+  fixture intake-role holders, and fixture actors directly assigned to leads
+  cannot exercise intake privileges; verify production coordinators, workers,
+  and platform admins retain access; verify fixture assignees are rejected and
+  absent from the picker; re-run the P0 classification-isolation suite AND the
+  revised-0147 intake suite; STOP on any failure — never improvise around a
+  failed gate.
+- **Not authorized:** redeploying `lead-intake` / `residence-intake` / `ejwrh`
+  (separately gated; SUPA-FN-001 provenance first), merging PR #7/#8, R1
+  implementation or topology changes, Cloudflare/DNS/Wix changes, domain
+  cutover, unrelated identity/role changes, unrelated production-data writes.
+- **Standing control (post-0149 grant discipline):** because 0149 removes the
+  default PUBLIC execute on new functions, every client-callable function in
+  0147 and later migrations must carry an intentional `GRANT EXECUTE`;
+  trigger/internal-only functions stay without client grants. This is part of
+  the static migration review going forward (encoded in
+  `scripts/verify-0147-prepared.mjs` as a generic sweep).
+
+**Lifecycle:** 0148 APPROVED → fixture cleanup APPROVED → 0149 APPROVED →
+**revised 0147 APPROVED** → receiver redeploys PENDING → R1 PENDING.
+
 **Execution status:** BLOCKED ON ENVIRONMENT ACCESS at recording time — the
 implementation session holds no authenticated CQCX access path (Supabase
 connector unauthenticated; no CLI/credentials). Lifecycle: 0148 =
