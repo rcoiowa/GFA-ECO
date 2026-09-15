@@ -32,6 +32,8 @@ jobs:
         run: node scripts/verify-0148-prepared.mjs
       - name: G3 exposure-hardening invariants (prepared 0149 — SEC-DB-001)
         run: node scripts/verify-0149-prepared.mjs
+      - name: Revised shared-intake invariants (prepared 0147R — classification-aligned)
+        run: node scripts/verify-0147-prepared.mjs
       - run: pnpm typecheck
       - run: pnpm build
       - name: Enforce canonical RecoveryOS backend in production assets

@@ -212,6 +212,25 @@ probe) all pass; P0 battery re-passed 36/36 (the battery's temp helper now
 carries an explicit grant — the hardening removed its implicit PUBLIC execute,
 which is the intended new default posture).
 
+### Status note (2026-09-15): revised 0147 prepared; original rejected for activation
+
+Per executive direction 2026-09-15: the pre-revision 0147 (PR #7 lineage @
+`825bb5c1`) is **REJECTED FOR ACTIVATION AS WRITTEN** (its intake predicates
+bypass the 0148 guard); the shared-intake design remains governing. A
+classification-aligned revised 0147 is **PREPARED / PENDING AUTHORITY** on this
+branch (revision record R1–R8 in the artifact header; canonical-boundary
+refactor, not point guards), replay-proven against the post-0149 catalog:
+applied clean; 25/25 intake negative battery (fixture admin, fixture with
+direct intake roles, and fixture directly assigned a lead all locked out;
+production coordinator/worker/admin fully functional; fixture assignees and
+fixture intake-role grants refused; picker excludes fixtures); read-back
+passes; P0 battery 36/36 both post-0147R and post-rollback; rollback restores
+the 0102 policies exactly (enum values are unremovable and stay covered by
+is_privileged_role — fail closed). Lifecycle: 0148 APPROVED → fixture-role
+cleanup APPROVED → 0149 APPROVED → revised 0147 PREPARED/PENDING AUTHORITY →
+receiver redeploys PENDING → R1 PENDING. Revised 0147 activates only under a
+new approval checkpoint.
+
 **Execution status:** BLOCKED ON ENVIRONMENT ACCESS at recording time — the
 implementation session holds no authenticated CQCX access path (Supabase
 connector unauthenticated; no CLI/credentials). Lifecycle: 0148 =

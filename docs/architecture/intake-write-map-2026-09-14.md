@@ -102,11 +102,16 @@ prevention/idempotency, and residence-specific E2E for Grace House and EJWRH.
 5. **Retire/confirm-dead:** `public.housing_applications` (cleanup gate),
    `wix_contact_submissions` pipeline (confirm inert live), the contact-connect
    0147 file placement (§3), legacy v2 function paths (LEGACY-001).
-6. **Activation order (all gated, each with its own authority):**
-   0148 → 0149 → revised 0147 replay + apply → updated `lead-intake` redeploy
-   (the prepared file's apply-order rule) → R1 topology ratification →
-   hardened `residence-intake`/`ejwrh` redeploy with Turnstile secrets set →
-   legacy retirements.
+6. **Lifecycle (2026-09-15 executive sequencing correction):**
+   0148 APPROVED → fixture-role cleanup APPROVED → 0149 APPROVED →
+   **revised 0147 PREPARED / PENDING AUTHORITY** (the pre-revision 0147 is
+   **REJECTED FOR ACTIVATION AS WRITTEN**, while the shared-intake design
+   remains the governing direction) → receiver redeploys PENDING → R1 PENDING.
+   The revised artifact lives at
+   `supabase/launch/prepared/0147_shared_intake_workflow.prepared.sql` on this
+   branch (revision record R1–R8 in its header), replay-proven against the
+   post-0149 catalog with its own 25-assertion battery, read-back, and
+   rollback rehearsal; it activates only under a new, separate approval.
 
 ## 6. Live-confirmation items (need an authenticated CQCX session)
 
