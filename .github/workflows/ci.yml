@@ -34,6 +34,10 @@ jobs:
         run: node scripts/verify-0149-prepared.mjs
       - name: Revised shared-intake invariants (prepared 0147R — classification-aligned)
         run: node scripts/verify-0147-prepared.mjs
+      - name: Consent-evidence invariants (prepared 0150 — R1 D3, no fabricated evidence)
+        run: node scripts/verify-0150-prepared.mjs
+      - name: Strict classification invariants (prepared 0151 — R1 D4b, fail closed)
+        run: node scripts/verify-0151-prepared.mjs
       - run: pnpm typecheck
       - run: pnpm build
       - name: Enforce canonical RecoveryOS backend in production assets

@@ -268,6 +268,56 @@ apply the revised `0147_shared_intake_workflow` to CQCX.
 **Lifecycle:** 0148 APPROVED → fixture cleanup APPROVED → 0149 APPROVED →
 **revised 0147 APPROVED** → receiver redeploys PENDING → R1 PENDING.
 
+### Decision 6 (2026-09-15): R1 topology packet RATIFIED — D1, D2, D3, D5 as
+### recommended; D4 = OPTION (b) STRICT FAIL-CLOSED
+
+R1 is **RATIFIED / IMPLEMENTATION PREPARATION AUTHORIZED — not
+production-authorized**. Design authority only: no implementation deploy, no
+migration apply, no receiver redeploy, no Cloudflare/DNS/Wix change, no PR
+merge.
+
+- **D1 RATIFIED:** hardened direct Supabase receiver; no new Cloudflare
+  gateway Worker or DB rate-limit ledger in R1; escape clause retained (if
+  Turnstile + platform controls prove insufficient at public-activation
+  review → STOP, separate architecture decision).
+- **D2 RATIFIED:** closed server-authoritative slug→residence map (forms send
+  slugs, never ids; unknown slug fails closed); independent
+  accepting-applications gate starting EMPTY; never inferred from `is_active`,
+  directory publication, or any other lifecycle state.
+- **D3 RATIFIED WITH EVIDENCE-PRESERVATION CONDITION:** future public housing
+  intake requires `consent_to_contact === true`, with a receiver-pinned
+  `consent_notice_version` and server-side `consent_at` stamped atomically.
+  **Never fabricate historical consent evidence:** live CQCX has three intake
+  rows, all `consent_to_contact = true`, but no evidence columns — the boolean
+  is retained, and evidence fields stay null/legacy-unknown unless authentic
+  source evidence exists; never inferred from record creation time. Prepared
+  as `0150_intake_consent_evidence` (preparation authorized; application not).
+- **D4 — OPTION (b) SELECTED: STRICT FAIL-CLOSED.** Missing
+  `person_classification` DENIES privileged authorization (supersedes the
+  packet's (a) recommendation). Basis — fresh live CQCX verification by the
+  decision-maker: zero login-linked privileged people lack classification;
+  zero login-linked people overall lack classification; live
+  `handle_new_auth_user()` already provisions an explicit production row
+  (implementation-environment note: the 0146 repo lineage's version does the
+  same — verified in the replay catalog; no live↔repo drift on this point).
+  Durable invariant: explicit production classification permits the
+  production authorization plane; test_fixture denies privileged access;
+  **missing classification also denies privileged access**. Pre-apply
+  condition for the strict-deny migration: repeat the zero-missing checks;
+  any missing login-linked staff classification → STOP AND INVESTIGATE, never
+  silently classify or backfill to make the migration pass. Prepared as
+  `0151_strict_classification_semantics`.
+- **D5 RATIFIED:** R1 migration numbering starts at 0150; 0147/0148/0149 are
+  never reused; the former R1 §8 migration is reduced to the D4 work (the
+  approved 0148/0147R chain delivers the rest).
+
+Continuing boundaries: R1 implementation stays PREPARED/NOT APPLIED until
+separately reviewed and authorized; receiver redeploys stay gated by
+SUPA-FN-001 + deployment authorization; the accepting-applications gate stays
+closed at the end of R1 until per-residence opening authority; Turnstile
+provisioning is an ops/deployment gate; verification uses isolated/ephemeral
+environments, never synthetic CQCX rows. All other STOP/HOLD gates closed.
+
 **Execution status:** BLOCKED ON ENVIRONMENT ACCESS at recording time — the
 implementation session holds no authenticated CQCX access path (Supabase
 connector unauthenticated; no CLI/credentials). Lifecycle: 0148 =
