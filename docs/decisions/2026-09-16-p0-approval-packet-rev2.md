@@ -170,7 +170,18 @@ FAIL, and no live gate opens. Nothing in this packet authorizes merging
 PR #7 or PR #8, deploying functions or Workers, DNS/Cloudflare/Wix changes,
 or any live mutation.
 
-## 7. CI evidence (recorded after push)
+## 7. CI evidence
 
-- Revised commit SHA: _recorded in the follow-up evidence commit._
-- GitHub Actions run: _recorded in the follow-up evidence commit._
+- **Revised commit SHA (the artifact commit):**
+  `e651dead3ba3d642e2b392084041d5f2657d4bd5`
+- **GitHub Actions run:** CI run **179** (id `35154985295`) on exactly that
+  SHA — **completed: success** (2026-09-16T21:55:17Z → 21:56:20Z),
+  https://github.com/rcoiowa/GFA-ECO/actions/runs/35154985295 — covering the
+  retired-ref guard, ICARE lock + governance guard, intake-boundary and
+  booking-integrity invariants, all five prepared-migration static guards
+  (0147/0148/0149/0150/0151, including the new grant-ordering assertions),
+  typecheck, build, and the production-bundle backend guard.
+- The per-file SHA-256 pins in `docs/deployment/p0-chain-apply-runbook.md`
+  are the hashes of the prepared files at this commit (this evidence commit
+  changes documentation only; the prepared SQL artifacts are byte-identical
+  to `e651dea`).
