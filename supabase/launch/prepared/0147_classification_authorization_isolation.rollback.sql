@@ -1,14 +1,14 @@
--- 0148_classification_authorization_isolation.rollback.sql
+-- 0147_classification_authorization_isolation.rollback.sql
 --
--- Exact rollback for prepared migration 0148. Restores every touched function
--- to its pre-0148 definition, captured verbatim (pg_get_functiondef) from the
+-- Exact rollback for prepared migration 0147. Restores every touched function
+-- to its pre-0147 definition, captured verbatim (pg_get_functiondef) from the
 -- isolated Postgres 16 replay of launch 0001–0146 on 2026-09-14, and drops the
--- helper introduced by 0148.
+-- helper introduced by 0147.
 --
 -- WARNING: rolling back RESTORES THE P0 VULNERABILITY (test_fixture actors
 -- with privileged role assignments satisfy production privileged predicates
 -- again). Running this against CQCX requires the same explicit apply authority
--- as 0148 itself, and the reason must be recorded.
+-- as 0147 itself, and the reason must be recorded.
 
 begin;
 

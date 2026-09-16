@@ -1,10 +1,10 @@
--- p0_intake_classification_negative_tests.sql — revised-0147 battery.
+-- p0_intake_classification_negative_tests.sql — revised-0149 battery.
 --
 -- ISOLATED REPLAY OR DISPOSABLE STAGING ONLY. Never the launch project.
 -- Refuses to run unless: set recoveryos.negtest = 'on'. One transaction,
 -- ends with ROLLBACK — nothing persists.
 --
--- Prerequisites: launch 0001–0146 + prepared 0148 + 0149 + REVISED 0147
+-- Prerequisites: launch 0001–0146 + prepared 0147 + 0148 + REVISED 0149
 -- applied; auth shim present; superuser/service connection.
 --
 -- Proves (raises on any failure):
@@ -28,7 +28,7 @@ do $$ begin
     raise exception 'REFUSING TO RUN: set recoveryos.negtest = ''on'' only on an isolated replay or disposable staging database.';
   end if;
   if to_regclass('recoveryos.lead_contact_events') is null then
-    raise exception 'Revised 0147 is not applied to this database; apply it before running the battery.';
+    raise exception 'Revised 0149 is not applied to this database; apply it before running the battery.';
   end if;
 end $$;
 
@@ -47,11 +47,11 @@ grant execute on function pg_temp.ok(text, boolean) to public;
 -- Arrange
 -- ---------------------------------------------------------------------------
 insert into auth.users (id, email) values
-  ('00000000-0000-4000-8000-0000000000d1', 'negtest-0147-fx-admin@negtest.p0'),
-  ('00000000-0000-4000-8000-0000000000d2', 'negtest-0147-fx-intake@negtest.p0'),
-  ('00000000-0000-4000-8000-0000000000d3', 'negtest-0147-prod-coord@negtest.p0'),
-  ('00000000-0000-4000-8000-0000000000d4', 'negtest-0147-prod-worker@negtest.p0'),
-  ('00000000-0000-4000-8000-0000000000d5', 'negtest-0147-prod-admin@negtest.p0');
+  ('00000000-0000-4000-8000-0000000000d1', 'negtest-0149-fx-admin@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000d2', 'negtest-0149-fx-intake@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000d3', 'negtest-0149-prod-coord@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000d4', 'negtest-0149-prod-worker@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000d5', 'negtest-0149-prod-admin@negtest.p0');
 
 select set_config('nt.fxadmin', (select id::text from recoveryos.people where auth_user_id='00000000-0000-4000-8000-0000000000d1'), true);
 select set_config('nt.fxintake',(select id::text from recoveryos.people where auth_user_id='00000000-0000-4000-8000-0000000000d2'), true);
@@ -60,9 +60,9 @@ select set_config('nt.worker',  (select id::text from recoveryos.people where au
 select set_config('nt.padmin',  (select id::text from recoveryos.people where auth_user_id='00000000-0000-4000-8000-0000000000d5'), true);
 
 insert into recoveryos.person_classification (person_id, classification, reason) values
-  (current_setting('nt.fxadmin')::bigint, 'test_fixture', 'NEGTEST-0147'),
-  (current_setting('nt.fxintake')::bigint, 'test_fixture', 'NEGTEST-0147')
-on conflict (person_id) do update set classification = 'test_fixture', reason = 'NEGTEST-0147';
+  (current_setting('nt.fxadmin')::bigint, 'test_fixture', 'NEGTEST-0149'),
+  (current_setting('nt.fxintake')::bigint, 'test_fixture', 'NEGTEST-0149')
+on conflict (person_id) do update set classification = 'test_fixture', reason = 'NEGTEST-0149';
 
 -- Simulated drift: direct role rows, including intake roles on a fixture.
 insert into recoveryos.role_assignments (person_id, role_key, organization_id) values
@@ -74,8 +74,8 @@ insert into recoveryos.role_assignments (person_id, role_key, organization_id) v
   (current_setting('nt.padmin')::bigint,   'administrator',      1);
 
 insert into recoveryos.leads (first_name, last_name, email, message)
-values ('NEGTEST-0147', 'Lead', 'negtest-0147-lead@negtest.p0', 'battery');
-select set_config('nt.lead', (select id::text from recoveryos.leads where email='negtest-0147-lead@negtest.p0'), true);
+values ('NEGTEST-0149', 'Lead', 'negtest-0149-lead@negtest.p0', 'battery');
+select set_config('nt.lead', (select id::text from recoveryos.leads where email='negtest-0149-lead@negtest.p0'), true);
 
 -- ---------------------------------------------------------------------------
 -- 1) Fixture administrator: no intake privilege anywhere
@@ -170,6 +170,6 @@ select pg_temp.ok('grant intake_worker to PRODUCTION person → granted/already_
   (recoveryos.grant_role_assignment(current_setting('nt.worker')::bigint, 'intake_worker') ->> 'code') in ('granted','already_granted'));
 reset role;
 
-do $$ begin raise notice '0147R INTAKE CLASSIFICATION BATTERY: ALL ASSERTIONS PASSED (transaction will roll back)'; end $$;
+do $$ begin raise notice '0149R INTAKE CLASSIFICATION BATTERY: ALL ASSERTIONS PASSED (transaction will roll back)'; end $$;
 
 rollback;

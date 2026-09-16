@@ -1,4 +1,12 @@
--- 0148_classification_authorization_isolation.prepared.sql — P0 (SEC-P0-001, Gate G2)
+-- 0147_classification_authorization_isolation.prepared.sql — P0 (SEC-P0-001, Gate G2)
+--
+-- RENUMBERING (revision 2, 2026-09-16): this artifact was previously prepared
+-- as 0148_classification_authorization_isolation (pin f4646ea, SHA-256
+-- 27782491…d371f4 — now SUPERSEDED). It is renumbered to 0147 so that ledger
+-- numbering matches the ratified apply order (live tail is 0146; this migration
+-- applies first). Revision 2 also reorders grant_role_assignment (see §6).
+-- A fresh pin approval is required before applying; never apply the old
+-- 0148-named artifact.
 --
 -- STATUS: PREPARED ONLY. NOT APPLIED. Applying this file to CQCX
 -- (cqcxvwoukyhxyokfwnjm) requires explicit, current apply authority under the
@@ -28,6 +36,10 @@
 --      intake) is delivered only to production-classified recipients.
 --   3. grant_role_assignment refuses to grant a privileged role to a
 --      test_fixture-classified person (code: test_fixture_privilege_blocked).
+--   4. grant_role_assignment decides caller authorization BEFORE any target
+--      lookup: an unauthorized caller receives 'not_authorized' and cannot
+--      distinguish production, fixture, or nonexistent targets via response
+--      codes (revision 2).
 --
 -- SUPERSESSION: the 0030 header note "fixture status is a METRICS/OPERATIONS
 -- boundary, not a security boundary" is SUPERSEDED by the 2026-09-14 P0
@@ -47,8 +59,8 @@
 -- assignments inert at every inspected predicate. See the approval packet
 -- for the separately gated revocation statement.
 --
--- ROLLBACK: 0148_classification_authorization_isolation.rollback.sql restores
--- the exact pre-0148 definitions (captured from the post-0146 replay catalog).
+-- ROLLBACK: 0147_classification_authorization_isolation.rollback.sql restores
+-- the exact pre-0147 definitions (captured from the post-0146 replay catalog).
 -- Rolling back restores the vulnerable behavior and needs the same authority.
 
 begin;
@@ -67,7 +79,7 @@ $$;
 revoke execute on function recoveryos.is_privileged_role(recoveryos.role_key) from public, anon;
 grant execute on function recoveryos.is_privileged_role(recoveryos.role_key) to authenticated;
 comment on function recoveryos.is_privileged_role(recoveryos.role_key) is
-  'P0-INV (0148): role keys that a test_fixture-classified actor may never exercise. '
+  'P0-INV (0147): role keys that a test_fixture-classified actor may never exercise. '
   'participant and resident stay non-privileged so fixture participants keep self-access.';
 
 -- ---------------------------------------------------------------------------
@@ -92,7 +104,7 @@ language sql stable security definer set search_path = recoveryos, public as $$
   );
 $$;
 comment on function recoveryos.has_role(recoveryos.role_key) is
-  'P0-INV (0148): privileged roles are never satisfied by a test_fixture-classified actor. '
+  'P0-INV (0147): privileged roles are never satisfied by a test_fixture-classified actor. '
   'Supersedes the 0030 note that classification is not a security boundary.';
 
 -- ---------------------------------------------------------------------------
@@ -204,8 +216,18 @@ end $$;
 
 -- ---------------------------------------------------------------------------
 -- 6) grant_role_assignment — privileged roles can no longer be granted to a
---    test_fixture-classified person. Body is byte-faithful to the post-0146
---    catalog definition except for the added guard.
+--    test_fixture-classified person. Body follows the post-0146 catalog
+--    definition with two deliberate changes:
+--      (a) the fixture guard (P0-INV);
+--      (b) CHECK ORDER (revision 2, 2026-09-16): caller authorization is
+--          decided BEFORE any target lookup. The post-0146 edition returned
+--          'person_not_found' (target existence) and this file previously
+--          returned 'test_fixture_privilege_blocked' (target classification)
+--          to callers who were not authorized at all — an information
+--          disclosure. Now an unauthorized caller receives exactly
+--          'not_authorized' regardless of whether the target exists, is
+--          production, or is a fixture. Target-dependent codes are reachable
+--          only by callers already authorized to grant.
 -- ---------------------------------------------------------------------------
 create or replace function recoveryos.grant_role_assignment(
   p_person_id bigint,
@@ -219,17 +241,9 @@ declare
   v_id bigint;
 begin
   if v_me is null then return jsonb_build_object('ok', false, 'code', 'unauthenticated'); end if;
-  if not exists (select 1 from recoveryos.people where id = p_person_id) then
-    return jsonb_build_object('ok', false, 'code', 'person_not_found');
-  end if;
 
-  -- P0-INV (0148): a privileged role never lands on a test-classified identity.
-  if recoveryos.is_privileged_role(p_role) and recoveryos.is_test_fixture(p_person_id) then
-    return jsonb_build_object('ok', false, 'code', 'test_fixture_privilege_blocked',
-      'message', 'Privileged roles cannot be granted to a test-classified identity.');
-  end if;
-
-  -- Authority: platform admin for anything; residence managers only for
+  -- Authority FIRST (no target information revealed to unauthorized callers):
+  -- platform admin for anything; residence managers only for
   -- residence_staff/resident WITHIN their own residence.
   if not recoveryos.is_platform_admin() then
     if p_role in ('residence_staff','resident') and p_residence_id is not null
@@ -244,6 +258,18 @@ begin
     return jsonb_build_object('ok', false, 'code', 'privilege_tier',
       'message', 'Only a system administrator can grant that role.');
   end if;
+
+  -- Target checks (authorized callers only from here down).
+  if not exists (select 1 from recoveryos.people where id = p_person_id) then
+    return jsonb_build_object('ok', false, 'code', 'person_not_found');
+  end if;
+
+  -- P0-INV (0147): a privileged role never lands on a test-classified identity.
+  if recoveryos.is_privileged_role(p_role) and recoveryos.is_test_fixture(p_person_id) then
+    return jsonb_build_object('ok', false, 'code', 'test_fixture_privilege_blocked',
+      'message', 'Privileged roles cannot be granted to a test-classified identity.');
+  end if;
+
   -- Scope validation.
   if p_role in ('residence_staff','residence_manager','resident') and p_residence_id is null then
     return jsonb_build_object('ok', false, 'code', 'residence_scope_required');

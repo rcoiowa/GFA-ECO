@@ -1,11 +1,11 @@
--- 0149_view_and_function_exposure_hardening.prepared.sql — G3 findings F1/F2/F3
+-- 0148_view_and_function_exposure_hardening.prepared.sql — G3 findings F1/F2/F3
 -- (SEC-DB-001; see docs/audits/2026-09-14-g3-database-authorization-audit.md)
 --
 -- STATUS: PREPARED ONLY. NOT APPLIED. NOT YET AUTHORIZED — the 2026-09-14
--- executive authorization covers 0148 and the fixture-role revocation only.
+-- executive authorization covers 0147 and the fixture-role revocation only.
 -- This file sits in the approval queue with its own packet section in the G3
--- audit. Written against ledger tail 0146 (+0148 assumed applied first;
--- nothing here depends on 0148).
+-- audit. Written against ledger tail 0146 (+0147 assumed applied first;
+-- nothing here depends on 0147).
 --
 -- FINDINGS REMEDIATED (each exploit-confirmed on the isolated 0146 replay):
 --
@@ -37,7 +37,7 @@
 -- Trigger-returning functions with default ACLs are not client-callable and
 -- are handled by the default-privilege change going forward.
 --
--- ROLLBACK: 0149_view_and_function_exposure_hardening.rollback.sql.
+-- ROLLBACK: 0148_view_and_function_exposure_hardening.rollback.sql.
 
 begin;
 

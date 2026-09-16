@@ -1,5 +1,5 @@
 -- 0151_strict_classification_semantics.rollback.sql — exact rollback to the
--- post-0147R lenient definitions ("missing classification = production").
+-- post-0149R lenient definitions ("missing classification = production").
 -- WARNING: rolling back restores FAIL-OPEN semantics for unclassified logins
 -- on every privileged path. Same authority as the apply; record the reason.
 
@@ -12,17 +12,17 @@ returns boolean language sql stable security definer set search_path = recoveryo
 $$;
 comment on function recoveryos.is_production_person(bigint) is null;
 
--- 0147R edition.
+-- 0149R edition.
 create or replace function recoveryos.is_production_actor()
 returns boolean
 language sql stable security definer set search_path = recoveryos, public as $$
   select not recoveryos.is_test_fixture(recoveryos.current_person_id());
 $$;
 comment on function recoveryos.is_production_actor() is
-  'Canonical boundary (0147R): true when the current person is not test_fixture-classified. '
+  'Canonical boundary (0149R): true when the current person is not test_fixture-classified. '
   'Use this in any authorization arm that does not already flow through has_role().';
 
--- 0148 editions.
+-- 0147 editions.
 create or replace function recoveryos.has_role(target_role recoveryos.role_key)
 returns boolean
 language sql stable security definer set search_path = recoveryos, public as $$
@@ -38,7 +38,7 @@ language sql stable security definer set search_path = recoveryos, public as $$
   );
 $$;
 comment on function recoveryos.has_role(recoveryos.role_key) is
-  'P0-INV (0148): privileged roles are never satisfied by a test_fixture-classified actor. '
+  'P0-INV (0147): privileged roles are never satisfied by a test_fixture-classified actor. '
   'Supersedes the 0030 note that classification is not a security boundary.';
 
 create or replace function recoveryos.staff_residence_ids()
@@ -64,7 +64,8 @@ language sql stable security definer set search_path = recoveryos, public as $$
   and not recoveryos.is_test_fixture(recoveryos.current_person_id());
 $$;
 
--- grant_role_assignment: 0148 edition (fixture guard only).
+-- grant_role_assignment: 0147 revision-2 edition (fixture guard only, caller
+-- authorization decided before any target lookup).
 create or replace function recoveryos.grant_role_assignment(
   p_person_id bigint,
   p_role recoveryos.role_key,
@@ -77,17 +78,9 @@ declare
   v_id bigint;
 begin
   if v_me is null then return jsonb_build_object('ok', false, 'code', 'unauthenticated'); end if;
-  if not exists (select 1 from recoveryos.people where id = p_person_id) then
-    return jsonb_build_object('ok', false, 'code', 'person_not_found');
-  end if;
 
-  -- P0-INV (0148): a privileged role never lands on a test-classified identity.
-  if recoveryos.is_privileged_role(p_role) and recoveryos.is_test_fixture(p_person_id) then
-    return jsonb_build_object('ok', false, 'code', 'test_fixture_privilege_blocked',
-      'message', 'Privileged roles cannot be granted to a test-classified identity.');
-  end if;
-
-  -- Authority: platform admin for anything; residence managers only for
+  -- Authority FIRST (no target information revealed to unauthorized callers):
+  -- platform admin for anything; residence managers only for
   -- residence_staff/resident WITHIN their own residence.
   if not recoveryos.is_platform_admin() then
     if p_role in ('residence_staff','resident') and p_residence_id is not null
@@ -102,6 +95,18 @@ begin
     return jsonb_build_object('ok', false, 'code', 'privilege_tier',
       'message', 'Only a system administrator can grant that role.');
   end if;
+
+  -- Target checks (authorized callers only from here down).
+  if not exists (select 1 from recoveryos.people where id = p_person_id) then
+    return jsonb_build_object('ok', false, 'code', 'person_not_found');
+  end if;
+
+  -- P0-INV (0147): a privileged role never lands on a test-classified identity.
+  if recoveryos.is_privileged_role(p_role) and recoveryos.is_test_fixture(p_person_id) then
+    return jsonb_build_object('ok', false, 'code', 'test_fixture_privilege_blocked',
+      'message', 'Privileged roles cannot be granted to a test-classified identity.');
+  end if;
+
   -- Scope validation.
   if p_role in ('residence_staff','residence_manager','resident') and p_residence_id is null then
     return jsonb_build_object('ok', false, 'code', 'residence_scope_required');
@@ -131,7 +136,7 @@ begin
   return jsonb_build_object('ok', true, 'code', 'granted', 'assignment_id', v_id);
 end $$;
 
--- assign_lead: 0147R edition (fixture guard only).
+-- assign_lead: 0149R edition (fixture guard only).
 create or replace function recoveryos.assign_lead(p_lead_id bigint, p_assignee_person_id bigint)
 returns jsonb language plpgsql security definer set search_path = recoveryos, public as $$
 declare

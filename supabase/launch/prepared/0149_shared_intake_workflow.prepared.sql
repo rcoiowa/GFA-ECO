@@ -1,26 +1,26 @@
--- 0147_shared_intake_workflow.prepared.sql — shared six-stage inquiry workflow (leads v2).
+-- 0149_shared_intake_workflow.prepared.sql — shared six-stage inquiry workflow (leads v2).
 -- REVISED EDITION (2026-09-15) — classification-aligned. See REVISION RECORD below.
 --
 -- STATUS: PREPARED ONLY. NOT AUTHORIZED. NOT APPLIED. Lives in supabase/launch/prepared/
 -- (outside the migrations ledger) so routine tooling cannot apply it. Moves to
--- supabase/launch/migrations/0147_shared_intake_workflow.sql only under its own explicit
+-- supabase/launch/migrations/0149_shared_intake_workflow.sql only under its own explicit
 -- activation authorization, which has NOT been granted. The pre-revision edition (PR #7
 -- lineage @ 825bb5c1) is REJECTED FOR ACTIVATION AS WRITTEN (executive direction,
--- 2026-09-15): its intake-role helpers read role_assignments directly, bypassing the 0148
+-- 2026-09-15): its intake-role helpers read role_assignments directly, bypassing the 0147
 -- classification guard, so a test_fixture administrator would regain the whole intake
 -- queue. The shared-intake design itself remains the governing direction (2026-09-03
 -- supersession decision).
 --
 -- APPLY-ORDER RULES:
---   1. Requires 0148 (classification authorization isolation) and 0149 (exposure
+--   1. Requires 0147 (classification authorization isolation) and 0148 (exposure
 --      hardening) applied first — this file redefines recoveryos.is_privileged_role,
---      which 0148 introduces, and relies on the guarded recoveryos.has_role.
+--      which 0147 introduces, and relies on the guarded recoveryos.has_role.
 --   2. This migration MUST be applied before the updated lead-intake Edge Function is
 --      redeployed (the receiver writes the new columns).
 --
 -- REVISION RECORD (vs the 825bb5c1 edition; everything else is content-identical):
 --   R1  recoveryos.is_privileged_role gains 'intake_coordinator' and 'intake_worker'
---       so the 0148 has_role guard covers the new roles.
+--       so the 0147 has_role guard covers the new roles.
 --   R2  New canonical actor predicate recoveryos.is_production_actor() — the single
 --       named boundary future policies should use instead of ad-hoc guards.
 --   R3  is_intake_coordinator()/is_intake_worker() are REFACTORED to flow through the
@@ -46,7 +46,7 @@
 -- the one-thread linked-intake unique index, and reopen rejection pending the
 -- transition-matrix ratification.
 --
--- ROLLBACK: 0147_shared_intake_workflow.rollback.sql (note: added enum values cannot
+-- ROLLBACK: 0149_shared_intake_workflow.rollback.sql (note: added enum values cannot
 -- be removed by PostgreSQL; they remain inert and covered by is_privileged_role).
 
 begin;
@@ -57,7 +57,7 @@ begin;
 alter type recoveryos.role_key add value if not exists 'intake_coordinator';
 alter type recoveryos.role_key add value if not exists 'intake_worker';
 
--- R1: the 0148 privileged-role vocabulary now covers the intake roles, so the
+-- R1: the 0147 privileged-role vocabulary now covers the intake roles, so the
 -- guarded has_role() is classification-aware for them from the moment they exist.
 create or replace function recoveryos.is_privileged_role(target_role recoveryos.role_key)
 returns boolean
@@ -69,7 +69,7 @@ language sql immutable as $$
   );
 $$;
 comment on function recoveryos.is_privileged_role(recoveryos.role_key) is
-  'P0-INV (0148, extended by 0147R): role keys a test_fixture-classified actor may never '
+  'P0-INV (0147, extended by 0149R): role keys a test_fixture-classified actor may never '
   'exercise. participant and resident stay non-privileged.';
 
 -- R2: the canonical actor-classification predicate. New policies and helpers use
@@ -82,7 +82,7 @@ $$;
 revoke execute on function recoveryos.is_production_actor() from public, anon;
 grant execute on function recoveryos.is_production_actor() to authenticated;
 comment on function recoveryos.is_production_actor() is
-  'Canonical boundary (0147R): true when the current person is not test_fixture-classified. '
+  'Canonical boundary (0149R): true when the current person is not test_fixture-classified. '
   'Use this in any authorization arm that does not already flow through has_role().';
 
 -- R3/R8: helpers flow through the canonical guarded boundary. The new enum

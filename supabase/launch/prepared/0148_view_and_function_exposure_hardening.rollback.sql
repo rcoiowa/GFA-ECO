@@ -1,10 +1,10 @@
--- 0149_view_and_function_exposure_hardening.rollback.sql
+-- 0148_view_and_function_exposure_hardening.rollback.sql
 --
--- Restores the pre-0149 exposure state (captured from the isolated 0146
+-- Restores the pre-0148 exposure state (captured from the isolated 0146
 -- replay catalog): the writable view grants and the PUBLIC-default function
 -- ACLs. WARNING: rolling back restores two exploit-confirmed exposures
 -- (G3-F1 authenticated write-through on the public directory view; G3-F3
--- anonymous narr_compliance writes). Requires the same authority as 0149,
+-- anonymous narr_compliance writes). Requires the same authority as 0148,
 -- with the reason recorded.
 
 begin;

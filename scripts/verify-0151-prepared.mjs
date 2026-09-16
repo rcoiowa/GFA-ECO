@@ -39,6 +39,12 @@ need(
   /function recoveryos\.is_residence_manager_of[\s\S]{0,500}?and recoveryos\.is_production_person\(recoveryos\.current_person_id\(\)\)/,
 );
 need('grant RPC refuses unclassified privileged targets', /'code', 'person_unclassified'/);
+// Revision-2 anti-disclosure ordering must survive 0151's re-definition:
+// caller authorization ('not_authorized') precedes every target-dependent code.
+need(
+  'grant RPC keeps caller authorization before target lookups',
+  /create or replace function recoveryos\.grant_role_assignment[\s\S]*?'not_authorized'[\s\S]*?'person_not_found'[\s\S]*?'test_fixture_privilege_blocked'[\s\S]*?'person_unclassified'/,
+);
 need('grant RPC keeps the fixture code', /'code', 'test_fixture_privilege_blocked'/);
 need('assign_lead refuses unclassified assignees', /'code', 'assignee_unclassified'/);
 need('assign_lead keeps the fixture code', /'code', 'assignee_test_fixture_blocked'/);
@@ -48,9 +54,9 @@ need('rollback restores the lenient 0030 semantics', /select not recoveryos\.is_
 // Grant-discipline sweep (decision 5 standing control). Every function here is
 // a REDEFINITION whose ACLs an earlier applied migration established
 // (create-or-replace preserves proacl): is_production_person (0030),
-// is_production_actor (0147R), has_role/staff_residence_ids (0149),
+// is_production_actor (0149R), has_role/staff_residence_ids (0148),
 // is_residence_manager_of (0115), grant_role_assignment (0117),
-// assign_lead (0147R).
+// assign_lead (0149R).
 const aclEstablishedElsewhere = new Set([
   'is_production_person',
   'is_production_actor',

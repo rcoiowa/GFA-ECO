@@ -1,3 +1,15 @@
+> **SUPERSESSION NOTICE (2026-09-16):** Sections 1–8 of this packet (the
+> request) are superseded by the revision-2 packet,
+> `docs/decisions/2026-09-16-p0-approval-packet-rev2.md`, prepared per the
+> Executive Director's 2026-09-14 independent verification and returned
+> corrections (22 affected fixture identities; eight-role negative battery;
+> grant_role_assignment anti-disclosure ordering; migration renumbering to
+> apply order — P0 isolation is now **0147**, exposure hardening **0148**,
+> revised shared intake **0149**). The §9 decision records below are the
+> preserved historical record and remain verbatim; their artifact pins are
+> SUPERSEDED and must not be applied. Execution assets moved to
+> `docs/deployment/p0-chain-apply-runbook.md`.
+
 # P0 remediation approval packet — classification authorization isolation (SEC-P0-001, Gate G2)
 
 **Date prepared:** 2026-09-14 (UTC)

@@ -1,112 +1,110 @@
--- 0148_live_readback_verification.sql — post-apply live read-back (Decision 1 condition).
+-- 0148_live_readback_verification.sql — post-apply live read-back for 0148
+-- (authorization conditions 6 and 7). Read-only; transaction-wrapped with
+-- ROLLBACK; aggregate/boolean output only; raises on any failed check —
+-- a failure means STOP AND REPORT.
 --
--- Run on CQCX immediately AFTER applying prepared 0148, on a service/admin SQL
--- connection. Read-only by design: the whole script runs in one transaction and
--- ends with ROLLBACK; it emits aggregate counts only (no names, emails, or
--- intake content). It raises an exception (non-zero exit under ON_ERROR_STOP)
--- on any failed check — a failure means STOP AND REPORT, per the authorization.
---
--- What it proves, directly against the live database:
---   A. The applied definitions carry the 0148 guard (catalog text check).
---   B. Every login-linked test_fixture person holding an active privileged
---      role fails every privileged predicate (evaluated per actor via the
---      auth.uid() claim, exactly how PostgREST evaluates them).
---   C. Every login-linked production-classified platform administrator still
---      satisfies is_platform_admin() (staff access preserved).
+-- Run on CQCX immediately AFTER applying prepared 0148 (which itself runs
+-- only after 0147 + its read-back), on a service/admin SQL connection.
 
 \set ON_ERROR_STOP on
 
 begin;
 
--- A. Applied-definition checks --------------------------------------------------
-do $$
-begin
-  if to_regprocedure('recoveryos.is_privileged_role(recoveryos.role_key)') is null then
-    raise exception 'READBACK FAIL: is_privileged_role missing — 0148 not applied';
-  end if;
-  if position('is_privileged_role' in pg_get_functiondef('recoveryos.has_role(recoveryos.role_key)'::regprocedure)) = 0 then
-    raise exception 'READBACK FAIL: has_role lacks the classification guard';
-  end if;
-  if position('is_test_fixture' in pg_get_functiondef('recoveryos.staff_residence_ids()'::regprocedure)) = 0 then
-    raise exception 'READBACK FAIL: staff_residence_ids lacks the classification guard';
-  end if;
-  if position('is_test_fixture' in pg_get_functiondef('recoveryos.is_residence_manager_of(bigint)'::regprocedure)) = 0 then
-    raise exception 'READBACK FAIL: is_residence_manager_of lacks the classification guard';
-  end if;
-  if position('is_production_person' in pg_get_functiondef('recoveryos.trg_lead_notify()'::regprocedure)) = 0
-     or position('is_production_person' in pg_get_functiondef('recoveryos.trg_listing_submission_notify()'::regprocedure)) = 0
-     or position('is_production_person' in pg_get_functiondef('recoveryos.trg_application_intake_notify()'::regprocedure)) = 0 then
-    raise exception 'READBACK FAIL: a notification fan-out lacks the production-recipient filter';
-  end if;
-  if position('test_fixture_privilege_blocked' in pg_get_functiondef('recoveryos.grant_role_assignment(bigint,recoveryos.role_key,bigint,bigint,bigint)'::regprocedure)) = 0 then
-    raise exception 'READBACK FAIL: grant_role_assignment lacks the fixture-grant guard';
-  end if;
-  raise notice 'readback A: applied definitions carry the 0148 guards';
-end $$;
-
--- B + C. Per-actor predicate evaluation (aggregate reporting only) --------------
--- Predicates are SECURITY DEFINER and depend only on auth.uid(); setting the
--- transaction-local JWT claim evaluates them exactly as an authenticated
--- session for that login would. Nothing identifying is printed.
 do $$
 declare
-  a record;
-  fx_checked int := 0; fx_failed int := 0;
-  pr_checked int := 0; pr_failed int := 0;
-  v_privileged boolean;
+  fn text;
+  bad int := 0;
+  acl_public int;
+  defacl_row record;
+  helper_fns text[] := array[
+    'recoveryos.current_person_id()',
+    'recoveryos.has_role(recoveryos.role_key)',
+    'recoveryos.staff_residence_ids()',
+    'recoveryos.my_assigned_document_template_ids()',
+    'recoveryos.my_assigned_document_version_ids()'
+  ];
 begin
-  -- B: every login-linked fixture actor with an active privileged role
-  for a in
-    select distinct u.id as auth_id
-    from recoveryos.person_classification pc
-    join recoveryos.people p on p.id = pc.person_id
-    join auth.users u on u.id = p.auth_user_id
-    join recoveryos.role_assignments ra on ra.person_id = p.id and ra.revoked_at is null
-    where pc.classification = 'test_fixture'
-      and recoveryos.is_privileged_role(ra.role_key)
-  loop
-    fx_checked := fx_checked + 1;
-    perform set_config('request.jwt.claim.sub', a.auth_id::text, true);
-    v_privileged :=
-         recoveryos.is_platform_admin()
-      or recoveryos.is_admin_staff()
-      or recoveryos.is_care_operations_staff()
-      or recoveryos.is_support_staff()
-      or recoveryos.is_coach_staff()
-      or recoveryos.is_navigator_staff()
-      or exists (select 1 from recoveryos.staff_residence_ids());
-    if v_privileged then fx_failed := fx_failed + 1; end if;
+  -- 6a. authenticated has no write privilege on the public directory view.
+  if has_table_privilege('authenticated', 'recoveryos.residence_directory_public', 'INSERT')
+     or has_table_privilege('authenticated', 'recoveryos.residence_directory_public', 'UPDATE')
+     or has_table_privilege('authenticated', 'recoveryos.residence_directory_public', 'DELETE') then
+    raise exception 'READBACK FAIL: authenticated still holds a write privilege on residence_directory_public';
+  end if;
+  raise notice 'readback 6a ok: residence_directory_public is read-only for authenticated';
+
+  -- 6b. anon keeps SELECT on the public directory view.
+  if not has_table_privilege('anon', 'recoveryos.residence_directory_public', 'SELECT') then
+    raise exception 'READBACK FAIL: anon lost SELECT on residence_directory_public';
+  end if;
+  raise notice 'readback 6b ok: anon still reads residence_directory_public';
+
+  -- 6c. authenticated has no write privilege on check_ins_staff_view.
+  if has_table_privilege('authenticated', 'recoveryos.check_ins_staff_view', 'INSERT')
+     or has_table_privilege('authenticated', 'recoveryos.check_ins_staff_view', 'UPDATE')
+     or has_table_privilege('authenticated', 'recoveryos.check_ins_staff_view', 'DELETE') then
+    raise exception 'READBACK FAIL: authenticated still holds a write privilege on check_ins_staff_view';
+  end if;
+  raise notice 'readback 6c ok: check_ins_staff_view is read-only for authenticated';
+
+  -- 6d. anon cannot execute the compliance writer (PUBLIC inheritance included).
+  if has_function_privilege('anon', 'recoveryos.narr_auto_evidence(bigint, text, text)', 'EXECUTE') then
+    raise exception 'READBACK FAIL: anon can still execute narr_auto_evidence';
+  end if;
+  if has_function_privilege('authenticated', 'recoveryos.narr_auto_evidence(bigint, text, text)', 'EXECUTE') then
+    raise exception 'READBACK FAIL: authenticated can still execute narr_auto_evidence';
+  end if;
+  raise notice 'readback 6d ok: narr_auto_evidence is owner/trigger-context only';
+
+  -- 6e. authenticated keeps the five intended helpers.
+  foreach fn in array helper_fns loop
+    if not has_function_privilege('authenticated', fn, 'EXECUTE') then
+      raise exception 'READBACK FAIL: authenticated lost execute on %', fn;
+    end if;
+    if has_function_privilege('anon', fn, 'EXECUTE') then
+      raise exception 'READBACK FAIL: anon can execute %', fn;
+    end if;
   end loop;
+  raise notice 'readback 6e ok: five helpers executable by authenticated only';
 
-  -- C: every login-linked production platform administrator keeps access
-  for a in
-    select distinct u.id as auth_id
-    from recoveryos.people p
-    join auth.users u on u.id = p.auth_user_id
-    join recoveryos.role_assignments ra on ra.person_id = p.id and ra.revoked_at is null
-    left join recoveryos.person_classification pc on pc.person_id = p.id
-    where ra.role_key in ('administrator','system_administrator')
-      and coalesce(pc.classification, 'production') = 'production'
-  loop
-    pr_checked := pr_checked + 1;
-    perform set_config('request.jwt.claim.sub', a.auth_id::text, true);
-    if not recoveryos.is_platform_admin() then pr_failed := pr_failed + 1; end if;
-  end loop;
-
-  perform set_config('request.jwt.claim.sub', '', true);
-
-  raise notice 'readback B: fixture privileged actors checked=%, still privileged=%', fx_checked, fx_failed;
-  raise notice 'readback C: production admins checked=%, lost access=%', pr_checked, pr_failed;
-
-  if fx_checked = 0 then
-    raise warning 'readback B checked 0 fixture actors — expected at least the two from the 2026-09-14 baseline; verify classification data before closing the gate.';
+  -- 6f. none of the six functions carries a PUBLIC execute ACL entry any more.
+  select count(*) into acl_public
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  left join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a on true
+  where n.nspname = 'recoveryos'
+    and p.proname in ('current_person_id','has_role','staff_residence_ids',
+                      'my_assigned_document_template_ids','my_assigned_document_version_ids',
+                      'narr_auto_evidence')
+    and a.grantee = 0;  -- 0 = PUBLIC
+  if acl_public > 0 then
+    raise exception 'READBACK FAIL: % PUBLIC execute ACL entrie(s) remain on the six functions', acl_public;
   end if;
-  if fx_failed > 0 then
-    raise exception 'READBACK FAIL: % fixture actor(s) still satisfy a privileged predicate', fx_failed;
+  raise notice 'readback 6f ok: no PUBLIC execute remains on the six functions';
+
+  -- 7. The GLOBAL default function ACL for role postgres exists (namespace 0)
+  --    and excludes PUBLIC execute. The global form is required: a schema-
+  --    scoped entry cannot remove the built-in PUBLIC EXECUTE default.
+  --    Absence of the row means built-in defaults still apply — a failure.
+  select count(*) into bad
+  from pg_default_acl d
+  where d.defaclrole = 'postgres'::regrole
+    and d.defaclobjtype = 'f'
+    and d.defaclnamespace = 0
+    and not exists (select 1 from aclexplode(d.defaclacl) a where a.grantee = 0);
+  if bad < 1 then
+    raise exception 'READBACK FAIL: no hardened global default function ACL for role postgres (built-in PUBLIC execute still applies to new functions)';
   end if;
-  if pr_checked = 0 or pr_failed > 0 then
-    raise exception 'READBACK FAIL: production admin verification failed (checked=%, lost=%)', pr_checked, pr_failed;
+  raise notice 'readback 7 ok: global postgres default function ACL excludes PUBLIC execute';
+
+  -- 7b. Behavioral probe: a freshly created function must not be
+  --     PUBLIC/anon-executable. Created and dropped inside this rolled-back
+  --     transaction — nothing persists.
+  execute 'create function recoveryos.readback_defacl_probe_0148() returns int language sql as ''select 1''';
+  if has_function_privilege('anon', 'recoveryos.readback_defacl_probe_0148()', 'EXECUTE') then
+    raise exception 'READBACK FAIL: a newly created function is still anon-executable';
   end if;
+  execute 'drop function recoveryos.readback_defacl_probe_0148()';
+  raise notice 'readback 7b ok: newly created functions are not anon-executable';
 end $$;
 
 rollback;

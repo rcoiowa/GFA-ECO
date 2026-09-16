@@ -2,7 +2,7 @@
 -- (selected by the decision-maker 2026-09-15, superseding the packet's (a)).
 --
 -- STATUS: PREPARED ONLY. Preparation authorized by decision 6; APPLICATION IS
--- NOT AUTHORIZED. Requires 0148, 0149, and revised 0147 applied first (it
+-- NOT AUTHORIZED. Requires 0147, 0148, and revised 0149 applied first (it
 -- redefines functions those migrations establish).
 --
 -- DURABLE INVARIANT (decision 6): explicit production classification permits
@@ -15,7 +15,7 @@
 --     classification = 'production' row (was: "not test_fixture", which
 --     treated missing as production). Every consumer inherits strict
 --     semantics: the 0030/0117/0126/0132/0136 production read models, 0120
---     same_world, the 0148 notification-recipient filters, and the 0147R
+--     same_world, the 0147 notification-recipient filters, and the 0149R
 --     assignee picker.
 --   * recoveryos.is_production_actor(): routes through it.
 --   * has_role / staff_residence_ids / is_residence_manager_of: privileged
@@ -61,7 +61,7 @@ language sql stable security definer set search_path = recoveryos, public as $$
   select recoveryos.is_production_person(recoveryos.current_person_id());
 $$;
 comment on function recoveryos.is_production_actor() is
-  'Canonical boundary (0147R, STRICT since 0151): true only when the current person '
+  'Canonical boundary (0149R, STRICT since 0151): true only when the current person '
   'carries an explicit production classification. Missing classification denies.';
 
 -- 2) Privileged predicates: production required, not merely "not fixture".
@@ -80,7 +80,7 @@ language sql stable security definer set search_path = recoveryos, public as $$
   );
 $$;
 comment on function recoveryos.has_role(recoveryos.role_key) is
-  'P0-INV (0148, STRICT since 0151): privileged roles require an explicit production '
+  'P0-INV (0147, STRICT since 0151): privileged roles require an explicit production '
   'classification — test_fixture AND missing classification both fail closed.';
 
 create or replace function recoveryos.staff_residence_ids()
@@ -107,7 +107,10 @@ language sql stable security definer set search_path = recoveryos, public as $$
 $$;
 
 -- 3) grant_role_assignment: unclassified privileged targets refused explicitly.
---    Body is faithful to the 0148 edition except the added elsif branch.
+--    Body is faithful to the 0147 revision-2 edition (caller authorization
+--    decided before any target lookup — the anti-disclosure ordering) except
+--    the added D4b branch, which sits with the other target checks so it is
+--    likewise reachable only by authorized callers.
 create or replace function recoveryos.grant_role_assignment(
   p_person_id bigint,
   p_role recoveryos.role_key,
@@ -120,22 +123,9 @@ declare
   v_id bigint;
 begin
   if v_me is null then return jsonb_build_object('ok', false, 'code', 'unauthenticated'); end if;
-  if not exists (select 1 from recoveryos.people where id = p_person_id) then
-    return jsonb_build_object('ok', false, 'code', 'person_not_found');
-  end if;
 
-  -- P0-INV (0148): a privileged role never lands on a test-classified identity.
-  if recoveryos.is_privileged_role(p_role) and recoveryos.is_test_fixture(p_person_id) then
-    return jsonb_build_object('ok', false, 'code', 'test_fixture_privilege_blocked',
-      'message', 'Privileged roles cannot be granted to a test-classified identity.');
-  end if;
-  -- D4b (0151): nor on an UNCLASSIFIED identity — classify deliberately first.
-  if recoveryos.is_privileged_role(p_role) and not recoveryos.is_production_person(p_person_id) then
-    return jsonb_build_object('ok', false, 'code', 'person_unclassified',
-      'message', 'Privileged roles require an explicit production classification.');
-  end if;
-
-  -- Authority: platform admin for anything; residence managers only for
+  -- Authority FIRST (no target information revealed to unauthorized callers):
+  -- platform admin for anything; residence managers only for
   -- residence_staff/resident WITHIN their own residence.
   if not recoveryos.is_platform_admin() then
     if p_role in ('residence_staff','resident') and p_residence_id is not null
@@ -150,6 +140,23 @@ begin
     return jsonb_build_object('ok', false, 'code', 'privilege_tier',
       'message', 'Only a system administrator can grant that role.');
   end if;
+
+  -- Target checks (authorized callers only from here down).
+  if not exists (select 1 from recoveryos.people where id = p_person_id) then
+    return jsonb_build_object('ok', false, 'code', 'person_not_found');
+  end if;
+
+  -- P0-INV (0147): a privileged role never lands on a test-classified identity.
+  if recoveryos.is_privileged_role(p_role) and recoveryos.is_test_fixture(p_person_id) then
+    return jsonb_build_object('ok', false, 'code', 'test_fixture_privilege_blocked',
+      'message', 'Privileged roles cannot be granted to a test-classified identity.');
+  end if;
+  -- D4b (0151): nor on an UNCLASSIFIED identity — classify deliberately first.
+  if recoveryos.is_privileged_role(p_role) and not recoveryos.is_production_person(p_person_id) then
+    return jsonb_build_object('ok', false, 'code', 'person_unclassified',
+      'message', 'Privileged roles require an explicit production classification.');
+  end if;
+
   -- Scope validation.
   if p_role in ('residence_staff','residence_manager','resident') and p_residence_id is null then
     return jsonb_build_object('ok', false, 'code', 'residence_scope_required');
@@ -180,7 +187,7 @@ begin
 end $$;
 
 -- 4) assign_lead: unclassified assignees refused explicitly.
---    Body is faithful to the 0147R edition except the added elsif branch.
+--    Body is faithful to the 0149R edition except the added elsif branch.
 create or replace function recoveryos.assign_lead(p_lead_id bigint, p_assignee_person_id bigint)
 returns jsonb language plpgsql security definer set search_path = recoveryos, public as $$
 declare
@@ -193,7 +200,7 @@ begin
   end if;
   select * into v_lead from recoveryos.leads where id = p_lead_id for update;
   if not found then return jsonb_build_object('ok', false, 'code', 'not_found'); end if;
-  -- R6 (0147R): a lead is never assigned to a test-classified identity.
+  -- R6 (0149R): a lead is never assigned to a test-classified identity.
   if recoveryos.is_test_fixture(p_assignee_person_id) then
     return jsonb_build_object('ok', false, 'code', 'assignee_test_fixture_blocked',
       'message', 'Inquiries cannot be assigned to a test-classified identity.');

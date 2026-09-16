@@ -5,24 +5,34 @@
 --   set recoveryos.negtest = 'on';
 -- Everything runs in one transaction and ends with ROLLBACK, so no rows persist.
 --
--- Prerequisites: launch migrations 0001–0146 + prepared 0148 applied; the
+-- Prerequisites: launch migrations 0001–0146 + prepared 0147 applied; the
 -- auth shim (auth.users + auth.uid() reading request.jwt.claim.sub) present;
 -- run as a superuser/service connection (the battery impersonates
 -- `authenticated` per actor via SET LOCAL ROLE).
 --
 -- What it proves (each assertion raises on failure):
---   1. A test_fixture actor holding administrator/navigator/residence roles
---      satisfies NO privileged predicate and holds NO residence staff scope.
+--   1. Test_fixture actors are instantiated holding EVERY privileged role key
+--      (coach, navigator, residence_staff, residence_manager, program_manager,
+--      administrator, executive, system_administrator) and satisfy NO
+--      privileged predicate for any of them, and hold NO residence staff scope.
 --   2. Production staff predicates are unchanged (admin/navigator/residence
 --      staff access preserved).
 --   3. Fixture actors read ZERO rows from residence_application_intake and
 --      residence_listing_submissions under RLS; production staff read them.
 --   4. Notification fan-out for lead / listing / application events reaches
---      production staff only.
---   5. grant_role_assignment refuses privileged grants to fixture identities
+--      production staff only (asserted per fixture role holder).
+--   5. grant_role_assignment refuses a privileged grant to a fixture identity
+--      for EVERY one of the eight privileged role keys
 --      (test_fixture_privilege_blocked) and still grants to production staff.
 --   6. Participant-plane behavior for fixtures is preserved (participant role,
 --      0120 same_world semantics).
+--   7. Response-code uniformity (revision 2): an ordinary authenticated caller
+--      — production participant or fixture participant — receives an
+--      identical 'not_authorized' response from grant_role_assignment whether
+--      the target is a production person, a fixture person, or nonexistent;
+--      target-dependent codes (person_not_found,
+--      test_fixture_privilege_blocked) are reachable only by authorized
+--      callers.
 
 \set ON_ERROR_STOP on
 
@@ -31,7 +41,7 @@ do $$ begin
     raise exception 'REFUSING TO RUN: set recoveryos.negtest = ''on'' only on an isolated replay or disposable staging database.';
   end if;
   if to_regprocedure('recoveryos.is_privileged_role(recoveryos.role_key)') is null then
-    raise exception 'Prepared migration 0148 is not applied to this database; apply it before running the battery.';
+    raise exception 'Prepared migration 0147 is not applied to this database; apply it before running the battery.';
   end if;
 end $$;
 
@@ -44,7 +54,7 @@ begin
   end if;
   raise notice 'ok: %', label;
 end $$;
--- Explicit grant: after 0149's default-privilege hardening, new functions no
+-- Explicit grant: after 0148's default-privilege hardening, new functions no
 -- longer get PUBLIC execute, and the battery calls ok() as `authenticated`.
 grant execute on function pg_temp.ok(text, boolean) to public;
 
@@ -60,32 +70,57 @@ select set_config('negtest.res',
 insert into auth.users (id, email) values
   ('00000000-0000-4000-8000-0000000000f1', 'negtest-p0-fixture-admin@negtest.p0'),
   ('00000000-0000-4000-8000-0000000000f2', 'negtest-p0-fixture-navigator@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000f3', 'negtest-p0-fixture-coach@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000f4', 'negtest-p0-fixture-pm@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000f5', 'negtest-p0-fixture-exec@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000f6', 'negtest-p0-fixture-sysadmin@negtest.p0'),
   ('00000000-0000-4000-8000-0000000000c1', 'negtest-p0-prod-admin@negtest.p0'),
   ('00000000-0000-4000-8000-0000000000c2', 'negtest-p0-prod-navigator@negtest.p0'),
-  ('00000000-0000-4000-8000-0000000000c3', 'negtest-p0-prod-rstaff@negtest.p0');
+  ('00000000-0000-4000-8000-0000000000c3', 'negtest-p0-prod-rstaff@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000c4', 'negtest-p0-prod-sysadmin@negtest.p0'),
+  ('00000000-0000-4000-8000-0000000000c5', 'negtest-p0-prod-participant@negtest.p0');
 -- (handle_new_auth_user auto-provisions people + participant role)
 
 select set_config('negtest.fxadmin', (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000f1'), true);
 select set_config('negtest.fxnav',   (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000f2'), true);
+select set_config('negtest.fxcoach', (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000f3'), true);
+select set_config('negtest.fxpm',    (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000f4'), true);
+select set_config('negtest.fxexec',  (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000f5'), true);
+select set_config('negtest.fxsys',   (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000f6'), true);
 select set_config('negtest.padmin',  (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000c1'), true);
 select set_config('negtest.pnav',    (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000c2'), true);
 select set_config('negtest.prstaff', (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000c3'), true);
+select set_config('negtest.psys',    (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000c4'), true);
+select set_config('negtest.ppart',   (select id::text from recoveryos.people where auth_user_id = '00000000-0000-4000-8000-0000000000c5'), true);
 
 insert into recoveryos.person_classification (person_id, classification, reason) values
   (current_setting('negtest.fxadmin')::bigint, 'test_fixture', 'NEGTEST-P0'),
-  (current_setting('negtest.fxnav')::bigint,   'test_fixture', 'NEGTEST-P0')
+  (current_setting('negtest.fxnav')::bigint,   'test_fixture', 'NEGTEST-P0'),
+  (current_setting('negtest.fxcoach')::bigint, 'test_fixture', 'NEGTEST-P0'),
+  (current_setting('negtest.fxpm')::bigint,    'test_fixture', 'NEGTEST-P0'),
+  (current_setting('negtest.fxexec')::bigint,  'test_fixture', 'NEGTEST-P0'),
+  (current_setting('negtest.fxsys')::bigint,   'test_fixture', 'NEGTEST-P0')
 on conflict (person_id) do update set classification = 'test_fixture', reason = 'NEGTEST-P0';
 
 -- Simulate the live defect shape: fixture identities holding privileged roles
--- (direct inserts on purpose — the RPC now refuses; the live rows predate 0148).
+-- (direct inserts on purpose — the RPC now refuses; the live rows predate 0147).
+-- Every one of the eight privileged role keys is instantiated on a fixture:
+--   fxadmin: administrator + residence_manager + residence_staff
+--   fxnav: navigator · fxcoach: coach · fxpm: program_manager
+--   fxexec: executive · fxsys: system_administrator
 insert into recoveryos.role_assignments (person_id, role_key, organization_id, residence_id) values
-  (current_setting('negtest.fxadmin')::bigint, 'administrator',     1, null),
-  (current_setting('negtest.fxadmin')::bigint, 'residence_manager', 1, current_setting('negtest.res')::bigint),
-  (current_setting('negtest.fxadmin')::bigint, 'residence_staff',   1, current_setting('negtest.res')::bigint),
-  (current_setting('negtest.fxnav')::bigint,   'navigator',         1, null),
-  (current_setting('negtest.padmin')::bigint,  'administrator',     1, null),
-  (current_setting('negtest.pnav')::bigint,    'navigator',         1, null),
-  (current_setting('negtest.prstaff')::bigint, 'residence_staff',   1, current_setting('negtest.res')::bigint);
+  (current_setting('negtest.fxadmin')::bigint, 'administrator',        1, null),
+  (current_setting('negtest.fxadmin')::bigint, 'residence_manager',    1, current_setting('negtest.res')::bigint),
+  (current_setting('negtest.fxadmin')::bigint, 'residence_staff',      1, current_setting('negtest.res')::bigint),
+  (current_setting('negtest.fxnav')::bigint,   'navigator',            1, null),
+  (current_setting('negtest.fxcoach')::bigint, 'coach',                1, null),
+  (current_setting('negtest.fxpm')::bigint,    'program_manager',      1, null),
+  (current_setting('negtest.fxexec')::bigint,  'executive',            1, null),
+  (current_setting('negtest.fxsys')::bigint,   'system_administrator', 1, null),
+  (current_setting('negtest.padmin')::bigint,  'administrator',        1, null),
+  (current_setting('negtest.pnav')::bigint,    'navigator',            1, null),
+  (current_setting('negtest.prstaff')::bigint, 'residence_staff',      1, current_setting('negtest.res')::bigint),
+  (current_setting('negtest.psys')::bigint,    'system_administrator', 1, null);
 
 -- Sensitive rows + fan-out events (fires the three notify triggers).
 insert into recoveryos.leads (first_name, last_name, email, message)
@@ -109,6 +144,21 @@ select pg_temp.ok('fixture admin received NO notifications',
 select pg_temp.ok('fixture navigator received NO notifications',
   (select count(*) from recoveryos.notifications
     where recipient_person_id = current_setting('negtest.fxnav')::bigint) = 0);
+select pg_temp.ok('fixture coach received NO notifications',
+  (select count(*) from recoveryos.notifications
+    where recipient_person_id = current_setting('negtest.fxcoach')::bigint) = 0);
+select pg_temp.ok('fixture program manager received NO notifications',
+  (select count(*) from recoveryos.notifications
+    where recipient_person_id = current_setting('negtest.fxpm')::bigint) = 0);
+select pg_temp.ok('fixture executive received NO notifications',
+  (select count(*) from recoveryos.notifications
+    where recipient_person_id = current_setting('negtest.fxexec')::bigint) = 0);
+select pg_temp.ok('fixture system administrator received NO notifications',
+  (select count(*) from recoveryos.notifications
+    where recipient_person_id = current_setting('negtest.fxsys')::bigint) = 0);
+select pg_temp.ok('production system administrator received listing/application notifications',
+  (select count(*) from recoveryos.notifications
+    where recipient_person_id = current_setting('negtest.psys')::bigint) >= 2);
 
 -- ---------------------------------------------------------------------------
 -- 1) Fixture admin: every privileged predicate false, no staff scope
@@ -152,6 +202,35 @@ select pg_temp.ok('fx-nav: residence_application_intake reads 0 rows',
 reset role;
 
 -- ---------------------------------------------------------------------------
+-- 1) Remaining privileged role keys, each instantiated on its own fixture
+--    actor: every predicate false (revision 2 — all eight keys covered).
+-- ---------------------------------------------------------------------------
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000f3', true);
+set local role authenticated;
+select pg_temp.ok('fx-coach: has_role(coach) = false',           recoveryos.has_role('coach') = false);
+select pg_temp.ok('fx-coach: is_coach_staff = false',            recoveryos.is_coach_staff() = false);
+select pg_temp.ok('fx-coach: is_support_staff = false',          recoveryos.is_support_staff() = false);
+reset role;
+
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000f4', true);
+set local role authenticated;
+select pg_temp.ok('fx-pm: has_role(program_manager) = false',    recoveryos.has_role('program_manager') = false);
+reset role;
+
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000f5', true);
+set local role authenticated;
+select pg_temp.ok('fx-exec: has_role(executive) = false',        recoveryos.has_role('executive') = false);
+reset role;
+
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000f6', true);
+set local role authenticated;
+select pg_temp.ok('fx-sys: has_role(system_administrator) = false', recoveryos.has_role('system_administrator') = false);
+select pg_temp.ok('fx-sys: is_platform_admin = false',           recoveryos.is_platform_admin() = false);
+select pg_temp.ok('fx-sys: residence_listing_submissions reads 0 rows',
+  (select count(*) from recoveryos.residence_listing_submissions) = 0);
+reset role;
+
+-- ---------------------------------------------------------------------------
 -- 2) Production staff unchanged
 -- ---------------------------------------------------------------------------
 select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000c1', true);
@@ -177,6 +256,61 @@ select pg_temp.ok('grant participant to FIXTURE person → allowed (non-privileg
 select pg_temp.ok('grant coach to PRODUCTION person → granted',
   (recoveryos.grant_role_assignment(current_setting('negtest.pnav')::bigint, 'coach')
      ->> 'code') in ('granted','already_granted'));
+-- Authorized callers keep accurate diagnostics (person_not_found is NOT
+-- suppressed for them — only for unauthorized callers, see section 7):
+select pg_temp.ok('prod-admin: grant to NONEXISTENT person → person_not_found',
+  (recoveryos.grant_role_assignment(999999999, 'coach') ->> 'code') = 'person_not_found');
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- 5) Grant refusal for EVERY privileged role key (revision 2). Caller is a
+--    production system_administrator (passes both the platform-admin authority
+--    check and the system_administrator privilege tier), so the fixture guard
+--    is the deciding check for all eight keys.
+-- ---------------------------------------------------------------------------
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000c4', true);
+set local role authenticated;
+select pg_temp.ok('grant ' || k || ' to FIXTURE person → test_fixture_privilege_blocked',
+  (recoveryos.grant_role_assignment(
+     current_setting('negtest.fxexec')::bigint,
+     k::recoveryos.role_key,
+     null, null,
+     case when k in ('residence_staff','residence_manager')
+          then current_setting('negtest.res')::bigint end
+   ) ->> 'code') = 'test_fixture_privilege_blocked')
+from unnest(array['coach','navigator','residence_staff','residence_manager',
+                  'program_manager','administrator','executive','system_administrator']) as k;
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- 7) Response-code uniformity (revision 2): unauthorized callers cannot
+--    distinguish production, fixture, or nonexistent targets.
+-- ---------------------------------------------------------------------------
+-- Ordinary PRODUCTION participant caller:
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000c5', true);
+set local role authenticated;
+select set_config('negtest.u1', recoveryos.grant_role_assignment(current_setting('negtest.padmin')::bigint, 'coach')::text, true);
+select set_config('negtest.u2', recoveryos.grant_role_assignment(current_setting('negtest.fxadmin')::bigint, 'coach')::text, true);
+select set_config('negtest.u3', recoveryos.grant_role_assignment(999999999, 'coach')::text, true);
+select pg_temp.ok('ordinary prod caller: production target → not_authorized',
+  (current_setting('negtest.u1')::jsonb ->> 'code') = 'not_authorized');
+select pg_temp.ok('ordinary prod caller: identical response for production vs fixture target',
+  current_setting('negtest.u1')::jsonb = current_setting('negtest.u2')::jsonb);
+select pg_temp.ok('ordinary prod caller: identical response for production vs nonexistent target',
+  current_setting('negtest.u1')::jsonb = current_setting('negtest.u3')::jsonb);
+reset role;
+-- FIXTURE participant caller (same uniformity — fixtures cannot probe either):
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000f2', true);
+set local role authenticated;
+select set_config('negtest.v1', recoveryos.grant_role_assignment(current_setting('negtest.padmin')::bigint, 'coach')::text, true);
+select set_config('negtest.v2', recoveryos.grant_role_assignment(current_setting('negtest.fxcoach')::bigint, 'coach')::text, true);
+select set_config('negtest.v3', recoveryos.grant_role_assignment(999999999, 'coach')::text, true);
+select pg_temp.ok('fixture caller: production target → not_authorized',
+  (current_setting('negtest.v1')::jsonb ->> 'code') = 'not_authorized');
+select pg_temp.ok('fixture caller: identical response for production vs fixture target',
+  current_setting('negtest.v1')::jsonb = current_setting('negtest.v2')::jsonb);
+select pg_temp.ok('fixture caller: identical response for production vs nonexistent target',
+  current_setting('negtest.v1')::jsonb = current_setting('negtest.v3')::jsonb);
 reset role;
 
 select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000c2', true);

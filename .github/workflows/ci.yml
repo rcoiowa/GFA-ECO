@@ -28,12 +28,12 @@ jobs:
         run: node scripts/verify-intake-boundary.mjs
       - name: Booking write-integrity invariants (0100/0124 — ownership + proposal safety)
         run: node scripts/verify-booking-integrity.mjs
-      - name: P0 classification-isolation invariants (prepared 0148 — SEC-P0-001)
-        run: node scripts/verify-0148-prepared.mjs
-      - name: G3 exposure-hardening invariants (prepared 0149 — SEC-DB-001)
-        run: node scripts/verify-0149-prepared.mjs
-      - name: Revised shared-intake invariants (prepared 0147R — classification-aligned)
+      - name: P0 classification-isolation invariants (prepared 0147 — SEC-P0-001)
         run: node scripts/verify-0147-prepared.mjs
+      - name: G3 exposure-hardening invariants (prepared 0148 — SEC-DB-001)
+        run: node scripts/verify-0148-prepared.mjs
+      - name: Revised shared-intake invariants (prepared 0149R — classification-aligned)
+        run: node scripts/verify-0149-prepared.mjs
       - name: Consent-evidence invariants (prepared 0150 — R1 D3, no fabricated evidence)
         run: node scripts/verify-0150-prepared.mjs
       - name: Strict classification invariants (prepared 0151 — R1 D4b, fail closed)

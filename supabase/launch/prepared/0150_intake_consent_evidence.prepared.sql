@@ -2,8 +2,8 @@
 -- 2026-09-15 with the evidence-preservation condition).
 --
 -- STATUS: PREPARED ONLY. Preparation authorized by decision 6; APPLICATION IS
--- NOT AUTHORIZED. Applies after the approved 0148 → revocation → 0149 → 0147R
--- chain (no technical dependency on 0147R, but the ratified sequence governs).
+-- NOT AUTHORIZED. Applies after the approved 0147 → revocation → 0148 → 0149R
+-- chain (no technical dependency on 0149R, but the ratified sequence governs).
 --
 -- What it adds: first-class consent-EVIDENCE columns on
 -- recoveryos.residence_application_intake, distinguishing "the consent flag is

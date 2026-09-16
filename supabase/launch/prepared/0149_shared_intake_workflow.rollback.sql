@@ -1,6 +1,6 @@
--- 0147_shared_intake_workflow.rollback.sql — exact rollback for the REVISED
--- prepared 0147 (2026-09-15 edition). Run only while no workflow data depends
--- on 0147 structures (lead_contact_events rows, new lead columns in use).
+-- 0149_shared_intake_workflow.rollback.sql — exact rollback for the REVISED
+-- prepared 0149 (2026-09-15 edition). Run only while no workflow data depends
+-- on 0149 structures (lead_contact_events rows, new lead columns in use).
 -- Requires the same authority as the apply; record the reason.
 --
 -- NOT REVERSIBLE: PostgreSQL cannot remove enum values, so 'intake_coordinator'
@@ -23,7 +23,7 @@ drop trigger if exists lead_contact_events_no_update on recoveryos.lead_contact_
 drop function if exists recoveryos.lead_contact_events_immutable();
 drop table if exists recoveryos.lead_contact_events;
 
--- leads: restore the 0102-era policies, then remove 0147 structures.
+-- leads: restore the 0102-era policies, then remove 0149 structures.
 drop policy if exists leads_intake_select on recoveryos.leads;
 create policy leads_staff_select on recoveryos.leads for select to authenticated
   using (recoveryos.is_support_staff() or recoveryos.is_admin_staff());
@@ -59,7 +59,7 @@ drop function if exists recoveryos.is_intake_coordinator();
 drop function if exists recoveryos.is_production_actor();
 
 -- is_privileged_role: deliberately kept COVERING the (unremovable) intake enum
--- values. This is byte-identical to the 0148 version except for the two extra
+-- values. This is byte-identical to the 0147 version except for the two extra
 -- keys and the comment, and is the safe direction (fail closed).
 create or replace function recoveryos.is_privileged_role(target_role recoveryos.role_key)
 returns boolean
@@ -71,8 +71,8 @@ language sql immutable as $$
   );
 $$;
 comment on function recoveryos.is_privileged_role(recoveryos.role_key) is
-  'P0-INV (0148): role keys a test_fixture-classified actor may never exercise. Retains '
-  'the 0147R intake keys after 0147 rollback because enum values cannot be removed.';
+  'P0-INV (0147): role keys a test_fixture-classified actor may never exercise. Retains '
+  'the 0149R intake keys after 0149 rollback because enum values cannot be removed.';
 
 commit;
 notify pgrst, 'reload schema';

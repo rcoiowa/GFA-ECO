@@ -4,7 +4,7 @@
 -- Refuses to run unless: set recoveryos.negtest = 'on'. One transaction,
 -- ends with ROLLBACK — nothing persists.
 --
--- Prerequisites: launch 0001–0146 + 0148 + 0149 + revised 0147 + 0151 applied;
+-- Prerequisites: launch 0001–0146 + 0147 + 0148 + revised 0149 + 0151 applied;
 -- auth shim; superuser/service connection.
 --
 -- Proves (raises on any failure):
