@@ -50,6 +50,11 @@ const required = [
     /'code', 'test_fixture_privilege_blocked'/,
   ],
   [
+    // Revision 2 anti-disclosure ordering: inside grant_role_assignment the
+    // caller-authorization branch ('not_authorized') must precede BOTH
+    // target-dependent codes ('person_not_found', 'test_fixture_privilege_blocked'),
+    // so unauthorized callers cannot distinguish production, fixture, or
+    // nonexistent targets by response code.
     'grant_role_assignment decides caller authorization before target lookups',
     /create or replace function recoveryos\.grant_role_assignment[\s\S]*?'not_authorized'[\s\S]*?'person_not_found'[\s\S]*?'test_fixture_privilege_blocked'/,
   ],
@@ -59,6 +64,7 @@ const required = [
 
 const failures = required.filter(([, p]) => !p.test(sql)).map(([name]) => name);
 
+// The rollback must restore the exact unguarded definitions and drop the helper.
 if (!/drop function if exists recoveryos\.is_privileged_role/.test(rollback)) {
   failures.push('rollback drops is_privileged_role');
 }
@@ -66,6 +72,7 @@ if (/is_test_fixture\(recoveryos\.current_person_id\(\)\)/.test(rollback)) {
   failures.push('rollback restores unguarded definitions (no classification guard)');
 }
 
+// Governance hygiene mirrored from verify-0149: no unqualified role_key enum refs.
 if (/alter type\s+role_key\b/i.test(sql)) {
   failures.push('0147 contains an unqualified role_key enum reference');
 }

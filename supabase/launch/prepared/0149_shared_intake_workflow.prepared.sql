@@ -1,87 +1,116 @@
--- 0147_shared_intake_workflow.prepared.sql — shared six-stage inquiry workflow (leads v2).
+-- 0149_shared_intake_workflow.prepared.sql — shared six-stage inquiry workflow (leads v2).
+-- REVISED EDITION (2026-09-15) — classification-aligned. See REVISION RECORD below.
 --
--- STATUS: PREPARED ONLY, DO NOT APPLY. Lives in supabase/launch/prepared/ (outside the
--- migrations ledger) so routine tooling cannot apply it. Moves to
--- supabase/launch/migrations/0147_shared_intake_workflow.sql only under the activation
--- authorization (docs/plans/intake-activation-plan-2026-09-01.md + the EJWRH
--- application-path build record). APPLY-ORDER RULE: this migration MUST be applied
--- before the updated lead-intake Edge Function is redeployed (the receiver writes the
--- new columns).
+-- STATUS: PREPARED ONLY. NOT AUTHORIZED. NOT APPLIED. Lives in supabase/launch/prepared/
+-- (outside the migrations ledger) so routine tooling cannot apply it. Moves to
+-- supabase/launch/migrations/0149_shared_intake_workflow.sql only under its own explicit
+-- activation authorization, which has NOT been granted. The pre-revision edition (PR #7
+-- lineage @ 825bb5c1) is REJECTED FOR ACTIVATION AS WRITTEN (executive direction,
+-- 2026-09-15): its intake-role helpers read role_assignments directly, bypassing the 0147
+-- classification guard, so a test_fixture administrator would regain the whole intake
+-- queue. The shared-intake design itself remains the governing direction (2026-09-03
+-- supersession decision).
 --
--- What this adds (all additive; no data destroyed):
---   * leads: six-stage lifecycle (new/assigned/contacted/waiting/scheduled/closed; the
---     legacy 'converted' value remains valid for lineage), explicit residence interest
---     (self-selected only — never inferred), organization/partnership flag, a DORMANT
---     response-deadline column (see policy below), close-time human triage
---     classification, Wix idempotency key, link to a converted
---     residence_application_intake record so an inquiry and an application stay ONE
---     thread, never duplicates.
---   * lead_contact_events: shared APPEND-ONLY contact log (responder, time, channel,
---     attempted-vs-connected kind, outcome, minutes, next follow-up). RPC-only writes;
---     no UPDATE/DELETE path exists.
---   * Intake-only roles: intake_coordinator (full queue, assign/reassign) and
---     intake_worker (assigned inquiries only). Least privilege: this migration also
---     NARROWS lead visibility — coaches/navigators lose generic lead access; access is
---     coordinators + admins + the assigned worker. (Deliberate access change, called out
---     in the activation plan; ships only with the authorized apply.)
---   * RPCs (SECURITY DEFINER, {ok,code} envelopes, authorization inside):
---     assign_lead, record_lead_contact, set_lead_status, route_lead,
---     find_duplicate_leads, list_intake_assignees.
+-- APPLY-ORDER RULES:
+--   1. Requires 0147 (classification authorization isolation) and 0148 (exposure
+--      hardening) applied first — this file redefines recoveryos.is_privileged_role,
+--      which 0147 introduces, and relies on the guarded recoveryos.has_role.
+--   2. This migration MUST be applied before the updated lead-intake Edge Function is
+--      redeployed (the receiver writes the new columns).
 --
--- Response-time policy (RATIFIED 2026-09-05, docs/decisions/2026-09-05-phase1-six-deadline-routing-decisions.md):
---   * BUSINESS-TIME targets govern operationally (standard: first human contact attempt
---     within 1 business day; partnership: 4-business-hour acknowledgment + 2-business-day
---     substantive response), but AUTOMATED business-time computation is DEFERRED until
---     GFA's authoritative operating calendar is separately ratified.
---   * Therefore NO writer computes a deadline: `response_due_at` ships DORMANT (never
---     written), timestamps are preserved, and surfaces show age/time-since-receipt
---     without fabricating an overdue determination from assumed hours.
---   * Decision 1: an attempted contact is never represented as an established human
---     connection — lead_contact_events.contact_kind carries the distinction.
---   * Decision 5: assignment is a manual coordinator act; no round-robin machinery.
---   * Decision 6: technical acceptance admits to the queue; the first authorized human
---     triage action is the quality gate — leads.triage_classification (set at close)
---     keeps nonqualified records from silently inflating qualified-request measures.
---   * Decision 2: the partnership responder is a FUNCTION designation recorded in the
---     decision log (initially Thomas via thomas@graceforaddictions.org), deliberately
---     NOT a schema concept — reassignment must need no schema change.
+-- REVISION RECORD (vs the 825bb5c1 edition; everything else is content-identical):
+--   R1  recoveryos.is_privileged_role gains 'intake_coordinator' and 'intake_worker'
+--       so the 0147 has_role guard covers the new roles.
+--   R2  New canonical actor predicate recoveryos.is_production_actor() — the single
+--       named boundary future policies should use instead of ad-hoc guards.
+--   R3  is_intake_coordinator()/is_intake_worker() are REFACTORED to flow through the
+--       canonical authorization boundary (recoveryos.has_role / is_platform_admin)
+--       instead of reading role_assignments directly. This is the structural fix: any
+--       future role predicate built the same way inherits classification awareness.
+--   R4  can_work_lead(): the assignment-based arm (which genuinely cannot flow through
+--       a role key) carries an explicit is_production_actor() guard.
+--   R5  leads_intake_select policy: same guard on its assignment arm.
+--   R6  assign_lead(): refuses a test_fixture assignee (assignee_test_fixture_blocked)
+--       and requires a production assignee before the role check.
+--   R7  list_intake_assignees(): fixture identities are excluded from the picker
+--       (mirrors the 0030/0120 production read-model pattern).
+--   R8  Enum-literal safety: because R3 uses the new enum literals inside function
+--       bodies created in the same transaction that adds the values, the file sets
+--       LOCAL check_function_bodies = off for those creations (bodies parse at first
+--       call, after commit). The pre-revision edition avoided this with direct text
+--       comparison — the exact pattern that caused the bypass.
+--
+-- Everything below the revision points is byte-faithful to the 825bb5c1 edition,
+-- including the ratified response-time policy (dormant response_due_at), decision-1
+-- attempted-vs-connected distinction, decision-6 close-time triage classification,
+-- the one-thread linked-intake unique index, and reopen rejection pending the
+-- transition-matrix ratification.
+--
+-- ROLLBACK: 0149_shared_intake_workflow.rollback.sql (note: added enum values cannot
+-- be removed by PostgreSQL; they remain inert and covered by is_privileged_role).
 
-set check_function_bodies = off;
+begin;
 
 -- ---------------------------------------------------------------------------
--- 1) Roles. New enum values are only ever USED after this transaction commits
---    (helpers compare as text precisely so nothing casts the new literals here).
+-- 1) Roles + canonical classification boundary (R1/R2/R3/R8).
 -- ---------------------------------------------------------------------------
 alter type recoveryos.role_key add value if not exists 'intake_coordinator';
 alter type recoveryos.role_key add value if not exists 'intake_worker';
 
+-- R1: the 0147 privileged-role vocabulary now covers the intake roles, so the
+-- guarded has_role() is classification-aware for them from the moment they exist.
+create or replace function recoveryos.is_privileged_role(target_role recoveryos.role_key)
+returns boolean
+language sql immutable as $$
+  select target_role::text in (
+    'coach', 'navigator', 'residence_staff', 'residence_manager',
+    'program_manager', 'administrator', 'executive', 'system_administrator',
+    'intake_coordinator', 'intake_worker'
+  );
+$$;
+comment on function recoveryos.is_privileged_role(recoveryos.role_key) is
+  'P0-INV (0147, extended by 0149R): role keys a test_fixture-classified actor may never '
+  'exercise. participant and resident stay non-privileged.';
+
+-- R2: the canonical actor-classification predicate. New policies and helpers use
+-- THIS name, not ad-hoc is_test_fixture(current_person_id()) expressions.
+create or replace function recoveryos.is_production_actor()
+returns boolean
+language sql stable security definer set search_path = recoveryos, public as $$
+  select not recoveryos.is_test_fixture(recoveryos.current_person_id());
+$$;
+revoke execute on function recoveryos.is_production_actor() from public, anon;
+grant execute on function recoveryos.is_production_actor() to authenticated;
+comment on function recoveryos.is_production_actor() is
+  'Canonical boundary (0149R): true when the current person is not test_fixture-classified. '
+  'Use this in any authorization arm that does not already flow through has_role().';
+
+-- R3/R8: helpers flow through the canonical guarded boundary. The new enum
+-- literals appear inside these bodies, created in the transaction that adds the
+-- values — so body parsing is deferred to first call (after commit).
+set local check_function_bodies = off;
+
 create or replace function recoveryos.is_intake_coordinator()
 returns boolean language sql stable security definer set search_path = recoveryos, public as $$
-  select exists (
-    select 1 from recoveryos.role_assignments ra
-    where ra.person_id = recoveryos.current_person_id()
-      and ra.revoked_at is null
-      and ra.role_key::text in ('intake_coordinator','administrator','system_administrator')
-  );
+  select recoveryos.has_role('intake_coordinator') or recoveryos.is_platform_admin();
 $$;
 
 create or replace function recoveryos.is_intake_worker()
 returns boolean language sql stable security definer set search_path = recoveryos, public as $$
-  select exists (
-    select 1 from recoveryos.role_assignments ra
-    where ra.person_id = recoveryos.current_person_id()
-      and ra.revoked_at is null
-      and ra.role_key::text = 'intake_worker'
-  );
+  select recoveryos.has_role('intake_worker');
 $$;
 
--- May the current person work THIS lead? Coordinator/admin: any; worker: assigned only.
+set local check_function_bodies = on;
+
+-- R4: coordinator/admin arms flow through the boundary above; the assignment arm
+-- cannot (assignment is not a role key), so it carries the canonical guard.
 create or replace function recoveryos.can_work_lead(p_lead_id bigint)
 returns boolean language sql stable security definer set search_path = recoveryos, public as $$
   select recoveryos.is_intake_coordinator()
-      or exists (select 1 from recoveryos.leads l
-                 where l.id = p_lead_id
-                   and l.assigned_to_person_id = recoveryos.current_person_id());
+      or (recoveryos.is_production_actor()
+          and exists (select 1 from recoveryos.leads l
+                      where l.id = p_lead_id
+                        and l.assigned_to_person_id = recoveryos.current_person_id()));
 $$;
 
 revoke execute on function recoveryos.is_intake_coordinator(), recoveryos.is_intake_worker(),
@@ -183,11 +212,14 @@ create index if not exists leads_assignee_status_created_idx
   where assigned_to_person_id is not null;
 
 -- Least-privilege visibility (replaces the broad staff policies from 0102).
+-- R5: the assignment arm carries the canonical classification guard.
 drop policy if exists leads_staff_select on recoveryos.leads;
 drop policy if exists leads_staff_update on recoveryos.leads;
+drop policy if exists leads_intake_select on recoveryos.leads;
 create policy leads_intake_select on recoveryos.leads for select to authenticated
   using ((select recoveryos.is_intake_coordinator())
-         or assigned_to_person_id = (select recoveryos.current_person_id()));
+         or (assigned_to_person_id = (select recoveryos.current_person_id())
+             and (select recoveryos.is_production_actor())));
 -- No UPDATE policy: every mutation goes through the audited RPCs below.
 -- No INSERT policy: inserts come only from the lead-intake Edge Function (service role).
 
@@ -215,6 +247,7 @@ create index if not exists lead_contact_events_responder_idx
   on recoveryos.lead_contact_events (responder_person_id);
 
 alter table recoveryos.lead_contact_events enable row level security;
+drop policy if exists lead_contact_events_select on recoveryos.lead_contact_events;
 create policy lead_contact_events_select on recoveryos.lead_contact_events
   for select to authenticated using ((select recoveryos.can_work_lead(lead_id)));
 -- Append-only by construction: SELECT-only client privileges; no UPDATE/DELETE
@@ -254,6 +287,11 @@ begin
   end if;
   select * into v_lead from recoveryos.leads where id = p_lead_id for update;
   if not found then return jsonb_build_object('ok', false, 'code', 'not_found'); end if;
+  -- R6: a lead (production PII) is never assigned to a test-classified identity.
+  if recoveryos.is_test_fixture(p_assignee_person_id) then
+    return jsonb_build_object('ok', false, 'code', 'assignee_test_fixture_blocked',
+      'message', 'Inquiries cannot be assigned to a test-classified identity.');
+  end if;
   if not exists (select 1 from recoveryos.role_assignments ra
                  where ra.person_id = p_assignee_person_id and ra.revoked_at is null
                    and ra.role_key::text in ('intake_coordinator','intake_worker',
@@ -509,6 +547,8 @@ begin
 end $$;
 
 -- Assignable intake staff (coordinators need a picker; minimal fields).
+-- R7: fixture identities never appear in the picker (production read model,
+-- same pattern as 0030 list_active_coaches / 0120 pool symmetry evidence rule).
 create or replace function recoveryos.list_intake_assignees()
 returns jsonb language sql stable security definer set search_path = recoveryos, public as $$
   select case when not (select recoveryos.is_intake_coordinator())
@@ -519,7 +559,8 @@ returns jsonb language sql stable security definer set search_path = recoveryos,
                 from recoveryos.role_assignments ra
                 join recoveryos.people pe on pe.id = ra.person_id
                 where ra.revoked_at is null
-                  and ra.role_key::text in ('intake_coordinator','intake_worker')), '[]'::jsonb))
+                  and ra.role_key::text in ('intake_coordinator','intake_worker')
+                  and recoveryos.is_production_person(pe.id)), '[]'::jsonb))
   end;
 $$;
 
@@ -540,4 +581,5 @@ grant execute on function
   recoveryos.list_intake_assignees()
 to authenticated;
 
+commit;
 notify pgrst, 'reload schema';
