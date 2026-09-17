@@ -1,3 +1,5 @@
+> **Historical terminology notice (2026-09-13):** This dated discovery record preserves legacy Grace labels and technical identifiers as evidence. Current identity: **Grace — AI Support Navigator**. Historical wording does not describe the current product role.
+
 # P1 Completion Report — Legacy Containment, Security & Deployment Ownership
 
 **Date:** 2026-08-07 · **Branch:** `claude/grace-coaching-audit-b0fyhq` · **Project:**

@@ -1,6 +1,6 @@
 // Canonical Grace Edge Function — RecoveryOS-Launch.
 //
-// Server-authoritative AI peer companion. Contract (Grace Implementation
+// Server-authoritative AI Support Navigator. Contract (Grace Implementation
 // Authority V1.0 / directive §5, §9, §10, §11, §13, §19, §20):
 //   • requires an authenticated user JWT (verify_jwt=true) and derives the
 //     person from Auth — NEVER trusts a participant id from the browser;
