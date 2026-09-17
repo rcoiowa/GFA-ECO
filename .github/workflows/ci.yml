@@ -52,6 +52,8 @@ jobs:
         run: node scripts/verify-0150-prepared.mjs
       - name: Strict classification invariants (prepared 0151 — R1 D4b, fail closed)
         run: node scripts/verify-0151-prepared.mjs
+      - name: Prepared-chain manifest lock (Gate A — exact rev-2 set, SHA-256 pinned)
+        run: node scripts/verify-prepared-chain.mjs
       - name: Cloudflare execution and deployment boundaries
         run: node scripts/verify-cloudflare-boundaries.mjs
       - uses: denoland/setup-deno@v2
