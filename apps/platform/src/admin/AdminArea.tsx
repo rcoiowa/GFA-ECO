@@ -7,6 +7,8 @@ import { OperationsPage } from './pages/OperationsPage';
 import { AccessPage } from './pages/AccessPage';
 import { PeoplePage } from './pages/PeoplePage';
 import { ResidencesPage } from './pages/ResidencesPage';
+import { DirectorySubmissionsPage } from './pages/DirectorySubmissionsPage';
+import { NotificationsPanel } from '../components/NotificationsPanel';
 import { EvidencePage } from './pages/EvidencePage';
 import { SystemPage } from './pages/SystemPage';
 import { AuditPage } from './pages/AuditPage';
@@ -27,9 +29,11 @@ const NAV_ITEMS = [
   { to: '/admin/access', label: 'Access' },
   { to: '/admin/people', label: 'People' },
   { to: '/admin/residences', label: 'Residences', shortLabel: 'Homes' },
+  { to: '/admin/directory/submissions', label: 'Directory', shortLabel: 'Dir' },
   { to: '/admin/evidence', label: 'Evidence' },
   { to: '/admin/system', label: 'System' },
   { to: '/admin/audit', label: 'Audit' },
+  { to: '/admin/notifications', label: 'Notifications', shortLabel: 'Alerts' },
 ];
 
 export function AdminArea() {
@@ -51,9 +55,11 @@ export function AdminArea() {
             <Route path="access" element={<AccessPage />} />
             <Route path="people" element={<PeoplePage />} />
             <Route path="residences" element={<ResidencesPage />} />
+            <Route path="directory/submissions" element={<DirectorySubmissionsPage />} />
             <Route path="evidence" element={<EvidencePage />} />
             <Route path="system" element={<SystemPage />} />
             <Route path="audit" element={<AuditPage />} />
+            <Route path="notifications" element={<NotificationsPanel fallbackPath="/admin" />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </div>

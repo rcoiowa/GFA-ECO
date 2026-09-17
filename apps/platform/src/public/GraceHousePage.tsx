@@ -78,8 +78,8 @@ export function GraceHousePage() {
           </h2>
           <p className="mt-2 max-w-2xl text-ink">
             The Grace House site walks you through every document and house rule, then the
-            application itself. Submitting creates your resident account, and staff respond within 2
-            business days — with a bed or a place on the waitlist. Exploring is not a commitment.
+            application itself. Submitting creates your resident account, and staff respond to every
+            application — with a bed or a place on the waitlist. Exploring is not a commitment.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
@@ -125,7 +125,10 @@ export function GraceHousePage() {
               {GFA_CONTACTS.warmline.display}
             </a>{' '}
             — no application or account needed.{' '}
-            <Link to="/support" className="font-medium text-experience-700 underline underline-offset-2">
+            <Link
+              to="/support"
+              className="font-medium text-experience-700 underline underline-offset-2"
+            >
               See every support option
             </Link>
             .

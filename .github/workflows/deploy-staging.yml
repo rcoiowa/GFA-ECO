@@ -1,58 +1,73 @@
-# Deploys the RecoveryOS platform to the NON-PRODUCTION `recoveryos-staging`
-# Worker (config: wrangler.staging.jsonc — never the production-candidate
-# Worker and never vrcc.app). Publishable Supabase configuration comes from
-# repository/environment variables with the canonical RecoveryOS-Launch
-# values as fallback, so staging can never silently drift back to a retired
-# project. Requires CLOUDFLARE_API_TOKEN ("Edit Cloudflare Workers"
-# template) as a repository secret/variable or on the "production"
-# environment.
+# Manual-only deployment of the active staging pilot. Branch pushes must never deploy.
 name: Deploy staging
 
 on:
-  push:
-    branches:
-      - claude/grace-coaching-audit-b0fyhq
-      - main
   workflow_dispatch:
+    inputs:
+      release_ref:
+        description: Exact commit SHA or reviewed release ref to deploy
+        required: true
+        type: string
+      confirmation:
+        description: Type DEPLOY_STAGING
+        required: true
+        type: string
+
+concurrency:
+  group: recoveryos-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   deploy:
+    if: ${{ inputs.confirmation == 'DEPLOY_STAGING' }}
     runs-on: ubuntu-latest
-    environment: production
+    environment: staging
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_API_TOKEN || vars.CLOUDFLARE_API_TOKEN }}
     steps:
-      - name: Check token is present
+      - name: Require Cloudflare deployment token
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "::error::CLOUDFLARE_API_TOKEN is empty. Add it on github.com/rcoiowa/GFA-ECO under Settings -> Secrets and variables -> Actions."
+            echo "::error::CLOUDFLARE_API_TOKEN is required."
             exit 1
           fi
-
       - uses: actions/checkout@v4
-
+        with:
+          ref: ${{ inputs.release_ref }}
+      - name: Resolve immutable release SHA
+        run: echo "RELEASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Require successful CI for the exact release commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          successes=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=$RELEASE_SHA&status=success" --jq '.total_count')
+          if [ "${successes:-0}" -eq 0 ]; then
+            echo "::error::No successful CI run exists for commit $RELEASE_SHA. Deploy only CI-green commits."
+            exit 1
+          fi
       - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-
       - run: pnpm install --frozen-lockfile
-
-      - name: Build platform (RecoveryOS-Launch publishable config)
+      - name: Build platform (canonical RecoveryOS-Launch backend)
         run: pnpm build
         env:
-          # Publishable values (RLS is the data boundary). Overridable via
-          # repository variables; fallback is the canonical launch project —
-          # NEVER the retired ykykeioydvtxpyreshhs project.
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_URL || 'https://cqcxvwoukyhxyokfwnjm.supabase.co' }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY != '' && vars.VITE_SUPABASE_ANON_KEY || 'sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x' }}
-          VITE_RELEASE: ${{ github.sha }}
-
-      - name: Deploy to Cloudflare (recoveryos-staging)
-        run: npx wrangler@4 deploy --config wrangler.staging.jsonc
-
-      - name: Record deployment
+          VITE_SUPABASE_URL: https://cqcxvwoukyhxyokfwnjm.supabase.co
+          VITE_SUPABASE_ANON_KEY: sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x
+          VITE_RELEASE: ${{ env.RELEASE_SHA }}
+      - name: Enforce canonical backend in staging assets
         run: |
-          echo "Deployed commit ${{ github.sha }} to recoveryos-staging at $(date -u +%FT%TZ)" >> "$GITHUB_STEP_SUMMARY"
+          RETIRED_REF='ykykeioydvtxpyreshhs'
+          CANONICAL_REF='cqcxvwoukyhxyokfwnjm'
+          if grep -R -n --fixed-strings "$RETIRED_REF" apps/platform/dist; then exit 1; fi
+          grep -R -q --fixed-strings "$CANONICAL_REF" apps/platform/dist
+      - name: Deploy recoveryos-staging
+        run: pnpm dlx wrangler@4.14.0 deploy --config wrangler.staging.jsonc
+      - name: Record deployment
+        run: echo "Deployed immutable commit $RELEASE_SHA to recoveryos-staging at $(date -u +%FT%TZ)" >> "$GITHUB_STEP_SUMMARY"

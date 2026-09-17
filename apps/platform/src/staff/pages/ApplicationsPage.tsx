@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router';
+
 import { useAuth } from '@recoveryos/auth';
 import {
   decideApplication,
   listApplications,
   listReferrals,
+  listResidenceRoster,
   updateReferralStatus,
   type ApplicationWithPerson,
   type Referral,
@@ -19,6 +20,7 @@ import {
   PageHeader,
 } from '@recoveryos/ui';
 import { useStaff } from '../staffContext';
+import { IntakeChecklist } from '../components/IntakeChecklist';
 import { track } from '../../lib/analytics';
 
 const STATUS_LABELS: Record<ApplicationWithPerson['status'], string> = {
@@ -31,8 +33,9 @@ const STATUS_LABELS: Record<ApplicationWithPerson['status'], string> = {
 };
 
 /**
- * Applications & waitlist. Approving opens the residency record; the
- * waitlist promise (contact at least every two weeks) lives here.
+ * Applications & waitlist. B5A: approval unlocks the intake checklist;
+ * move-in (the residency) is its own deliberate action from the checklist.
+ * The waitlist promise (contact at least every two weeks) lives here.
  */
 export function ApplicationsPage() {
   const { person } = useAuth();
@@ -41,19 +44,23 @@ export function ApplicationsPage() {
   const [error, setError] = useState(false);
   const [applications, setApplications] = useState<ApplicationWithPerson[]>([]);
   const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [residentIds, setResidentIds] = useState<Set<number>>(new Set());
   const [justApproved, setJustApproved] = useState<string | null>(null);
+  const [checklistFor, setChecklistFor] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     if (!residence) return;
     setLoading(true);
     setError(false);
     try {
-      const [apps, refs] = await Promise.all([
+      const [apps, refs, roster] = await Promise.all([
         listApplications(residence.id),
         listReferrals(residence.id),
+        listResidenceRoster(residence.id),
       ]);
       setApplications(apps);
       setReferrals(refs);
+      setResidentIds(new Set(roster.map((r) => r.person_id)));
     } catch {
       setError(true);
     } finally {
@@ -100,15 +107,21 @@ export function ApplicationsPage() {
   const open = applications.filter((a) =>
     ['submitted', 'in_review', 'waitlisted'].includes(a.status),
   );
+  // Approved but not yet living here: intake in progress — the checklist drives move-in.
+  const inIntake = applications.filter(
+    (a) => a.status === 'approved' && !residentIds.has(a.person_id),
+  );
   const closed = applications.filter(
-    (a) => !['submitted', 'in_review', 'waitlisted'].includes(a.status),
+    (a) =>
+      !['submitted', 'in_review', 'waitlisted'].includes(a.status) &&
+      !(a.status === 'approved' && !residentIds.has(a.person_id)),
   );
 
   return (
     <>
       <PageHeader
         title="Applications"
-        lede="Every applicant gets a real answer within 2 business days — and waitlisted applicants hear from us at least every two weeks."
+        lede="Every applicant gets a real answer, and waitlisted applicants stay in regular contact with staff — this queue tracks that follow-through."
         crumbs={[{ to: '/staff/today', label: 'Today' }]}
       />
       {loading ? (
@@ -119,11 +132,8 @@ export function ApplicationsPage() {
         <div className="flex flex-col gap-5">
           {justApproved ? (
             <Alert tone="positive">
-              {justApproved} is approved and their residency is open. Next step:{' '}
-              <Link to="/staff/beds" className="font-medium underline underline-offset-2">
-                place them in a bed on the Bed board
-              </Link>{' '}
-              — or they hold their spot at the top of the waitlist until one opens.
+              {justApproved} is approved — their intake checklist is now open below. Move-in is its
+              own step, once the checklist is ready.
             </Alert>
           ) : null}
           <Card>
@@ -188,6 +198,34 @@ export function ApplicationsPage() {
             )}
           </Card>
 
+          {inIntake.length > 0 ? (
+            <Card>
+              <CardTitle>In intake — approved, working the checklist ({inIntake.length})</CardTitle>
+              <ul className="flex flex-col gap-3">
+                {inIntake.map((a) => (
+                  <li key={a.id} className="rounded-md border border-line bg-surface-raised p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-medium text-ink">
+                        {a.person.preferred_name || a.person.first_name} {a.person.last_name}
+                      </p>
+                      <p className="text-sm text-ink-muted">
+                        Approved
+                        {a.decided_at ? ` ${new Date(a.decided_at).toLocaleDateString()}` : ''}
+                      </p>
+                    </div>
+                    <IntakeChecklist
+                      applicationId={a.id}
+                      personId={a.person_id}
+                      personName={a.person.preferred_name || a.person.first_name}
+                      applicationStatus={a.status}
+                      onAdmitted={() => void load()}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
+
           <Card>
             <CardTitle>Open ({open.length})</CardTitle>
             {open.length === 0 ? (
@@ -222,6 +260,22 @@ export function ApplicationsPage() {
                       </div>
                     </div>
                     {a.notes ? <p className="mt-2 text-sm text-ink">{a.notes}</p> : null}
+                    <button
+                      type="button"
+                      className="mt-2 text-sm text-experience-700 underline underline-offset-2"
+                      onClick={() => setChecklistFor(checklistFor === a.id ? null : a.id)}
+                    >
+                      {checklistFor === a.id ? 'Hide intake checklist' : 'Intake checklist'}
+                    </button>
+                    {checklistFor === a.id ? (
+                      <IntakeChecklist
+                        applicationId={a.id}
+                        personId={a.person_id}
+                        personName={a.person.preferred_name || a.person.first_name}
+                        applicationStatus={a.status}
+                        onAdmitted={() => void load()}
+                      />
+                    ) : null}
                     {a.answers && Object.keys(a.answers).length > 0 ? (
                       <details className="mt-2 text-sm">
                         <summary className="cursor-pointer font-medium text-experience-700">

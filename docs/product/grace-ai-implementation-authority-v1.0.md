@@ -1,3 +1,5 @@
+> **Superseded naming:** This ratified V1.0 record is preserved for governance history. Effective 2026-09-13, its role and product-label terminology is superseded by `grace-ai-support-navigator-implementation-authority-v1.1.md`. No behavior, consent, privacy, safety, permission, data-handling, or deployment boundary changed.
+
 # Grace AI Peer Companion — Implementation Authority V1.0 — Ratified Canonical Edition
 
 - **Organization:** Grace For Addictions

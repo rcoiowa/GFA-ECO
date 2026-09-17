@@ -25,15 +25,44 @@ begin
   end if;
 
   -- 2) authenticated holds SELECT/INSERT/UPDATE on every canonical table
-  --    (RLS policies — not privileges — are the row gate).
+  --    (RLS policies — not privileges — are the row gate). Named exceptions:
+  --    the two 0122 intake tables DELIBERATELY revoke client INSERT/UPDATE/DELETE
+  --    (service-role-only writes; audited review RPCs are the only lifecycle path),
+  --    so they are excluded here — their stricter posture is asserted by
+  --    scripts/verify-intake-boundary.mjs and the anon check below.
+  --    The 0129/0131 domain-vocabulary tables are read-only reference data by design
+  --    (SELECT yes; INSERT/UPDATE/DELETE revoked — vocabulary changes are migrations,
+  --    never client writes; scripts/verify-domain-vocabulary.mjs guards the content).
+  --    The 0141 medication/supervision tables are read-via-RLS, write-via-audited-RPC
+  --    only (Gate B4 minimization; scripts/verify-intake-minimization.mjs guards them).
   select string_agg(tablename, ', ' order by tablename) into missing
   from pg_tables
   where schemaname = 'recoveryos'
+    and tablename not in ('residence_listing_submissions','residence_application_intake',
+                          'domains','domain_subcategories','domain_external_mappings',
+                          'resource_domains',
+                          'residency_medication_items','supervision_coordination_records',
+                          'medication_status_reviews',
+                          -- 0147 (prepared): append-only contact log, RPC-only writes.
+                          'lead_contact_events')
     and not (has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'SELECT')
          and has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'INSERT')
          and has_table_privilege('authenticated', format('recoveryos.%I', tablename), 'UPDATE'));
   if missing is not null then
     raise exception 'LAUNCH-CONTRACT FAIL: authenticated missing table privileges on: %', missing;
+  end if;
+
+  -- 2b) The Gate B4 RPC-only tables keep RLS-gated SELECT and must never regain
+  --     client writes (their write path is the audited RPCs from 0141).
+  if not (has_table_privilege('authenticated', 'recoveryos.residency_medication_items', 'SELECT')
+      and has_table_privilege('authenticated', 'recoveryos.supervision_coordination_records', 'SELECT')
+      and has_table_privilege('authenticated', 'recoveryos.medication_status_reviews', 'SELECT')) then
+    raise exception 'LAUNCH-CONTRACT FAIL: Gate B4/0143 RPC-only tables lost RLS-gated SELECT';
+  end if;
+  if has_table_privilege('authenticated', 'recoveryos.residency_medication_items', 'INSERT')
+     or has_table_privilege('authenticated', 'recoveryos.supervision_coordination_records', 'INSERT')
+     or has_table_privilege('authenticated', 'recoveryos.medication_status_reviews', 'INSERT') then
+    raise exception 'LAUNCH-CONTRACT FAIL: Gate B4/0143 RPC-only tables regained client INSERT';
   end if;
 
   -- 3) anon privileges limited to the explicitly public surface (referral intake).
@@ -144,10 +173,59 @@ begin
       'ensure_relationship_conversation','get_my_navigation_participants','get_my_participants',
       'get_my_support_team','list_open_support_requests','mark_conversation_read',
       'propose_booking_times','release_bed','reschedule_booking','review_residence_application',
-      'send_message','triage_residence_referral','complete_session')
+      'send_message','triage_residence_referral','complete_session',
+      'review_residence_listing_submission','publish_residence_listing_submission',
+      'review_residence_application_intake',
+      'record_navigation_service_event','record_residence_support_service_event',
+      'record_my_activity','residence_service_lenses',
+      -- Gate B1–B4 (0139–0142): document evidence, consent, conditional data, readiness.
+      'acknowledge_document','record_consent_grant','revoke_consent_grant',
+      'record_consent_disclosure','record_emergency_contact','record_medication_item',
+      'end_medication_item','record_supervision_coordination',
+      'convert_application_intake','application_intake_readiness',
+      'confirm_no_current_medications','find_person_for_intake_conversion',
+      'record_paper_signature',
+      -- 0147 shared intake workflow (prepared; names are no-ops until applied)
+      'assign_lead','record_lead_contact','set_lead_status','route_lead',
+      'find_duplicate_leads','list_intake_assignees')
     and not has_function_privilege('authenticated', p.oid, 'EXECUTE');
   if missing is not null then
     raise exception 'LAUNCH-CONTRACT FAIL: authenticated cannot execute client RPC(s): %', missing;
+  end if;
+
+  -- 9) View privilege posture (P0-1, 2026-08-21). A plain view executes with its
+  --    OWNER's privileges and bypasses RLS; 0110's blanket grant (and its default-
+  --    privileges rule) captures views too. Every recoveryos view reachable by a
+  --    client role must therefore be security_invoker — except explicitly
+  --    allowlisted curated surfaces (residence_directory_public: anon directory
+  --    projection, column-curated in 0122).
+  select string_agg(v.viewname, ', ' order by v.viewname) into missing
+  from pg_views v
+  where v.schemaname = 'recoveryos'
+    and v.viewname <> 'residence_directory_public'
+    and (has_table_privilege('anon', format('recoveryos.%I', v.viewname), 'SELECT')
+      or has_table_privilege('authenticated', format('recoveryos.%I', v.viewname), 'SELECT'))
+    and not exists (
+      select 1 from pg_class c
+      join pg_namespace ns on ns.oid = c.relnamespace
+      where ns.nspname = 'recoveryos' and c.relname = v.viewname
+        and c.reloptions @> array['security_invoker=true']);
+  if missing is not null then
+    raise exception 'LAUNCH-CONTRACT FAIL: owner-privileged view readable by client roles: %', missing;
+  end if;
+
+  -- 10) Internal-writer least privilege (P2.3, 0134). The canonical event writer
+  --     record_service_event_internal owns validation and is reachable ONLY through the
+  --     approved role-specific wrappers — a client-executable internal writer would bypass
+  --     every wrapper authorization check. Negative assertion: no client role may execute it.
+  select string_agg(distinct p.proname, ', ') into missing
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'recoveryos'
+    and p.proname in ('record_service_event_internal','resolve_sole_organization')
+    and (has_function_privilege('anon', p.oid, 'EXECUTE')
+      or has_function_privilege('authenticated', p.oid, 'EXECUTE'));
+  if missing is not null then
+    raise exception 'LAUNCH-CONTRACT FAIL: internal writer executable by client roles: %', missing;
   end if;
 end $contract$;
 

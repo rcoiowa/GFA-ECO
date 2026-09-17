@@ -1,3 +1,5 @@
+> **Historical terminology notice (2026-09-13):** "Companion"-based Grace labels and identifiers below are preserved as dated evidence. The current canonical identity is **Grace — AI Support Navigator** (`docs/decisions/2026-09-13-grace-ai-support-navigator-naming.md`).
+
 # Source Build Route Registry
 
 Routes/pages inventoried from cloned source (`source-builds/`), 2026-07-29.

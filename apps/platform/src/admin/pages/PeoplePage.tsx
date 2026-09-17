@@ -1,6 +1,12 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { grantRoleAssignment, revokeRoleAssignment, type AdminPersonRow } from '@recoveryos/data-access';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  assignParticipantCoach,
+  grantRoleAssignment,
+  listActiveCoaches,
+  revokeRoleAssignment,
+  type AdminPersonRow,
+} from '@recoveryos/data-access';
 import { Alert, Button, Card, CardTitle, ErrorState, LoadingState, PageHeader, TextField } from '@recoveryos/ui';
 import { roleAuthorityLabel } from '@recoveryos/domain';
 import { useAdminPeople, useAdminResidences } from '../hooks/useAdminData';
@@ -67,6 +73,28 @@ export function PeoplePage() {
     },
   });
 
+  // P0.5-B: assign/transfer the coaching relationship. Transfer preserves
+  // continuity without rewriting history: the prior relationship flips to
+  // 'transferred' with reason + effective date, the successor starts as a new
+  // relationship, and the departing coach's OPEN follow-ups move with it (0127).
+  const coaches = useQuery({ queryKey: ['admin', 'active-coaches'], queryFn: listActiveCoaches });
+  const assignCoach = useMutation({
+    mutationFn: (input: { personId: number; coachPersonId: number; reason?: string }) =>
+      assignParticipantCoach({
+        participantPersonId: input.personId,
+        coachPersonId: input.coachPersonId,
+        reason: input.reason,
+      }),
+    onSuccess: (result) => {
+      if (result.ok) {
+        setFeedback(null);
+        invalidate();
+      } else {
+        setFeedback(result.message ?? 'The coach was not assigned.');
+      }
+    },
+  });
+
   const revoke = useMutation({
     mutationFn: (assignmentId: number) => revokeRoleAssignment(assignmentId),
     onSuccess: (result) => {
@@ -114,7 +142,11 @@ export function PeoplePage() {
               grant.mutate({ personId: person.person_id, role, residenceId })
             }
             onRevoke={(assignmentId) => revoke.mutate(assignmentId)}
-            busy={grant.isPending || revoke.isPending}
+            coaches={coaches.data ?? []}
+            onAssignCoach={(coachPersonId, reason) =>
+              assignCoach.mutate({ personId: person.person_id, coachPersonId, reason })
+            }
+            busy={grant.isPending || revoke.isPending || assignCoach.isPending}
           />
         ))}
         {rows.length === 0 ? <p className="text-ink-muted">No one matches that name.</p> : null}
@@ -133,18 +165,25 @@ function PersonCard({
   residences,
   onGrant,
   onRevoke,
+  coaches,
+  onAssignCoach,
   busy,
 }: {
   person: AdminPersonRow;
   residences: Array<{ id: number; name: string }>;
   onGrant: (role: string, residenceId: number | null) => void;
   onRevoke: (assignmentId: number) => void;
+  coaches: Array<{ coach_person_id: number; coach_name: string }>;
+  onAssignCoach: (coachPersonId: number, reason?: string) => void;
   busy: boolean;
 }) {
   const [granting, setGranting] = useState(false);
   const [role, setRole] = useState<string>('coach');
   const [residenceId, setResidenceId] = useState<string>('');
   const [revokeConfirm, setRevokeConfirm] = useState<number | null>(null);
+  const [assigningCoach, setAssigningCoach] = useState(false);
+  const [coachId, setCoachId] = useState('');
+  const [transferReason, setTransferReason] = useState('');
 
   const residenceNameOf = (id: number | null) =>
     id == null ? null : (residences.find((r) => r.id === id)?.name ?? `Residence ${id}`);
@@ -271,6 +310,60 @@ function PersonCard({
       ) : (
         <Button variant="ghost" className="mt-2" onClick={() => setGranting(true)}>
           Grant a role
+        </Button>
+      )}
+
+      {assigningCoach ? (
+        <div className="mt-3 flex flex-wrap items-end gap-2 border-t border-line pt-3">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor={`assign-coach-${person.person_id}`} className="text-sm font-medium text-ink">
+              Coach
+            </label>
+            <select
+              id={`assign-coach-${person.person_id}`}
+              className="min-h-11 rounded-md border border-line bg-surface-raised px-3 text-base text-ink"
+              value={coachId}
+              onChange={(e) => setCoachId(e.target.value)}
+            >
+              <option value="">Choose…</option>
+              {coaches.map((c) => (
+                <option key={c.coach_person_id} value={String(c.coach_person_id)}>
+                  {c.coach_name}
+                </option>
+              ))}
+            </select>
+          </div>
+          {person.has_active_coaching ? (
+            <TextField
+              label="Transfer reason (kept with the record)"
+              value={transferReason}
+              onChange={(e) => setTransferReason(e.target.value)}
+            />
+          ) : null}
+          <Button
+            disabled={busy || !coachId}
+            onClick={() => {
+              onAssignCoach(Number(coachId), transferReason.trim() || undefined);
+              setAssigningCoach(false);
+              setCoachId('');
+              setTransferReason('');
+            }}
+          >
+            {person.has_active_coaching ? 'Transfer coaching' : 'Assign coach'}
+          </Button>
+          <Button variant="secondary" onClick={() => setAssigningCoach(false)}>
+            Cancel
+          </Button>
+          {person.has_active_coaching ? (
+            <p className="w-full text-sm text-ink-faint">
+              The current relationship is preserved as history (marked transferred, with your
+              reason); open follow-ups move to the new coach so nothing is dropped.
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <Button variant="ghost" className="mt-2" onClick={() => setAssigningCoach(true)}>
+          {person.has_active_coaching ? 'Transfer coaching…' : 'Assign a coach…'}
         </Button>
       )}
     </Card>

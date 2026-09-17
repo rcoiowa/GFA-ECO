@@ -57,7 +57,39 @@ supplied by GFA:
    Pages projects. The consolidation end-state is unchanged: one canonical
    platform (this repo) serving `vrcc.app`, everything else ARCHIVED.
 
-## Legacy status plan
+## 2026-08-31 CLASSIFICATION: `recoveryos-staging` is ACTIVE PILOT, not disposable staging
+
+Executive notice 2026-08-31: real residents and coaches were given
+`recoveryos-staging.thomas-499.workers.dev` and created accounts/onboarding activity there.
+Verified: all of it lives in canonical CQCX (66 auth users = 66 people, roles, consents,
+activity; backend identical to the production candidate). Treat the Worker as an **active
+pilot surface**: never redeploy it with a non-CQCX backend, never tear it down while pilot
+users depend on it. Full evidence and the URL-transition plan:
+`docs/operations/staging-pilot-reconciliation-2026-08-31.md`.
+
+## 2026-08-31 deployment (executive order: deploy updates to Cloudflare)
+
+Commit `ec36922` (Gate B intake experience + 0146 EJWRH document-edition activation)
+deployed to both canonical Workers via the repo's own workflows, on the executive
+deployment order of 2026-08-31:
+
+- **`recoveryos-staging`** — `deploy-staging.yml` run 71 (workflow_dispatch on the
+  working branch), success; Worker modified 2026-08-31T00:28Z.
+- **`gfa-eco-recovery-residence-os`** (production candidate) — first real deploy,
+  replacing the 2026-08-07 build: `deploy-production-candidate.yml` run 1, triggered by
+  trigger branch `deploy-candidate/ejwrh-activation-ec36922`; typecheck + full test suite +
+  build + canonical-backend bundle guard all passed in-workflow; success; Worker modified
+  2026-08-31T00:31Z. Both Workers verified updated via the Cloudflare account API.
+
+**Deliberately NOT performed** (each is its own gated action, not an "update"):
+
+1. **vrcc.app DNS/domain cutover** to the candidate Worker (Phase 9) — the deploy
+   workflow states it never performs cutover; the domain still serves the legacy
+   `virtualrecovery` Worker.
+2. **EJWRH public route** `recoveryresidence.org/ejwrh*` (prepared Worker in
+   `sites/ejwrh/`) — its activation checklist (Turnstile on `residence-intake`, route/zone
+   binding, production-URL synthetic E2E) remains open; the application portal continues to
+   serve from the Supabase functions URL.
 
 | Deployment                             | Now                                      | After cutover                                               |
 | -------------------------------------- | ---------------------------------------- | ----------------------------------------------------------- |
@@ -67,3 +99,5 @@ supplied by GFA:
 | Pages `gfa-vrcc`                       | ARCHIVED (stale duplicate of vrcc.app)   | retire after confirming no bookmarks                        |
 | Pages `gracehouse4`                    | SOURCE                                   | ARCHIVED                                                    |
 | Pages `gfaconnection`                  | SOURCE                                   | ARCHIVED (experiential concepts mined)                      |
+
+> **2026-08-31: superseded for current state by `docs/operations/recoveryos-canonical-state-2026-08-31.md`** — the authoritative estate reconciliation (kept here as history).

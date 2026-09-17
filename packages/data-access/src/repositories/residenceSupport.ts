@@ -31,11 +31,14 @@ export function recordResidenceSupportServiceEvent(input: {
   modality?: string;
   startedAt?: string;
   durationMinutes?: number;
+  /** One human action → one key; the caller holds it across retries of that action. */
+  dedupeKey?: string;
 }): Promise<RpcEnvelope> {
   return rpc('record_residence_support_service_event', {
     p_person_id: input.personId,
     p_modality: input.modality ?? 'in_person',
     p_started_at: input.startedAt ?? new Date().toISOString(),
     p_duration_minutes: input.durationMinutes ?? null,
+    p_dedupe_key: input.dedupeKey ?? null,
   });
 }

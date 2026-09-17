@@ -11,5 +11,7 @@ export * from './coach';
 export * from './messaging';
 export * from './scheduling';
 export * from './navigation';
+export * from './domains';
+export * from './serviceProvenance';
 export * from './residence';
 export * from './admin';

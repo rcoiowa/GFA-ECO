@@ -265,9 +265,10 @@ export function safeLinkPath(linkPath: string | null | undefined, fallback = '/v
   if (!linkPath) return fallback;
   if (!linkPath.startsWith('/') || linkPath.startsWith('//')) return fallback;
   if (linkPath.includes(':')) return fallback;
-  // Legacy-era stored paths map onto canonical routes.
-  if (linkPath === '/sessions') return '/vrcc/connect';
-  if (linkPath === '/coach/sessions') return '/coach';
+  // Previously stored paths map onto canonical routes (P0.5-B: 0127 fixed the
+  // emitters at source; these remaps keep old notification rows working).
+  if (linkPath === '/sessions') return '/vrcc/sessions';
   if (linkPath === '/coach') return '/vrcc/connect';
+  if (linkPath === '/admin/leads') return '/admin/operations';
   return linkPath;
 }

@@ -7,6 +7,8 @@ import {
   getMyActiveResidency,
   listMyChoreAssignments,
   listMyDocumentAssignments,
+  listMyPasses,
+  listUpcomingMeetings,
   type ChoreAssignmentWithChore,
 } from '@recoveryos/data-access';
 import {
@@ -48,20 +50,37 @@ export function ResidentTodayPage() {
       setResidency(res);
       if (res) {
         const today = new Date().toISOString().slice(0, 10);
-        const [choreRows, curfewRows, phaseOverride, documentRows] = await Promise.all([
-          listMyChoreAssignments(res.id, today, today),
-          getCurfewSchedule(res.residence_id),
-          getLatestPhaseOverride(res.id),
-          listMyDocumentAssignments(person.id),
-        ]);
+        const [choreRows, curfewRows, phaseOverride, documentRows, passRows, meetingRows] =
+          await Promise.all([
+            listMyChoreAssignments(res.id, today, today),
+            getCurfewSchedule(res.residence_id),
+            getLatestPhaseOverride(res.id),
+            listMyDocumentAssignments(person.id),
+            listMyPasses(res.id),
+            listUpcomingMeetings(),
+          ]);
         setTodaysChores(choreRows);
         setTonightsCurfew(curfewRows.find((c) => c.day_of_week === new Date().getDay()) ?? null);
+        // P0.5-A: real signals instead of hardcoded false. "There's a response
+        // to your pass request" = a decided pass that is still ahead of you;
+        // "House meeting today" = an upcoming meeting on today's local date at
+        // this residence (or organization-wide).
+        const now = Date.now();
+        const passDecided = passRows.some(
+          (p) => ['approved', 'denied'].includes(p.status) && new Date(p.ends_at).getTime() >= now,
+        );
+        const todayLocal = new Date().toDateString();
+        const meetingToday = meetingRows.some(
+          (m) =>
+            (m.residence_id === null || m.residence_id === res.residence_id) &&
+            new Date(m.starts_at).toDateString() === todayLocal,
+        );
         setAttention(
           deriveResidentAttention({
             documentsAwaiting: documentRows.filter((d) => !d.acknowledged_at).length,
-            passDecided: false,
+            passDecided,
             choresDueToday: choreRows.filter((c) => !c.completed_at).length,
-            meetingToday: false,
+            meetingToday,
           }),
         );
         if (res.admission_date) {

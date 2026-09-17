@@ -9,6 +9,7 @@ import {
   type MyApplication,
 } from '@recoveryos/data-access';
 import { Alert, Button, Card, CardTitle, TextAreaField, TextField } from '@recoveryos/ui';
+import { TURNSTILE_SITE_KEY, TurnstileWidget } from './TurnstileWidget';
 
 const RESIDENCE_NAME = 'Grace House';
 const APPLY_PATH = '/recovery-residences/grace-house/apply';
@@ -28,6 +29,7 @@ export function ResidenceApplyPage() {
   const [busy, setBusy] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   useEffect(() => {
     if (!person) {
@@ -64,6 +66,10 @@ export function ResidenceApplyPage() {
     }
     if (!form.get('agreeDocuments') || !form.get('attestTruthful')) {
       setFormError('Please confirm the two agreements at the bottom of the application.');
+      return;
+    }
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setFormError('Please complete the security check above the submit button.');
       return;
     }
     setBusy(true);
@@ -162,10 +168,10 @@ export function ResidenceApplyPage() {
           <Card>
             <CardTitle>Your application is in — welcome.</CardTitle>
             <p className="mt-2 text-ink">
-              Grace House staff have your application and will contact you within{' '}
-              <strong>2 business days</strong>. When there&rsquo;s an opening you&rsquo;ll be
-              offered a bed; if the house is full you&rsquo;ll be added to the waitlist and hear
-              from us at least every two weeks.
+              Grace House staff have your application, and a real person reads every one. Staff will
+              contact you using the information you provided. When there&rsquo;s an opening
+              you&rsquo;ll be offered a bed; if the house is full you&rsquo;ll be added to the
+              waitlist and staff will stay in touch with you while you wait.
             </p>
             <p className="mt-3 text-ink">
               While you wait, the VRCC — our free virtual recovery community center — is already
@@ -338,6 +344,8 @@ export function ResidenceApplyPage() {
                     />
                     <span>Everything in this application is true to the best of my knowledge.</span>
                   </label>
+
+                  <TurnstileWidget action="residence_application" onToken={setTurnstileToken} />
 
                   <Button type="submit" size="lg" disabled={busy}>
                     {busy ? 'Submitting your application…' : 'Submit my application'}

@@ -1,9 +1,9 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Navigate } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import { listMissingRequiredConsents } from '@recoveryos/data-access';
 import { participantOnboardingApplies } from '@recoveryos/domain';
-import { LoadingState } from '@recoveryos/ui';
+import { ErrorState, LoadingState } from '@recoveryos/ui';
 
 /**
  * The participant-space onboarding boundary: a provisioned participant who
@@ -17,14 +17,21 @@ import { LoadingState } from '@recoveryos/ui';
  * (no loops: /onboarding itself forwards completed people to /home).
  *
  * This is a UX boundary, not enforcement — RLS and the server-side consent
- * gates remain the authority. On a read failure it fails open rather than
- * locking a person out of their space; and it never gates the safety path,
- * which is public at /support.
+ * gates remain the authority. On a read failure it FAILS SAFE (P0-2,
+ * 2026-08-21): "cannot verify" renders a retry state rather than silently
+ * granting or silently locking — consent status is never assumed. The safety
+ * path is never gated: /support stays public regardless of this boundary.
  */
 export function OnboardingConsentGate({ children }: { children: ReactNode }) {
   const { person, roles } = useAuth();
   const applicable = !!person && participantOnboardingApplies(roles);
-  const [state, setState] = useState<'checking' | 'complete' | 'incomplete'>('checking');
+  const [state, setState] = useState<'checking' | 'complete' | 'incomplete' | 'error'>('checking');
+  const [attempt, setAttempt] = useState(0);
+
+  const retry = useCallback(() => {
+    setState('checking');
+    setAttempt((n) => n + 1);
+  }, []);
 
   useEffect(() => {
     if (!applicable || !person) return;
@@ -34,17 +41,25 @@ export function OnboardingConsentGate({ children }: { children: ReactNode }) {
         const missing = await listMissingRequiredConsents(person.id);
         if (!cancelled) setState(missing.length ? 'incomplete' : 'complete');
       } catch {
-        // Fail open: a transient read failure must not lock someone out.
-        if (!cancelled) setState('complete');
+        // Fail safe: an unverifiable consent state is neither granted nor
+        // silently blocking — the person sees what happened and can retry.
+        if (!cancelled) setState('error');
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [applicable, person]);
+  }, [applicable, person, attempt]);
 
   if (!applicable) return <>{children}</>;
   if (state === 'checking') return <LoadingState label="Getting things ready…" />;
+  if (state === 'error')
+    return (
+      <ErrorState
+        message="We couldn’t confirm your consent choices just now. Nothing is wrong with your account — please try again."
+        onRetry={retry}
+      />
+    );
   if (state === 'incomplete') return <Navigate to="/onboarding" replace />;
   return <>{children}</>;
 }

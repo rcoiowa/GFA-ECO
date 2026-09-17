@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, 'claude/**']
+    branches: [main, 'claude/**', 'release/**']
   pull_request:
     branches: [main]
 
@@ -28,7 +28,47 @@ jobs:
         run: node scripts/verify-intake-boundary.mjs
       - name: Booking write-integrity invariants (0100/0124 — ownership + proposal safety)
         run: node scripts/verify-booking-integrity.mjs
+      - name: Grace model lock (static — live check stays in grace-lock.yml)
+        run: node scripts/grace-model-lock-verify.mjs
+      - name: Grace deterministic safety floor self-test (12 crisis + 14 controls)
+        run: node scripts/grace-floor-selftest.mjs
+      - name: Grace disclosure sync (server policy ↔ participant banner)
+        run: node scripts/check-grace-disclosure-sync.mjs
+      - name: View privilege guard (owner-privileged view / RLS-bypass class — 0125)
+        run: node scripts/verify-view-privileges.mjs
+      - name: Domain vocabulary guard (ratified canon — SQL ↔ TS ↔ live keys, 0129)
+        run: node scripts/verify-domain-vocabulary.mjs
+      - name: Service provenance guard (ratified canon — sources/authorities/whitelist, P2)
+        run: node scripts/verify-service-provenance.mjs
+      - name: Intake minimization guard (Gate B — evidence chain, MOUD never gates, narrow override)
+        run: node scripts/verify-intake-minimization.mjs
+      - name: P0 classification-isolation invariants (prepared 0147 — SEC-P0-001)
+        run: node scripts/verify-0147-prepared.mjs
+      - name: G3 exposure-hardening invariants (prepared 0148 — SEC-DB-001)
+        run: node scripts/verify-0148-prepared.mjs
+      - name: Revised shared-intake invariants (prepared 0149R — classification-aligned)
+        run: node scripts/verify-0149-prepared.mjs
+      - name: Consent-evidence invariants (prepared 0150 — R1 D3, no fabricated evidence)
+        run: node scripts/verify-0150-prepared.mjs
+      - name: Strict classification invariants (prepared 0151 — R1 D4b, fail closed)
+        run: node scripts/verify-0151-prepared.mjs
+      - name: Prepared-chain manifest lock (Gate A — exact rev-2 set, SHA-256 pinned)
+        run: node scripts/verify-prepared-chain.mjs
+      - name: Cloudflare execution and deployment boundaries
+        run: node scripts/verify-cloudflare-boundaries.mjs
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Edge Function compile checks (deno check)
+        run: |
+          deno check \
+            supabase/functions/lead-intake/index.ts \
+            supabase/functions/residence-intake/index.ts \
+            supabase/functions/ejwrh/index.ts
+      - name: Edge Function receiver tests (deno test)
+        run: deno test --allow-env supabase/functions/tests/
       - run: pnpm typecheck
+      - run: pnpm test
       - run: pnpm build
       - name: Enforce canonical RecoveryOS backend in production assets
         run: |

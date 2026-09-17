@@ -107,6 +107,28 @@ export function confirmMyConnection(referralId: number, response: string): Promi
   return rpc('confirm_my_connection', { p_referral_id: referralId, p_response: response });
 }
 
+/** P0.5-B: navigator/care-ops assigns a navigator (RPC `assign_participant_navigator`, 0112). */
+export function assignParticipantNavigator(input: {
+  participantPersonId: number;
+  navigatorPersonId: number;
+}): Promise<RpcEnvelope> {
+  return rpc('assign_participant_navigator', {
+    p_participant_person_id: input.participantPersonId,
+    p_navigator_person_id: input.navigatorPersonId,
+  });
+}
+
+/** P0.5-B: end a navigation relationship (RPC `end_navigation_relationship`, 0113). */
+export function endNavigationRelationship(input: {
+  relationshipId: number;
+  reason?: string;
+}): Promise<RpcEnvelope> {
+  return rpc('end_navigation_relationship', {
+    p_relationship_id: input.relationshipId,
+    p_reason: input.reason ?? null,
+  });
+}
+
 /** Navigator attests actual navigation support delivered (never inferred). */
 export function recordNavigationServiceEvent(input: {
   personId: number;
@@ -114,6 +136,8 @@ export function recordNavigationServiceEvent(input: {
   startedAt?: string;
   durationMinutes?: number;
   referralId?: number | null;
+  /** One human action → one key; the caller holds it across retries of that action. */
+  dedupeKey?: string;
 }): Promise<RpcEnvelope> {
   return rpc('record_navigation_service_event', {
     p_person_id: input.personId,
@@ -122,6 +146,7 @@ export function recordNavigationServiceEvent(input: {
     p_started_at: input.startedAt ?? new Date().toISOString(),
     p_duration_minutes: input.durationMinutes ?? null,
     p_referral_id: input.referralId ?? null,
+    p_dedupe_key: input.dedupeKey ?? null,
   });
 }
 

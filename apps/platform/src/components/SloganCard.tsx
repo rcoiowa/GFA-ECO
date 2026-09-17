@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { SLOGAN_ATTRIBUTION, type SloganMatch } from '@recoveryos/recovery-content';
+import {
+  SLOGAN_ATTRIBUTION,
+  icarePhaseWhy,
+  wellnessDisplayLabel,
+  type SloganMatch,
+} from '@recoveryos/recovery-content';
 import { Card, CardTitle } from '@recoveryos/ui';
 
 /**
@@ -44,19 +49,20 @@ export function SloganCard({
         ) : null}
       </div>
 
+      {/* P1.5 display-language pass: humanized wellness tag; the ICARE phase is method
+          context, so it lives inside "Why am I seeing this?" rather than on the tag line. */}
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
         <span className="text-sm text-ink-faint">
-          #{slogan.number} · {slogan.wellnessDomain} · {slogan.icarePhase}
+          #{slogan.number}
+          {slogan.wellnessDomain ? <> · {wellnessDisplayLabel(slogan.wellnessDomain)}</> : null}
         </span>
-        {reasons.length > 0 ? (
-          <button
-            type="button"
-            className="text-sm text-ink-faint underline underline-offset-2"
-            onClick={() => setShowWhy((v) => !v)}
-          >
-            Why am I seeing this?
-          </button>
-        ) : null}
+        <button
+          type="button"
+          className="text-sm text-ink-faint underline underline-offset-2"
+          onClick={() => setShowWhy((v) => !v)}
+        >
+          Why am I seeing this?
+        </button>
       </div>
 
       {showWhy ? (
@@ -66,6 +72,9 @@ export function SloganCard({
               {r}
             </li>
           ))}
+          {icarePhaseWhy(slogan.icarePhase) ? (
+            <li className="text-sm text-ink-muted">{icarePhaseWhy(slogan.icarePhase)}</li>
+          ) : null}
         </ul>
       ) : null}
 

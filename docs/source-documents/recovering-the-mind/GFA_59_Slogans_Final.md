@@ -12,7 +12,7 @@ This is the master source document for GFA's 59 Recovery Slogans. It serves simu
 
 Each entry carries:
 
-- **Condensed Commentary** — Grace Companion-ready (maps to `brief_commentary`)
+- **Condensed Commentary** — Grace-ready (maps to `brief_commentary`)
 - **Full Commentary** — Thomas's voice, for the book and coach training
 - **VIA Strengths** — 2–3 with rationale (maps to `slogan_personality_maps`, `framework_type_id = via`)
 - **ICARE Phase** — rebalanced across all five phases (maps to `icare_phase_id`)

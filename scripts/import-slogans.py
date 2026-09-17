@@ -9,7 +9,7 @@ ICARE phases are explicitly "rebalanced across all five phases" (12/12/12/12/11)
 rather than inherited from the book's narrative arc.
 
 Per slogan it carries: ICARE phase (+ id), wellness domain, condensed
-commentary (Grace Companion-ready), full commentary, VIA strengths with
+commentary (Grace-ready), full commentary, VIA strengths with
 rationale, and a practice. The trailing seed-reference table supplies the
 stable theme key.
 

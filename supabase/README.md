@@ -1,8 +1,15 @@
-# RecoveryOS Supabase
+# RecoveryOS Supabase (retired dev-project history)
 
-Live project: `ykykeioydvtxpyreshhs` ("Grace For Addictions", us-west-2, PG17).
+> **RETIRED / HISTORICAL (corrected 2026-08-21).** Everything below this banner describes the
+> **retired** dev project `ykykeioydvtxpyreshhs` and is preserved as migration provenance only.
+> The canonical live backend is **RecoveryOS-Launch `cqcxvwoukyhxyokfwnjm`** ("CQCX"); its
+> bootstrap line lives in `supabase/launch/migrations/` (see `supabase/launch/README.md`), with
+> out-of-band live changes reconciled in `supabase/live-drift/cqcx/`. Never apply the
+> `supabase/migrations/` files below to CQCX and never deploy anything to the retired project.
 
-**Status: DEPLOYED.** Migrations 0000–0013 are applied to the live project as the
+Historical record of the retired dev project (`ykykeioydvtxpyreshhs`, us-west-2, PG17):
+
+**Status at retirement: DEPLOYED (historical).** Migrations 0000–0013 were applied to that project as the
 **`recoveryos` schema** (0000–0012 on 2026-07-29; 0013 on 2026-07-30), alongside
 the untouched legacy schemas (`public`, `gfa_ui`, `gfa_core`, `gfa_community`,
 `gfa_residence`). The app client targets `recoveryos` via

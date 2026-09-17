@@ -11,8 +11,10 @@ import {
   TextField,
 } from '@recoveryos/ui';
 import {
+  DOMAINS,
   NEED_CATEGORIES,
   awaitingConnectionConfirmation,
+  domainForSubcategory,
   formatElapsed,
   needCategoryLabel,
   needStatusLabel,
@@ -32,6 +34,21 @@ import {
   useUpdateNeedStatus,
 } from '../hooks/useNavigatorWorkspace';
 import { navigatorKeys } from '../../lib/query';
+
+// Presentation-only grouping of the live need categories under the ratified domain canon
+// (P1.3). Canonical need_category values are untouched — only the picker gains structure.
+const NEED_CATEGORY_GROUPS = [
+  ...DOMAINS.map((d) => ({
+    key: d.key,
+    label: d.staffLabel,
+    categories: NEED_CATEGORIES.filter((c) => domainForSubcategory(c.key) === d.key),
+  })),
+  {
+    key: 'cross_cutting',
+    label: 'Cross-cutting',
+    categories: NEED_CATEGORIES.filter((c) => domainForSubcategory(c.key) === null),
+  },
+].filter((g) => g.categories.length > 0);
 
 /**
  * One person's navigation view (P4E): relationship overview, structured needs,
@@ -57,9 +74,27 @@ export function NavPersonPage() {
   const [referralType, setReferralType] = useState<'information' | 'referral' | 'warm_handoff'>('referral');
   const [destination, setDestination] = useState('');
   const [outcomeNotice, setOutcomeNotice] = useState<string | null>(null);
+  const [evidenceFor, setEvidenceFor] = useState<number | null>(null);
   const [followUpDate, setFollowUpDate] = useState('');
   const [serviceOpen, setServiceOpen] = useState(false);
   const [serviceMinutes, setServiceMinutes] = useState('30');
+  // One human action → one dedupe key (P2.4): minted when the attestation form opens,
+  // reused across retries of that submission, regenerated only by reopening the form.
+  const [serviceDedupeKey, setServiceDedupeKey] = useState('');
+  // P2.7: optional referral linkage ("this contact was about…") + one-tap follow-up after
+  // a recorded contact — continuity through the existing follow-up spine, never a text note.
+  const [serviceReferralId, setServiceReferralId] = useState('');
+  const [serviceRecorded, setServiceRecorded] = useState(false);
+  const toggleServiceOpen = () => {
+    setServiceOpen((v) => {
+      if (!v) {
+        setServiceDedupeKey(crypto.randomUUID());
+        setServiceReferralId('');
+        setServiceRecorded(false);
+      }
+      return !v;
+    });
+  };
 
   const entry = useMemo(
     () => roster.find((r) => r.participant_person_id === personId),
@@ -125,6 +160,8 @@ export function NavPersonPage() {
       );
     } else if (result === 'failed') {
       setOutcomeNotice('We couldn’t record that. Try again.');
+    } else {
+      setEvidenceFor(null);
     }
   }
 
@@ -159,7 +196,7 @@ export function NavPersonPage() {
           >
             Message {entry.display_name}
           </Link>
-          <Button variant="secondary" onClick={() => setServiceOpen((v) => !v)}>
+          <Button variant="secondary" onClick={toggleServiceOpen}>
             I provided navigation support
           </Button>
         </div>
@@ -169,20 +206,49 @@ export function NavPersonPage() {
               Record the support you just provided — this is the honest service record, separate
               from referrals and messages.
             </p>
-            <div className="mt-2 flex items-end gap-2">
+            <div className="mt-2 flex flex-wrap items-end gap-2">
               <TextField
                 label="About how many minutes?"
                 type="number"
                 value={serviceMinutes}
                 onChange={(e) => setServiceMinutes(e.target.value)}
               />
+              {personReferrals.length > 0 ? (
+                <div>
+                  <label htmlFor="service-referral" className="block text-sm text-ink-muted">
+                    This contact was about… (optional)
+                  </label>
+                  <select
+                    id="service-referral"
+                    value={serviceReferralId}
+                    onChange={(e) => setServiceReferralId(e.target.value)}
+                    className="mt-1 rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink"
+                  >
+                    <option value="">Not about a specific referral</option>
+                    {personReferrals.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.destination_name ?? 'A community resource'} ·{' '}
+                        {referralStatusLabel(r.status)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
               <Button
                 variant="secondary"
                 disabled={recordService.isPending}
                 onClick={() =>
                   void recordService
-                    .mutateAsync({ personId, durationMinutes: Number(serviceMinutes) || undefined })
-                    .then(() => setServiceOpen(false))
+                    .mutateAsync({
+                      personId,
+                      durationMinutes: Number(serviceMinutes) || undefined,
+                      referralId: serviceReferralId ? Number(serviceReferralId) : undefined,
+                      dedupeKey: serviceDedupeKey || undefined,
+                    })
+                    .then(() => {
+                      setServiceOpen(false);
+                      setServiceRecorded(true);
+                    })
                     .catch(() => undefined)
                 }
               >
@@ -192,6 +258,31 @@ export function NavPersonPage() {
             {recordService.isError ? (
               <Alert tone="critical">We couldn’t record that. Try again.</Alert>
             ) : null}
+          </div>
+        ) : null}
+        {serviceRecorded ? (
+          <div className="mt-3 flex flex-wrap items-center gap-3 rounded-md border border-line bg-surface p-3">
+            <span className="text-sm text-ink">
+              Recorded. What happens next? A follow-up keeps the loop alive.
+            </span>
+            <Button
+              variant="secondary"
+              size="md"
+              disabled={followUp.isPending}
+              onClick={() => {
+                const due = new Date();
+                due.setDate(due.getDate() + 7);
+                void followUp
+                  .mutateAsync(due.toISOString().slice(0, 10))
+                  .then(() => setServiceRecorded(false))
+                  .catch(() => undefined);
+              }}
+            >
+              {followUp.isPending ? 'Saving…' : 'Follow up in a week'}
+            </Button>
+            <Button variant="ghost" size="md" onClick={() => setServiceRecorded(false)}>
+              Not needed
+            </Button>
           </div>
         ) : null}
       </Card>
@@ -248,10 +339,14 @@ export function NavPersonPage() {
               className="mt-1 rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink"
             >
               <option value="">Choose…</option>
-              {NEED_CATEGORIES.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {c.label}
-                </option>
+              {NEED_CATEGORY_GROUPS.map((group) => (
+                <optgroup key={group.key} label={group.label}>
+                  {group.categories.map((c) => (
+                    <option key={c.key} value={c.key}>
+                      {c.label}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>
@@ -283,27 +378,80 @@ export function NavPersonPage() {
                   </span>
                 </div>
                 {awaitingConnectionConfirmation(referral.status) ? (
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  evidenceFor === referral.id ? (
+                    // P0.5-14: CONNECTION REQUIRES EVIDENCE — the navigator says
+                    // how they know before 'connected' can be recorded. Partner
+                    // confirmation is consent-gated server-side; the refusal
+                    // message surfaces verbatim above.
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'connected', 'navigator_confirmation')}
+                      >
+                        I confirmed it myself
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'connected', 'participant_report')}
+                      >
+                        They told me
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'connected', 'partner_confirmation')}
+                      >
+                        The provider confirmed
+                      </Button>
+                      <Button variant="ghost" size="md" onClick={() => setEvidenceFor(null)}>
+                        Back
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Button variant="ghost" size="md" onClick={() => setEvidenceFor(referral.id)}>
+                        They connected — how do I know?
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'contact_attempted')}
+                      >
+                        I reached out
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'not_connected')}
+                      >
+                        Not connected yet
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'participant_declined')}
+                      >
+                        No longer needed
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="md"
+                        onClick={() => void markOutcome(referral.id, 'partner_unavailable')}
+                      >
+                        Provider unavailable
+                      </Button>
+                    </div>
+                  )
+                ) : referral.status !== 'closed' ? (
+                  <div className="mt-2">
                     <Button
                       variant="ghost"
                       size="md"
-                      onClick={() => void markOutcome(referral.id, 'connected', 'navigator_confirmation')}
+                      onClick={() => void markOutcome(referral.id, 'closed')}
                     >
-                      They connected
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="md"
-                      onClick={() => void markOutcome(referral.id, 'not_connected')}
-                    >
-                      Not connected yet
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="md"
-                      onClick={() => void markOutcome(referral.id, 'partner_unavailable')}
-                    >
-                      Provider unavailable
+                      Close this connection
                     </Button>
                   </div>
                 ) : null}

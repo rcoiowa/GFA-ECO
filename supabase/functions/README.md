@@ -43,12 +43,18 @@ trigger a delivery.
 
 Also live but owned elsewhere (not coaching-scope, not captured here):
 `grace-companion`, `grace-companion-v6`, `vrcc-api-gateway`, `vrcc-api-gateway-v6`,
-`slogan-engine`, `notify-new-lead`, `Grace` (Anthropic-proxy peer-companion; makes
-no DB queries).
+`slogan-engine`, `notify-new-lead`, `Grace` (legacy Anthropic-proxy chat function —
+historical "peer companion" label, retired 2026-09-13; makes no DB queries).
 
-Deploy with the Supabase CLI (or the management API):
+**⚠️ HISTORICAL COMMANDS — DO NOT RUN (corrected 2026-08-21).** The commands below are the
+deploy invocations as they were used against the **retired** project, preserved for provenance
+only. The retired project must never receive a deploy again, and these legacy captures must
+never be deployed anywhere. Canonical Edge Function deploys target **RecoveryOS-Launch
+`cqcxvwoukyhxyokfwnjm`** through their own gated workflows (e.g. `grace-lock.yml`; the
+`residence-intake` deploy is gated by the recorded Type D gate).
 
-```bash
+```text
+# historical record only — retired project ykykeioydvtxpyreshhs
 supabase functions deploy coaching       --project-ref ykykeioydvtxpyreshhs --no-verify-jwt
 supabase functions deploy create-meeting --project-ref ykykeioydvtxpyreshhs
 supabase functions deploy notify-fanout  --project-ref ykykeioydvtxpyreshhs

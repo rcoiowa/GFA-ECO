@@ -6,14 +6,19 @@ import { useStaff } from './staffContext';
 const NAV_ITEMS: NavItem[] = [
   { to: '/staff/today', label: 'Today' },
   { to: '/staff/beds', label: 'Bed Board', shortLabel: 'Beds' },
+  { to: '/staff/residents', label: 'Residents' },
   { to: '/staff/applications', label: 'Applications', shortLabel: 'Apps' },
+  { to: '/staff/inquiries', label: 'Inquiries' },
+  { to: '/residences/applications/intake', label: 'Intake' },
   { to: '/staff/screenings', label: 'Screenings' },
   { to: '/staff/incidents', label: 'Incidents' },
   { to: '/staff/grievances', label: 'Grievances' },
   { to: '/staff/compliance', label: 'Compliance' },
   { to: '/staff/fees', label: 'Fees' },
   { to: '/staff/board', label: 'House Board', shortLabel: 'Board' },
+  { to: '/staff/house-ops', label: 'House Ops', shortLabel: 'Ops' },
   { to: '/staff/messages', label: 'Messages' },
+  { to: '/staff/notifications', label: 'Notifications', shortLabel: 'Alerts' },
   { to: '/staff/reports', label: 'Reports' },
 ];
 

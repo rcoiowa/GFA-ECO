@@ -3,12 +3,13 @@ import { Link, useNavigate } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import { createMyResidence, ensureMyPerson } from '@recoveryos/data-access';
 import { Alert, Button, Card, TextField } from '@recoveryos/ui';
+import { TURNSTILE_SITE_KEY, TurnstileWidget } from './TurnstileWidget';
 
 const PAGE_PATH = '/recovery-residences/list-your-residence';
 
 const FEATURES = [
   'Real-time bed availability & waitlist queue',
-  'Applications with a 2-business-day response workflow',
+  'Applications with a tracked response workflow',
   'Resident daily life: check-ins, chores, curfew, passes',
   'Program fee tracking, receipts & balances',
   'Grievance workflow with response deadlines',
@@ -57,6 +58,7 @@ export function ListYourResidencePage() {
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [org, setOrg] = useState({
     name: '',
     structure: 'nonprofit_501c3' as (typeof ORG_STRUCTURES)[number][0],
@@ -109,6 +111,10 @@ export function ListYourResidencePage() {
   async function launch(event: FormEvent) {
     event.preventDefault();
     setFormError(null);
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setFormError('Please complete the security check above the launch button.');
+      return;
+    }
     setBusy(true);
     try {
       if (!person) {
@@ -421,6 +427,7 @@ export function ListYourResidencePage() {
                     ))}
                   </select>
                 </label>
+                <TurnstileWidget action="residence_listing" onToken={setTurnstileToken} />
                 <div className="flex gap-3">
                   <Button type="button" variant="secondary" onClick={() => setStep(1)}>
                     ← Back

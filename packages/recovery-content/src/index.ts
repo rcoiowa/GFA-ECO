@@ -27,6 +27,7 @@ export {
   type SloganMatch,
   type SloganMatchInput,
 } from './recommend';
+export { WELLNESS_DISPLAY, icarePhaseWhy, wellnessDisplayLabel } from './display';
 
 import { SLOGANS } from './slogans.generated';
 import type { Slogan } from './types';

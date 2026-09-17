@@ -4,6 +4,7 @@ import {
   listIncidents,
   listResidenceRoster,
   reportIncident,
+  reviewIncident,
   type RosterEntry,
 } from '@recoveryos/data-access';
 import type { Incident } from '@recoveryos/domain';
@@ -55,6 +56,9 @@ export function IncidentsPage() {
   const [summary, setSummary] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [reviewingId, setReviewingId] = useState<number | null>(null);
+  const [reviewFollowUp, setReviewFollowUp] = useState('');
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!residence) return;
@@ -102,7 +106,23 @@ export function IncidentsPage() {
     }
   };
 
+  const review = async (incidentId: number) => {
+    setReviewError(null);
+    try {
+      await reviewIncident(incidentId, reviewFollowUp);
+      setReviewingId(null);
+      setReviewFollowUp('');
+      await load();
+    } catch (e) {
+      // The server's refusal (e.g. not a manager) is a human sentence — show it.
+      setReviewError(e instanceof Error ? e.message : 'We couldn’t record that review.');
+    }
+  };
+
   if (!residence) return <Alert tone="attention">Select a residence to view incidents.</Alert>;
+
+  const waitingReview = incidents.filter((i) => !i.reviewed_at);
+  const reviewed = incidents.filter((i) => i.reviewed_at);
 
   return (
     <>
@@ -186,12 +206,15 @@ export function IncidentsPage() {
           </Card>
 
           <Card>
-            <CardTitle>Recent incidents</CardTitle>
-            {incidents.length === 0 ? (
-              <p className="text-ink-muted">Nothing on record.</p>
+            <CardTitle>Waiting for review</CardTitle>
+            {reviewError ? (
+              <Alert tone="critical">{reviewError}</Alert>
+            ) : null}
+            {waitingReview.length === 0 ? (
+              <p className="text-ink-muted">Every report has been reviewed.</p>
             ) : (
               <ul className="flex flex-col gap-2">
-                {incidents.map((i) => (
+                {waitingReview.map((i) => (
                   <li key={i.id} className="rounded-md border border-line bg-surface-raised p-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-medium text-ink">
@@ -210,6 +233,78 @@ export function IncidentsPage() {
                       </span>
                     </div>
                     <p className="mt-1 text-sm text-ink">{i.summary}</p>
+                    {reviewingId === i.id ? (
+                      <div className="mt-2 space-y-2">
+                        <TextAreaField
+                          label="Follow-up (optional)"
+                          hint="What happens next, if anything — support offered, policy step taken, nothing further needed."
+                          value={reviewFollowUp}
+                          onChange={(e) => setReviewFollowUp(e.target.value)}
+                          rows={2}
+                        />
+                        <div className="flex gap-2">
+                          <Button size="md" onClick={() => void review(i.id)}>
+                            Mark reviewed
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="md"
+                            onClick={() => {
+                              setReviewingId(null);
+                              setReviewFollowUp('');
+                            }}
+                          >
+                            Never mind
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button
+                        className="mt-2"
+                        variant="secondary"
+                        size="md"
+                        onClick={() => {
+                          setReviewingId(i.id);
+                          setReviewFollowUp(i.follow_up ?? '');
+                        }}
+                      >
+                        Review
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
+          <Card>
+            <CardTitle>Reviewed</CardTitle>
+            {reviewed.length === 0 ? (
+              <p className="text-ink-muted">Nothing on record.</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {reviewed.map((i) => (
+                  <li key={i.id} className="rounded-md border border-line bg-surface-raised p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-medium text-ink">
+                        {i.category}
+                        {i.severity
+                          ? ` · ${SEVERITY_LABELS[i.severity] ?? `Level ${i.severity}`}`
+                          : ''}
+                      </span>
+                      <span className="text-sm text-ink-muted">
+                        {new Date(i.occurred_at).toLocaleString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-ink">{i.summary}</p>
+                    {i.follow_up ? (
+                      <p className="mt-1 text-sm text-ink-muted">Follow-up: {i.follow_up}</p>
+                    ) : null}
                   </li>
                 ))}
               </ul>

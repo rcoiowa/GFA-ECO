@@ -7,6 +7,7 @@ import type {
   RoleKey,
   ServiceModality,
 } from './enums';
+import type { ServiceEventSource } from './serviceProvenance';
 
 /**
  * Canonical entity types. Field names match the PostgreSQL schema exactly
@@ -253,8 +254,13 @@ export interface ServiceEvent {
   modality: ServiceModality;
   started_at: string;
   ended_at: string | null;
+  /** DEPRECATED (P2): never written, never wired — outcomes live on evidence-gated state records. */
   outcome_status: string | null;
   funding_source_id: number | null;
+  /** How the event entered institutional record (ratified closed vocabulary); immutable. */
+  source: ServiceEventSource;
+  /** Idempotency anchor: one human action → one key; immutable. */
+  dedupe_key: string | null;
   created_at: string;
 }
 
@@ -291,6 +297,8 @@ export interface Goal {
   detail: string | null;
   status: 'active' | 'achieved' | 'paused' | 'archived';
   target_date: string | null;
+  /** Optional participant-chosen domain attribution (ratified canon); null is always valid. */
+  domain_key: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -301,6 +309,10 @@ export interface DocumentTemplate {
   key: string;
   name: string;
   requires_signature: boolean;
+  /** Ack-only intake documents (0139): received/read, no signature. */
+  requires_acknowledgment: boolean;
+  /** NULL = organization-wide; a residence id scopes the document to that house (0139). */
+  residence_id: number | null;
   is_active: boolean;
 }
 
@@ -309,6 +321,8 @@ export interface DocumentVersion {
   template_id: number;
   version: string;
   body_markdown: string;
+  /** Trigger-computed sha256 of body_markdown — the immutable evidence fingerprint (0139). */
+  content_hash: string;
   published_at: string | null;
 }
 
@@ -317,8 +331,12 @@ export interface DocumentAssignment {
   document_version_id: number;
   person_id: number;
   residency_id: number | null;
+  /** Intake-stage anchor: assignment issued against an approved application (0139). */
+  application_id: number | null;
   assigned_at: string;
   acknowledged_at: string | null;
+  /** Set only for signature documents; ack-only documents never carry it (0139). */
+  signed_at: string | null;
   signature_name: string | null;
 }
 

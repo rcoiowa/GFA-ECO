@@ -84,6 +84,107 @@ export async function listUpcomingMeetings(): Promise<Meeting[]> {
   return data ?? [];
 }
 
+// ---- P0.5-C: meetings, attendance, chores become recordable (RPCs, 0128) ----
+
+async function opRpc(fn: string, args: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const { data, error } = await getSupabase().rpc(fn, args);
+  if (error) throw error;
+  const result = data as { ok?: boolean; code?: string; message?: string } | null;
+  if (!result?.ok) throw new Error(result?.message ?? String(result?.code ?? 'rpc_failed'));
+  return result as Record<string, unknown>;
+}
+
+/** Staff records a house/program meeting (RPC `record_meeting`). */
+export async function recordMeeting(input: {
+  residenceId: number;
+  title: string;
+  startsAt: string;
+  isRequired?: boolean;
+  description?: string;
+}): Promise<void> {
+  await opRpc('record_meeting', {
+    p_residence_id: input.residenceId,
+    p_title: input.title,
+    p_starts_at: input.startsAt,
+    p_is_required: input.isRequired ?? false,
+    p_description: input.description ?? null,
+  });
+}
+
+/** Staff records who was at a meeting (RPC `record_meeting_attendance`; upsert per person). */
+export async function recordMeetingAttendance(input: {
+  meetingId: number;
+  personId: number;
+  status: 'expected' | 'present' | 'absent' | 'excused';
+}): Promise<void> {
+  await opRpc('record_meeting_attendance', {
+    p_meeting_id: input.meetingId,
+    p_person_id: input.personId,
+    p_status: input.status,
+  });
+}
+
+/** Staff assigns a chore to a residency for a date (RPC `assign_chore`; idempotent per day). */
+export async function assignChore(input: {
+  choreId: number;
+  residencyId: number;
+  dueOn: string;
+}): Promise<void> {
+  await opRpc('assign_chore', {
+    p_chore_id: input.choreId,
+    p_residency_id: input.residencyId,
+    p_due_on: input.dueOn,
+  });
+}
+
+/** Staff marks a chore assignment complete/verified (RPC `complete_chore_assignment`). */
+export async function completeChoreAssignment(assignmentId: number): Promise<void> {
+  await opRpc('complete_chore_assignment', { p_assignment_id: assignmentId });
+}
+
+/** The residence's meetings around now (staff read via RLS), newest first. */
+export async function listResidenceMeetings(residenceId: number): Promise<Meeting[]> {
+  const since = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString();
+  const { data, error } = await getSupabase()
+    .from('meetings')
+    .select('*')
+    .eq('residence_id', residenceId)
+    .gte('starts_at', since)
+    .order('starts_at', { ascending: false })
+    .limit(30);
+  if (error) throw error;
+  return data ?? [];
+}
+
+/** The residence's active chore catalog. */
+export async function listResidenceChores(residenceId: number): Promise<ResidenceChore[]> {
+  const { data, error } = await getSupabase()
+    .from('residence_chores')
+    .select('*')
+    .eq('residence_id', residenceId)
+    .eq('is_active', true)
+    .order('name');
+  if (error) throw error;
+  return data ?? [];
+}
+
+/** Chore assignments for a residence-day window (staff read via RLS). */
+export async function listChoreAssignmentsForResidence(
+  residenceId: number,
+  fromDate: string,
+  toDate: string,
+): Promise<(ChoreAssignment & { chore: ResidenceChore })[]> {
+  const { data, error } = await getSupabase()
+    .from('chore_assignments')
+    .select('*, chore:residence_chores!inner(*)')
+    .eq('chore.residence_id', residenceId)
+    .gte('due_on', fromDate)
+    .lte('due_on', toDate)
+    .order('due_on');
+  if (error) throw error;
+  return data ?? [];
+}
+
 /** File a grievance (RLS: only as yourself). */
 export async function fileGrievance(input: {
   residenceId: number;

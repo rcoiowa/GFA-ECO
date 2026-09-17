@@ -172,8 +172,15 @@ describe('safeLinkPath', () => {
     expect(safeLinkPath('javascript:alert(1)')).toBe('/vrcc/today');
     expect(safeLinkPath(null)).toBe('/vrcc/today');
   });
-  it('maps stored legacy paths onto canonical routes', () => {
-    expect(safeLinkPath('/sessions')).toBe('/vrcc/connect');
+  it('maps stored legacy paths onto canonical routes (P0.5-B: notification → object)', () => {
+    expect(safeLinkPath('/sessions')).toBe('/vrcc/sessions');
+    expect(safeLinkPath('/coach')).toBe('/vrcc/connect');
+    expect(safeLinkPath('/admin/leads')).toBe('/admin/operations');
+  });
+  it('passes real routes through untouched', () => {
+    expect(safeLinkPath('/coach/sessions')).toBe('/coach/sessions');
+    expect(safeLinkPath('/residences/applications/intake')).toBe('/residences/applications/intake');
+    expect(safeLinkPath('/admin/directory/submissions')).toBe('/admin/directory/submissions');
   });
 });
 

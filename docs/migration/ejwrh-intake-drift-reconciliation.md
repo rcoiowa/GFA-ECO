@@ -250,3 +250,31 @@ database authorization (INSERT grant + unchanged INSERT policy). **Frontend subm
 **Status:** `0123` recorded as **APPLIED LIVE HARDENING — transitional drift remediation.** The
 longer-term recommendation stands: converge EJWRH (and Grace House) intake onto the canonical
 `recoveryos.residence_application_intake` boundary (`0122`) under a separate implementation gate.
+
+## 8. Gate A containment & convergence — EXECUTED (2026-08-23)
+
+Authorized by the EJWRH Gate A remediation directive following the predeployment audit
+(`docs/audits/ejwrh-predeployment-audit-2026-08-23.md`, HOLD confirmed). Executed this session:
+
+- **§3 residual closed:** the out-of-repo EJWRH deployment was identified — the `ejwrh` Edge
+  Function (v1) serving `sites/ejwrh/index.html` from public Storage, with a form writing
+  directly to `public.housing_applications` via anon PostgREST. Deployed 2026-08-23 via three
+  ledger migrations now captured verbatim in this directory
+  (`20260823212156/215058/215255 *.captured.sql`) — including a temporary anon-writable
+  Storage window, a pattern retired by this gate.
+- **Convergence executed at the write path:** the portal was rebuilt as a self-contained,
+  version-controlled Edge Function (`supabase/functions/ejwrh/index.ts`, v2) — a
+  data-minimized APPLICATION-stage page whose only submission path is the canonical
+  `residence-intake` boundary → `recoveryos.residence_application_intake` (EJWRH =
+  residence_id 2). No direct PostgREST write remains on the page.
+- **Containment applied (`0138_ejwrh_containment`):** `housing_applications_public_insert`
+  policy dropped; anon INSERT grant revoked (no client role now holds any privilege on the
+  table); table comment marks it DEPRECATED — **no remaining canonical role**, superseded by
+  the 0122 boundary; retained (0 rows, evidence + rollback) pending a future cleanup gate.
+  The `sites` bucket was made private: the v1 mojibake page with unverified public claims is
+  no longer publicly readable; the objects are preserved as evidence via service role.
+- **Cloudflare:** production route PREPARED ONLY (`sites/ejwrh/worker.prepared.js` +
+  README) — **PUBLIC DEPLOYMENT REMAINS CLOSED.**
+
+**Status: EJWRH DRIFT — CONTAINED & CONVERGED AT THE BOUNDARY (Gate A). Gate B (intake
+documents/consent/signature) and public activation remain separate executive gates.**

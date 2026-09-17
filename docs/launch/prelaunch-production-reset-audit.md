@@ -1,3 +1,5 @@
+> **Historical terminology notice (2026-09-13):** "Companion"-based Grace labels and identifiers below are preserved as dated evidence. The current canonical identity is **Grace — AI Support Navigator** (`docs/decisions/2026-09-13-grace-ai-support-navigator-naming.md`).
+
 # Pre-Launch Production Reset Audit (A–S) — GO/NO-GO
 
 **Date:** 2026-08-07 · **Project:** `ykykeioydvtxpyreshhs` · **Method:** read-only inspection of

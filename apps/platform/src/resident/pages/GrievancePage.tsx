@@ -21,7 +21,8 @@ const STATUS_LABELS: Record<Grievance['status'], string> = {
 
 /**
  * Digital grievance filing. Mirrors the paper Grievance Form; the policy's
- * timelines (acknowledged in 2 business days, decided in 7) apply the same.
+ * timelines (acknowledged within 24 hours, written response within 5 business
+ * days — Grievance Policy v1.0) apply the same.
  */
 export function GrievancePage() {
   const { person } = useAuth();
@@ -89,8 +90,8 @@ export function GrievancePage() {
         <Alert tone="info">
           <strong>No retaliation, ever.</strong> Filing a grievance cannot affect your residency,
           fees, privileges, or how anyone here treats you. You'll get written acknowledgment within
-          2 business days and a written decision within 7. The full process — including who to
-          contact outside this organization — is in the Grievance Policy.
+          24 hours and a written response within 5 business days. The full process — including who
+          to contact outside this organization — is in the Grievance Policy.
         </Alert>
 
         {loading ? (
@@ -102,8 +103,8 @@ export function GrievancePage() {
               {submitted ? (
                 <Alert tone="positive">
                   Your grievance is filed. A staff member follows up in writing within 2 business
-                  days. If you don't hear back, the paper form posted in the house — or a note to any
-                  staff member — reaches the same process, with the same timelines.
+                  days. If you don't hear back, the paper form posted in the house — or a note to
+                  any staff member — reaches the same process, with the same timelines.
                 </Alert>
               ) : null}
               {error ? (

@@ -52,6 +52,19 @@ export async function getMyLatestApplication(personId: number): Promise<MyApplic
   return data;
 }
 
+/**
+ * P0.5-A: withdraw my own application (RPC `withdraw_my_application`, 0115 —
+ * applicant-scoped server-side; terminal states are refused with a message).
+ */
+export async function withdrawMyApplication(applicationId: number): Promise<void> {
+  const { data, error } = await getSupabase().rpc('withdraw_my_application', {
+    p_application_id: applicationId,
+  });
+  if (error) throw error;
+  const result = data as { ok?: boolean; code?: string; message?: string } | null;
+  if (!result?.ok) throw new Error(result?.message ?? String(result?.code ?? 'withdraw_failed'));
+}
+
 /** The person's residency at a residence (any status), for post-approval state. */
 export async function getMyResidencyAt(input: {
   personId: number;

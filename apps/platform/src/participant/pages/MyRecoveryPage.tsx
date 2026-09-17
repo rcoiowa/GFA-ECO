@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useAuth } from '@recoveryos/auth';
 import { createGoal, listMyGoals, updateGoalStatus } from '@recoveryos/data-access';
-import { goalSchema, type Goal } from '@recoveryos/domain';
+import { DOMAINS, domainParticipantLabel, goalSchema, type Goal } from '@recoveryos/domain';
 import {
   Button,
   Card,
@@ -61,6 +61,7 @@ export function MyRecoveryPage() {
         personId: person.id,
         title: parsed.data.title,
         detail: parsed.data.detail,
+        domainKey: (form.get('domain') as string) || null,
       });
       setGoals((prev) => [created, ...prev]);
       setShowForm(false);
@@ -108,6 +109,24 @@ export function MyRecoveryPage() {
               name="detail"
               error={fieldErrors.detail}
             />
+            <div>
+              <label htmlFor="goal-domain" className="block text-sm font-medium text-ink">
+                This is about… (optional)
+              </label>
+              <select
+                id="goal-domain"
+                name="domain"
+                defaultValue=""
+                className="mt-1 rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink"
+              >
+                <option value="">Skip this — it's still your goal</option>
+                {DOMAINS.map((d) => (
+                  <option key={d.key} value={d.key}>
+                    {d.participantLabel}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="flex gap-3">
               <Button type="submit" disabled={saving}>
                 {saving ? 'Saving…' : 'Save goal'}
@@ -142,6 +161,11 @@ export function MyRecoveryPage() {
                   <li key={goal.id}>
                     <Card>
                       <p className="font-semibold text-ink">{goal.title}</p>
+                      {goal.domain_key ? (
+                        <p className="mt-0.5 text-xs font-medium text-experience-700">
+                          {domainParticipantLabel(goal.domain_key)}
+                        </p>
+                      ) : null}
                       {goal.detail ? <p className="mt-1 text-ink-muted">{goal.detail}</p> : null}
                       <div className="mt-3">
                         <Button variant="secondary" onClick={() => void markAchieved(goal)}>

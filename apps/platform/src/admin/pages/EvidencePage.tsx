@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Card, CardTitle, ErrorState, LoadingState, PageHeader } from '@recoveryos/ui';
+import { domainStaffLabel, reportingAuthorityLabel } from '@recoveryos/domain';
 import { useEvidenceSummary } from '../hooks/useAdminData';
 import { track } from '../../lib/analytics';
 
@@ -91,7 +92,10 @@ export function EvidencePage() {
       <Card>
         <div className="flex items-center justify-between">
           <CardTitle>Coaching relationships</CardTitle>
-          <Badge kind="outcome" />
+          {/* OUTPUT, deliberately (P0-4): every row here is an engagement/activity
+              signal — relationship records and message existence — not a verified
+              change in a person's life. */}
+          <Badge kind="output" />
         </div>
         <ul className="mt-2 divide-y divide-line">
           <Row label="Relationships established" value={relationships.coaching_established} />
@@ -112,7 +116,9 @@ export function EvidencePage() {
           />
         </ul>
         <p className="mt-2 text-sm text-ink-faint">
-          Counts come from message existence only — nobody reads the messages to compute this.
+          These are engagement signals (outputs), not participant outcomes. Counts come from
+          message existence only — nobody reads the messages to compute this, and
+          &ldquo;established&rdquo; counts every relationship record regardless of current status.
         </p>
       </Card>
 
@@ -165,6 +171,25 @@ export function EvidencePage() {
             </ul>
           </>
         ) : null}
+        {navigation.needs_by_domain && Object.keys(navigation.needs_by_domain).length > 0 ? (
+          <>
+            {/* P1.6: the domain lens beside (never replacing) needs_by_category. These count
+                identified needs — activity on the evidence ladder, not connection or outcome. */}
+            <p className="mt-3 text-sm font-medium text-ink">Needs by domain (activity)</p>
+            <ul className="mt-1 flex flex-wrap gap-2">
+              {Object.entries(navigation.needs_by_domain)
+                .sort(([, a], [, b]) => b - a)
+                .map(([key, count]) => (
+                  <li
+                    key={key}
+                    className="rounded-full border border-line bg-surface-raised px-3 py-1 text-sm text-ink"
+                  >
+                    {key === 'cross_cutting' ? 'Cross-cutting' : domainStaffLabel(key)} · {count}
+                  </li>
+                ))}
+            </ul>
+          </>
+        ) : null}
         <p className="mt-2 text-sm text-ink-faint">
           A referral is activity; only a participant-confirmed connection counts as an outcome. An
           unmet need is a real data point about the community, not a performance failure.
@@ -208,15 +233,45 @@ export function EvidencePage() {
           <Badge kind="output" />
         </div>
         <ul className="mt-2 divide-y divide-line">
-          <Row label="People served (attested service events)" value={services.people_served} />
-          <Row label="Service events" value={services.events} />
           <Row
-            label="With a funding source recorded"
-            value={services.funding_attributed}
-            of={`of ${services.events} events`}
+            label="People served (organizationally attested service activity)"
+            value={services.people_served}
           />
-          <Row label="Not yet attributed to funding" value={services.funding_unattributed} />
+          {services.people_engaging_participant_reported != null ? (
+            <Row
+              label="People engaging (participant-reported — engagement, not delivery)"
+              value={services.people_engaging_participant_reported}
+            />
+          ) : null}
+          <Row label="Service events (all provenance)" value={services.events} />
         </ul>
+        {services.events_by_authority && Object.keys(services.events_by_authority).length > 0 ? (
+          <>
+            {/* P2.6 reporting authority: never silently combined into "services delivered".
+                Provenance is complete (0133 NOT NULL) — every event maps to an authority. */}
+            <p className="mt-3 text-sm font-medium text-ink">Events by reporting authority</p>
+            <ul className="mt-1 flex flex-wrap gap-2">
+              {Object.entries(services.events_by_authority)
+                .sort(([, a], [, b]) => b - a)
+                .map(([key, count]) => (
+                  <li
+                    key={key}
+                    className="rounded-full border border-line bg-surface-raised px-3 py-1 text-sm text-ink"
+                  >
+                    {reportingAuthorityLabel(key)} · {count}
+                  </li>
+                ))}
+            </ul>
+          </>
+        ) : null}
+        {/* Funding attribution rows removed (P0-4): no workflow writes
+            service_events.funding_source_id yet, so the numbers were structurally
+            0 / N — a permanent zero presented as evidence. Restore the rows when a
+            funding-attribution writer exists. */}
+        <p className="mt-2 text-sm text-ink-faint">
+          Funding attribution is not yet recorded by any workflow, so no funding split is shown —
+          publishing a structural zero would misstate the evidence.
+        </p>
         {Object.keys(services.by_type).length > 0 ? (
           <>
             <p className="mt-3 text-sm font-medium text-ink">By service type</p>

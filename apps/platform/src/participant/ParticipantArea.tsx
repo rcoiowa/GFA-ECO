@@ -16,6 +16,7 @@ import { ToolsPage } from './pages/ToolsPage';
 import { RecoveryCapitalPage } from './pages/RecoveryCapitalPage';
 import { ResourcesPage } from './pages/ResourcesPage';
 import { MyJourneyPage } from './pages/MyJourneyPage';
+import { GettingSettledPage } from './pages/GettingSettledPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { PrivacyConsentPage } from './pages/PrivacyConsentPage';
 import { NotFoundPage } from '../pages/StatusPages';
@@ -41,6 +42,7 @@ export function ParticipantArea() {
           <Route path="tools/recovery-capital" element={<RecoveryCapitalPage />} />
           <Route path="resources" element={<ResourcesPage />} />
           <Route path="journey" element={<MyJourneyPage />} />
+          <Route path="getting-settled" element={<GettingSettledPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="privacy" element={<PrivacyConsentPage />} />
           <Route path="support/grounding" element={<GroundingPage />} />

@@ -1,7 +1,7 @@
 import { getSupabase } from '../client';
 
 /**
- * Grace AI companion data-access (P4-Grace G1). The browser NEVER holds the
+ * Grace AI Support Navigator data-access (P4-Grace G1). The browser NEVER holds the
  * provider key, the model, the system prompt, or the safety policy — those are
  * server-authoritative in the `grace` Edge Function. This layer only:
  *   • reports whether the participant has an active `ai_features` consent grant

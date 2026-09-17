@@ -4,7 +4,10 @@ import { StaffProvider } from './staffContext';
 import { StaffShell } from './StaffShell';
 import { StaffTodayPage } from './pages/StaffTodayPage';
 import { BedBoardPage } from './pages/BedBoardPage';
+import { ResidentsPage } from './pages/ResidentsPage';
+import { HouseOpsPage } from './pages/HouseOpsPage';
 import { ApplicationsPage } from './pages/ApplicationsPage';
+import { InquiriesPage } from './pages/InquiriesPage';
 import { ScreeningsPage } from './pages/ScreeningsPage';
 import { IncidentsPage } from './pages/IncidentsPage';
 import { GrievancesPage } from './pages/GrievancesPage';
@@ -15,6 +18,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { StaffMessagesPage } from './pages/StaffMessagesPage';
 import { StaffThreadPage } from './pages/StaffThreadPage';
 import { NotFoundPage } from '../pages/StatusPages';
+import { NotificationsPanel } from '../components/NotificationsPanel';
 
 /**
  * Room 1 — the Operator Dashboard (Integration Plan §2). Route guard is
@@ -32,7 +36,10 @@ export function StaffArea() {
             <Route index element={<Navigate to="today" replace />} />
             <Route path="today" element={<StaffTodayPage />} />
             <Route path="beds" element={<BedBoardPage />} />
+            <Route path="residents" element={<ResidentsPage />} />
+            <Route path="house-ops" element={<HouseOpsPage />} />
             <Route path="applications" element={<ApplicationsPage />} />
+            <Route path="inquiries" element={<InquiriesPage />} />
             <Route path="screenings" element={<ScreeningsPage />} />
             <Route path="incidents" element={<IncidentsPage />} />
             <Route path="grievances" element={<GrievancesPage />} />
@@ -42,6 +49,7 @@ export function StaffArea() {
             <Route path="reports" element={<ReportsPage />} />
             <Route path="messages" element={<StaffMessagesPage />} />
             <Route path="messages/:personId" element={<StaffThreadPage />} />
+            <Route path="notifications" element={<NotificationsPanel fallbackPath="/staff/today" />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

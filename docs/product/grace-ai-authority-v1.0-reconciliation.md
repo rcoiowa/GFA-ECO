@@ -1,3 +1,5 @@
+> **Superseded naming:** The V1.0 role name is preserved below as historical evidence. Effective 2026-09-13, the canonical role is **Grace — AI Support Navigator** under `grace-ai-support-navigator-implementation-authority-v1.1.md`. This naming amendment does not change behavior, consent, privacy, safety, or deployment boundaries.
+
 # Grace Authority V1.0 (Ratified Canonical Edition) — Implementation Reconciliation
 
 **Date:** 2026-08-09. **Authority:** `docs/product/grace-ai-implementation-authority-v1.0.md`.

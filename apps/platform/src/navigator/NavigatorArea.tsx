@@ -12,6 +12,7 @@ import { NavFollowUpsPage } from './pages/NavFollowUpsPage';
 import { NavMessagesListPage } from './pages/NavMessagesListPage';
 import { NavThreadPage } from './pages/NavThreadPage';
 import { NotFoundPage } from '../pages/StatusPages';
+import { NotificationsPanel } from '../components/NotificationsPanel';
 
 /**
  * Navigator Workspace (P4E) — closed-loop navigation, not a CRM pipeline.
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { to: '/navigator/connections', label: 'Connections' },
   { to: '/navigator/follow-ups', label: 'Follow-Ups' },
   { to: '/navigator/messages', label: 'Messages' },
+  { to: '/navigator/notifications', label: 'Notifications', shortLabel: 'Alerts' },
 ];
 
 export function NavigatorArea() {
@@ -50,6 +52,7 @@ export function NavigatorArea() {
           <Route path="follow-ups" element={<NavFollowUpsPage />} />
           <Route path="messages" element={<NavMessagesListPage />} />
           <Route path="messages/:personId" element={<NavThreadPage />} />
+          <Route path="notifications" element={<NotificationsPanel fallbackPath="/navigator" />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AppShell>

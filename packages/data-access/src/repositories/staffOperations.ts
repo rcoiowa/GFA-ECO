@@ -138,11 +138,11 @@ export async function listApplications(residenceId: number): Promise<Application
 /**
  * P4F: decisions go through review_residence_application — the server derives
  * the decider, enforces legal transitions, and requires residence-manager
- * authority for terminal decisions. The staff UI's "Approve" action keeps its
- * historical product meaning (approve AND open the residency) by chaining the
- * admit RPC; waitlist/decline/in-review are review-only. `decidedByPersonId`
- * is retained for signature compatibility but ignored — identity is never
- * client-supplied.
+ * authority for terminal decisions. B5A: approval is ONLY approval — it
+ * unlocks the intake checklist; the residency is opened later by the separate,
+ * deliberate move-in action (admitApplicant), readiness-gated on the server.
+ * `decidedByPersonId` is retained for signature compatibility but ignored —
+ * identity is never client-supplied.
  */
 export async function decideApplication(input: {
   application: ResidenceApplication;
@@ -150,8 +150,7 @@ export async function decideApplication(input: {
   decidedByPersonId?: number;
   notes?: string;
 }): Promise<void> {
-  const sb = getSupabase();
-  const { data, error } = await sb.rpc('review_residence_application', {
+  const { data, error } = await getSupabase().rpc('review_residence_application', {
     p_application_id: input.application.id,
     p_decision: input.status,
     p_note: input.notes ?? null,
@@ -159,17 +158,6 @@ export async function decideApplication(input: {
   if (error) throw error;
   const result = data as { ok?: boolean; code?: string; message?: string } | null;
   if (!result?.ok) throw new Error(result?.message ?? String(result?.code ?? 'review_failed'));
-
-  if (input.status === 'approved') {
-    const { data: admitData, error: admitError } = await sb.rpc('admit_applicant', {
-      p_application_id: input.application.id,
-      p_bed_id: null,
-      p_admission_date: new Date().toISOString().slice(0, 10),
-    });
-    if (admitError) throw admitError;
-    const admit = admitData as { ok?: boolean; code?: string; message?: string } | null;
-    if (!admit?.ok) throw new Error(admit?.message ?? String(admit?.code ?? 'admit_failed'));
-  }
 }
 
 // Screenings ---------------------------------------------------------------
@@ -272,6 +260,66 @@ export async function decidePass(input: {
   if (error) throw error;
   const result = data as { ok?: boolean; code?: string; message?: string } | null;
   if (!result?.ok) throw new Error(result?.message ?? String(result?.code ?? 'decide_failed'));
+}
+
+/**
+ * Passes that are out the door and not yet back: approved or active. Recording
+ * the return (below) is what makes `returned`/`overdue` reachable states.
+ */
+export async function listOpenPasses(
+  residenceId: number,
+): Promise<(Pass & { residency: Residency & { person: Person } })[]> {
+  const { data, error } = await getSupabase()
+    .from('passes')
+    .select('*, residency:residencies!inner(*, person:people(*))')
+    .eq('residency.residence_id', residenceId)
+    .in('status', ['approved', 'active'])
+    .order('ends_at');
+  if (error) throw error;
+  return data ?? [];
+}
+
+/** P0.5-A: record a pass return (RPC `record_pass_return`, 0115) — closes the pass loop. */
+export async function recordPassReturn(passId: number): Promise<void> {
+  const { data, error } = await getSupabase().rpc('record_pass_return', { p_pass_id: passId });
+  if (error) throw error;
+  const result = data as { ok?: boolean; code?: string; message?: string } | null;
+  if (!result?.ok) throw new Error(result?.message ?? String(result?.code ?? 'return_failed'));
+}
+
+/**
+ * P0.5-A: review an incident (RPC `review_incident`, 0115). Records the
+ * reviewer + timestamp and an optional follow-up line; the report itself stays
+ * append-only. This is what clears "waiting for review" on Staff Today.
+ */
+export async function reviewIncident(incidentId: number, followUp?: string): Promise<void> {
+  const { data, error } = await getSupabase().rpc('review_incident', {
+    p_incident_id: incidentId,
+    p_follow_up: followUp?.trim() || null,
+  });
+  if (error) throw error;
+  const result = data as { ok?: boolean; code?: string; message?: string } | null;
+  if (!result?.ok) throw new Error(result?.message ?? String(result?.code ?? 'review_failed'));
+}
+
+/**
+ * P0.5-A: end a residency (RPC `discharge_residency`, 0115 — manager-gated
+ * server-side). Releases the bed, revokes the resident role, and ends the
+ * residence-support designation; history is preserved, never deleted.
+ */
+export async function dischargeResidency(input: {
+  residencyId: number;
+  status: 'exited' | 'discharged' | 'transitioning';
+  reason?: string;
+}): Promise<void> {
+  const { data, error } = await getSupabase().rpc('discharge_residency', {
+    p_residency_id: input.residencyId,
+    p_status: input.status,
+    p_reason: input.reason?.trim() || null,
+  });
+  if (error) throw error;
+  const result = data as { ok?: boolean; code?: string; message?: string } | null;
+  if (!result?.ok) throw new Error(result?.message ?? String(result?.code ?? 'discharge_failed'));
 }
 
 // Compliance ---------------------------------------------------------------

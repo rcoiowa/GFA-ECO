@@ -35,10 +35,13 @@ for intake clones.
 
 ## Infrastructure
 
-- **Supabase** — PostgreSQL, Auth, Storage, RLS (`supabase/migrations` is the target
-  model; live-DB reconciliation per `docs/migration/README.md`)
-- **Cloudflare Pages** — hosts the platform (staging → `vrcc.app` at cutover)
-- **Cloudflare Workers** — API/orchestration layer only (`workers/api`), never a second frontend
+- **Supabase** — canonical application backend: PostgreSQL, Auth, Storage, Realtime,
+  RLS, Cron, and Edge Functions (`supabase/migrations` is the target model; live-DB
+  reconciliation per `docs/migration/README.md`)
+- **Cloudflare Workers Static Assets** — serves `apps/platform/dist` at the edge
+  (staging → `vrcc.app` only through an approved cutover)
+- **Dormant Cloudflare API prototype** — `workers/api` is retained for provenance only
+  and must not be deployed; public intake is owned by Supabase Edge Functions
 
 ## Getting started
 
