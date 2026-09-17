@@ -33,10 +33,10 @@ test('G1,G2,G13. participant access + AI disclosure + Support Now on /vrcc/grace
   const page = await userPage(browser, FIXTURES.participant);
   await page.goto('/vrcc/grace');
   // G2: in-surface AI disclosure present.
-  await expect(page.getByText(/an AI recovery companion from Grace For Addictions/i)).toBeVisible({
+  await expect(page.getByText(/an AI support navigator/i)).toBeVisible({
     timeout: 20_000,
   });
-  await expect(page.getByText(/not a human peer, therapist, or crisis service/i)).toBeVisible();
+  await expect(page.getByText(/not a human peer, counselor, or crisis service/i)).toBeVisible();
   // G13: Support Now independently reachable on the page.
   await expect(page.getByRole('button', { name: /support now/i }).first()).toBeVisible();
   await page.context().close();
@@ -217,7 +217,7 @@ test('G25. mobile 320px reflow', async ({ browser }) => {
   await page.getByRole('button', { name: /^sign in$/i }).click();
   await page.waitForURL((u) => !u.pathname.startsWith('/sign-in'), { timeout: 20_000 });
   await page.goto('/vrcc/grace');
-  await expect(page.getByText(/an AI recovery companion/i)).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText(/an AI support navigator/i)).toBeVisible({ timeout: 20_000 });
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );

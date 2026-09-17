@@ -13,7 +13,7 @@ import {
 import { track } from '../../lib/analytics';
 
 /**
- * Grace — canonical AI recovery companion (P4-Grace). Grace is ONE capability
+ * Grace — canonical AI Support Navigator (P4-Grace). Grace is ONE capability
  * within VRCC, not the center of the app. Everything security- and
  * safety-critical is server-authoritative in the `grace` Edge Function; this
  * surface only renders disclosure, gates on `ai_features` consent, sends turns,
@@ -24,9 +24,10 @@ import { track } from '../../lib/analytics';
  */
 
 const DISCLOSURE =
-  "I'm Grace, an AI recovery companion from Grace For Addictions. I can help you " +
-  'reflect, find a next step, and connect with real people. I’m not a human peer, ' +
-  'therapist, or crisis service.';
+  'I’m Grace, an AI support navigator—not a human peer, counselor, or crisis service. ' +
+  'I can help you slow things down, explore your options, find recovery supports, and ' +
+  'choose whether to connect with a real person. You remain in control of what you share ' +
+  'and what happens next.';
 
 const STARTERS = [
   'I’m having a hard day.',
@@ -125,7 +126,11 @@ export function GracePage() {
     }
     setMessages((prev) => [
       ...prev,
-      { role: 'assistant', content: result.content as string, crisis: result.safety?.surface_support_now },
+      {
+        role: 'assistant',
+        content: result.content as string,
+        crisis: result.safety?.surface_support_now,
+      },
     ]);
   }
 
@@ -146,7 +151,9 @@ export function GracePage() {
       const result = await invokeGrace(next.map((m) => ({ role: m.role, content: m.content })));
       applyResult(result);
     } catch {
-      setNotice('Grace couldn’t respond just now. If this is urgent, please use Support Now below.');
+      setNotice(
+        'Grace couldn’t respond just now. If this is urgent, please use Support Now below.',
+      );
     } finally {
       setSending(false);
     }
@@ -166,7 +173,7 @@ export function GracePage() {
       <div className="space-y-4">
         <PageHeader
           title="Grace"
-          lede="An optional AI companion for reflection and next steps."
+          lede="An optional AI support navigator for reflection, options, and next steps."
           crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
         />
         {disclosureBanner}
@@ -176,8 +183,8 @@ export function GracePage() {
             Grace is powered by an AI language model. She listens, reflects, and points you toward
             real people and canonical GFA resources — she doesn’t diagnose, treat, or give medical,
             legal, or clinical advice, and she doesn’t remember conversations between sessions. Your
-            conversation isn’t shared with your coach unless you choose to reach out, and Grace never
-            alerts anyone on her own.
+            conversation isn’t shared with your coach unless you choose to reach out, and Grace
+            never alerts anyone on her own.
           </p>
           <p className="mt-2 text-ink-muted">
             You can use everything else in VRCC without Grace, and you can turn her off any time on
@@ -214,7 +221,9 @@ export function GracePage() {
       {disclosureBanner}
 
       {!online ? (
-        <Alert tone="attention">Grace needs an internet connection. Support Now still works offline.</Alert>
+        <Alert tone="attention">
+          Grace needs an internet connection. Support Now still works offline.
+        </Alert>
       ) : null}
       {surfaceSupport ? (
         <Alert tone="critical">
@@ -263,7 +272,9 @@ export function GracePage() {
                 }`}
               >
                 {m.role === 'assistant' ? (
-                  <span className="mb-1 block text-xs font-semibold text-ink-faint">Grace · AI</span>
+                  <span className="mb-1 block text-xs font-semibold text-ink-faint">
+                    Grace · AI
+                  </span>
                 ) : null}
                 {m.content}
               </div>
