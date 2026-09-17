@@ -1,37 +1,84 @@
 import { readFileSync } from 'node:fs';
 
+// Static invariant guard for the prepared P0 classification-isolation
+// migration (SEC-P0-001 / Gate G2). Runnable without a database — asserts the
+// security posture is present in source so a future edit cannot silently
+// weaken it. The behavioral proof lives in
+// supabase/launch/tests/p0_classification_isolation_negative_tests.sql
+// (isolated replay / disposable staging only).
+
 const sql = readFileSync(
-  'supabase/launch/prepared/0147_shared_intake_workflow.prepared.sql',
+  'supabase/launch/prepared/0147_classification_authorization_isolation.prepared.sql',
   'utf8',
 );
+const rollback = readFileSync(
+  'supabase/launch/prepared/0147_classification_authorization_isolation.rollback.sql',
+  'utf8',
+);
+
 const required = [
-  ['schema-qualified role enum', /alter type recoveryos\.role_key add value/],
-  ['other-note invariant', /leads_triage_note_other_check/],
-  ['dormant deadline invariant', /leads_response_due_dormant_check/],
   [
-    'linked-intake one-to-one index',
-    /create unique index if not exists leads_linked_intake_id_idx/,
+    'privileged-role vocabulary lists all eight staff/admin keys',
+    /'coach', 'navigator', 'residence_staff', 'residence_manager',\s*\n\s*'program_manager', 'administrator', 'executive', 'system_administrator'/,
   ],
-  ['route_lead intake existence check', /'code', 'intake_not_found'/],
-  ['route_lead residence match check', /'code', 'intake_residence_mismatch'/],
-  ['route_lead duplicate-link envelope', /'code', 'intake_already_linked'/],
-  ['route_lead link-interest consistency', /'code', 'link_conflicts_with_interest'/],
-  ['route_lead explicit audited unlink', /'lead\.unlinked'/],
-  ['reopen rejected until matrix ratified', /'code', 'reopen_not_ratified'/],
-  ['record_lead_contact existence check', /'code', 'not_found'\)\s*;\s*end if;\s*if p_outcome/],
-  ['assignee queue index', /leads_assignee_status_created_idx/],
-  ['contact lead index', /lead_contact_events_lead_occurred_idx/],
-  ['contact responder index', /lead_contact_events_responder_idx/],
-  ['channel validation', /'code', 'invalid_channel'/],
-  ['minutes validation', /'code', 'invalid_minutes'/],
+  [
+    'has_role carries the classification guard',
+    /create or replace function recoveryos\.has_role[\s\S]*?is_privileged_role\(target_role\)\s*\n\s*and recoveryos\.is_test_fixture\(recoveryos\.current_person_id\(\)\)/,
+  ],
+  [
+    'staff_residence_ids carries the classification guard',
+    /create or replace function recoveryos\.staff_residence_ids[\s\S]*?and not recoveryos\.is_test_fixture\(recoveryos\.current_person_id\(\)\)/,
+  ],
+  [
+    'is_residence_manager_of carries the classification guard',
+    /create or replace function recoveryos\.is_residence_manager_of[\s\S]*?and not recoveryos\.is_test_fixture\(recoveryos\.current_person_id\(\)\)/,
+  ],
+  [
+    'lead fan-out filters recipients to production persons',
+    /trg_lead_notify[\s\S]*?in \('administrator','coach','navigator'\)\s*\n\s*and recoveryos\.is_production_person\(ra\.person_id\)/,
+  ],
+  [
+    'listing fan-out filters recipients to production persons',
+    /trg_listing_submission_notify[\s\S]*?in \('administrator','system_administrator'\)\s*\n\s*and recoveryos\.is_production_person\(ra\.person_id\)/,
+  ],
+  [
+    'application-intake fan-out filters recipients to production persons',
+    /trg_application_intake_notify[\s\S]*?\('navigator','program_manager','administrator','system_administrator'\)\)\s*\n\s*and recoveryos\.is_production_person\(ra\.person_id\)/,
+  ],
+  [
+    'grant_role_assignment refuses privileged grants to fixtures',
+    /'code', 'test_fixture_privilege_blocked'/,
+  ],
+  [
+    // Revision 2 anti-disclosure ordering: inside grant_role_assignment the
+    // caller-authorization branch ('not_authorized') must precede BOTH
+    // target-dependent codes ('person_not_found', 'test_fixture_privilege_blocked'),
+    // so unauthorized callers cannot distinguish production, fixture, or
+    // nonexistent targets by response code.
+    'grant_role_assignment decides caller authorization before target lookups',
+    /create or replace function recoveryos\.grant_role_assignment[\s\S]*?'not_authorized'[\s\S]*?'person_not_found'[\s\S]*?'test_fixture_privilege_blocked'/,
+  ],
+  ['participant plane stays non-privileged (documented)', /participant and resident stay non-privileged/],
+  ['prepared file reloads PostgREST schema cache', /notify pgrst, 'reload schema';/],
 ];
+
 const failures = required.filter(([, p]) => !p.test(sql)).map(([name]) => name);
+
+// The rollback must restore the exact unguarded definitions and drop the helper.
+if (!/drop function if exists recoveryos\.is_privileged_role/.test(rollback)) {
+  failures.push('rollback drops is_privileged_role');
+}
+if (/is_test_fixture\(recoveryos\.current_person_id\(\)\)/.test(rollback)) {
+  failures.push('rollback restores unguarded definitions (no classification guard)');
+}
+
+// Governance hygiene mirrored from verify-0149: no unqualified role_key enum refs.
+if (/alter type\s+role_key\b/i.test(sql)) {
+  failures.push('0147 contains an unqualified role_key enum reference');
+}
+
 if (failures.length) {
   console.error('0147 prepared migration guard failed:', failures.join(', '));
   process.exit(1);
 }
-if (/alter type\s+role_key\s+add value/i.test(sql)) {
-  console.error('0147 contains an unqualified role_key enum reference.');
-  process.exit(1);
-}
-console.log('0147 prepared migration invariants verified.');
+console.log('0147 prepared P0 classification-isolation invariants verified.');
