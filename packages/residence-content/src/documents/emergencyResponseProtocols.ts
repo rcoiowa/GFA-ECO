@@ -9,7 +9,7 @@ export const emergencyResponseProtocols: ResidenceDocument = {
   key: 'emergency_response_protocols',
   name: 'Emergency Response Protocols',
   category: 'policy',
-  version: '1.0',
+  version: '1.1',
   summary:
     'Step-by-step response for overdose (naloxone), medical, mental-health crisis, fire, severe weather, and safety events — posted and reviewed with every resident.',
   requiresSignature: false,
@@ -24,7 +24,7 @@ export const emergencyResponseProtocols: ResidenceDocument = {
 ## Grace House Emergency Response Protocols
 
 Effective Date: February 3, 2026  
-Version: 1.0  
+Version: 1.1  
 Review Date: August 3, 2026 (6-month review)
 
 ## PURPOSE
@@ -465,7 +465,7 @@ CRISIS RESOURCES: - 988 Suicide & Crisis Lifeline: Call or text 988 - Your Life 
 
 LOCAL RESOURCES: - Nearest ER: MercyOne Des Moines Medical Center, 1111 6th Ave, Des Moines, IA 50314 - Your Life Iowa: 1-855-581-8111 · 988 Suicide & Crisis Lifeline: 988 - Poison Control: 1-800-222-1222
 
-INTERNAL CONTACTS: - House Manager: On-site — Residents Warmline 515-310-DIAL (3425) - Executive Director: Thomas Miller — Office 515-220-8771 - GFA President: Dave Stout — via Office 515-220-8771 - Board Chair: via Office 515-220-8771 or Toll-Free (877) 295-2535
+INTERNAL CONTACTS: - House Manager: On-site — Residents Warmline 515-310-DIAL (3425) - Founder & Executive Director: Thomas DeGarmeaux — Office 515-220-8771 - GFA President: Dave Stout — via Office 515-220-8771 - Board Chair: via Office 515-220-8771 or Toll-Free (877) 295-2535
 
 ### AFTER ANY EMERGENCY
 
@@ -546,7 +546,7 @@ Your Life Iowa: 1-855-581-8111
 ### STAFF ON-CALL: Residents Warmline 515-310-DIAL (3425) · Office 515-220-8771
 
 Grace For Addictions | Grace House  
-Emergency Response Protocols — Version 1.0  
-Effective: February 3, 2026
+Emergency Response Protocols — Version 1.1  
+Effective: February 3, 2026 · Revised: September 21, 2026
 `,
 };
