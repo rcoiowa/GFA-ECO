@@ -54,6 +54,8 @@ jobs:
         run: node scripts/verify-0151-prepared.mjs
       - name: Prepared-chain manifest lock (Gate A — exact rev-2 set, SHA-256 pinned)
         run: node scripts/verify-prepared-chain.mjs
+      - name: DOC-INTEGRITY 0152 prepared invariants (static — hashes, body pins, supersede-only, sequencing)
+        run: node scripts/verify-0152-docintegrity-prepared.mjs
       - name: Cloudflare execution and deployment boundaries
         run: node scripts/verify-cloudflare-boundaries.mjs
       - uses: denoland/setup-deno@v2
