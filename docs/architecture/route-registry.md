@@ -1,15 +1,18 @@
 # Route Registry — Canonical Platform
 
-One deployment (`apps/platform` → `vrcc.app`). Experience areas are lazy-loaded route
-subtrees. Frontend guards are navigation only; Postgres RLS is the enforcement
-boundary. Update this file in the same commit as any route change.
+One deployment (`apps/platform`) can serve several host-specific public entrances. The
+`recoverycommunity.center` host opens the public Recovery Community Center entrance;
+`recoverycommunity.app` redirects `/` to `/vrcc/today`. These host mappings are source
+behavior only until Cloudflare custom domains are bound and live verified. Experience
+areas are lazy-loaded route subtrees. Frontend guards are navigation only; Postgres RLS
+is the enforcement boundary. Update this file in the same commit as any route change.
 Legacy source-build routes: `docs/source-inventory/route-registry-sources.md`.
 
 ## Public entrance
 
 | Route                              | Page                    | Access        |
 | ---------------------------------- | ----------------------- | ------------- |
-| `/`                                | Landing                 | Public        |
+| `/`                                | Host-specific landing (Recovery Community Center on recoverycommunity.center; participant entrance on recoverycommunity.app) | Public or guarded destination |
 | `/sign-in`                         | Sign in                 | Public        |
 | `/register`                        | Register                | Public        |
 | `/recovery-residences/grace-house` | Grace House public info | Public        |

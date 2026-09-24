@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { LoadingState } from '@recoveryos/ui';
 import { LandingPage } from './public/LandingPage';
+import { CommunityCenterPage } from './public/CommunityCenterPage';
 import { SignInPage } from './public/SignInPage';
 import { RegisterPage } from './public/RegisterPage';
 import { GraceHousePage } from './public/GraceHousePage';
@@ -35,7 +36,14 @@ const HOST_HOMES: Record<string, string> = {
 };
 
 function HostHome() {
-  const home = HOST_HOMES[window.location.hostname.toLowerCase()];
+  const hostname = window.location.hostname.toLowerCase();
+  if (hostname === 'recoverycommunity.center' || hostname === 'www.recoverycommunity.center') {
+    return <CommunityCenterPage />;
+  }
+  if (hostname === 'recoverycommunity.app' || hostname === 'www.recoverycommunity.app') {
+    return <Navigate to="/vrcc/today" replace />;
+  }
+  const home = HOST_HOMES[hostname];
   return home ? <Navigate to={home} replace /> : <LandingPage />;
 }
 const ParticipantArea = lazy(() =>
