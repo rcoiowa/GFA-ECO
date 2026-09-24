@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const WEATHER_URL =
-  'https://api.open-meteo.com/v1/forecast?latitude=41.5868&longitude=-93.6250&current=temperature_2m,precipitation,rain,showers,snowfall,weather_code,cloud_cover,is_day&temperature_unit=fahrenheit&timezone=America%2FChicago&forecast_days=1';
+const WEATHER_URL = '/api/weather/des-moines';
 const REFRESH_MS = 15 * 60 * 1000;
 const ZONE = 'America/Chicago';
 
@@ -9,7 +8,7 @@ type Weather = {
   isDay: boolean;
   condition: 'clear' | 'cloudy' | 'rain' | 'snow' | 'storm';
   temperature: number;
-  observedAt: string;
+  observedAt: number;
 };
 
 export function classifyWeather(current: {
@@ -21,7 +20,7 @@ export function classifyWeather(current: {
   showers: number;
   snowfall: number;
   temperature_2m: number;
-  time: string;
+  time: number;
 }): Weather | null {
   if (
     !Number.isFinite(current.weather_code) ||
@@ -29,15 +28,27 @@ export function classifyWeather(current: {
     !Number.isFinite(current.cloud_cover) ||
     !Number.isFinite(current.precipitation) ||
     (current.is_day !== 0 && current.is_day !== 1) ||
-    typeof current.time !== 'string'
-  ) return null;
+    !Number.isFinite(current.time) ||
+    !Number.isFinite(current.rain) ||
+    !Number.isFinite(current.showers) ||
+    !Number.isFinite(current.snowfall)
+  )
+    return null;
   const code = current.weather_code;
-  const condition = code >= 95 ? 'storm'
-    : current.snowfall > 0 || [71, 73, 75, 77, 85, 86].includes(code) ? 'snow'
-    : current.rain > 0 || current.showers > 0 || (current.precipitation > 0 && code >= 51) ||
-      (code >= 51 && code <= 67) || (code >= 80 && code <= 82) ? 'rain'
-    : current.cloud_cover >= 65 || [2, 3, 45, 48].includes(code) ? 'cloudy'
-    : 'clear';
+  const condition =
+    code >= 95
+      ? 'storm'
+      : current.snowfall > 0 || [71, 73, 75, 77, 85, 86].includes(code)
+        ? 'snow'
+        : current.rain > 0 ||
+            current.showers > 0 ||
+            (current.precipitation > 0 && code >= 51) ||
+            (code >= 51 && code <= 67) ||
+            (code >= 80 && code <= 82)
+          ? 'rain'
+          : current.cloud_cover >= 65 || [2, 3, 45, 48].includes(code)
+            ? 'cloudy'
+            : 'clear';
   return {
     isDay: current.is_day === 1,
     condition,
@@ -47,7 +58,11 @@ export function classifyWeather(current: {
 }
 
 function localHour(date: Date): number {
-  return Number(new Intl.DateTimeFormat('en-US', { timeZone: ZONE, hour: 'numeric', hourCycle: 'h23' }).format(date));
+  return Number(
+    new Intl.DateTimeFormat('en-US', { timeZone: ZONE, hour: 'numeric', hourCycle: 'h23' }).format(
+      date,
+    ),
+  );
 }
 
 export function useDesMoinesSky() {
@@ -59,10 +74,13 @@ export function useDesMoinesSky() {
     const controller = new AbortController();
     const refresh = async () => {
       try {
-        const response = await fetch(WEATHER_URL, { signal: controller.signal });
+        const response = await fetch(WEATHER_URL, {
+          signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]),
+        });
         if (!response.ok) throw new Error('weather unavailable');
         const data: unknown = await response.json();
-        if (!data || typeof data !== 'object' || !('current' in data)) throw new Error('invalid weather');
+        if (!data || typeof data !== 'object' || !('current' in data))
+          throw new Error('invalid weather');
         const next = classifyWeather(data.current as Parameters<typeof classifyWeather>[0]);
         if (active) setWeather(next);
       } catch {
@@ -89,13 +107,8 @@ export function useDesMoinesSky() {
   }, []);
 
   // A response older than two refresh windows cannot claim current conditions.
-  const currentLocal = new Intl.DateTimeFormat('sv-SE', {
-    timeZone: ZONE, year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-  }).format(now).replace(' ', 'T');
-  const fresh = weather && Math.abs(
-    new Date(currentLocal).getTime() - new Date(weather.observedAt).getTime()
-  ) <= 30 * 60_000 ? weather : null;
+  const fresh =
+    weather && Math.abs(now.getTime() - weather.observedAt * 1000) <= 30 * 60_000 ? weather : null;
   const hour = localHour(now);
   return {
     isDay: fresh?.isDay ?? (hour >= 7 && hour < 19),
@@ -103,7 +116,10 @@ export function useDesMoinesSky() {
     temperature: fresh?.temperature,
     live: Boolean(fresh),
     time: new Intl.DateTimeFormat('en-US', {
-      timeZone: ZONE, hour: 'numeric', minute: '2-digit', hour12: true,
+      timeZone: ZONE,
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
     }).format(now),
   };
 }

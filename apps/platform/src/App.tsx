@@ -67,6 +67,7 @@ export function App() {
     <Routes>
       {/* Public entrance — front door chosen by domain (ADR-0014) */}
       <Route path="/" element={<HostHome />} />
+      <Route path="/community-center" element={<CommunityCenterPage />} />
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/register" element={<RegisterPage />} />
       {/* Anonymous Support Now — the safety path never requires an account. */}

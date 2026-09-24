@@ -10,15 +10,16 @@ Legacy source-build routes: `docs/source-inventory/route-registry-sources.md`.
 
 ## Public entrance
 
-| Route                              | Page                    | Access        |
-| ---------------------------------- | ----------------------- | ------------- |
+| Route                              | Page                                                                                                                         | Access                        |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | `/`                                | Host-specific landing (Recovery Community Center on recoverycommunity.center; participant entrance on recoverycommunity.app) | Public or guarded destination |
-| `/sign-in`                         | Sign in                 | Public        |
-| `/register`                        | Register                | Public        |
-| `/recovery-residences/grace-house` | Grace House public info | Public        |
-| `/onboarding`                      | Person provisioning     | Authenticated |
-| `/not-authorized`                  | Access explanation      | Any           |
-| `*`                                | Not found               | Any           |
+| `/community-center`                | Recovery Community Center preview on any host                                                                                | Public                        |
+| `/sign-in`                         | Sign in                                                                                                                      | Public                        |
+| `/register`                        | Register                                                                                                                     | Public                        |
+| `/recovery-residences/grace-house` | Grace House public info                                                                                                      | Public                        |
+| `/onboarding`                      | Person provisioning                                                                                                          | Authenticated                 |
+| `/not-authorized`                  | Access explanation                                                                                                           | Any                           |
+| `*`                                | Not found                                                                                                                    | Any                           |
 
 ## `/app` — VRCC participant (lazy chunk, `RequirePerson`)
 

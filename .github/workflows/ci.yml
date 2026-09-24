@@ -67,6 +67,8 @@ jobs:
             supabase/functions/ejwrh/index.ts
       - name: Edge Function receiver tests (deno test)
         run: deno test --allow-env supabase/functions/tests/
+      - name: Platform weather proxy tests
+        run: node --test workers/platform/*.test.mjs
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build

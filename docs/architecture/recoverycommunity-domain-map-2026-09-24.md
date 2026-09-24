@@ -8,16 +8,16 @@ separate database or a copy of the application. The same Worker can serve multip
 hostnames and let `HostHome` choose the initial view. Internal routes and RLS retain
 their own access rules.
 
-| Address | Intended public meaning | Root behavior in this change | Binding status |
-| --- | --- | --- | --- |
-| `recoverycommunity.center` | Public Recovery Community Center and wayfinding | Illustrated front door, then support, community, housing, or sign-in | Source prepared; Cloudflare binding unverified |
-| `recoverycommunity.app` | Participant application | Redirect to guarded `/vrcc/today` | Source prepared; Cloudflare binding unverified |
-| `recoveryresidence.org` | Public recovery housing directory | Existing redirect to `/recovery-residences` | Existing source mapping; binding unverified |
-| `recoveryresidence.app` | Housing operator entrance | Existing redirect to `/recovery-residences/list-your-residence` | Existing source mapping; binding unverified |
-| `vrcc.app` | Legacy virtual entrance; proposed future immersive experience | Existing default landing remains until a separate cutover decision | Live site is separate from verified canonical staging; do not repoint implicitly |
-| `recoveryos-staging.thomas-499.workers.dev` | Test address for the canonical Worker | Existing default landing and all shared routes | Runtime version and configuration require live Cloudflare verification |
+| Address                                     | Intended public meaning                                       | Root behavior in this change                                         | Binding status                                                                   |
+| ------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `recoverycommunity.center`                  | Public Recovery Community Center and wayfinding               | Illustrated front door, then support, community, housing, or sign-in | Source prepared; Cloudflare binding unverified                                   |
+| `recoverycommunity.app`                     | Participant application                                       | Redirect to guarded `/vrcc/today`                                    | Source prepared; Cloudflare binding unverified                                   |
+| `recoveryresidence.org`                     | Public recovery housing directory                             | Existing redirect to `/recovery-residences`                          | Existing source mapping; binding unverified                                      |
+| `recoveryresidence.app`                     | Housing operator entrance                                     | Existing redirect to `/recovery-residences/list-your-residence`      | Existing source mapping; binding unverified                                      |
+| `vrcc.app`                                  | Legacy virtual entrance; proposed future immersive experience | Existing default landing remains until a separate cutover decision   | Live site is separate from verified canonical staging; do not repoint implicitly |
+| `recoveryos-staging.thomas-499.workers.dev` | Test address for the canonical Worker                         | Existing default landing; center preview at `/community-center`      | Runtime version and configuration require live Cloudflare verification           |
 
-The building's *physical* front door is a different thing from the illustrated
+The building's _physical_ front door is a different thing from the illustrated
 front door on the site. A QR code or sign at the building can link to
 `recoverycommunity.center` for public wayfinding or, after its domain is bound
 and verified, to `recoverycommunity.app` for participant sign-in. Neither address
@@ -58,12 +58,30 @@ and effects and uses an approximate local-time scene. The user-facing footer
 attributes Open-Meteo and describes the conditions as model estimates, not
 ground observations.
 
-**Before public traffic:** confirm GFA's proposed use qualifies under the
-Open-Meteo free API's non-commercial terms, or select a licensed plan/provider.
-The free endpoint is limited to 10,000 calls per day, so a direct per-browser
-15-minute poll is suitable for staging but must be replaced by a shared
-Cloudflare cache/proxy or other approved weather feed before a public campaign.
-Keep any paid API key on the Worker side, never in frontend JavaScript. Verify
-the production CSP permits the chosen weather endpoint. If the goal is precise
-street-level rain detection, a weather model may not match conditions at the
-physical building; assess an observation/radar source separately.
+## Launch preparation follow-up
+
+The center is also available at `/community-center` on staging and every shared
+host. `/release.json` identifies the build's `VITE_RELEASE` and backend project;
+local builds are marked `local-unreleased` and are not deployment evidence.
+
+The browser now requests `/api/weather/des-moines` from the platform Worker. The
+Worker uses a fixed upstream/location, bounded response size, a five-second
+upstream timeout, a 15-minute edge cache and a short outage cache. Caller query
+strings, cookies, and credentials are not forwarded. UNIX observation timestamps
+avoid visitor-timezone and daylight-saving ambiguity. The platform keeps its
+honest time-based fallback on failures. Plain Vite dev/preview has no weather
+endpoint; use the Worker runtime to test weather.
+
+On September 24, the user confirmed nonprofit use without subscriptions or ads.
+Weather is therefore enabled in the prepared staging/candidate configs under the
+[Open-Meteo free noncommercial terms](https://open-meteo.com/en/terms). This does
+not purchase a plan or accept a new contract. The `WEATHER_ENABLED` switch can be
+set to `false` to show time-based artwork without upstream calls.
+
+The [Cloudflare Cache API](https://developers.cloudflare.com/workers/runtime-apis/cache/)
+is per data center, so this cache reduces calls but does not enforce a global
+10,000/day provider limit. Before a large campaign, measure provider usage and
+use a globally coordinated fetch schedule or a licensed plan if necessary.
+
+See `docs/deployment/community-center-launch-2026-09-24.md` for verified evidence,
+remaining live checks, exact auth redirects, and domain cutover/rollback steps.

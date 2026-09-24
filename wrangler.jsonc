@@ -8,9 +8,13 @@
   // Phase 9 cutover re-points the vrcc.app custom domain to this Worker.
   "$schema": "https://esm.sh/wrangler/config-schema.json",
   "name": "gfa-eco-recovery-residence-os",
+  "main": "workers/platform/index.mjs",
+  "vars": { "WEATHER_ENABLED": "true" },
   "compatibility_date": "2026-07-01",
   "assets": {
+    "binding": "ASSETS",
+    "run_worker_first": true,
     "directory": "./apps/platform/dist",
-    "not_found_handling": "single-page-application"
-  }
+    "not_found_handling": "single-page-application",
+  },
 }
