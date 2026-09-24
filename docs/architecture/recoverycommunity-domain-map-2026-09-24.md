@@ -45,3 +45,25 @@ not source code; the illustration is a new original asset. The currently served
 `vrcc.app/app` page contains older copy and appears to permit a retired YKY
 Supabase origin in its response CSP, so its runtime bundle must not be copied
 wholesale into the canonical CQCX platform.
+
+## Live sky increment
+
+The public entrance uses Des Moines coordinates and `America/Chicago` for its
+clock. It reads Open-Meteo's 15-minute current model conditions on load, on
+return to the browser tab, and every 15 minutes while open. The page selects a
+day or night illustration using the returned `is_day`, then shows a rain,
+snow, cloud, or storm layer from current weather and precipitation. If a
+response fails or is more than 30 minutes old, the page removes weather claims
+and effects and uses an approximate local-time scene. The user-facing footer
+attributes Open-Meteo and describes the conditions as model estimates, not
+ground observations.
+
+**Before public traffic:** confirm GFA's proposed use qualifies under the
+Open-Meteo free API's non-commercial terms, or select a licensed plan/provider.
+The free endpoint is limited to 10,000 calls per day, so a direct per-browser
+15-minute poll is suitable for staging but must be replaced by a shared
+Cloudflare cache/proxy or other approved weather feed before a public campaign.
+Keep any paid API key on the Worker side, never in frontend JavaScript. Verify
+the production CSP permits the chosen weather endpoint. If the goal is precise
+street-level rain detection, a weather model may not match conditions at the
+physical building; assess an observation/radar source separately.

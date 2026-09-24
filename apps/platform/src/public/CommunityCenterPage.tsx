@@ -1,8 +1,11 @@
 import { Link } from 'react-router';
 import { GFA_CONTACTS } from '@recoveryos/safety';
+import { useDesMoinesSky } from './useDesMoinesSky';
+import './communityCenterSky.css';
 
 /** A public front door on the shared RecoveryOS deployment. */
 export function CommunityCenterPage() {
+  const sky = useDesMoinesSky();
   const doors = [
     { to: '/support', title: 'I need support now', body: 'See immediate support options and ways to talk with someone. No sign-in required.' },
     { to: '/register', title: 'I want to connect and grow', body: 'Begin with the virtual community, recovery tools, and people who can walk alongside you.' },
@@ -25,8 +28,20 @@ export function CommunityCenterPage() {
           <p className="text-center text-sm font-semibold uppercase tracking-[0.2em] text-[#70d9dd]">Grace For Addictions · Des Moines, Iowa</p>
           <h1 id="center-title" className="mt-4 text-center font-serif text-4xl font-semibold sm:text-6xl">Iowa’s Recovery Community Center</h1>
           <p className="mx-auto mt-5 max-w-2xl text-center text-lg text-[#d0d7e5]">A place to find connection, peer-led recovery support, and a way forward. You belong here. Start where you are.</p>
-          <div className="relative mx-auto mt-9 aspect-[16/9] w-full overflow-hidden rounded-xl border border-[#69d6d6]/20 bg-[#15335d] shadow-2xl shadow-black/40">
-            <img src="/images/recovery-community-center-night.png" alt="Illustrated recovery community center with a lit front door beneath a nighttime Iowa sky" className="h-full w-full object-cover" />
+          <div className="mt-6 text-center text-sm text-[#cbd9df]" role="status">
+            Des Moines · {sky.time} · {sky.live
+              ? `${sky.temperature}°F · ${sky.condition === 'storm' ? 'Storms' : sky.condition === 'rain' ? 'Rain' : sky.condition === 'snow' ? 'Snow' : sky.condition === 'cloudy' ? 'Cloudy' : 'Clear'} · Modeled current conditions`
+              : 'Local time scene · Live weather unavailable'}
+          </div>
+          <div className="relative mx-auto mt-5 aspect-[16/9] w-full overflow-hidden rounded-xl border border-[#69d6d6]/20 bg-[#15335d] shadow-2xl shadow-black/40">
+            <img
+              src={sky.isDay ? '/images/recovery-community-center-day.png' : '/images/recovery-community-center-night.png'}
+              alt={`Illustrated recovery community center with a lit front door in ${sky.isDay ? 'daylight' : 'nighttime'}`}
+              className="h-full w-full object-cover"
+            />
+            {sky.live && sky.condition === 'cloudy' && <div aria-hidden="true" className="center-clouds" />}
+            {sky.live && (sky.condition === 'rain' || sky.condition === 'storm') && <div aria-hidden="true" className="center-rain" />}
+            {sky.live && sky.condition === 'snow' && <div aria-hidden="true" className="center-snow" />}
             <a href="#front-door" aria-label="Enter the Recovery Community Center and choose what you need" className="absolute left-[44%] top-[56%] h-[23%] w-[12%] rounded-md border-2 border-transparent outline-offset-4 hover:border-[#80eeee] focus-visible:border-[#80eeee] focus-visible:outline-4 focus-visible:outline-[#80eeee]" />
           </div>
           <div className="mt-6 text-center">
@@ -51,6 +66,7 @@ export function CommunityCenterPage() {
       </main>
       <footer className="border-t border-white/10 px-4 py-6 text-sm text-[#c6d0dc]">
         <p className="mx-auto max-w-6xl">Grace For Addictions · Connection Prevents Crisis · No Shame. No Stigma. Just Grace. · In immediate danger, call 911. <Link to="/support" className="underline underline-offset-2">All support options</Link></p>
+        <p className="mx-auto mt-2 max-w-6xl">Weather data: <a href="https://open-meteo.com/" className="underline underline-offset-2">Open-Meteo</a> (CC BY 4.0). Conditions are model estimates and may differ from what you see outside.</p>
       </footer>
     </div>
   );

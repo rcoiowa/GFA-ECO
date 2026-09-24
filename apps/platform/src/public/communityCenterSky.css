@@ -1,0 +1,38 @@
+.center-clouds {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(39, 53, 76, .35), rgba(51, 64, 79, .06) 72%);
+}
+
+.center-rain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(25, 40, 66, .28), rgba(25, 40, 66, .10)),
+    repeating-linear-gradient(106deg, transparent 0 23px, rgba(178, 220, 255, .44) 24px, transparent 25px 45px);
+  background-size: auto, 180px 180px;
+  animation: center-rain-fall .6s linear infinite;
+}
+
+.center-snow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(255,255,255,.88) 1.5px, transparent 2px);
+  background-size: 29px 37px;
+  animation: center-snow-fall 8s linear infinite;
+}
+
+@keyframes center-rain-fall {
+  to { background-position: 0 0, -35px 180px; }
+}
+
+@keyframes center-snow-fall {
+  to { background-position: 25px 74px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .center-rain, .center-snow { animation: none; }
+}
