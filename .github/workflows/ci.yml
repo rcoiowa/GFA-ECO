@@ -72,6 +72,8 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+      - name: Decode community center artwork (source and deployable assets)
+        run: node scripts/check-center-artwork.mjs
       - name: Enforce canonical RecoveryOS backend in production assets
         run: |
           RETIRED_REF='ykykeioydvtxpyreshhs'
