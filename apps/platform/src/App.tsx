@@ -2,11 +2,14 @@ import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { LoadingState } from '@recoveryos/ui';
 import { LandingPage } from './public/LandingPage';
+import { CommunityCenterPage } from './public/CommunityCenterPage';
 import { SignInPage } from './public/SignInPage';
 import { RegisterPage } from './public/RegisterPage';
 import { GraceHousePage } from './public/GraceHousePage';
 import { ResidenceDirectoryPage } from './public/ResidenceDirectoryPage';
 import { ResidenceApplyPage } from './public/ResidenceApplyPage';
+import { EJWRHPage } from './public/EJWRHPage';
+import { EJWRHApplyPage } from './public/EJWRHApplyPage';
 import { MyApplicationPage } from './public/MyApplicationPage';
 import { ListYourResidencePage } from './public/ListYourResidencePage';
 import { SupportNowPage } from './public/SupportNowPage';
@@ -35,7 +38,14 @@ const HOST_HOMES: Record<string, string> = {
 };
 
 function HostHome() {
-  const home = HOST_HOMES[window.location.hostname.toLowerCase()];
+  const hostname = window.location.hostname.toLowerCase();
+  if (hostname === 'recoverycommunity.center' || hostname === 'www.recoverycommunity.center') {
+    return <CommunityCenterPage />;
+  }
+  if (hostname === 'recoverycommunity.app' || hostname === 'www.recoverycommunity.app') {
+    return <Navigate to="/vrcc/today" replace />;
+  }
+  const home = HOST_HOMES[hostname];
   return home ? <Navigate to={home} replace /> : <LandingPage />;
 }
 const ParticipantArea = lazy(() =>
@@ -59,6 +69,7 @@ export function App() {
     <Routes>
       {/* Public entrance — front door chosen by domain (ADR-0014) */}
       <Route path="/" element={<HostHome />} />
+      <Route path="/community-center" element={<CommunityCenterPage />} />
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/register" element={<RegisterPage />} />
       {/* Anonymous Support Now — the safety path never requires an account. */}
@@ -67,6 +78,8 @@ export function App() {
       <Route path="/recovery-residences/list-your-residence" element={<ListYourResidencePage />} />
       <Route path="/recovery-residences/grace-house" element={<GraceHousePage />} />
       <Route path="/recovery-residences/grace-house/apply" element={<ResidenceApplyPage />} />
+      <Route path="/recovery-residences/ejwrh" element={<EJWRHPage />} />
+      <Route path="/recovery-residences/ejwrh/apply" element={<EJWRHApplyPage />} />
       <Route
         path="/recovery-residences/my-application"
         element={
