@@ -106,7 +106,7 @@ export async function submitResidenceListing(
   return { submissionId: out.submission_id! };
 }
 
-export interface GraceHouseApplicationInput {
+export interface ResidenceApplicationIntakeInput {
   residenceId: number;
   applicantName: string;
   applicantEmail?: string;
@@ -117,20 +117,22 @@ export interface GraceHouseApplicationInput {
   answers?: Record<string, string>;
   consentToContact?: boolean;
   turnstileToken?: string;
+  companyWebsite?: string;
+  source?: string;
 }
 
 /**
- * Flow 2 — submit a Grace House application BEFORE having an account. Writes to
+ * Flow 2 — submit a residence application BEFORE having an account. Writes to
  * the sensitive pre-account intake table via the service-role boundary. No
  * account, person, or residency is created. Returns only an opaque intake id
  * (the row is never read back by the browser).
  */
-export async function submitGraceHouseApplication(
-  input: GraceHouseApplicationInput,
+export async function submitResidenceApplicationIntake(
+  input: ResidenceApplicationIntakeInput,
 ): Promise<{ intakeId: number }> {
   const { data, error } = await getSupabase().functions.invoke('residence-intake', {
     body: {
-      kind: 'grace_house_application',
+      kind: 'residence_application',
       residence_id: input.residenceId,
       applicant_name: input.applicantName,
       applicant_email: input.applicantEmail,
@@ -140,6 +142,8 @@ export async function submitGraceHouseApplication(
       answers: input.answers ?? {},
       consent_to_contact: input.consentToContact ?? false,
       turnstile_token: input.turnstileToken,
+      company_website: input.companyWebsite,
+      source: input.source,
     },
   });
   if (error) throw error;
@@ -147,3 +151,7 @@ export async function submitGraceHouseApplication(
   if (!out?.ok) throw new Error(out?.code ?? 'application_submit_failed');
   return { intakeId: out.intake_id! };
 }
+
+/** @deprecated Use submitResidenceApplicationIntake for any residence. */
+export const submitGraceHouseApplication = submitResidenceApplicationIntake;
+export type GraceHouseApplicationInput = ResidenceApplicationIntakeInput;

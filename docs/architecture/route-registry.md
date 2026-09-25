@@ -10,16 +10,23 @@ Legacy source-build routes: `docs/source-inventory/route-registry-sources.md`.
 
 ## Public entrance
 
-| Route                              | Page                                                                                                                         | Access                        |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| `/`                                | Host-specific landing (Recovery Community Center on recoverycommunity.center; participant entrance on recoverycommunity.app) | Public or guarded destination |
-| `/community-center`                | Recovery Community Center preview on any host                                                                                | Public                        |
-| `/sign-in`                         | Sign in                                                                                                                      | Public                        |
-| `/register`                        | Register                                                                                                                     | Public                        |
-| `/recovery-residences/grace-house` | Grace House public info                                                                                                      | Public                        |
-| `/onboarding`                      | Person provisioning                                                                                                          | Authenticated                 |
-| `/not-authorized`                  | Access explanation                                                                                                           | Any                           |
-| `*`                                | Not found                                                                                                                    | Any                           |
+| Route                                      | Page                                                                                                                         | Access                        |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `/`                                        | Host-specific landing (Recovery Community Center on recoverycommunity.center; participant entrance on recoverycommunity.app) | Public or guarded destination |
+| `/community-center`                        | Recovery Community Center preview on any host                                                                                | Public                        |
+| `/sign-in`                                 | Sign in                                                                                                                      | Public                        |
+| `/register`                                | Register                                                                                                                     | Public                        |
+| `/support`                                 | Anonymous immediate-support options                                                                                          | Public                        |
+| `/recovery-residences`                     | Recovery housing options and Iowa directory                                                                                  | Public                        |
+| `/recovery-residences/list-your-residence` | Submit a residence for directory review                                                                                      | Public                        |
+| `/recovery-residences/grace-house`         | Grace House public info                                                                                                      | Public                        |
+| `/recovery-residences/grace-house/apply`   | Grace House application                                                                                                      | Public                        |
+| `/recovery-residences/ejwrh`               | Ernest & Johnnie White Recovery House public info                                                                            | Public                        |
+| `/recovery-residences/ejwrh/apply`         | Accountless, residence-bound EJWRH application                                                                               | Public                        |
+| `/recovery-residences/my-application`      | Application status                                                                                                           | Authenticated                 |
+| `/onboarding`                              | Person provisioning                                                                                                          | Authenticated                 |
+| `/not-authorized`                          | Access explanation                                                                                                           | Any                           |
+| `*`                                        | Not found                                                                                                                    | Any                           |
 
 ## `/app` — VRCC participant (lazy chunk, `RequirePerson`)
 
@@ -59,8 +66,8 @@ Legacy source-build routes: `docs/source-inventory/route-registry-sources.md`.
 | `/staff`     | Residence staff workspace     | 7     |
 | `/admin`     | Administrative command center | 7     |
 
-Planned public routes (content phases): `/about`, `/support`, `/resources`,
-`/meetings`, `/events`, `/recovery-residences`, `/privacy`, `/accessibility`.
+Planned public routes (content phases): `/about`, `/resources`, `/meetings`, `/events`,
+`/privacy`, `/accessibility`.
 
 ## workers/api (api.vrcc.app)
 

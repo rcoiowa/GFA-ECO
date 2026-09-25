@@ -8,6 +8,8 @@ import { RegisterPage } from './public/RegisterPage';
 import { GraceHousePage } from './public/GraceHousePage';
 import { ResidenceDirectoryPage } from './public/ResidenceDirectoryPage';
 import { ResidenceApplyPage } from './public/ResidenceApplyPage';
+import { EJWRHPage } from './public/EJWRHPage';
+import { EJWRHApplyPage } from './public/EJWRHApplyPage';
 import { MyApplicationPage } from './public/MyApplicationPage';
 import { ListYourResidencePage } from './public/ListYourResidencePage';
 import { SupportNowPage } from './public/SupportNowPage';
@@ -76,6 +78,8 @@ export function App() {
       <Route path="/recovery-residences/list-your-residence" element={<ListYourResidencePage />} />
       <Route path="/recovery-residences/grace-house" element={<GraceHousePage />} />
       <Route path="/recovery-residences/grace-house/apply" element={<ResidenceApplyPage />} />
+      <Route path="/recovery-residences/ejwrh" element={<EJWRHPage />} />
+      <Route path="/recovery-residences/ejwrh/apply" element={<EJWRHApplyPage />} />
       <Route
         path="/recovery-residences/my-application"
         element={

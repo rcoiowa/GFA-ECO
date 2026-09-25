@@ -82,4 +82,21 @@ describe('service-critical public routes stay mounted', () => {
     renderAt('/support');
     expect(screen.getByRole('heading', { name: 'Support, right now' })).toBeInTheDocument();
   });
+
+  it('/recovery-residences/ejwrh mounts the dedicated EJWRH profile', () => {
+    renderAt('/recovery-residences/ejwrh');
+    expect(
+      screen.getByRole('heading', { name: 'Ernest & Johnnie White Recovery House' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Apply to EJWRH' })).toHaveAttribute(
+      'href',
+      '/recovery-residences/ejwrh/apply',
+    );
+  });
+
+  it('/recovery-residences/ejwrh/apply mounts the in-app public application', () => {
+    renderAt('/recovery-residences/ejwrh/apply');
+    expect(screen.getByRole('heading', { name: 'Apply to EJWRH' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Send my application' })).toBeInTheDocument();
+  });
 });
