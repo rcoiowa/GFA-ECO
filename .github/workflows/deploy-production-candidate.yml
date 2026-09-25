@@ -58,9 +58,18 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
+      - name: Require housing application challenge configuration
+        env:
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
+        run: |
+          if [ -z "$VITE_TURNSTILE_SITE_KEY" ]; then
+            echo "::error::Set VITE_TURNSTILE_SITE_KEY and the matching residence-intake TURNSTILE_SECRET before deploying public housing applications."
+            exit 1
+          fi
       - run: pnpm build
         env:
           VITE_RELEASE: ${{ env.RELEASE_SHA }}
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
       - name: Enforce canonical backend in candidate assets
         run: |
           RETIRED_REF='ykykeioydvtxpyreshhs'

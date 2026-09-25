@@ -404,7 +404,7 @@ footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
     <div class="apply-panel">
       <h3>Ready to Apply to Grace House?</h3>
       <p>Thank you for considering Grace House as your next chapter. Once you've reviewed the stages above and the documents for each, you're prepared to complete the application. You belong here.</p>
-      <button class="btn btn-gold" onclick="go('apply')">ONLINE APPLICATION</button>
+      <button class="btn btn-gold" onclick="location.assign('/recovery-residences/grace-house/apply')">ONLINE APPLICATION</button>
       <button class="btn btn-line" style="border-color:#fff;color:#fff;margin-left:.6rem" onclick="openReferral(1, 'Grace House')">Partner Referral</button>
       <p style="margin-top:1rem;font-size:.85rem">Prefer paper? <a href="docs/GraceHouse_Application_and_PreScreening_Form.docx" download style="color:#fff;text-decoration:underline">Download the printable application</a> · Questions? Call 515-220-8771</p>
     </div>
@@ -429,7 +429,7 @@ footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
         <li><b>Fees:</b> shared room $175/week or $650/month prepaid · private room $200/week or $750/month prepaid · one-time $250 move-in fee (nonrefundable). Hardship payment arrangements are always available — start with a conversation before a due date.</li>
       </ul>
       <h4>Apply</h4>
-      <p><button class="btn btn-gold" onclick="go('ejwrh-apply')">START YOUR EJWRH APPLICATION</button></p>
+      <p><button class="btn btn-gold" onclick="location.assign('/recovery-residences/ejwrh/apply')">START YOUR EJWRH APPLICATION</button></p>
       <p style="margin-top:.8rem">Prefer to apply by phone or email? Email <b>ejwrh@rcoiowa.org</b> or call the GFA office at <b>515-220-8771</b> to request an application and schedule a conversation. Applying by contact is always equal — it never affects your eligibility or your place in line.</p>
       <p style="margin-top:.8rem"><button class="btn btn-purple" onclick="openReferral(2, 'Ernest & Johnnie White Recovery House')">Submit a Partner Referral</button> <span style="font-size:.85rem;color:var(--muted)">Probation, parole, IDOC, and treatment partners — delivered straight to the intake queue.</span></p>
     </div>
@@ -610,6 +610,7 @@ footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
 
 <script>
 function go(p){
+  if(p==='apply'||p==='ejwrh-apply'){ location.assign('/recovery-residences/'+(p==='apply'?'grace-house':'ejwrh')+'/apply'); return; }
   ['home','grace','ejwrh','ejwrh-apply','jerrys','apply'].forEach(x=>{
     document.getElementById('pg-'+x).classList.toggle('hidden', x!==p);
   });

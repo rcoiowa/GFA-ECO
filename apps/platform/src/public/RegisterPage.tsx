@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
+import { safeAuthReturnPath } from './authReturnPath';
 import { registrationSchema } from '@recoveryos/domain';
 import { getSupabase } from '@recoveryos/data-access';
 import { Alert, Button, Card, TextField } from '@recoveryos/ui';
@@ -8,7 +9,7 @@ export function RegisterPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   // Where to land after account setup (e.g. back to a residence application).
-  const next = searchParams.get('next');
+  const next = safeAuthReturnPath(searchParams.get('next'));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -38,7 +39,7 @@ export function RegisterPage() {
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/sign-in`,
+        emailRedirectTo: `${window.location.origin}/sign-in${next ? `?next=${encodeURIComponent(next)}` : ''}`,
         data: {
           first_name: parsed.data.firstName,
           last_name: parsed.data.lastName,
@@ -139,7 +140,7 @@ export function RegisterPage() {
           <p className="mt-5 text-ink-muted">
             Already have an account?{' '}
             <Link
-              to="/sign-in"
+              to={next ? `/sign-in?next=${encodeURIComponent(next)}` : '/sign-in'}
               className="font-medium text-experience-700 underline underline-offset-2"
             >
               Sign in

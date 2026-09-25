@@ -60,12 +60,21 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Require housing application challenge configuration
+        env:
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
+        run: |
+          if [ -z "$VITE_TURNSTILE_SITE_KEY" ]; then
+            echo "::error::Set VITE_TURNSTILE_SITE_KEY and the matching residence-intake TURNSTILE_SECRET before deploying public housing applications."
+            exit 1
+          fi
       - name: Build platform (canonical RecoveryOS-Launch backend)
         run: pnpm build
         env:
           VITE_SUPABASE_URL: https://cqcxvwoukyhxyokfwnjm.supabase.co
           VITE_SUPABASE_ANON_KEY: sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x
           VITE_RELEASE: ${{ env.RELEASE_SHA }}
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
       - name: Enforce canonical backend in staging assets
         run: |
           RETIRED_REF='ykykeioydvtxpyreshhs'

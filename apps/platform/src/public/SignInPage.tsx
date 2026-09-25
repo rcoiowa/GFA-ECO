@@ -1,11 +1,13 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
+import { safeAuthReturnPath } from './authReturnPath';
 import { signInSchema } from '@recoveryos/domain';
 import { getSupabase } from '@recoveryos/data-access';
 import { Alert, Button, Card, TextField } from '@recoveryos/ui';
 
 export function SignInPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const location = useLocation() as { state?: { from?: string } };
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -41,7 +43,9 @@ export function SignInPage() {
       );
       return;
     }
-    navigate(location.state?.from ?? '/home', { replace: true });
+    navigate(safeAuthReturnPath(searchParams.get('next')) ?? location.state?.from ?? '/home', {
+      replace: true,
+    });
   }
 
   return (

@@ -93,7 +93,30 @@ export async function weatherResponse(request, env, cache, fetcher = fetch) {
 
 export default {
   async fetch(request, env) {
-    if (new URL(request.url).pathname === WEATHER_PATH) {
+    const url = new URL(request.url);
+    if (
+      ['GET', 'HEAD'].includes(request.method) &&
+      ['/residence/directory/', '/residence/directory', '/residence/directory/index.html'].includes(
+        url.pathname,
+      )
+    ) {
+      const apply = url.searchParams.get('apply');
+      const home =
+        apply === 'ejwrh'
+          ? 'ejwrh'
+          : ['grace', 'grace-house'].includes(apply)
+            ? 'grace-house'
+            : null;
+      if (home)
+        return new Response(null, {
+          status: 302,
+          headers: {
+            Location: `${url.origin}/recovery-residences/${home}/apply`,
+            'Cache-Control': 'no-store',
+          },
+        });
+    }
+    if (url.pathname === WEATHER_PATH) {
       return weatherResponse(request, env, caches.default);
     }
     return env.ASSETS.fetch(request);
