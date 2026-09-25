@@ -5,8 +5,6 @@
 // application is a Cloudflare-served RecoveryOS page. Keep this public,
 // no-JWT endpoint only as a redirect for old links and bookmarks.
 
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
-
 export const EJWRH_APPLICATION_URL =
   'https://gfa-eco-recovery-residence-os.thomas-499.workers.dev/residence/directory/?apply=ejwrh';
 
