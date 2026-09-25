@@ -77,9 +77,10 @@ export function GraceHousePage() {
             Ready to apply?
           </h2>
           <p className="mt-2 max-w-2xl text-ink">
-            The Grace House site walks you through every document and house rule, then the
-            application itself. Submitting creates your resident account, and staff respond to every
-            application — with a bed or a place on the waitlist. Exploring is not a commitment.
+            Start with one short application. No account or password is required to apply. After
+            submitting, you can create or connect your free RecoveryOS account for VRCC access.
+            Staff will verify your identity and link your application. Admission and resident access
+            are separate steps; applying does not guarantee a bed.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
@@ -92,7 +93,7 @@ export function GraceHousePage() {
               href="https://gracehouse4.pages.dev/"
               className="inline-flex min-h-11 items-center rounded-md border border-experience-600 px-5 font-semibold text-experience-700 hover:bg-surface-raised"
             >
-              Visit the Grace House site
+              Read Grace House documents
             </a>
             {/* Plain anchor: the RecoveryResidence.org directory is a static
                 page served at this path, not a client-side route. */}

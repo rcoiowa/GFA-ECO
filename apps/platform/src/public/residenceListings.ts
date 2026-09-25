@@ -31,7 +31,7 @@ export const GFA_RESIDENCES: ResidenceListing[] = [
     contact: '515-220-8771 · gracehouse@graceforaddictions.org',
     description:
       "Women's recovery residence operated by Grace For Addictions. Phased program, life & recovery coaching, MAT/MOUD-affirming, all pathways honored.",
-    applyUrl: 'https://gracehouse4.pages.dev/',
+    applyUrl: '/recovery-residences/grace-house/apply',
     profilePath: '/recovery-residences/grace-house',
   },
   {

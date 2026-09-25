@@ -6,7 +6,7 @@
 // no-JWT endpoint only as a redirect for old links and bookmarks.
 
 export const EJWRH_APPLICATION_URL =
-  'https://gfa-eco-recovery-residence-os.thomas-499.workers.dev/residence/directory/?apply=ejwrh';
+  'https://gfa-eco-recovery-residence-os.thomas-499.workers.dev/recovery-residences/ejwrh/apply';
 
 export function handleEJWRHRequest(request: Request): Response {
   if (request.method !== 'GET' && request.method !== 'HEAD') {

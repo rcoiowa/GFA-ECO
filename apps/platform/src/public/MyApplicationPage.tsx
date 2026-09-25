@@ -103,8 +103,10 @@ export function MyApplicationPage() {
         ) : !application ? (
           <Card className="mt-6">
             <p className="text-ink">
-              You don&rsquo;t have a residence application yet. Recovery housing options — and how
-              to apply — live on the residence page.
+              No housing application is linked to this account yet. If you already submitted one,
+              please do not apply again. Call 515-220-8771 with your application reference so staff
+              can verify your identity and connect it. Your application can be reviewed while
+              account linking is pending.
             </p>
             <Link
               to="/recovery-residences"
@@ -142,10 +144,10 @@ export function MyApplicationPage() {
                 </p>
               ) : application.status === 'declined' ? (
                 <p className="mt-3 text-ink">
-                  <strong>Grace House wasn&rsquo;t the right fit this time</strong> — and staff will
-                  help you find a residence that is. &ldquo;Referred elsewhere&rdquo; is a service,
-                  not a rejection. The statewide directory is a good next step, and a VRCC navigator
-                  can make calls with you.
+                  <strong>{application.residence.name} wasn&rsquo;t the right fit this time</strong>{' '}
+                  — and staff will help you find a residence that is. &ldquo;Referred
+                  elsewhere&rdquo; is a service, not a rejection. The statewide directory is a good
+                  next step, and a VRCC navigator can make calls with you.
                 </p>
               ) : (
                 <p className="mt-3 text-ink">This application was withdrawn.</p>
@@ -204,7 +206,7 @@ export function MyApplicationPage() {
               </CardTitle>
               <p className="mt-2 text-ink">
                 {application.status === 'approved'
-                  ? 'Every Grace House resident is part of the VRCC — coaching, peer community, and recovery tools. Completing onboarding now means your support is in place before move-in day.'
+                  ? 'Your RecoveryOS account also gives you access to the VRCC — coaching, peer community, and recovery tools. Completing onboarding now means your support is in place before move-in day.'
                   : 'Free coaching, peer support, recovery circles, and resource navigation — no residence stay required, starting today.'}
               </p>
               <Link
