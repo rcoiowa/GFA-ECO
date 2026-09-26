@@ -42,3 +42,16 @@ The website is a review candidate. Its pages use `noindex,nofollow`. The existin
 - Static validation passed: three pages, 83 links, all local page/fragment references and image paths resolved; one H1 per page and alt attributes present.
 - Measured solid-color text/action contrast: 6.52:1 dark teal/white; 6.47:1 primary button; 5.91:1 muted body/paper; 5.81:1 contact band; 10.98:1 light teal/dark. This is not a claim of complete WCAG conformance.
 - Local visual QA infrastructure unavailable: bundled Playwright browser absent; official browser download returned a truncated archive. Cloud browser blocked localhost. Responsive CSS and reduced-motion/no-JS behavior are implemented but rendered mobile QA remains outstanding until a reachable staging preview.
+
+## Staging result — supersedes earlier desktop-preview limitation
+
+- Source release: `7b968ad701f17d4398ecb86d8bf16a1b6cf674b6`.
+- GitHub CI run 36271040808 (CI #224): success, including governance checks, typecheck, tests, and production build.
+- Existing Deploy staging workflow run 36271129703: success. It checked out the exact source release and passed the exact-commit CI gate.
+- Verified rendered preview: https://recoveryos-staging.thomas-499.workers.dev/gfa/
+- Cloud-browser desktop review at 1363 CSS pixels: logo and landscape loaded; no horizontal overflow; main typography and service-section layout reviewed; service disclosure interaction opened correctly.
+- Housing page links opened the correct signed-out `Apply to Grace House` and `Apply to EJWRH` forms, with optional account setup described after submission. No forms were submitted.
+- Contact Connect link opened the existing Wix Contact Connect form and scrolled to its heading (165px below viewport top). Its legacy technical field labels remain on Wix; the refreshed pages do not reproduce those labels. Submission-to-staff-queue delivery remains untested.
+- Community-center link opened Iowa's Recovery Community Center. The existing center displayed an honest live-weather-unavailable fallback during the check; this refresh makes no live-weather claim.
+- Actual phone-sized viewport, 200% text zoom, complete automated accessibility audit, and end-to-end intake delivery remain outstanding. Responsive and reduced-motion rules are implemented; do not label them independently certified.
+- Production Wix and production-candidate deployments remain unchanged. No production domain cutover was performed.
