@@ -15,7 +15,7 @@ const env = {
 };
 test('GFA host serves reviewed new homepage and removes preview-only noindex', async () => {
   const response = await gfaRoute(new Request('https://www.graceforaddictions.org/'), env);
-  assert.equal(seen.at(-1), '/gfa/index.html');
+  assert.equal(seen.at(-1), '/gfa/');
   const body = await response.text();
   assert.ok(!body.includes('noindex'));
   assert.ok(body.includes('rel="canonical"'));
@@ -35,5 +35,21 @@ test('Each verified legacy alias has a local destination, never a Wix site', asy
     const response = await gfaRoute(new Request('https://www.graceforaddictions.org' + path), env);
     assert.equal(response.status, 301);
     assert.equal(response.headers.get('location'), 'https://www.graceforaddictions.org' + target);
+  }
+});
+
+test('Clean public paths resolve to Cloudflare canonical assets without a redirect to /gfa', async () => {
+  for (const name of ['connect', 'housing', 'give', 'privacy', 'members']) {
+    const clean = await gfaRoute(new Request(`https://www.graceforaddictions.org/${name}`), env);
+    assert.equal(clean.status, 200);
+    assert.equal(seen.at(-1), `/gfa/${name}`);
+    const legacyExtension = await gfaRoute(
+      new Request(`https://www.graceforaddictions.org/${name}.html`),
+      env,
+    );
+    assert.equal(
+      legacyExtension.headers.get('location'),
+      `https://www.graceforaddictions.org/${name}`,
+    );
   }
 });

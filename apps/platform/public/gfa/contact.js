@@ -95,3 +95,10 @@ challenge.onerror = () =>
     'Online submission is unavailable. Please call 515-220-8771 or email connect@graceforaddictions.org.',
   );
 document.head.append(challenge);
+
+setTimeout(() => {
+  if (submit.disabled && !form.hasAttribute('aria-busy'))
+    show(
+      'The security check has not completed. You can wait, reload this page, or call 515-220-8771. Your request has not been sent.',
+    );
+}, 20000);

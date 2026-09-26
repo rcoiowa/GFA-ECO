@@ -17,10 +17,17 @@ if (toggle && navigation) {
   });
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
-      toggle.click(); toggle.focus();
+      toggle.click();
+      toggle.focus();
     }
   });
 }
 document.querySelectorAll('[data-current-year]').forEach((el) => {
-  el.textContent = new Intl.DateTimeFormat('en', {year:'numeric', timeZone:'America/Chicago'}).format(new Date());
+  el.textContent = new Intl.DateTimeFormat('en', {
+    year: 'numeric',
+    timeZone: 'America/Chicago',
+  }).format(new Date());
 });
+
+// Preserve the old Contact Connect bookmark without navigating to Wix.
+if (location.hash === '#comp-mgl4q6kp') location.replace('connect.html#contact-connect');

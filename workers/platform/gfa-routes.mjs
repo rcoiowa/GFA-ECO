@@ -72,7 +72,11 @@ export async function gfaRoute(request, env) {
   }
   if (GFA_REDIRECTS[path]) return Response.redirect(new URL(GFA_REDIRECTS[path], url.origin), 301);
   // Root-level assets and public pages are served from the same reviewed /gfa build.
-  const file = path === '/' ? 'index.html' : path.slice(1);
+  let file = path === '/' ? 'index.html' : path.slice(1);
+  if (pages.has(file + '.html')) file += '.html';
+  if (path === '/index.html') return Response.redirect(new URL('/', url.origin), 301);
+  if (path.endsWith('.html') && pages.has(file))
+    return Response.redirect(new URL(path.slice(0, -5), url.origin), 301);
   if (
     !pages.has(file) &&
     !['site.css', 'site.js', 'contact.js', 'contact-config.json'].includes(file) &&
@@ -80,7 +84,14 @@ export async function gfaRoute(request, env) {
     !file.startsWith('assets/horizon')
   )
     return null;
-  const asset = new URL(`/gfa/${file}`, url.origin);
+  const asset = new URL(
+    pages.has(file)
+      ? file === 'index.html'
+        ? '/gfa/'
+        : `/gfa/${file.slice(0, -5)}`
+      : `/gfa/${file}`,
+    url.origin,
+  );
   const response = await env.ASSETS.fetch(new Request(asset, request));
   if (!pages.has(file) || request.method === 'HEAD' || !response.ok) return response;
   const headers = new Headers(response.headers);
@@ -91,7 +102,7 @@ export async function gfaRoute(request, env) {
     .replace('<meta name="robots" content="noindex,nofollow">', '')
     .replace(
       '</head>',
-      `<link rel="canonical" href="https://www.graceforaddictions.org/${file === 'index.html' ? '' : file}"></head>`,
+      `<link rel="canonical" href="https://www.graceforaddictions.org/${file === 'index.html' ? '' : file.slice(0, -5)}"></head>`,
     );
   return new Response(html, { status: response.status, headers });
 }

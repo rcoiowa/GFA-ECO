@@ -35,3 +35,10 @@ Keep the existing Wix site, subscriptions and data intact through migration and 
 ## Sources
 
 Wix GetSiteContext; Members Query; Count Submissions; List Item SEO Tags (44 entries); official Wix headless frontend/member-login guidance; official Wix contacts export and analytics export guidance; repository and live CQCX lead receiver/schema.
+
+## Deployment evidence
+
+- Source f0aba91a0d4d31c780bc3e17b660b2978f1b8263: CI run 36276689042 passed; staging deploy run 36276805476 passed.
+- Canonical lead-intake v15 is ACTIVE and includes index.ts, handler.ts, contact.ts; previous v14 legacy receiver behavior remains on the original route.
+- Browser verified the native Contact Connect form at the staging `/gfa/connect` route, with local navigation and giving links. Cloudflare normalizes `.html` asset paths; the production routing adapter accounts for that normalization.
+- The form's security check did not complete in the cloud browser. No live successful submission or resulting staff receipt is claimed. Browser proof and handler validation tests are different evidence.
