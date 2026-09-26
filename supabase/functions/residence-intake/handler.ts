@@ -168,6 +168,12 @@ export async function handleRequest(req: Request, deps: IntakeDeps): Promise<Res
   if (expectedAction === null) {
     return json({ ok: false, code: 'unknown_kind' }, 400, cors);
   }
+  // Consent is a server boundary, not just a required browser checkbox.
+  // Both application kinds require the literal boolean; never coerce strings.
+  // Reject before challenge verification or creating a privileged DB client.
+  if (expectedAction === 'residence_application' && p.consent_to_contact !== true) {
+    return json({ ok: false, code: 'consent_required' }, 400, cors);
+  }
   const ip = req.headers.get('cf-connecting-ip');
   const originHostname = new URL(origin).hostname;
   const challengePassed = await turnstileOk(
@@ -260,7 +266,7 @@ export async function handleRequest(req: Request, deps: IntakeDeps): Promise<Res
     preferred_contact: clip(p.preferred_contact, 40),
     referral_source: clip(p.referral_source, 200),
     answers: boundedAnswers(p.answers),
-    consent_to_contact: asBool(p.consent_to_contact),
+    consent_to_contact: true,
     source: clip(p.source, 60) ?? 'gracehouse4',
   };
   const { data, error } = await admin

@@ -96,6 +96,28 @@ function withEnv(vars: Record<string, string | null>, fn: () => Promise<void>): 
 const CONFIGURED = { TURNSTILE_SECRET: 's3cret', INTAKE_TURNSTILE_OPTIONAL: null };
 const OPTIONAL_MODE = { TURNSTILE_SECRET: null, INTAKE_TURNSTILE_OPTIONAL: 'true' };
 
+for (const kind of ['residence_application', 'grace_house_application']) {
+  for (const consent of [undefined, null, false, 'true', 'on', 1]) {
+    Deno.test(`${kind} rejects consent ${String(consent)} before verification or DB access`, () =>
+      withEnv(CONFIGURED, async () => {
+        const res = await handleRequest(
+          req({ ...VALID_APPLICATION, kind, consent_to_contact: consent }),
+          {
+            getAdmin: () => {
+              throw new Error('Must not access database');
+            },
+            fetch: () => {
+              throw new Error('Must not verify a challenge');
+            },
+          },
+        );
+        assertEquals(res.status, 400);
+        assertEquals(await body(res), { ok: false, code: 'consent_required' });
+      }),
+    );
+  }
+}
+
 Deno.test('rejects non-POST methods', () =>
   withEnv(CONFIGURED, async () => {
     const { client } = fakeAdmin();
