@@ -1,3 +1,4 @@
+import { AppearanceControls } from '@recoveryos/ui';
 import { Link } from 'react-router';
 import { GFA_CONTACTS } from '@recoveryos/safety';
 
@@ -154,6 +155,14 @@ export function LandingPage() {
             All support options
           </Link>
         </p>
+        <details className="mx-auto mt-5 max-w-4xl px-4">
+          <summary className="cursor-pointer py-2 text-sm text-ink-muted">
+            Theme &amp; appearance
+          </summary>
+          <div className="max-w-sm py-2">
+            <AppearanceControls />
+          </div>
+        </details>
       </footer>
     </div>
   );
