@@ -6,3 +6,14 @@
 @media(max-width:1100px){.wrap{width:calc(100% - 64px)}.main-nav{gap:15px}.logo,.logo img{width:190px}.main-nav a{font-size:.8rem}.nav-contact{padding:12px!important}.path-grid{grid-template-columns:repeat(3,1fr)}.split{gap:50px}.hero-caption{left:32px;right:32px}.story-grid{grid-template-columns:1fr 1fr}.story.featured{grid-column:1/-1;min-height:210px}}
 @media(max-width:800px){.wrap{width:calc(100% - 40px)}.nav-wrap{min-height:76px;flex-wrap:wrap;padding:3px 0}.logo,.logo img{width:200px;height:68px}.menu-button{display:block}.main-nav{width:100%;display:flex;flex-wrap:wrap;gap:4px 20px;padding-bottom:12px}.js .main-nav{display:none}.js .main-nav.open{display:flex}.main-nav a{font-size:.875rem;padding:10px 0}.hero{min-height:660px}.hero h1{font-size:clamp(3.15rem,9vw,4.8rem)}.hero-content{padding:60px 0 105px}.hero:before{background:linear-gradient(90deg,#06161aef,#06161ab8),linear-gradient(0deg,#0b1d20,transparent)}.hero-caption{left:20px;right:20px;font-size:.7rem;gap:20px}.hero-caption span:last-child{max-width:120px;text-align:right}.intro-strip .wrap{align-items:flex-start;flex-direction:column;gap:8px}.section{padding:65px 0}.section-heading,.split{display:grid;grid-template-columns:1fr;gap:30px}.section-heading p{max-width:560px}.path-grid{grid-template-columns:1fr 1fr}.path-card{min-height:205px}.path-grid .path-card:last-child{grid-column:1/-1;min-height:150px}.path-grid .path-card:last-child .path-number{margin-bottom:18px}.story-grid,.housing-grid,.involvement-list,.steps{grid-template-columns:1fr}.story{min-height:230px}.house-card{padding:28px}.involvement-list{gap:16px}.contact-band{padding:60px 0}.contact-band .split{gap:40px}.footer-top,.footer-bottom{flex-direction:column}.footer-links{gap:16px 25px}.footer{padding-top:40px}.page-hero{padding:45px 0}.steps{gap:15px}.steps li{padding-bottom:16px;border-bottom:1px solid var(--line)}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
+
+/* Native Contact Connect: solid surfaces, visible labels and keyboard focus. */
+#contact-connect { margin-top:28px; max-width:580px; }
+#contact-connect label { display:block; margin:18px 0 7px; font-weight:600; }
+#contact-connect label span, .form-help { font-size:.9rem; font-weight:400; }
+#contact-connect input:not([type=checkbox]), #contact-connect select, #contact-connect textarea { width:100%; min-height:48px; padding:12px; border:1px solid #526365; border-radius:8px; font:inherit; color:var(--ink); background:#fff; }
+#contact-connect .check-label { display:flex; gap:12px; align-items:flex-start; margin:24px 0; }
+#contact-connect input[type=checkbox] { flex:0 0 22px; width:22px; height:22px; accent-color:var(--teal-dark); }
+#contact-connect button { margin-top:16px; }
+#contact-connect button:disabled { opacity:.65; cursor:wait; }
+#form-status { margin-top:18px; font-size:.95rem; color:var(--ink); }

@@ -35,12 +35,13 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleRequest } from './handler.ts';
+import { handleContact } from './contact.ts';
 
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 Deno.serve((req: Request) =>
-  handleRequest(req, {
+  (new URL(req.url).pathname.endsWith('/contact') ? handleContact : handleRequest)(req, {
     getAdmin: () => createClient(SB_URL, SERVICE_KEY, { db: { schema: 'recoveryos' } }),
   }),
 );
