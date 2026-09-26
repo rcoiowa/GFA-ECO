@@ -47,7 +47,7 @@ export function GraceHousePage() {
         <h1 className="text-3xl font-semibold text-ink">Grace House</h1>
         <p className="mt-2 max-w-2xl text-lg text-ink-muted">
           A women's recovery residence in Des Moines, Iowa, operated by Grace For Addictions — a
-          safe, structured, recovery-supportive home for women building their lives in recovery.
+          safe, structured, supportive home for women building their lives in recovery.
         </p>
 
         <section aria-labelledby="gh-about" className="mt-10 grid gap-4 sm:grid-cols-2">
