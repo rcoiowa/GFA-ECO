@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readFileSync } from 'node:fs';
 /**
  * Hearth token contrast gate (P4H §4: "Final token values are NOT locked until
  * contrast testing passes"). Checks the WCAG 2.2 relative-luminance ratios for
@@ -170,6 +171,50 @@ const checks = [
   ['dark focus on surface (ui)', T.dark.focus, T.dark.surface, 3],
   ['dark focus on raised (ui)', T.dark.focus, T.dark.raised, 3],
 ];
+
+// Read Original tokens directly so the gate cannot drift from the shipped kit.
+const originalCss = readFileSync(
+  new URL('../packages/design-tokens/src/themes/brand.css', import.meta.url),
+  'utf8',
+);
+function originalTokens(selector) {
+  const block = originalCss.slice(originalCss.indexOf(selector + ' {')).split('}')[0];
+  return Object.fromEntries(
+    [...block.matchAll(/--([\w-]+):\s*(#[\da-f]{6});/gi)].map((m) => [m[1], m[2]]),
+  );
+}
+const originalLight = originalTokens("[data-brand='original']");
+const originalDark = {
+  ...originalLight,
+  ...originalTokens("[data-brand='original'][data-appearance='dark']"),
+};
+for (const [mode, tokens] of Object.entries({ light: originalLight, dark: originalDark })) {
+  const soft = mode === 'light' ? '#edf6f5' : '#183638';
+  for (const bg of ['surface', 'surface-raised', 'surface-sunken']) {
+    for (const fg of ['ink', 'ink-muted', 'ink-faint', 'brand-700']) {
+      checks.push([
+        `Original ${mode} ${fg} on ${bg}`,
+        tokens[`color-${fg}`],
+        tokens[`color-${bg}`],
+        4.5,
+      ]);
+    }
+    checks.push([
+      `Original ${mode} focus on ${bg}`,
+      tokens['focus-ring'],
+      tokens[`color-${bg}`],
+      3,
+    ]);
+  }
+  checks.push([`Original ${mode} selected text`, tokens['color-brand-700'], soft, 4.5]);
+  checks.push([`Original ${mode} white on action`, '#ffffff', tokens['color-brand-600'], 4.5]);
+  checks.push([
+    `Original ${mode} white on action hover`,
+    '#ffffff',
+    mode === 'light' ? '#19494c' : '#24676a',
+    4.5,
+  ]);
+}
 
 let failed = 0;
 for (const [name, fg, bg, min] of checks) {
