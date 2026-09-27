@@ -1,32 +1,74 @@
-/*
- * BRAND SKIN layer (P4H spec §6A) — contract and mining ledger.
- *
- * A brand skin is applied as [data-brand] on <html> and may override ONLY:
- * brand colors (--color-brand-*, --color-experience-* accents), identity
- * assets, and limited typography accents. It must NOT fork component
- * behavior, interaction logic, accessibility, or canonical RecoveryOS UX,
- * and any skin ships only after scripts/contrast-check.mjs covers its
- * values. The GFA / RecoveryOS brand is the core system itself (tokens.css)
- * — no attribute needed.
- *
- * Mining ledger for the retired monolithic [data-visual] themes (source
- * inspected in git history: themes/visual.css prior to P4H):
- *
- *   default → REBUILT ON CURRENT TOKENS — became the Hearth core (light).
- *   dark    → REBUILT ON CURRENT TOKENS — became the dark APPEARANCE
- *             (purple-warmed field replaces the green-tinted night).
- *   space   → REFINED — palette merged into dark appearance; static
- *             starfield kept as the Cosmic ATMOSPHERE (atmosphere.css).
- *   gfa     → RETIRED as a monolith; DEFERRED as a future [data-brand='gfa']
- *             skin (aqua-teal accents from graceforaddictions.org) if the
- *             organization wants a distinct skin beyond the core brand.
- *   rcoia   → DEFERRED as a future [data-brand='rcoia'] skin (deep-purple
- *             ground + gold/teal accents, owner-provided spec 2026-08-02).
- *   sky     → DEFERRED atmosphere (airy daylight) — rebuild on current
- *             tokens if wanted; light-appearance ambience only.
- *   retro   → DEFERRED atmosphere (70s sunrise warm paper) — rebuild on
- *             current tokens; its AA-corrected palette is in git history.
- *
- * Stored legacy preferences migrate in the pre-paint script (index.html):
- * dark→dark appearance, space→dark+cosmic, everything else→system+hearth.
+/* Original — official GFA brand kit, approved September 26, 2026.
+ * Original logo teal #5ab2b4 and graphite #4e4f50 remain identity colors.
+ * Deeper teal fills support white button labels; pale teal is for dark text accents.
+ * Loaded after appearance/experience layers; scoped to preserve Hearth and Cosmic.
  */
+[data-brand='original'] {
+  --color-gfa-teal: #5ab2b4;
+  --color-gfa-graphite: #4e4f50;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --color-surface: #f6f8f7;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #eaf0ee;
+  --color-ink: #152526;
+  --color-ink-muted: #526365;
+  --color-ink-faint: #5d6c6d;
+  --color-line: #cad8d5;
+  --focus-ring: #24676a;
+  --color-brand-50: #edf6f5;
+  --color-brand-100: #dceeed;
+  --color-brand-200: #b9dddc;
+  --color-brand-300: #8cc9ca;
+  --color-brand-400: #5ab2b4;
+  --color-brand-500: #36888b;
+  --color-brand-600: #24676a;
+  --color-brand-700: #20595c;
+  --color-brand-800: #19494c;
+  --color-brand-900: #15383b;
+  --color-brand-950: #0b1d20;
+  --shadow-card: 0 1px 2px rgb(21 37 38 / 0.04), 0 4px 16px rgb(21 37 38 / 0.05);
+  --shadow-raised: 0 4px 12px rgb(21 37 38 / 0.06), 0 12px 32px rgb(21 37 38 / 0.09);
+}
+
+[data-brand='original'][data-appearance='dark'] {
+  --color-surface: #0b1d20;
+  --color-surface-raised: #142b2e;
+  --color-surface-sunken: #081619;
+  --color-ink: #f6f8f7;
+  --color-ink-muted: #bacdcc;
+  --color-ink-faint: #a4bcbb;
+  --color-line: #395759;
+  --color-brand-50: #183638;
+  --color-brand-100: #204447;
+  --color-brand-600: #287477;
+  --color-brand-700: #8ccfd0;
+  --focus-ring: #5ab2b4;
+  --shadow-card: 0 2px 12px rgb(0 0 0 / 0.18);
+  --shadow-raised: 0 8px 32px rgb(0 0 0 / 0.28);
+}
+
+/* Explicit subtree overrides keep the same GFA kit in participant, residence,
+ * staff and administration workspaces. Their layout and role labels remain intact. */
+[data-brand='original'],
+[data-brand='original'] [data-experience] {
+  --color-experience-500: #36888b;
+  --color-experience-600: #24676a;
+  --color-experience-700: #20595c;
+  --color-experience-soft: #edf6f5;
+  --color-experience-strong: #19494c;
+}
+[data-brand='original'][data-appearance='dark'],
+[data-brand='original'][data-appearance='dark'] [data-experience] {
+  --color-experience-500: #5ab2b4;
+  --color-experience-600: #287477;
+  --color-experience-700: #8ccfd0;
+  --color-experience-soft: #183638;
+  --color-experience-strong: #24676a;
+}
+
+/* Editorial display character; controls, forms and supporting text stay sans. */
+[data-brand='original'] h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}

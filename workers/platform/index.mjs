@@ -1,3 +1,4 @@
+import { gfaRoute } from './gfa-routes.mjs';
 // Only public, fixed-location weather belongs here. Auth and intake remain on CQCX.
 const WEATHER_PATH = '/api/weather/des-moines';
 const WEATHER_URL =
@@ -93,6 +94,8 @@ export async function weatherResponse(request, env, cache, fetcher = fetch) {
 
 export default {
   async fetch(request, env) {
+    const publicSite = await gfaRoute(request, env);
+    if (publicSite) return publicSite;
     const url = new URL(request.url);
     if (
       ['GET', 'HEAD'].includes(request.method) &&

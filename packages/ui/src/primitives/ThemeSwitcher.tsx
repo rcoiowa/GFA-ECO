@@ -5,8 +5,7 @@ import { useEffect, useState } from 'react';
  *
  * APPEARANCE is 'system' | 'light' | 'dark' (system default): the RESOLVED
  * mode is stamped as <html data-appearance="light|dark"> so CSS carries a
- * single dark override block. ATMOSPHERE is ambient only — Hearth (default,
- * attribute-free) or Cosmic (static starfield; forces dark appearance since
+ * single dark override block. Theme choices are Original (the default GFA brand), Hearth (attribute-free) or Cosmic (static starfield; forces dark appearance since
  * a lit starfield is not a designed state). Preferences are device-local
  * (localStorage) — deliberately not backend state.
  *
@@ -22,6 +21,7 @@ export const APPEARANCES = [
 export type AppearancePreference = (typeof APPEARANCES)[number]['key'];
 
 export const ATMOSPHERES = [
+  { key: 'original', label: 'Original' },
   { key: 'hearth', label: 'Hearth' },
   { key: 'cosmic', label: 'Cosmic' },
 ] as const;
@@ -60,7 +60,10 @@ export function getStoredAppearance(): AppearancePreference {
 export function getStoredAtmosphere(): Atmosphere {
   const stored = read(ATMOSPHERE_KEY);
   if (stored && ATMOSPHERES.some((a) => a.key === stored)) return stored as Atmosphere;
-  return read(LEGACY_KEY) === 'space' ? 'cosmic' : 'hearth';
+  const legacy = read(LEGACY_KEY);
+  if (legacy === 'space') return 'cosmic';
+  if (legacy && legacy !== 'gfa') return 'hearth';
+  return 'original';
 }
 
 function systemPrefersDark(): boolean {
@@ -82,6 +85,20 @@ export function applyAppearance(preference: AppearancePreference, atmosphere: At
           : 'light'
         : preference;
   document.documentElement.dataset.appearance = resolved;
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute(
+      'content',
+      atmosphere === 'original'
+        ? resolved === 'dark'
+          ? '#0b1d20'
+          : '#24676a'
+        : resolved === 'dark'
+          ? '#141019'
+          : '#6540a5',
+    );
+  if (atmosphere === 'original') document.documentElement.dataset.brand = 'original';
+  else delete document.documentElement.dataset.brand;
   if (atmosphere === 'cosmic') document.documentElement.dataset.atmosphere = 'cosmic';
   else delete document.documentElement.dataset.atmosphere;
 }
@@ -90,16 +107,22 @@ export function setAppearancePreference(preference: AppearancePreference, atmosp
   write(APPEARANCE_KEY, preference);
   write(ATMOSPHERE_KEY, atmosphere);
   applyAppearance(preference, atmosphere);
+  window.dispatchEvent(new Event('recoveryos-theme-change'));
 }
 
 /** Compact appearance/atmosphere picker for shell utility areas. */
 export function AppearanceControls({ className = '' }: { className?: string }) {
   const [preference, setPreference] = useState<AppearancePreference>('system');
-  const [atmosphere, setAtmosphere] = useState<Atmosphere>('hearth');
+  const [atmosphere, setAtmosphere] = useState<Atmosphere>('original');
 
   useEffect(() => {
-    setPreference(getStoredAppearance());
-    setAtmosphere(getStoredAtmosphere());
+    const sync = () => {
+      setPreference(getStoredAppearance());
+      setAtmosphere(getStoredAtmosphere());
+    };
+    sync();
+    window.addEventListener('recoveryos-theme-change', sync);
+    return () => window.removeEventListener('recoveryos-theme-change', sync);
   }, []);
 
   // Follow live device changes while the preference is "system".
@@ -137,7 +160,7 @@ export function AppearanceControls({ className = '' }: { className?: string }) {
         </select>
       </label>
       <label className="flex items-center justify-between gap-2 text-sm text-ink-muted">
-        <span>Atmosphere</span>
+        <span>Theme</span>
         <select
           value={atmosphere}
           onChange={(e) => {

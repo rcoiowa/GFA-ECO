@@ -22,7 +22,11 @@ const esc = (s: unknown) =>
     .replace(/>/g, '&gt;');
 const clip = (s: unknown, n: number) => (typeof s === 'string' ? s.slice(0, n) : null);
 
-export async function handleRequest(req: Request, deps: LeadIntakeDeps): Promise<Response> {
+export async function handleRequest(
+  req: Request,
+  deps: LeadIntakeDeps,
+  contactPermissionReceipt?: string,
+): Promise<Response> {
   const fetchFn = deps.fetch ?? fetch;
   const intakeSecret = Deno.env.get('LEAD_INTAKE_SECRET') ?? '';
   const resendKey = Deno.env.get('RESEND_API_KEY') ?? '';
@@ -59,6 +63,7 @@ export async function handleRequest(req: Request, deps: LeadIntakeDeps): Promise
       : null;
 
   const lead = {
+    ...(contactPermissionReceipt ? { notes: contactPermissionReceipt } : {}),
     first_name: clip(p.first_name, 120),
     last_name: clip(p.last_name, 120),
     email: clip(p.email, 320),

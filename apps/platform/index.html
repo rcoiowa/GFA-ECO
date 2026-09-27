@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-brand="original">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,9 +11,7 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#6540A5" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141019" />
-    <meta name="theme-color" content="#6540A5" />
+    <meta name="theme-color" content="#24676a" />
     <script>
       // Resolve appearance + atmosphere before first paint (no flash).
       // Mirrors AppearanceControls; migrates the retired 'recoveryos-visual'
@@ -25,9 +23,11 @@
         if (['system', 'light', 'dark'].indexOf(pref) === -1) {
           pref = ['dark', 'space', 'rcoia'].indexOf(legacy) !== -1 ? 'dark' : 'system';
         }
-        if (['hearth', 'cosmic'].indexOf(atmo) === -1) {
-          atmo = legacy === 'space' ? 'cosmic' : 'hearth';
+        if (['original', 'hearth', 'cosmic'].indexOf(atmo) === -1) {
+          atmo = legacy === 'space' ? 'cosmic' : legacy && legacy !== 'gfa' ? 'hearth' : 'original';
         }
+        if (atmo === 'original') document.documentElement.dataset.brand = 'original';
+        else delete document.documentElement.dataset.brand;
         var dark =
           atmo === 'cosmic' ||
           pref === 'dark' ||
@@ -36,6 +36,8 @@
             window.matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.appearance = dark ? 'dark' : 'light';
         if (atmo === 'cosmic') document.documentElement.dataset.atmosphere = 'cosmic';
+        document.querySelector('meta[name="theme-color"]').content =
+          atmo === 'original' ? (dark ? '#0b1d20' : '#24676a') : dark ? '#141019' : '#6540a5';
       } catch (e) {}
     </script>
   </head>

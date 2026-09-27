@@ -98,6 +98,15 @@ export function AppShell({
         {utilities}
       </div>
 
+      <details className="md:hidden border-b border-line bg-surface-raised px-4 py-2">
+        <summary className="cursor-pointer py-2 text-sm text-ink-muted">
+          Theme &amp; appearance
+        </summary>
+        <div className="max-w-sm pb-2">
+          <AppearanceControls />
+        </div>
+      </details>
+
       <main id="main-content" className="flex-1 pb-24 md:pb-8">
         <OfflineNotice />
         <div className="mx-auto w-full max-w-3xl px-4 py-6 md:px-8">{children}</div>
@@ -118,7 +127,9 @@ export function AppShell({
                     to={item.to}
                     onClick={() => setMoreOpen(false)}
                     className={`flex min-h-11 items-center gap-2 rounded-md px-3 font-medium ${
-                      isActive(item.to) ? 'bg-experience-soft text-experience-700' : 'text-ink-muted'
+                      isActive(item.to)
+                        ? 'bg-experience-soft text-experience-700'
+                        : 'text-ink-muted'
                     }`}
                   >
                     {item.icon}
@@ -156,7 +167,11 @@ export function AppShell({
                 aria-expanded={moreOpen}
                 onClick={() => setMoreOpen((v) => !v)}
                 className={`flex min-h-14 w-full flex-col items-center justify-center gap-0.5 text-xs font-medium ${
-                  overflowActive && !moreOpen ? 'text-experience-700' : moreOpen ? 'text-experience-700' : 'text-ink-muted'
+                  overflowActive && !moreOpen
+                    ? 'text-experience-700'
+                    : moreOpen
+                      ? 'text-experience-700'
+                      : 'text-ink-muted'
                 }`}
               >
                 <span aria-hidden="true">⋯</span>
