@@ -2,7 +2,7 @@
   'use strict';
   if (!['www.graceforaddictions.org', 'graceforaddictions.org'].includes(location.hostname)) return;
   if (window.top !== window.self || document.getElementById('gfa-recoveryos-shell')) return;
-  const PREVIEW_ONLY = true;
+  const PREVIEW_ONLY = false;
   if (PREVIEW_ONLY && new URLSearchParams(location.search).get('gfa-preview') !== '1') return;
   const routes = {
   "/bylaws-articles": "/gfa/connect.html#documents",
