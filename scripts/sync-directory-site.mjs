@@ -1,3 +1,4 @@
+import { validateDevelopment } from './development-config.mjs';
 // Copies the RecoveryResidence.org directory presentation into the platform's
 // public assets so it serves at /residence/directory/ from the same Worker as
 // the app. Runtime backend configuration is canonicalized here so historical
@@ -23,7 +24,9 @@ const CANONICAL_URL =
   process.env.VITE_SUPABASE_URL ?? `https://${CANONICAL_PROJECT_REF}.supabase.co`;
 const CANONICAL_KEY = process.env.VITE_SUPABASE_ANON_KEY ?? SOURCE_KEY;
 
-if (!CANONICAL_URL.includes(CANONICAL_PROJECT_REF) || CANONICAL_URL.includes(RETIRED_PROJECT_REF)) {
+if (process.env.RECOVERYOS_ENV === 'development') {
+  validateDevelopment(process.env);
+} else if (CANONICAL_URL !== `https://${CANONICAL_PROJECT_REF}.supabase.co`) {
   throw new Error(`Directory sync refused non-canonical Supabase URL: ${CANONICAL_URL}`);
 }
 
@@ -41,7 +44,7 @@ if (html.includes(RETIRED_PROJECT_REF)) {
 }
 
 html = html
-  .replaceAll(SOURCE_API, `${CANONICAL_URL}/rest/v1`)
+  .replaceAll(`https://${CANONICAL_PROJECT_REF}.supabase.co`, CANONICAL_URL)
   .replaceAll(SOURCE_KEY, CANONICAL_KEY);
 
 if (html.includes(RETIRED_PROJECT_REF)) {
@@ -56,5 +59,5 @@ if (!html.includes("'Content-Profile': 'recoveryos'")) {
 mkdirSync(dirname(target), { recursive: true });
 writeFileSync(target, html, 'utf8');
 console.log(
-  `Synced directory site → apps/platform/public/residence/directory/index.html (${CANONICAL_PROJECT_REF})`,
+  `Synced directory site → apps/platform/public/residence/directory/index.html (${new URL(CANONICAL_URL).hostname})`,
 );

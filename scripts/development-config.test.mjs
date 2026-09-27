@@ -1,0 +1,10 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { validateDevelopment, PRODUCTION_REF, RETIRED_REF, PRODUCTION_KEY } from './development-config.mjs';
+const ref = 'abcdefghijklmnopqrst';
+const good = { DEVELOPMENT_SUPABASE_REF: ref, VITE_SUPABASE_URL: `https://${ref}.supabase.co`, VITE_SUPABASE_ANON_KEY: 'sb_publishable_synthetic_test_only', VITE_TURNSTILE_SITE_KEY: 'test-key' };
+test('accepts explicitly matched test configuration', () => assert.equal(validateDevelopment(good), ref));
+for (const forbidden of [PRODUCTION_REF, RETIRED_REF]) test(`rejects forbidden project ${forbidden}`, () => assert.throws(() => validateDevelopment({ ...good, DEVELOPMENT_SUPABASE_REF: forbidden, VITE_SUPABASE_URL: `https://${forbidden}.supabase.co` })));
+test('rejects missing configuration', () => assert.throws(() => validateDevelopment({})));
+test('rejects mismatched URL', () => assert.throws(() => validateDevelopment({ ...good, VITE_SUPABASE_URL: `https://${PRODUCTION_REF}.supabase.co` })));
+for (const key of [PRODUCTION_KEY, 'sb_secret_do_not_use', '', 'service_role']) test(`rejects unsafe key type ${key.slice(0, 12)}`, () => assert.throws(() => validateDevelopment({ ...good, VITE_SUPABASE_ANON_KEY: key })));
