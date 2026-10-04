@@ -53,9 +53,9 @@ describe('service-critical public routes stay mounted', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', {
-        name: 'Enter the Recovery Community Center and choose what you need',
+        name: 'Enter the Recovery Community Center lobby',
       }),
-    ).toHaveAttribute('href', '#front-door');
+    ).toHaveAttribute('href', '/community-center/lobby');
     for (const [name, path] of [
       ['I need support now', '/support'],
       ['I want to connect and grow', '/register'],
@@ -65,6 +65,13 @@ describe('service-critical public routes stay mounted', () => {
       expect(screen.getByRole('link', { name: new RegExp(name) })).toHaveAttribute('href', path);
     }
     expect(screen.getByRole('status')).toHaveTextContent('Live weather unavailable');
+  });
+
+  it('/community-center/lobby mounts the guest journey', () => {
+    renderAt('/community-center/lobby');
+    expect(screen.getByRole('heading', { name: 'Welcome. Take your time.' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open the kiosk' })).toHaveAttribute('href', '/community-center/kiosk');
+    expect(screen.getByRole('link', { name: 'Support now' })).toHaveAttribute('href', '/support');
   });
 
   it('/reset-password mounts the recovery handler (not sign-in, not 404)', () => {
