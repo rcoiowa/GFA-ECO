@@ -70,6 +70,7 @@ export function App() {
     <Routes>
       {/* Public entrance — front door chosen by domain (ADR-0014) */}
       <Route path="/" element={<HostHome />} />
+      <Route path="/community-center" element={<CommunityCenterPage />} />
       <Route path="/community-center/*" element={<CommunityCenterJourney />} />
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/register" element={<RegisterPage />} />
