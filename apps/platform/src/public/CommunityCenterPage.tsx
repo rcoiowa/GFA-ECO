@@ -42,10 +42,10 @@ export function CommunityCenterPage() {
             {sky.live && sky.condition === 'cloudy' && <div aria-hidden="true" className="center-clouds" />}
             {sky.live && (sky.condition === 'rain' || sky.condition === 'storm') && <div aria-hidden="true" className="center-rain" />}
             {sky.live && sky.condition === 'snow' && <div aria-hidden="true" className="center-snow" />}
-            <a href="#front-door" aria-label="Enter the Recovery Community Center and choose what you need" className="absolute left-[44%] top-[56%] h-[23%] w-[12%] rounded-md border-2 border-transparent outline-offset-4 hover:border-[#80eeee] focus-visible:border-[#80eeee] focus-visible:outline-4 focus-visible:outline-[#80eeee]" />
+            <Link to="/community-center/lobby" aria-label="Enter the Recovery Community Center lobby" className="absolute left-[44%] top-[56%] h-[23%] w-[12%] rounded-md border-2 border-transparent outline-offset-4 hover:border-[#80eeee] focus-visible:border-[#80eeee] focus-visible:outline-4 focus-visible:outline-[#80eeee]" />
           </div>
           <div className="mt-6 text-center">
-            <a href="#front-door" className="inline-flex min-h-12 items-center rounded-md bg-[#28aeb4] px-7 text-lg font-semibold text-[#061525] hover:bg-[#73dfe0] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white">Enter through the front door</a>
+            <Link to="/community-center/lobby" className="inline-flex min-h-12 items-center rounded-md bg-[#28aeb4] px-7 text-lg font-semibold text-[#061525] hover:bg-[#73dfe0] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white">Enter through the front door</Link>
           </div>
         </section>
         <section id="front-door" aria-labelledby="front-door-title" className="mx-auto max-w-6xl scroll-mt-6 px-4 py-20">

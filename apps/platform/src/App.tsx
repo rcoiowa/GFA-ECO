@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router';
 import { LoadingState } from '@recoveryos/ui';
 import { LandingPage } from './public/LandingPage';
 import { CommunityCenterPage } from './public/CommunityCenterPage';
+import { CommunityCenterJourney } from './public/CommunityCenterJourney';
 import { SignInPage } from './public/SignInPage';
 import { RegisterPage } from './public/RegisterPage';
 import { GraceHousePage } from './public/GraceHousePage';
@@ -69,7 +70,7 @@ export function App() {
     <Routes>
       {/* Public entrance — front door chosen by domain (ADR-0014) */}
       <Route path="/" element={<HostHome />} />
-      <Route path="/community-center" element={<CommunityCenterPage />} />
+      <Route path="/community-center/*" element={<CommunityCenterJourney />} />
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/register" element={<RegisterPage />} />
       {/* Anonymous Support Now — the safety path never requires an account. */}
