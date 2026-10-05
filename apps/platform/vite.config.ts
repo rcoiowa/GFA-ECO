@@ -11,6 +11,11 @@ export default defineConfig({
       generateBundle() {
         this.emitFile({
           type: 'asset',
+          fileName: 'gfa/contact-config.json',
+          source: JSON.stringify({ siteKey: process.env.VITE_TURNSTILE_SITE_KEY ?? '' }),
+        });
+        this.emitFile({
+          type: 'asset',
           fileName: 'release.json',
           source: JSON.stringify({
             release: process.env.VITE_RELEASE ?? 'local-unreleased',
