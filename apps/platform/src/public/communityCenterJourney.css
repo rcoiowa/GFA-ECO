@@ -1,0 +1,73 @@
+.rcc-journey {
+  --rcc-purple: #6540a5;
+  --rcc-paper: #f8f6f4;
+  --rcc-ink: #2b2724;
+  --rcc-line: #d8d3ce;
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  color: var(--rcc-ink);
+  background: var(--rcc-paper);
+  min-height: 100dvh;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+.rcc-journey * { box-sizing: border-box; }
+.rcc-journey a:focus-visible, .rcc-journey button:focus-visible,
+.rcc-journey input:focus-visible, .rcc-journey select:focus-visible {
+  outline: 3px solid #a36c20;
+  outline-offset: 3px;
+}
+.rcc-header { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1rem 5%; border-bottom: 1px solid var(--rcc-line); background: #fffdfa; }
+.rcc-brand { display: flex; align-items: center; gap: .75rem; color: var(--rcc-ink); text-decoration: none; line-height: 1.15; }
+.rcc-brand img { width: 3.25rem; height: 3.4rem; object-fit: contain; }
+.rcc-brand strong { display: block; font-size: 1.05rem; }
+.rcc-brand small { display: block; margin-top: .25rem; max-width: 21rem; color: #59534f; font-size: .75rem; line-height: 1.3; }
+.rcc-header nav { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.rcc-header nav a { padding: .7rem .9rem; border-radius: 1.5rem; color: #433354; text-decoration: none; font-weight: 600; }
+.rcc-header nav a:hover, .rcc-header nav a[aria-current="page"] { background: #e9e2f6; }
+.rcc-main { max-width: 83rem; margin: auto; padding: 3rem 5% 5rem; }
+.rcc-eyebrow { color: var(--rcc-purple); font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; margin: 0 0 1rem; }
+.rcc-main h1 { font-size: clamp(2.5rem, 5.5vw, 4.6rem); line-height: 1.08; letter-spacing: -.035em; font-weight: 600; margin: 0 0 1.3rem; }
+.rcc-main h1 em { font-style: normal; color: var(--rcc-purple); }
+.rcc-main h2 { font-size: 1.3rem; line-height: 1.25; font-weight: 650; margin: .55rem 0; }
+.rcc-main p { margin: 0 0 1.1rem; }
+.rcc-main a { color: var(--rcc-purple); }
+.rcc-lede, .rcc-heading p { max-width: 42rem; color: #57514c; font-size: 1.15rem; }
+.rcc-heading { display: flex; justify-content: space-between; gap: 2rem; align-items: flex-start; }
+.rcc-pill { border: 1px solid var(--rcc-line); border-radius: 2rem; padding: .4rem .8rem; white-space: nowrap; }
+.rcc-lobby { display: grid; grid-template-columns: 1.8fr 1fr; gap: 1rem; margin: 1.8rem 0; }
+.rcc-scene { position: relative; overflow: hidden; border-radius: .5rem; aspect-ratio: 1.75; background: #dcd8cc; }
+.rcc-scene img { width: 100%; height: 100%; object-fit: cover; }
+.rcc-caption, .rcc-note { font-size: .9rem; color: #57514c; margin-top: .55rem !important; }
+.rcc-hotspot { position: absolute; bottom: 12%; padding: .6rem .85rem; border-radius: 1.5rem; background: #fffef2; box-shadow: 0 2px 12px #0006; font-weight: 700; text-decoration: none; }
+.rcc-hotspot-desk { left: 7%; }.rcc-hotspot-kiosk { right: 7%; }
+.rcc-welcome { background: #244840; border-radius: .5rem; padding: 2rem; color: white; display: flex; flex-direction: column; justify-content: space-between; }
+.rcc-welcome .rcc-eyebrow { color: #ddcff4; }
+.rcc-welcome h2 { font-size: clamp(1.6rem, 2.5vw, 2.3rem); }
+.rcc-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.rcc-card { display: block; padding: 1.5rem; border: 1px solid var(--rcc-line); background: #fffdfa; border-radius: .5rem; color: var(--rcc-ink) !important; text-decoration: none; min-width: 0; }
+.rcc-card:is(a):hover { border-color: var(--rcc-purple); box-shadow: 0 5px 18px #39274719; }
+.rcc-card span { color: var(--rcc-purple); font-size: .85rem; font-weight: 700; }
+.rcc-card b { color: var(--rcc-purple); }
+.rcc-callout { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.5rem; margin: 2rem 0; background: #ebe8e2; border-radius: .5rem; }
+.rcc-callout p { margin: 0; }
+.rcc-button { display: inline-flex; align-items: center; justify-content: center; min-height: 3rem; padding: .75rem 1.25rem; border-radius: .4rem; background: var(--rcc-purple); color: white !important; text-decoration: none; font-weight: 700; white-space: normal; }
+.rcc-button-light { background: #fffdfa; color: #433354 !important; }
+.rcc-button-outline { background: transparent; border: 1px solid var(--rcc-purple); color: var(--rcc-purple) !important; }
+.rcc-actions { display: flex; gap: .75rem; flex-wrap: wrap; margin: 1.5rem 0; }
+.rcc-back { display: inline-block; margin-bottom: 2rem; font-weight: 700; }
+.rcc-kiosk { background: #2a413d; border: .7rem solid #35554d; border-radius: 1.3rem; overflow: hidden; margin: 2rem 0; }
+.rcc-kiosk-top, .rcc-kiosk-foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1.5rem; color: white; }
+.rcc-kiosk-top a, .rcc-kiosk-foot a { color: white; }
+.rcc-kiosk-body { padding: 2rem; background: #fffdfa; }
+.rcc-kiosk-body h1 { font-size: clamp(2rem, 4vw, 3rem); }
+.rcc-filters { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+.rcc-filters label { display: grid; gap: .4rem; font-weight: 700; }
+.rcc-filters input, .rcc-filters select { width: 100%; min-height: 3rem; padding: .6rem .8rem; border: 1px solid #8a817c; border-radius: .3rem; background: white; }
+.rcc-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.rcc-text-button { border: 0; background: none; color: var(--rcc-purple); padding: .7rem; text-decoration: underline; cursor: pointer; font: inherit; }
+.rcc-card .rcc-text-button { display: block; margin-top: .5rem; }
+.rcc-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin: 0 5%; padding: 1.5rem 0; border-top: 1px solid var(--rcc-line); font-size: .9rem; }
+.rcc-large { font-size: 1.2rem; }
+@media (max-width: 900px) { .rcc-header { flex-wrap: wrap; } .rcc-lobby { grid-template-columns: 1fr; } .rcc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 650px) { .rcc-main { padding: 2rem 5%; } .rcc-heading, .rcc-callout, .rcc-kiosk-top, .rcc-kiosk-foot { align-items: flex-start; flex-direction: column; } .rcc-grid, .rcc-filters { grid-template-columns: 1fr; } .rcc-scene { aspect-ratio: 1.3; } .rcc-hotspot { bottom: 4%; font-size: .8rem; max-width: 45%; } .rcc-brand small { font-size: .7rem; } }
+@media (prefers-reduced-motion: reduce) { .rcc-journey * { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }

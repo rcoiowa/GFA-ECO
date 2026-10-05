@@ -13,10 +13,14 @@ import { IntakeQueuePage } from './IntakeQueuePage';
 const mocks = vi.hoisted(() => ({
   listApplicationIntake: vi.fn(),
   reviewApplicationIntake: vi.fn(),
+  findPersonForIntakeConversion: vi.fn(),
+  createAccountlessApplicationFromIntake: vi.fn(),
 }));
 vi.mock('@recoveryos/data-access', () => ({
   listApplicationIntake: mocks.listApplicationIntake,
   reviewApplicationIntake: mocks.reviewApplicationIntake,
+  findPersonForIntakeConversion: mocks.findPersonForIntakeConversion,
+  createAccountlessApplicationFromIntake: mocks.createAccountlessApplicationFromIntake,
 }));
 
 const row = {
@@ -50,6 +54,7 @@ const wrap = () =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.findPersonForIntakeConversion.mockResolvedValue({ ok: true, candidates: [] });
 });
 
 describe('IntakeQueuePage', () => {
@@ -91,4 +96,20 @@ describe('IntakeQueuePage', () => {
     wrap();
     expect(await screen.findByText(/visibility is scoped/)).toBeInTheDocument();
   });
+});
+
+it('creates an application without signup only after identity confirmation', async () => {
+  mocks.listApplicationIntake.mockResolvedValue([row]);
+  mocks.createAccountlessApplicationFromIntake.mockResolvedValue({ ok: true, application_id: 99 });
+  wrap();
+  fireEvent.click(await screen.findByRole('button', { name: 'Create full application…' }));
+  const create = await screen.findByRole('button', { name: 'Create application without a login' });
+  expect(create).toBeDisabled();
+  fireEvent.change(screen.getByLabelText('Applicant first name'), { target: { value: 'Test' } });
+  fireEvent.change(screen.getByLabelText('Applicant last name'), { target: { value: 'Person' } });
+  expect(create).toBeDisabled();
+  fireEvent.click(screen.getByLabelText(/I verified this applicant/));
+  fireEvent.click(create);
+  await waitFor(() => expect(mocks.createAccountlessApplicationFromIntake).toHaveBeenCalledWith({ intakeId: 7, firstName: 'Test', lastName: 'Person', confirm: true }));
+  expect(await screen.findByText(/Full application created without a login/)).toBeInTheDocument();
 });

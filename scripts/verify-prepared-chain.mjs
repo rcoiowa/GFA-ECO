@@ -28,6 +28,9 @@ const PREPARED_DIR = 'supabase/launch/prepared';
 // Executive authorization: docs/decisions/2026-10-05-circle-meeting-logging.md.
 // Applied to canonical CQCX on October 5. No intake-chain dependency.
 const APPLIED_DOWNSTREAM = {
+  // Executive direction: docs/decisions/2026-10-05-accountless-application-workflow.md
+  'supabase/launch/migrations/20261005093045_accountless_application_conversion.sql':
+    '9bfd7406b4da4c40caa8ce66a2d42249e0a06b73fc3f78acc502b2db8e9ee3b6',
   // October 5 follow-up: docs/decisions/2026-10-05-circle-county-access-schedule.md
   'supabase/launch/migrations/20261005092358_circle_county_access_schedule.sql':
     'dca60784aa998e1f3b2876a96f8363efad23fc891c2624b97b5293f2cde443ce',

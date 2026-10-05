@@ -289,3 +289,13 @@ export async function listActiveMedicationItems(personId: number): Promise<Medic
   if (error) throw error;
   return (data ?? []) as MedicationItem[];
 }
+
+/** Staff creates a person/application without creating an auth account. */
+export async function createAccountlessApplicationFromIntake(input: {
+  intakeId: number; firstName: string; lastName: string; confirm: boolean;
+}): Promise<IntakeRpcResult & { application_id?: number; person_id?: number }> {
+  return callRpc('create_accountless_application_from_intake', {
+    p_intake_id: input.intakeId, p_first_name: input.firstName,
+    p_last_name: input.lastName, p_confirm: input.confirm,
+  });
+}

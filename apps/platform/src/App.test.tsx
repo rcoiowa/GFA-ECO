@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import type { ReactNode } from 'react';
 import { App } from './App';
@@ -53,9 +53,9 @@ describe('service-critical public routes stay mounted', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', {
-        name: 'Enter the Recovery Community Center and choose what you need',
+        name: 'Enter the Recovery Community Center lobby',
       }),
-    ).toHaveAttribute('href', '#front-door');
+    ).toHaveAttribute('href', '/community-center/lobby');
     for (const [name, path] of [
       ['I need support now', '/support'],
       ['I want to connect and grow', '/register'],
@@ -65,6 +65,26 @@ describe('service-critical public routes stay mounted', () => {
       expect(screen.getByRole('link', { name: new RegExp(name) })).toHaveAttribute('href', path);
     }
     expect(screen.getByRole('status')).toHaveTextContent('Live weather unavailable');
+  });
+
+  it('/community-center/lobby mounts the guest journey', () => {
+    renderAt('/community-center/lobby');
+    expect(screen.getByRole('heading', { name: 'Welcome. Take your time.' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open the kiosk' })).toHaveAttribute('href', '/community-center/kiosk');
+    expect(screen.getByRole('link', { name: 'Support now' })).toHaveAttribute('href', '/support');
+  });
+
+  it('/community-center/resources links to established resources without an account', () => {
+    renderAt('/community-center/resources');
+    expect(screen.getByRole('heading', { name: 'Find a useful next step.' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Explore Recovery Iowa →' })).toHaveAttribute('href', 'https://recovery-iowa.org/get-support/');
+    expect(screen.getByRole('link', { name: 'Search Iowa 211 →' })).toHaveAttribute('href', 'https://search.211iowa.org/');
+    expect(screen.getByRole('link', { name: 'Open Support Now →' })).toHaveAttribute('href', '/support');
+    fireEvent.change(screen.getByLabelText('Resource category'), { target: { value: 'Legal help' } });
+    expect(screen.getByRole('link', { name: 'Explore legal help →' })).toHaveAttribute('href', 'https://iowalegalaid.org/');
+    expect(screen.queryByRole('link', { name: 'Search Iowa 211 →' })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Search resources'), { target: { value: 'no such resource' } });
+    expect(screen.getByRole('status')).toHaveTextContent('0 resources found');
   });
 
   it('/reset-password mounts the recovery handler (not sign-in, not 404)', () => {
