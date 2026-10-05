@@ -1,5 +1,6 @@
-import { Route, Routes } from 'react-router';
-import { RequireRole } from '@recoveryos/auth';
+import { CircleMeetingsPage } from './pages/CircleMeetingsPage';
+import { Route, Routes, useLocation } from 'react-router';
+import { RequireRole, RequirePerson } from '@recoveryos/auth';
 import { AppShell } from '@recoveryos/ui';
 import { SupportNowButton } from '@recoveryos/safety';
 import { ExperienceSwitcher } from '../components/ExperienceSwitcher';
@@ -20,6 +21,7 @@ import { NotificationsPanel } from '../components/NotificationsPanel';
  */
 const NAV_ITEMS = [
   { to: '/coach', label: 'Home' },
+  { to: '/coach/circles', label: 'Log a Circle meeting', shortLabel: 'Circles' },
   { to: '/coach/requests', label: 'Waiting', shortLabel: 'Waiting' },
   { to: '/coach/participants', label: 'My Participants', shortLabel: 'People' },
   { to: '/coach/messages', label: 'Messages' },
@@ -29,6 +31,24 @@ const NAV_ITEMS = [
 ];
 
 export function CoachArea() {
+  const location = useLocation();
+  // Functional assignment is enforced by the Circle RPC. No broad coach role is needed.
+  if (location.pathname.replace(/\/$/, '') === '/coach/circles')
+    return (
+      <RequirePerson>
+        <AppShell
+          productName="RecoveryOS"
+          experience="professional"
+          contextLabel="Circle meetings"
+          navItems={[
+            { to: '/coach/circles', label: 'Log a Circle meeting' },
+            { to: '/vrcc', label: 'Recovery Community Center' },
+          ]}
+        >
+          <CircleMeetingsPage />
+        </AppShell>
+      </RequirePerson>
+    );
   return (
     <RequireRole anyOf={['coach', 'administrator', 'system_administrator']}>
       <AppShell
