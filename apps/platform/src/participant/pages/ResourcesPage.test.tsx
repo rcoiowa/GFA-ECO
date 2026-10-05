@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { ResourcesPage } from './ResourcesPage';
@@ -11,7 +11,7 @@ describe('VRCC resource directory', () => {
     expect(screen.getByRole('status')).toHaveTextContent(`${communityResources.length} resources found`);
     for (const resource of communityResources) {
       expect(screen.getByRole('heading', { name: resource.name })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: `${resource.action} →` })).toHaveAttribute('href', resource.href);
+      expect(within(screen.getByRole('heading', { name: resource.name }).parentElement!).getByRole('link', { name: `${resource.action} →` })).toHaveAttribute('href', resource.href);
     }
     expect(screen.queryByText('Resource navigation is on its way')).not.toBeInTheDocument();
   });
