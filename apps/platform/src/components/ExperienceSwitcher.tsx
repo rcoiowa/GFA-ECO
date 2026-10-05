@@ -9,13 +9,19 @@ import { workspacesForRoles } from '@recoveryos/domain';
  * @recoveryos/domain (coach/navigator/admin included as those slices land).
  */
 export function ExperienceSwitcher({ current }: { current: string }) {
-  const { roles } = useAuth();
+  const { roles, session } = useAuth();
   // Every provisioned person may use the VRCC participant experience, even
   // before an explicit participant role lands.
   const workspaces = workspacesForRoles(
     roles.includes('participant') ? roles : (['participant', ...roles] as typeof roles),
   );
 
+  // Navigation hint only. RPC checks the current verified Auth email and role scope.
+  if (
+    session?.user.email?.toLowerCase().endsWith('@graceforaddictions.org') &&
+    !workspaces.some((w) => w.key === 'circles')
+  )
+    workspaces.push({ key: 'circles', label: 'Circle meetings', path: '/coach/circles' });
   if (workspaces.length < 2) return null;
   const active = workspaces.find((w) => w.key === current);
   const targets = workspaces.filter((w) => w.key !== current);
@@ -24,7 +30,8 @@ export function ExperienceSwitcher({ current }: { current: string }) {
   return (
     <div className="rounded-md border border-line bg-surface-sunken/60 px-3 py-2 text-sm">
       <p className="text-ink-faint">
-        You're viewing <span className="font-medium text-ink-muted">{active?.label ?? 'this workspace'}</span>
+        You're viewing{' '}
+        <span className="font-medium text-ink-muted">{active?.label ?? 'this workspace'}</span>
       </p>
       {targets.map((target) => (
         <Link

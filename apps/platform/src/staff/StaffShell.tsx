@@ -5,6 +5,7 @@ import { useStaff } from './staffContext';
 
 const NAV_ITEMS: NavItem[] = [
   { to: '/staff/today', label: 'Today' },
+  { to: '/coach/circles', label: 'Log a Circle meeting', shortLabel: 'Circles' },
   { to: '/staff/beds', label: 'Bed Board', shortLabel: 'Beds' },
   { to: '/staff/residents', label: 'Residents' },
   { to: '/staff/applications', label: 'Applications', shortLabel: 'Apps' },

@@ -32,7 +32,7 @@ const NAV_ITEMS = [
 
 export function CoachArea() {
   const location = useLocation();
-  // Functional assignment is enforced by the Circle RPC. No broad coach role is needed.
+  // Circle RPC enforces role/assignment/CBH email authorization without broad workspace access.
   if (location.pathname.replace(/\/$/, '') === '/coach/circles')
     return (
       <RequirePerson>
@@ -45,6 +45,7 @@ export function CoachArea() {
             { to: '/vrcc', label: 'Recovery Community Center' },
           ]}
         >
+          <ExperienceSwitcher current="circles" />
           <CircleMeetingsPage />
         </AppShell>
       </RequirePerson>

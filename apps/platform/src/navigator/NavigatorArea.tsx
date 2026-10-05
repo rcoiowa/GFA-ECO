@@ -21,6 +21,7 @@ import { NotificationsPanel } from '../components/NotificationsPanel';
 const NAV_ITEMS = [
   { to: '/navigator', label: 'Home' },
   { to: '/navigator/requests', label: 'Waiting' },
+  { to: '/coach/circles', label: 'Log a Circle meeting', shortLabel: 'Circles' },
   { to: '/navigator/people', label: 'My People', shortLabel: 'People' },
   { to: '/navigator/connections', label: 'Connections' },
   { to: '/navigator/follow-ups', label: 'Follow-Ups' },

@@ -12,6 +12,7 @@ const ROLE_HOME_PRIORITY: Array<{ roles: RoleKey[]; home: string }> = [
   { roles: ['coach'], home: '/coach' },
   { roles: ['navigator'], home: '/navigator' },
   { roles: ['residence_manager', 'residence_staff', 'program_manager'], home: '/staff/today' },
+  { roles: ['program_coordinator'], home: '/coach/circles' },
   { roles: ['resident'], home: '/residence/today' },
   { roles: ['participant'], home: '/vrcc/today' },
 ];
@@ -56,5 +57,17 @@ export function workspacesForRoles(
     out.push({ key: 'staff', label: 'Residence Operations', path: '/staff/today' });
   if (roles.some((r) => r === 'administrator' || r === 'executive' || r === 'system_administrator'))
     out.push({ key: 'admin', label: 'Administration', path: '/admin' });
+  if (
+    roles.some((r) =>
+      [
+        'coach',
+        'navigator',
+        'program_coordinator',
+        'residence_staff',
+        'residence_manager',
+      ].includes(r),
+    )
+  )
+    out.push({ key: 'circles', label: 'Circle meetings', path: '/coach/circles' });
   return out;
 }
