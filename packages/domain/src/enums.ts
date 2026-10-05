@@ -12,6 +12,7 @@ export const ROLE_KEYS = [
   'residence_staff',
   'residence_manager',
   'program_manager',
+  'program_coordinator',
   'administrator',
   'executive',
   'system_administrator',

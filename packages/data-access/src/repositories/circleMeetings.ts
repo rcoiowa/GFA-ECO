@@ -5,6 +5,15 @@ export interface CircleSeries {
   location_name: string;
   location_kind: string;
   timezone: string;
+  county: string | null;
+  address: string | null;
+  room: string | null;
+  participation_access: 'public' | 'closed_cbh_clients' | 'unspecified';
+  schedule_frequency: 'weekly' | 'selected_tuesdays' | null;
+  schedule_weekday: number | null;
+  start_time: string | null;
+  end_time: string | null;
+  schedule_note: string | null;
   facilitators: { person_id: number; name: string }[];
 }
 export interface CircleMeeting {
@@ -14,6 +23,8 @@ export interface CircleMeeting {
   starts_at: string;
   ends_at: string | null;
   location_name: string;
+  county: string | null;
+  participation_access: 'public' | 'closed_cbh_clients' | 'unspecified' | null;
   occurrence_status: 'held' | 'cancelled' | 'scheduled';
   participant_count: number | null;
   facilitator_names: string[] | null;
