@@ -20,8 +20,17 @@ import { join } from 'node:path';
 //   4. The applied-ledger mirror supabase/launch/migrations/ carries no
 //      artifact numbered >= 0147: 0147+ live only as prepared artifacts until
 //      production application is separately authorized.
+//      Separately authorized, applied downstream migrations are allowed only
+//      by exact path and hash below; this never activates the intake chain.
 
 const PREPARED_DIR = 'supabase/launch/prepared';
+
+// Executive authorization: docs/decisions/2026-10-05-circle-meeting-logging.md.
+// Applied to canonical CQCX on October 5. No intake-chain dependency.
+const APPLIED_DOWNSTREAM = {
+  'supabase/launch/migrations/20261005071446_circle_meeting_logging.sql':
+    '0a9c40b4651333a40f824b301887d2a5912b6d1b8afe2823deb25736a823d142',
+};
 
 // Approved rev-2 pins (exact filename -> SHA-256), frozen at RC assembly.
 // 0147 rev-2 pin da6ecb7/512f4624-lineage superseded by the convergence tree;
@@ -64,6 +73,13 @@ const HISTORICAL_PREFIX = 'docs/superseded/';
 
 const failures = [];
 const sha256 = (p) => createHash('sha256').update(readFileSync(p)).digest('hex');
+for (const [path, pin] of Object.entries(APPLIED_DOWNSTREAM)) {
+  try {
+    if (sha256(path) !== pin) failures.push(`applied downstream hash drift: ${path}`);
+  } catch {
+    failures.push(`missing applied downstream artifact: ${path}`);
+  }
+}
 
 // --- 1 & 2: prepared dir is exactly the approved set, hash-pinned ---
 const actual = readdirSync(PREPARED_DIR).sort();
@@ -100,7 +116,7 @@ for (const p of walk('.')) {
   }
   if (rel.startsWith('supabase/launch/migrations/')) {
     const n = Number.parseInt(base.slice(0, 4), 10);
-    if (Number.isInteger(n) && n >= 147) {
+    if (Number.isInteger(n) && n >= 147 && !Object.hasOwn(APPLIED_DOWNSTREAM, rel)) {
       failures.push(`migrations ledger mirror contains artifact >= 0147: ${rel}`);
     }
   }
@@ -113,5 +129,6 @@ if (failures.length) {
 }
 console.log(
   `prepared-chain manifest verified: ${Object.keys(APPROVED).length} approved rev-2 artifacts, ` +
-    'exact filenames + SHA-256 pins, no superseded 0147 in active paths, ledger mirror < 0147.',
+    'exact filenames + SHA-256 pins, no superseded 0147 in active paths, ' +
+    'ledger mirror < 0147 except separately authorized hash-pinned downstream artifacts.',
 );
