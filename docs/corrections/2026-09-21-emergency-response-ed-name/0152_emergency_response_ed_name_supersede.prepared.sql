@@ -1,6 +1,80 @@
-<!-- GENERATED from packages/residence-content — do not edit by hand. -->
+-- 0152_emergency_response_ed_name_supersede.prepared.sql
+-- D28 / NAME-001 — supersede Grace House "Emergency Response Protocols" v1.0 → v1.1.
+--
+-- PREPARED, NOT APPLIED. Executive authorization: CONTROL TOWER DECISION D28-A
+-- (Option A, superseding v1.1), preparation only. Do not apply to CQCX without a
+-- separate explicit apply authorization.
+--
+-- WHAT / WHY:
+--   The published v1.0 emergency edition names the GFA Executive Director as
+--   "Thomas Miller" — an erroneous identity. Ratified correction (2026-09-21):
+--   Founder & Executive Director = Thomas DeGarmeaux. "Dave Stout" (GFA President)
+--   is a different, correctly-identified person and is unchanged.
+--
+-- MODEL (established, non-destructive):
+--   document_versions bodies are immutable per (template_id, version); content_hash
+--   is DB-computed (0139_document_evidence trigger, sha256 of body_markdown). We DO
+--   NOT update v1.0. We INSERT v1.1 as a new content-hashed edition; the active
+--   edition is the latest published_at (ensure_my_document_assignments), so v1.1
+--   becomes current while v1.0 is preserved intact for audit. This migration is
+--   self-contained (body embedded verbatim) and does NOT run documents_seed.sql.
+--
+--   emergency_response_protocols is requires_signature=false, so no resident
+--   re-signature is compelled; residents simply read the corrected latest edition.
+--
+-- IDEMPOTENT: re-running is a no-op (on conflict do nothing + prechecks).
+--
+-- EXPECTED HASHES:
+--   v1.0 body_markdown sha256 (must match live before apply): 3888522c3907752e7dd062abea80c87ba455a096e6cc7c2a09ca9f2b86bf4411
+--   v1.1 body_markdown sha256 (must match after apply):        192952fedf022700f4a1a17a64498c3b8744815d5585c4219f988f95f67bf7f6
+--
+-- STOP CONDITIONS (migration self-aborts):
+--   * emergency_response_protocols template missing.
+--   * v1.0 not present/published, or its live content_hash != expected OLD hash
+--     (baseline drift — investigate, do not supersede blindly).
+--   * v1.1 already present (already superseded).
+--   * post-insert v1.1 hash != expected NEW hash, or v1.0 hash changed, or latest
+--     published != 1.1.
+--
+-- ROLLBACK: 0152_emergency_response_ed_name_supersede.rollback.sql
+--   (unpublish/remove v1.1 only while it carries no assignments; v1.0 untouched).
 
-# GRACE FOR ADDICTIONS
+set search_path = recoveryos, public;
+
+-- ---- PRECHECKS ------------------------------------------------------------
+do $$
+declare v_tpl bigint; v_v10 int; v_hash text; v_v11 int;
+begin
+  select t.id into v_tpl
+  from recoveryos.document_templates t
+  join recoveryos.organizations o on o.id = t.organization_id and o.name = 'Grace For Addictions'
+  where t.key = 'emergency_response_protocols';
+  if v_tpl is null then
+    raise exception 'D28 PRECHECK FAIL: emergency_response_protocols template not found';
+  end if;
+
+  select count(*) into v_v10 from recoveryos.document_versions
+   where template_id = v_tpl and version = '1.0' and published_at is not null;
+  if v_v10 <> 1 then
+    raise exception 'D28 PRECHECK FAIL: expected exactly 1 published v1.0, found %', v_v10;
+  end if;
+
+  select content_hash into v_hash from recoveryos.document_versions
+   where template_id = v_tpl and version = '1.0';
+  if v_hash is distinct from '3888522c3907752e7dd062abea80c87ba455a096e6cc7c2a09ca9f2b86bf4411' then
+    raise exception 'D28 PRECHECK FAIL: live v1.0 content_hash % != expected 3888522c3907752e7dd062abea80c87ba455a096e6cc7c2a09ca9f2b86bf4411 (baseline drift — STOP)', v_hash;
+  end if;
+
+  select count(*) into v_v11 from recoveryos.document_versions
+   where template_id = v_tpl and version = '1.1';
+  if v_v11 <> 0 then
+    raise exception 'D28 PRECHECK FAIL: v1.1 already exists (count %) — already superseded', v_v11;
+  end if;
+end $$;
+
+-- ---- APPLY: insert v1.1 (v1.0 left untouched) -----------------------------
+insert into recoveryos.document_versions (template_id, version, body_markdown, published_at)
+select t.id, '1.1', $d28body$# GRACE FOR ADDICTIONS
 
 ## Grace House Emergency Response Protocols
 
@@ -529,14 +603,41 @@ Your Life Iowa: 1-855-581-8111
 Grace For Addictions | Grace House  
 Emergency Response Protocols — Version 1.1  
 Effective: February 3, 2026 · Revised: September 21, 2026
+$d28body$, now()
+from recoveryos.document_templates t
+join recoveryos.organizations o on o.id = t.organization_id and o.name = 'Grace For Addictions'
+where t.key = 'emergency_response_protocols'
+on conflict (template_id, version) do nothing;
 
----
+-- ---- POSTCHECKS -----------------------------------------------------------
+do $$
+declare v_tpl bigint; v_newhash text; v_oldhash text; v_latest text;
+begin
+  select t.id into v_tpl
+  from recoveryos.document_templates t
+  join recoveryos.organizations o on o.id = t.organization_id and o.name = 'Grace For Addictions'
+  where t.key = 'emergency_response_protocols';
 
-*Compliance references — verify clause codes against the certifying
-affiliate's current NARR 3.0 workbook and Iowa HHS form 470-0025:*
+  select content_hash into v_newhash from recoveryos.document_versions
+   where template_id = v_tpl and version = '1.1';
+  if v_newhash is distinct from '192952fedf022700f4a1a17a64498c3b8744815d5585c4219f988f95f67bf7f6' then
+    raise exception 'D28 POSTCHECK FAIL: v1.1 content_hash % != expected 192952fedf022700f4a1a17a64498c3b8744815d5585c4219f988f95f67bf7f6', v_newhash;
+  end if;
 
-- NARR 3.0: 2.F.19.a — emergency numbers and evacuation maps posted
-- NARR 3.0: 2.F.19.c — residents oriented to emergency procedures
-- NARR 3.0: 2.F.19.d — naloxone accessible, individuals trained
-- Iowa HHS checklist: Fire safety and emergency procedures
-- Iowa HHS checklist: Naloxone on site with training
+  select content_hash into v_oldhash from recoveryos.document_versions
+   where template_id = v_tpl and version = '1.0';
+  if v_oldhash is distinct from '3888522c3907752e7dd062abea80c87ba455a096e6cc7c2a09ca9f2b86bf4411' then
+    raise exception 'D28 POSTCHECK FAIL: v1.0 content_hash changed — supersession must not mutate v1.0';
+  end if;
+
+  select version into v_latest from recoveryos.document_versions
+   where template_id = v_tpl and published_at is not null
+   order by published_at desc limit 1;
+  if v_latest <> '1.1' then
+    raise exception 'D28 POSTCHECK FAIL: latest published edition is % (expected 1.1)', v_latest;
+  end if;
+
+  raise notice 'D28 OK: emergency_response_protocols superseded to v1.1; v1.0 preserved.';
+end $$;
+
+notify pgrst, 'reload schema';
