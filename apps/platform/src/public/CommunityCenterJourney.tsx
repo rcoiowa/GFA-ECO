@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { GFA_CONTACTS } from '@recoveryos/safety';
+import { communityResources, resourceCategories, type ResourceCategory } from './communityCenterResources';
 import './communityCenterJourney.css';
 
 type Service = {
@@ -19,7 +20,7 @@ const services: Service[] = [
   { id: 'housing', title: 'Explore recovery housing', summary: 'Grace House, EJWRH, and next steps', detail: 'Compare the public residence information before choosing an application. A listing does not promise a bed or admission.', href: '/recovery-residences', action: 'View housing options', access: 'guest', keywords: 'home residence grace house ejwrh application' },
   { id: 'circles', title: 'Find a recovery circle', summary: 'Connection and what to expect', detail: 'Learn how a recovery circle works and ask for current meeting details before traveling.', href: '/community-center/circles', action: 'Explore circles', access: 'guest', keywords: 'meeting group gfar c community' },
   { id: 'support', title: 'Support now', summary: 'Immediate options without an account', detail: 'See crisis and warmline options in one place. You can reach support without signing in.', href: '/support', action: 'See support options', access: 'guest', keywords: 'urgent help crisis warmline' },
-  { id: 'resources', title: 'Find practical resources', summary: 'Housing, work, transportation, and essentials', detail: 'A person can help you identify a useful first step. This kiosk does not present an unverified statewide directory.', href: '/community-center/front-desk', action: 'Ask the front desk', access: 'guest', keywords: 'food work jobs transport benefits navigation' },
+  { id: 'resources', title: 'Find practical resources', summary: 'Housing, work, transportation, and essentials', detail: 'Explore linked Iowa resources and ask a person for help choosing a first step.', href: '/community-center/resources', action: 'Explore resources', access: 'guest', keywords: 'food work jobs transport benefits navigation' },
   { id: 'learn', title: 'Explore recovery tools', summary: 'Learning at your own pace', detail: 'RecoveryOS offers participant tools and learning after sign-in. You can decide whether you want an account.', href: '/register', action: 'Explore an account', access: 'account', keywords: 'learn read tools practice recovery' },
   { id: 'account', title: 'Continue my journey', summary: 'Your private RecoveryOS space', detail: 'An account provides a way to return to participant tools and support connections.', href: '/sign-in', action: 'Sign in', access: 'account', keywords: 'account private profile my space' },
 ];
@@ -31,6 +32,8 @@ export function CommunityCenterJourney() {
   const lastSegment = location.pathname.replace(/\/$/, '').split('/').pop();
   const screen = lastSegment === 'community-center' ? 'lobby' : lastSegment || 'lobby';
   const [query, setQuery] = useState('');
+  const [resourceQuery, setResourceQuery] = useState('');
+  const [resourceCategory, setResourceCategory] = useState<ResourceCategory | 'all'>('all');
   const [access, setAccess] = useState<'all' | 'guest' | 'account'>('all');
   const [steps, setSteps] = useState<string[]>([]);
   const [largerText, setLargerText] = useState(false);
@@ -38,11 +41,17 @@ export function CommunityCenterJourney() {
   const clearVisit = () => {
     setSteps([]);
     setQuery('');
+    setResourceQuery('');
+    setResourceCategory('all');
     setAccess('all');
   };
   const matches = services.filter((service) =>
     (access === 'all' || service.access === access) &&
     `${service.title} ${service.summary} ${service.keywords}`.toLowerCase().includes(query.toLowerCase().trim()),
+  );
+  const resourceMatches = communityResources.filter((resource) =>
+    (resourceCategory === 'all' || resource.category === resourceCategory) &&
+    `${resource.name} ${resource.description} ${resource.keywords}`.toLowerCase().includes(resourceQuery.toLowerCase().trim()),
   );
   const selected = services.find((service) => service.id === screen);
 
@@ -57,6 +66,7 @@ export function CommunityCenterJourney() {
           <Link to={path('lobby')} aria-current={screen === 'lobby' ? 'page' : undefined}>Lobby</Link>
           <Link to={path('front-desk')} aria-current={screen === 'front-desk' ? 'page' : undefined}>Front desk</Link>
           <Link to={path('kiosk')} aria-current={screen === 'kiosk' ? 'page' : undefined}>Kiosk</Link>
+          <Link to={path('resources')} aria-current={screen === 'resources' ? 'page' : undefined}>Resources</Link>
           <Link to="/support">Support now</Link>
           <Link to="/sign-in">Sign in</Link>
         </nav>
@@ -75,6 +85,7 @@ export function CommunityCenterJourney() {
               <Link className="rcc-card" to={path('kiosk')}><span>02 · Explore at your pace</span><h2>Use the self-service kiosk</h2><p>Explore support, housing, circles, and recovery tools.</p><b>Explore the kiosk →</b></Link>
               <Link className="rcc-card" to={path('circles')}><span>03 · Belonging starts here</span><h2>Find a recovery circle</h2><p>Learn what to expect and how to ask for current details.</p><b>Visit the community board →</b></Link>
             </div>
+            <div className="rcc-callout"><p><strong>Looking for a practical resource?</strong><br />Browse Iowa recovery, housing, work, benefits, and legal support links.</p><Link className="rcc-button" to={path('resources')}>Browse resources</Link></div>
             <div className="rcc-callout"><p><strong>Need a quiet moment?</strong><br />Taking a pause is a place to start, too.</p><Link className="rcc-button rcc-button-outline" to={path('quiet')}>Visit the quiet corner</Link></div>
           </>
         )}
@@ -109,6 +120,23 @@ export function CommunityCenterJourney() {
           </>
         )}
 
+        {screen === 'resources' && (
+          <>
+            <Link className="rcc-back" to={path('lobby')}>← Lobby</Link>
+            <p className="rcc-eyebrow">Iowa resource directory</p>
+            <h1>Find a useful <em>next step.</em></h1>
+            <p className="rcc-lede">Explore established resources across Iowa. You can browse this list without a RecoveryOS account.</p>
+            <div className="rcc-filters">
+              <label>Search resources<input type="search" value={resourceQuery} onChange={(event) => setResourceQuery(event.target.value)} placeholder="Try food, housing, jobs, or family…" /></label>
+              <label>Resource category<select value={resourceCategory} onChange={(event) => setResourceCategory(event.target.value as typeof resourceCategory)}><option value="all">All categories</option>{resourceCategories.map((category) => <option key={category} value={category}>{category}</option>)}</select></label>
+            </div>
+            <p role="status" aria-live="polite">{resourceMatches.length} resource{resourceMatches.length === 1 ? '' : 's'} found</p>
+            {resourceMatches.length ? <div className="rcc-grid">{resourceMatches.map((resource) => <article key={resource.id} className="rcc-card"><span>{resource.category} · {resource.external ? 'External website' : 'In RecoveryOS'}</span><h2>{resource.name}</h2><p>{resource.description}</p>{resource.external ? <a href={resource.href} className="rcc-resource-link" rel="noreferrer">{resource.action} →</a> : <Link to={resource.href} className="rcc-resource-link">{resource.action} →</Link>}</article>)}</div> : <p>No matching resource yet. Try another word, select all categories, or <Link to={path('front-desk')}>ask the front desk</Link>.</p>}
+            <p className="rcc-note">External links take you to the provider’s website. Check there for current hours, eligibility, schedules, and availability. Opening a link does not submit a request or confirm a referral. Source pages reviewed October 5, 2026.</p>
+            <div className="rcc-callout"><p><strong>Would a person help you choose?</strong><br />You do not have to figure this out alone.</p><Link className="rcc-button" to={path('front-desk')}>Visit the front desk</Link></div>
+          </>
+        )}
+
         {screen === 'circles' && (
           <>
             <Link className="rcc-back" to={path('lobby')}>← Lobby</Link><p className="rcc-eyebrow">Recovery circles</p><h1>There’s room for <em>your story.</em></h1>
@@ -134,14 +162,14 @@ export function CommunityCenterJourney() {
           </>
         )}
 
-        {selected && !['lobby', 'front-desk', 'kiosk', 'circles', 'quiet', 'next-steps'].includes(screen) && (
+        {selected && !['lobby', 'front-desk', 'kiosk', 'circles', 'quiet', 'next-steps', 'resources'].includes(screen) && (
           <>
             <Link className="rcc-back" to={path('kiosk')}>← Kiosk</Link><p className="rcc-eyebrow">{selected.title}</p><h1>{selected.summary}</h1><p className="rcc-lede">{selected.detail}</p>
             <div className="rcc-actions"><Link className="rcc-button" to={selected.href}>{selected.action}</Link><button className="rcc-button rcc-button-outline" type="button" onClick={() => addStep(selected.id)}>Add to this visit’s next steps</button></div>
             <p className="rcc-note">Adding a step does not send a request or save it to an account.</p>
           </>
         )}
-        {!['lobby', 'front-desk', 'kiosk', 'circles', 'quiet', 'next-steps'].includes(screen) && !selected && (
+        {!['lobby', 'front-desk', 'kiosk', 'circles', 'quiet', 'next-steps', 'resources'].includes(screen) && !selected && (
           <><h1>This room is not available.</h1><Link className="rcc-button" to={path('lobby')}>Return to the lobby</Link></>
         )}
       </main>
