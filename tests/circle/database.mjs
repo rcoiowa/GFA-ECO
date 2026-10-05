@@ -1,0 +1,52 @@
+// Run with PGLITE_MODULE pointing to an installed @electric-sql/pglite module.
+import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const { PGlite } = await import(process.env.PGLITE_MODULE || '@electric-sql/pglite');
+const db = new PGlite();
+await db.exec(`
+create role anon; create role authenticated; create schema auth; create schema recoveryos;
+create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+grant usage on schema auth,recoveryos to anon,authenticated;
+create table recoveryos.people(id bigint primary key,auth_user_id uuid,first_name text,last_name text,preferred_name text);
+create table recoveryos.organizations(id bigint primary key);
+create table recoveryos.service_types(id bigint primary key);
+create table recoveryos.meetings(id bigint generated always as identity primary key,organization_id bigint not null references recoveryos.organizations(id),residence_id bigint,title text not null,description text,starts_at timestamptz not null,ends_at timestamptz,is_required_for_residents boolean default false,created_at timestamptz default now());
+alter table recoveryos.meetings enable row level security;
+create policy meetings_read on recoveryos.meetings for select using(residence_id is null);
+grant select,insert,update,delete on recoveryos.meetings to anon,authenticated;
+create function recoveryos.current_person_id() returns bigint language sql security definer set search_path='' as $$select id from recoveryos.people where auth_user_id=auth.uid()$$;
+create function recoveryos.is_platform_admin() returns boolean language sql as $$select recoveryos.current_person_id()=1$$;
+insert into recoveryos.people values(1,'00000000-0000-0000-0000-000000000001','Admin','',null),(2,'00000000-0000-0000-0000-000000000002','Facilitator','',null),(3,'00000000-0000-0000-0000-000000000003','Other','',null);
+insert into recoveryos.organizations values(1); insert into recoveryos.service_types values(5);
+`);
+await db.exec(await fs.readFile('supabase/launch/migrations/20261005071446_circle_meeting_logging.sql','utf8'));
+await db.exec(`insert into recoveryos.meeting_series(organization_id,service_type_id,name,location_name,location_kind) values(1,5,'GFARC','Hope+Elim','community'),(1,5,'Other Circle','Other site','community'); insert into recoveryos.meeting_facilitator_assignments values(1,2,1,now(),null);`);
+async function as(id){await db.exec(`reset role; select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-${String(id).padStart(12,'0')}',false);set role authenticated;`);}
+const call = (overrides={}) => {
+ const args = {series:1,start:'2026-09-29T23:30:00Z',end:'2026-09-30T00:30:00Z',status:'held',count:15,names:['Thomas','Archaletta'],...overrides};
+ return db.query('select recoveryos.record_circle_meeting($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) as result',[args.series,args.start,args.end,args.status,args.count,args.names,'Slogan 31: Speak well of others in recovery','Community Building','Empower','Social']).then(r=>r.rows[0].result);
+};
+await as(2);
+const saved=await call(); assert.equal(saved.code,'recorded');
+assert.equal((await call()).meeting_id,saved.meeting_id); assert.equal((await call()).code,'already_recorded');
+assert.equal((await call({count:16})).code,'duplicate_conflict');
+await assert.rejects(call({series:2}),/not_authorized/);
+await assert.rejects(call({count:-1}),/attendance_required/);
+await assert.rejects(call({names:['Thomas','thomas']}),/invalid_details/);
+await assert.rejects(call({end:'2026-09-29T22:00:00Z'}),/invalid_date/);
+await assert.rejects(call({start:'2099-09-29T23:30:00Z'}),/invalid_date/);
+await assert.rejects(call({status:'cancelled',count:15}),/cancelled_has_no_attendance/);
+assert.equal((await call({start:'2026-09-22T23:30:00Z',end:'2026-09-23T00:30:00Z',status:'cancelled',count:null,names:[]})).code,'recorded');
+const result=await db.query('select recoveryos.get_my_circle_workspace() as result');
+const ws=result.rows[0].result; assert.equal(ws.series.length,1); assert.equal(ws.meetings.length,2);
+const held=ws.meetings.filter(x=>x.occurrence_status==='held'); assert.equal(held.length,1);assert.equal(held[0].participant_count,15);assert.equal(held[0].facilitator_names.length,2);assert.equal(held[0].total_attendance,17);
+assert.equal((await db.query('select * from recoveryos.meetings')).rows.length,0);
+await assert.rejects(db.query('select * from recoveryos.people'),/permission denied/);
+await assert.rejects(db.query('update recoveryos.meeting_facilitator_assignments set revoked_at=null'),/permission denied/);
+await assert.rejects(db.query('select recoveryos.assign_circle_facilitator(2,2,true)'),/not_authorized/);
+await as(3);assert.equal((await db.query('select recoveryos.get_my_circle_workspace() as w')).rows[0].w.meetings.length,0);await assert.rejects(call(),/not_authorized/);
+await as(1);await db.query('select recoveryos.assign_circle_facilitator(1,2,false)');
+await as(2);await assert.rejects(call(),/not_authorized/);assert.equal((await db.query('select recoveryos.get_my_circle_workspace() as w')).rows[0].w.series.length,0);
+await db.exec('reset role; set role anon'); await assert.rejects(db.query('select recoveryos.get_my_circle_workspace()'),/permission denied/);assert.equal((await db.query('select * from recoveryos.meetings')).rows.length,0);
+console.log('PASS: save, repeat, conflicting duplicate, scoped reads/writes, revocation, anon denial, invalid inputs, 15+2=17, cancelled exclusion.');
+await db.close();
