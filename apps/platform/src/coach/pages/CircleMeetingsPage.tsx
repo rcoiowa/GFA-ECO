@@ -66,7 +66,7 @@ export function CircleMeetingsPage() {
     } catch {
       setFailed(true);
       setMessage(
-        'We couldn’t save this meeting. Check the date, times, attendance, and your Circle assignment, then try again.',
+        'We couldn’t save this meeting. Check the date, times, attendance, and your Circle recording access, then try again.',
       );
     } finally {
       setSaving(false);
@@ -76,36 +76,42 @@ export function CircleMeetingsPage() {
   if (query.isError)
     return (
       <ErrorState
-        message="We couldn’t load your Circle assignments."
+        message="We couldn’t load your available Circles."
         onRetry={() => void query.refetch()}
       />
     );
   return (
     <div className="space-y-5">
-      <PageHeader
-        title="Log a Circle meeting"
-        lede="A simple record of the gathering you helped facilitate."
-      />
+      <PageHeader title="Log a Circle meeting" lede="Document a GFA Recovery Circle gathering." />
       {!circle ? (
         <Card>
           <p>
-            You don’t have a Circle assignment yet. Ask your coordinator to assign the Circle you
-            facilitate.
+            You don’t have Circle recording access yet. Ask your coordinator to confirm your role or
+            Circle assignment.
           </p>
         </Card>
       ) : (
         <Card>
-          <form onSubmit={save} className="space-y-4">
+          <form key={circle.id} onSubmit={save} className="space-y-4">
             <label className="block">
               Circle
               <select
                 className={field}
                 value={String(circle.id)}
-                onChange={(e) => setSelected(e.target.value)}
+                onChange={(e) => {
+                  setSelected(e.target.value);
+                  setCount('');
+                  setNames('');
+                  setMessage('');
+                  setStatus('held');
+                }}
               >
                 {series.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name} · {s.location_name}
+                    {s.participation_access === 'closed_cbh_clients'
+                      ? ' · Closed — CBH clients only'
+                      : ''}
                   </option>
                 ))}
               </select>
@@ -113,6 +119,19 @@ export function CircleMeetingsPage() {
             <p className="text-sm text-ink-muted">
               Times are for {circle.timezone}. Location: {circle.location_name}.
             </p>
+            <p className="text-sm">{[circle.address, circle.room].filter(Boolean).join(' · ')}</p>
+            <label className="block">
+              County (meeting location)
+              <input className={field} value={circle.county ?? 'Not configured'} readOnly />
+            </label>
+            <p className="font-medium">
+              {circle.participation_access === 'closed_cbh_clients'
+                ? 'Closed — CBH clients only. Not open to the general public.'
+                : circle.participation_access === 'public'
+                  ? 'Open to the public'
+                  : 'Attendance eligibility: confirm with the organizer'}
+            </p>
+            <p className="text-sm text-ink-muted">{circle.schedule_note}</p>
             <div className="grid gap-3 sm:grid-cols-3">
               <label>
                 Date
@@ -120,11 +139,22 @@ export function CircleMeetingsPage() {
               </label>
               <label>
                 Start time
-                <input className={field} name="start" type="time" required />
+                <input
+                  className={field}
+                  name="start"
+                  type="time"
+                  defaultValue={circle.start_time?.slice(0, 5) ?? ''}
+                  required
+                />
               </label>
               <label>
                 End time (optional)
-                <input className={field} name="end" type="time" />
+                <input
+                  className={field}
+                  name="end"
+                  type="time"
+                  defaultValue={circle.end_time?.slice(0, 5) ?? ''}
+                />
               </label>
             </div>
             <label className="block">
@@ -220,8 +250,8 @@ export function CircleMeetingsPage() {
           {held.reduce((n, m) => n + (m.facilitator_names?.length ?? 0), 0)} facilitator attendances
         </p>
         <p className="mt-1 text-sm text-ink-muted">
-          Totals cover the latest {meetings.length} records shown (up to 200) for your assigned
-          Circles. Attendance is not unique people served or completed peer connections. Cancelled
+          Totals cover the latest {meetings.length} records shown (up to 200) for Circles you can
+          document. Attendance is not unique people served or completed peer connections. Cancelled
           meetings are excluded.
         </p>
         {meetings.length === 0 ? (
@@ -246,6 +276,12 @@ export function CircleMeetingsPage() {
                   <p>
                     {m.participant_count} participants + {m.facilitator_names?.length ?? 0}{' '}
                     facilitators = {m.total_attendance} people present
+                  </p>
+                )}
+                <p>{m.county ? `${m.county} County` : 'County not recorded'}</p>
+                {m.participation_access === 'closed_cbh_clients' && (
+                  <p className="font-medium">
+                    Closed — CBH clients only. Not open to the general public.
                   </p>
                 )}
                 <p>{m.facilitator_names?.join(' & ')}</p>

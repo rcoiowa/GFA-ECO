@@ -97,6 +97,7 @@ export function roleAuthorityLabel(role: string, residenceName?: string | null):
     residence_staff: 'Residence Staff',
     residence_manager: 'Residence Manager',
     program_manager: 'Program Manager',
+    program_coordinator: 'Program Coordinator',
     administrator: 'Administrator',
     executive: 'Executive',
     system_administrator: 'System Administrator',

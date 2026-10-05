@@ -18,6 +18,13 @@ const workspace = {
       location_name: 'Hope+Elim',
       timezone: 'America/Chicago',
       facilitators: [],
+      county: 'Polk',
+      address: '2500 University Ave',
+      room: '3rd Floor, Room #306',
+      participation_access: 'public',
+      start_time: '18:30:00',
+      end_time: '19:30:00',
+      schedule_note: 'Every Tuesday, 6:30–7:30 PM (America/Chicago)',
     },
   ],
   meetings: [],
@@ -44,8 +51,9 @@ describe('Circle logging', () => {
     const user = userEvent.setup();
     await screen.findByLabelText('Date');
     await user.type(screen.getByLabelText('Date'), '2026-09-29');
-    await user.type(screen.getByLabelText('Start time'), '18:30');
-    await user.type(screen.getByLabelText('End time (optional)'), '19:30');
+    expect(screen.getByLabelText('Start time')).toHaveValue('18:30');
+    expect(screen.getByLabelText('County (meeting location)')).toHaveValue('Polk');
+    expect(screen.getByLabelText('End time (optional)')).toHaveValue('19:30');
     await user.type(screen.getByLabelText('Participants present (exclude facilitators)'), '15');
     await user.type(
       screen.getByLabelText('Facilitators present — one name per line'),
@@ -65,10 +73,37 @@ describe('Circle logging', () => {
       }),
     );
   });
+  it('labels CBH closed and clears attendance and time defaults when switching', async () => {
+    mocks.get.mockResolvedValue({
+      series: [
+        ...workspace.series,
+        {
+          ...workspace.series[0],
+          id: 2,
+          location_name: 'Clive Behavioral Health (CBH) — Outpatient',
+          participation_access: 'closed_cbh_clients',
+          start_time: null,
+          end_time: null,
+          schedule_note: 'Selected Tuesdays; confirm with CBH',
+        },
+      ],
+      meetings: [],
+    });
+    renderPage();
+    const user = userEvent.setup();
+    await screen.findByLabelText('Date');
+    await user.type(screen.getByLabelText('Participants present (exclude facilitators)'), '15');
+    await user.selectOptions(screen.getByLabelText('Circle'), '2');
+    expect(
+      screen.getByText('Closed — CBH clients only. Not open to the general public.'),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Start time')).toHaveValue('');
+    expect(screen.getByLabelText('Participants present (exclude facilitators)')).toHaveValue(null);
+  });
   it('does not offer a form without an assignment', async () => {
     mocks.get.mockResolvedValue({ series: [], meetings: [] });
     renderPage();
-    expect(await screen.findByText(/You don’t have a Circle assignment/)).toBeInTheDocument();
+    expect(await screen.findByText(/You don’t have Circle recording access/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Save Circle meeting' })).not.toBeInTheDocument();
   });
 });

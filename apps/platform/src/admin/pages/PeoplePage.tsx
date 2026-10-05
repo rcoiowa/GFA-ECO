@@ -26,6 +26,7 @@ const GRANTABLE_ROLES = [
   'coach',
   'navigator',
   'program_manager',
+  'program_coordinator',
   'residence_staff',
   'residence_manager',
   'resident',
