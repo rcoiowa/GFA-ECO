@@ -28,6 +28,24 @@ Legacy source-build routes: `docs/source-inventory/route-registry-sources.md`.
 | `/not-authorized`                          | Access explanation                                                                                                           | Any                           |
 | `*`                                        | Not found                                                                                                                    | Any                           |
 
+## Community Center journey — public, no account required
+
+| Route | Page |
+| --- | --- |
+| `/community-center/lobby` | Virtual lobby |
+| `/community-center/front-desk` | Peer support contact and guidance |
+| `/community-center/kiosk` | Searchable service options |
+| `/community-center/resources` | Searchable linked Iowa resource directory |
+| `/community-center/circles` | Recovery circle information |
+| `/community-center/quiet` | Quiet corner |
+| `/community-center/next-steps` | In-memory choices for this visit |
+| `/community-center/person` | Human connection service detail |
+| `/community-center/housing` | Recovery housing service detail |
+| `/community-center/support` | Immediate support service detail |
+| `/community-center/learn` | Learning service detail |
+| `/community-center/account` | Participant account service detail |
+| `/community-center/*` | Unavailable room fallback |
+
 ## `/app` — VRCC participant (lazy chunk, `RequirePerson`)
 
 | Route                         | Page                           |

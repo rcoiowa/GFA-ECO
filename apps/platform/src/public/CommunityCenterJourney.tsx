@@ -58,7 +58,7 @@ export function CommunityCenterJourney() {
   return (
     <div className={`rcc-journey ${largerText ? 'rcc-large' : ''}`}>
       <header className="rcc-header">
-        <Link to="/" className="rcc-brand" aria-label="Recovery Community Center front door">
+        <Link to="/community-center" className="rcc-brand" aria-label="Recovery Community Center front door">
           <img src="/images/rco-iowa-logo.jpg" alt="" width="52" height="54" />
           <span><strong>Iowa’s Recovery<br />Community Center</strong><small>Founded and operated by Grace For Addictions · Powered by RecoveryOS</small></span>
         </Link>
@@ -142,7 +142,7 @@ export function CommunityCenterJourney() {
             <Link className="rcc-back" to={path('lobby')}>← Lobby</Link><p className="rcc-eyebrow">Recovery circles</p><h1>There’s room for <em>your story.</em></h1>
             <p className="rcc-lede">Recovery circles are a place for connection. You may listen, share when you choose, and honor different recovery pathways.</p>
             <div className="rcc-callout"><p><strong>Ask for current meeting details</strong><br />Locations and schedules can change. Call the warmline before making a trip.</p><a className="rcc-button" href={`tel:${GFA_CONTACTS.warmline.number}`}>Call {GFA_CONTACTS.warmline.display}</a></div>
-            <Link className="rcc-button rcc-button-outline" to={path('front-desk')}>Other ways to connect</Link>
+            <div className="rcc-actions"><Link className="rcc-button rcc-button-outline" to={path('front-desk')}>Other ways to connect</Link><button className="rcc-button rcc-button-outline" type="button" onClick={() => addStep('circles')}>Add to this visit’s next steps</button></div>
           </>
         )}
 
@@ -173,7 +173,7 @@ export function CommunityCenterJourney() {
           <><h1>This room is not available.</h1><Link className="rcc-button" to={path('lobby')}>Return to the lobby</Link></>
         )}
       </main>
-      <footer className="rcc-footer"><span>Grace For Addictions · No Shame. No Stigma. Just Grace.</span><Link to="/">Front door</Link></footer>
+      <footer className="rcc-footer"><span>Grace For Addictions · No Shame. No Stigma. Just Grace.</span><Link to="/community-center">Front door</Link></footer>
     </div>
   );
 }

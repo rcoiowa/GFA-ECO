@@ -25,6 +25,12 @@ export function CoachHomePage() {
   return (
     <div className="space-y-5">
       <PageHeader title="Coach Workspace" lede="The people counting on you today." />
+      <Link
+        to="/coach/circles"
+        className="inline-block rounded-md border border-line px-4 py-3 font-semibold"
+      >
+        Log a Circle meeting
+      </Link>
 
       {attention.length > 0 ? (
         <Card>
@@ -67,7 +73,10 @@ export function CoachHomePage() {
           <>
             <ul className="mt-2 space-y-1.5">
               {pool.slice(0, 3).map((r) => (
-                <li key={r.support_request_id} className="rounded-md border border-line bg-surface-raised px-3 py-2.5">
+                <li
+                  key={r.support_request_id}
+                  className="rounded-md border border-line bg-surface-raised px-3 py-2.5"
+                >
                   <p className="font-medium text-ink">{r.participant_name}</p>
                   <p className="text-sm text-ink-muted">
                     {requestTypeLabel(r.request_type)} · waiting {formatElapsed(r.created_at)}
@@ -91,8 +100,13 @@ export function CoachHomePage() {
           <p className="mt-2 text-ink-muted">Nothing needs follow-up right now.</p>
         ) : (
           <p className="mt-2 text-ink-muted">
-            {openFollowUps.length === 1 ? '1 open follow-up.' : `${openFollowUps.length} open follow-ups.`}{' '}
-            <Link to="/coach/follow-ups" className="font-medium text-experience-700 underline underline-offset-2">
+            {openFollowUps.length === 1
+              ? '1 open follow-up.'
+              : `${openFollowUps.length} open follow-ups.`}{' '}
+            <Link
+              to="/coach/follow-ups"
+              className="font-medium text-experience-700 underline underline-offset-2"
+            >
               View
             </Link>
           </p>
@@ -108,8 +122,13 @@ export function CoachHomePage() {
           />
         ) : (
           <p className="mt-2 text-ink-muted">
-            {roster.length === 1 ? '1 active participant.' : `${roster.length} active participants.`}{' '}
-            <Link to="/coach/participants" className="font-medium text-experience-700 underline underline-offset-2">
+            {roster.length === 1
+              ? '1 active participant.'
+              : `${roster.length} active participants.`}{' '}
+            <Link
+              to="/coach/participants"
+              className="font-medium text-experience-700 underline underline-offset-2"
+            >
               View roster
             </Link>
           </p>
