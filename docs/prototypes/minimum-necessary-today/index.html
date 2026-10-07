@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RecoveryOS Today workflow prototype</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#213b36;background:#f4f6f1;line-height:1.55}*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button{cursor:pointer;border-radius:9px;border:1px solid #bccbc1;background:white;color:#244f42;padding:9px 14px;min-height:44px}button:hover{background:#e8f0e8}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #ab620a;outline-offset:3px}button.primary{background:#245a47;color:white;border-color:#245a47}button.small{font-size:.86rem}input,select,textarea{width:100%;padding:10px;border:1px solid #a5b6ae;border-radius:7px;background:white;color:#213b36}textarea{min-height:90px}h1{font-size:clamp(1.8rem,4vw,2.9rem);line-height:1.2;letter-spacing:-.04em;margin:10px 0}h2{font-size:1.25rem;margin:0 0 12px}h3{font-size:1.05rem;margin:0 0 8px}p{margin:7px 0 15px}.muted{color:#52675f}.eyebrow{font-size:.8rem;letter-spacing:.13em;text-transform:uppercase;font-weight:700;color:#496356}.top{background:#203e33;color:white;padding:17px 5vw;display:flex;align-items:center;gap:22px;justify-content:space-between;flex-wrap:wrap}.brand{font-weight:750;letter-spacing:-.02em}.top label{display:flex;align-items:center;gap:12px;font-size:.9rem}.top select{width:210px}.notice{padding:12px 5vw;background:#fcf0d5;color:#5d471e;font-size:.86rem;border-bottom:1px solid #e8d7b4}.container{max-width:1140px;padding:32px 24px;margin:auto}.hero{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}.chip{display:inline-block;background:#e1ebe2;border-radius:6px;padding:4px 9px;font-size:.8rem;font-weight:650}.hero-actions,.actions{display:flex;gap:8px;flex-wrap:wrap}.grid{display:grid;grid-template-columns:1.65fr 1fr;gap:20px;margin-top:24px}.panel{background:white;border:1px solid #d6dfd4;border-radius:15px;padding:22px}.panel+.panel{margin-top:20px}.priority{display:flex;gap:13px;padding:14px 0;border-bottom:1px solid #e3e8e0}.priority:last-child{border-bottom:0}.number{width:30px;height:30px;background:#e8efdf;border-radius:50%;display:grid;place-content:center;flex-shrink:0;font-weight:650}.priority p{margin:2px 0;font-size:.9rem}.note{border:1px solid #dfd3a1;border-radius:10px;background:#fff9de;padding:16px;margin-top:12px}.note p{white-space:pre-wrap;overflow-wrap:anywhere}.note.linked{border-color:#b3c8b6}.task{border:1px solid #d5dfd5;border-radius:10px;padding:17px;margin:14px 0}.task p{font-size:.9rem}.task .status{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em}.task.closed{background:#f4f6f1}.stack{display:grid;gap:12px}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.routine{padding-left:20px}.routine li{padding:5px 0}.routine strong{display:block}.divider{border-top:1px solid #dfe5dc;margin:18px 0}dialog{border:1px solid #c8d5cb;border-radius:15px;max-width:580px;width:calc(100% - 32px);padding:25px;color:#213b36}dialog::backdrop{background:#132b2677}dialog label{display:block;font-weight:600;font-size:.9rem;margin:12px 0 5px}dialog form>p{font-size:.88rem}.error{color:#893324;background:#fff0e9;border-radius:6px;padding:9px}.feedback{min-height:24px;color:#345b46;margin-top:12px}footer{margin-top:25px;font-size:.85rem;color:#52675f}details{margin-top:12px}summary{cursor:pointer;font-weight:600}.full{margin-top:20px}.empty{padding:12px 0;color:#52675f}@media(max-width:760px){.grid{grid-template-columns:1fr}.container{padding:23px 16px}.panel{padding:18px}.top{padding:16px}.notice{padding:12px 16px}.hero-actions button{flex:1}.hero-actions{width:100%}}
+</style></head><body>
+<header class="top"><div class="brand">RecoveryOS <span style="font-weight:400">/ Today prototype</span></div><label for="role">Demo role<select id="role"><option>Executive</option><option>Data administrator</option><option>House manager</option><option>AI consultant</option></select></label></header>
+<div class="notice"><strong>Synthetic demonstration.</strong> Role switching is not sign-in or access control. Notes stay in memory and disappear on reload. Enter only invented examples. No AI, messages, reminders, or live records are connected.</div>
+<main class="container"><div class="hero"><div><div class="eyebrow" id="dayLabel"></div><h1>Your day</h1><p class="muted" id="roleDescription"></p><span class="chip">30 hour core weekly baseline</span></div><div class="hero-actions"><button class="primary" id="newNote">Make a note of it</button><button id="endDay">Close my day</button></div></div>
+<div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+<div class="grid"><div><section class="panel"><h2>Today's minimum</h2><div id="priorities"></div><p class="muted">Confirm safety and fixed obligations first. Choose the next useful action inside actual capacity.</p></section>
+<section class="panel"><div class="row"><h2>My notes</h2><label><input id="showArchived" type="checkbox" style="width:auto"> Show archived</label></div><p class="muted">A note can stay a note. Making a commitment adds an owner, a return, and a next check.</p><div id="notes"></div></section>
+<section class="panel"><h2>Commitments and handoffs</h2><p class="muted">The sender remains responsible until another role accepts. Closing a note does not close this work.</p><div id="commitments"></div></section></div>
+<aside><section class="panel"><h2>Open and close the day</h2><ol class="routine" id="routine"></ol><div class="divider"></div><h3>This week's focus</h3><div id="week"></div></section><section class="panel"><h2>Direction</h2><div class="stack"><div><span class="chip">Five years</span><p>Dependable human connection and continuity beyond any one person.</p></div><div><span class="chip">One year</span><p>Essential pathways work with accepted roles, evidence, and sustainable capacity.</p></div><div><span class="chip">This quarter</span><p>Prove one connection pathway, one house shift pathway, and one shared work routine.</p></div></div><details><summary>Review rhythm</summary><p>Weekly: promises and blocked decisions. Monthly: money, obligations, service exceptions. Quarterly: outcomes, burden, and one absence drill.</p></details></section></aside></div>
+<section class="panel full" id="dayClose" hidden><h2>Day close</h2><p id="closeSummary"></p><p class="muted">Review due promises, unresolved decisions, and critical handoffs. A waiting item needs a next check. An uncovered house duty needs the human escalation route. This summary is not a safety clearance.</p><label for="tomorrow">Tomorrow's first action, demonstration only</label><input id="tomorrow" placeholder="One achievable next step"><div class="actions" style="margin-top:12px"><button id="finishDay">Finish demo day</button></div></section>
+<footer>This prototype demonstrates workflow choices. Production must enforce the existing person, relationship, residence, consent, and role boundaries on the backend. Proposed routines and dates require actual role acceptance.</footer></main>
+<dialog id="dialog"><form id="form"><h2 id="dialogTitle"></h2><p id="dialogHelp"></p><div id="fields"></div><p class="error" id="error" role="alert" hidden></p><div class="actions" style="margin-top:20px"><button type="submit" class="primary" id="submit">Save demo change</button><button type="button" id="cancel">Cancel</button></div></form></dialog>
+<script>
+// Synthetic workflow demonstrator. Not production authorization or service evidence.
+const ROLES = ['Executive', 'Data administrator', 'House manager', 'AI consultant'];
+const CLOSED = ['fulfilled', 'declined', 'withdrawn', 'cancelled', 'unreachable'];
+const required = (value, label) => {
+  if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} is required.`);
+  return value.trim();
+};
+class DemoWorkflow {
+  constructor() { this.notes = []; this.commitments = []; this.nextId = 1; }
+  capture(author, text) {
+    if (!ROLES.includes(author)) throw new Error('Choose a demo role.');
+    const note = { id: this.nextId++, author, text: required(text, 'Note'), collapsed: false, pinned: false, archived: false, commitmentId: null };
+    this.notes.push(note); return note;
+  }
+  note(id, actor) {
+    const note = this.notes.find(n => n.id === id);
+    if (!note || note.author !== actor) throw new Error('This demo role cannot change that note.');
+    return note;
+  }
+  toggleNote(id, actor, key) {
+    if (!['collapsed', 'pinned', 'archived'].includes(key)) throw new Error('Unknown note action.');
+    const note = this.note(id, actor); note[key] = !note[key]; return note;
+  }
+  editNote(id, actor, text) { const note = this.note(id, actor); note.text = required(text, 'Note'); return note; }
+  promote(id, actor, fields) {
+    const note = this.note(id, actor);
+    // Replay returns the existing commitment, never duplicates a promise.
+    if (note.commitmentId !== null) return this.commitments.find(c => c.id === note.commitmentId);
+    const beneficiary = required(fields.beneficiary, 'Person or capability served');
+    const action = required(fields.action, 'Next action');
+    const outcome = required(fields.outcome, 'Definition of done');
+    const permission = required(fields.permission, 'Authority or permission');
+    const due = required(fields.due, 'Next check date');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(due) || Number.isNaN(Date.parse(due + 'T12:00:00Z'))) throw new Error('Choose a valid next check date.');
+    const c = { id: this.nextId++, noteId: id, beneficiary, action, outcome, permission, due, owner: actor, status: 'open', proposedOwner: null, history: [{ event: 'accepted by creator', actor }], closure: null };
+    this.commitments.push(c); note.commitmentId = c.id; return c;
+  }
+  owned(id, actor) {
+    const c = this.commitments.find(c => c.id === id);
+    if (!c || c.owner !== actor) throw new Error('Only the current demo owner can perform this action.');
+    if (CLOSED.includes(c.status)) throw new Error('This commitment is already closed.');
+    return c;
+  }
+  proposeHandoff(id, actor, receiver) {
+    const c = this.owned(id, actor);
+    if (!ROLES.includes(receiver) || receiver === actor) throw new Error('Choose a different demo role.');
+    if (c.proposedOwner) throw new Error('Resolve the existing handoff first.');
+    c.proposedOwner = receiver; c.history.push({ event: 'handoff requested', actor, receiver }); return c;
+  }
+  respondHandoff(id, actor, accepted) {
+    const c = this.commitments.find(c => c.id === id);
+    if (!c || c.proposedOwner !== actor || CLOSED.includes(c.status)) throw new Error('No pending handoff for this demo role.');
+    const previous = c.owner;
+    if (accepted) c.owner = actor;
+    c.proposedOwner = null; c.history.push({ event: accepted ? 'handoff accepted' : 'handoff declined', actor, previous }); return c;
+  }
+  continue(id, actor, status, due, reason) {
+    const c = this.owned(id, actor);
+    if (!['open', 'waiting', 'blocked'].includes(status)) throw new Error('Choose open, waiting, or blocked.');
+    required(due, 'Next check');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(due) || Number.isNaN(Date.parse(due + 'T12:00:00Z'))) throw new Error('Choose a valid next check date.');
+    required(reason, 'What happens next');
+    c.status = status; c.due = due; c.action = reason.trim(); c.history.push({ event: status, actor, due }); return c;
+  }
+  close(id, actor, disposition, evidence, returnRecord) {
+    const c = this.owned(id, actor);
+    if (!CLOSED.includes(disposition)) throw new Error('Choose an honest closing disposition.');
+    required(evidence, disposition === 'fulfilled' ? 'Completion evidence' : 'Disposition evidence');
+    required(returnRecord, 'Return to person or reason return was not possible');
+    if (c.proposedOwner) throw new Error('Resolve the pending handoff before closing.');
+    c.status = disposition; c.closure = { evidence: evidence.trim(), returnRecord: returnRecord.trim() };
+    c.history.push({ event: disposition, actor }); return c;
+  }
+  visible(actor) { return this.commitments.filter(c => c.owner === actor || c.proposedOwner === actor); }
+  endDay(actor) {
+    const own = this.visible(actor);
+    return { open: own.filter(c => !CLOSED.includes(c.status)).length, closed: own.filter(c => CLOSED.includes(c.status)).length, pendingHandoffs: own.filter(c => c.proposedOwner).length };
+  }
+}
+
+const workflow = new DemoWorkflow();
+let actor = 'Executive';
+const byId = id => document.getElementById(id);
+const profiles = {
+  'Executive': {description:'Decisions, relationships, and capacity.', priorities:[['Deliver','Move one accepted funding or strategy action.'],['Return','Fulfill or renegotiate one partner promise.'],['Protect','Keep a break and a definite ending time.']], routine:['Check urgent matters and actual coverage.','Choose one deliverable and one relationship.','Make necessary decisions; keep each owner clear.','Confirm outcomes, accepted handoffs, and the next check.'], week:['Monday: coverage and accepted priorities','Tuesday: funding and finance','Wednesday: partners and reentry','Thursday: service and product bottlenecks','Friday: closure and governance']},
+  'Data administrator': {description:'Reliable records and useful exceptions.', priorities:[['Resolve','Route one service-blocking data exception.'],['Verify','Check the period, denominator, and source for a due report.'],['Simplify','Remove one duplicate capture or improve one procedure.']], routine:['Check failed saves, access issues, and due reports.','Prioritize exceptions that prevent service.','Ask source owners; never invent completion evidence.','Return corrections, set next checks, and verify saves.'], week:['Monday: commitment queue','Tuesday: consent and unique-count quality','Wednesday: service and meeting evidence','Thursday: access and workflow tests','Friday: verified aggregate snapshot']},
+  'House manager': {description:'Resident support and accepted shift continuity.', priorities:[['Protect','Perform actual required house checks.'],['Support','Move one chosen practical resident commitment.'],['Handoff','Confirm the next duty person accepts essential actions.']], routine:['Select assigned residence and acknowledge prior handoff.','Do required physical checks; respond to actual concerns.','Provide chosen support within policy and consent.','Obtain incoming human acceptance before duty ends.'], week:['Monday: coverage and resident commitments','Tuesday: facilities and supplies','Wednesday: scheduled house meeting or Circle','Thursday: intake and authorized practical follow-through','Friday: next coverage and operational exceptions']},
+  'AI consultant': {description:'Reduce admin work while preserving human authority.', priorities:[['Inspect','Reproduce one accepted workflow problem.'],['Demonstrate','Verify a small improvement using synthetic cases.'],['Handoff','Provide limitations, verification, and rollback.']], routine:['Check scope, current target, and release holds.','Use synthetic data and the smallest reviewable change.','Test ordinary failures and denied access.','Return results to the delivery owner; record next step.'], week:['Work themes only; hours unconfirmed','Triage accepted issue','Implement and verify','Demonstrate with affected role','Return release state and rollback']}
+};
+function element(tag,text,className){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;}
+function button(label,handler){const el=element('button',label,'small');el.type='button';el.addEventListener('click',()=>{try{handler();}catch(e){notify(e.message);}});return el;}
+function notify(message){byId('feedback').textContent=message;}
+function modal(title,help,fields,onSubmit){
+  byId('dialogTitle').textContent=title;byId('dialogHelp').textContent=help;byId('fields').replaceChildren();byId('error').hidden=true;
+  for(const f of fields){const label=element('label',f.label);label.htmlFor='field-'+f.key;let input;
+    if(f.options){input=element('select');for(const v of f.options){const option=element('option',v);option.value=v;input.append(option);}}
+    else input=element(f.multiline?'textarea':'input');
+    input.id='field-'+f.key;input.name=f.key;if(f.type)input.type=f.type;input.required=f.required!==false;if(f.value!==undefined)input.value=f.value;input.maxLength=1200;
+    byId('fields').append(label,input);
+  }
+  byId('form').onsubmit=e=>{e.preventDefault();try{const values=Object.fromEntries(new FormData(e.target));onSubmit(values);byId('dialog').close();render();notify('Demo change saved in memory only.');}catch(error){byId('error').textContent=error.message;byId('error').hidden=false;}};
+  byId('dialog').showModal();
+}
+function promote(note){modal('Turn note into one commitment','The creator accepts initial ownership. This does not grant consent or authority in a live system.',[
+  {key:'beneficiary',label:'Person or capability served'},{key:'action',label:'One next action',value:note.text},{key:'outcome',label:'Definition of done'},{key:'permission',label:'Authority or permission, synthetic only',value:'Synthetic operational demonstration'},{key:'due',label:'Next check date, America/Chicago',type:'date'}
+],v=>workflow.promote(note.id,actor,v));}
+function requestHandoff(c){modal('Request a handoff','You stay responsible until the receiving demo role accepts.',[{key:'receiver',label:'Receiving role',options:ROLES.filter(r=>r!==actor)}],v=>workflow.proposeHandoff(c.id,actor,v.receiver));}
+function closeCommitment(c){modal('Close with an honest disposition','Evidence must match the result. Record the return to the person, or why a return could not happen.',[
+  {key:'disposition',label:'Disposition',options:CLOSED},{key:'evidence',label:'Completion or disposition evidence',multiline:true},{key:'returnRecord',label:'Relational return or why it was not possible',multiline:true}
+],v=>workflow.close(c.id,actor,v.disposition,v.evidence,v.returnRecord));}
+function continueCommitment(c){modal('Set the next check','Waiting and blocked work stay owned.',[
+  {key:'status',label:'Current state',options:['open','waiting','blocked'],value:c.status},{key:'due',label:'Next check date',type:'date',value:c.due},{key:'reason',label:'What happens next',value:c.action}
+],v=>workflow.continue(c.id,actor,v.status,v.due,v.reason));}
+function render(){
+  const profile=profiles[actor];byId('roleDescription').textContent=profile.description;
+  byId('dayLabel').textContent=new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric',timeZone:'America/Chicago'}).format(new Date())+' · America/Chicago';
+  byId('priorities').replaceChildren();profile.priorities.forEach(([title,body],i)=>{const row=element('div',undefined,'priority');const text=element('div');text.append(element('strong',title),element('p',body));row.append(element('span',String(i+1),'number'),text);byId('priorities').append(row);});
+  byId('routine').replaceChildren(...profile.routine.map((text,i)=>{const li=element('li');li.append(element('strong',i===0?'Opening':i===3?'Closing':'During the day'),element('span',text));return li;}));
+  byId('week').replaceChildren(...profile.week.map(t=>element('p',t,'muted')));
+  const notes=workflow.notes.filter(n=>n.author===actor&&(byId('showArchived').checked||!n.archived)).sort((a,b)=>Number(b.pinned)-Number(a.pinned));
+  byId('notes').replaceChildren();if(!notes.length)byId('notes').append(element('p','No notes for this demo role. Capture only what is useful.','empty'));
+  notes.forEach(n=>{const card=element('article',undefined,'note'+(n.commitmentId?' linked':''));card.append(element('h3',(n.pinned?'Pinned · ':'')+(n.archived?'Archived · ':'')+'Private demo capture'));
+    if(!n.collapsed)card.append(element('p',n.text));
+    if(n.commitmentId){const linked=workflow.commitments.find(c=>c.id===n.commitmentId);card.append(element('p','Linked commitment: '+linked.status+'. Archiving this note does not change it.','muted'));}
+    const actions=element('div',undefined,'actions');
+    actions.append(button(n.collapsed?'Expand':'Collapse',()=>{workflow.toggleNote(n.id,actor,'collapsed');render();}),button(n.pinned?'Unpin':'Pin',()=>{workflow.toggleNote(n.id,actor,'pinned');render();}),button(n.archived?'Restore':'Archive',()=>{workflow.toggleNote(n.id,actor,'archived');render();}));
+    if(!n.commitmentId)actions.append(button('Edit',()=>modal('Edit private demo note','Keep this capture short.',[{key:'text',label:'Note',multiline:true,value:n.text}],v=>workflow.editNote(n.id,actor,v.text))),button('Make commitment',()=>promote(n)));
+    card.append(actions);byId('notes').append(card);
+  });
+  byId('commitments').replaceChildren();const visible=workflow.visible(actor);
+  if(!visible.length)byId('commitments').append(element('p','No commitments or handoff requests for this demo role.','empty'));
+  visible.forEach(c=>{const closed=CLOSED.includes(c.status);const card=element('article',undefined,'task'+(closed?' closed':''));card.append(element('div',c.status,'status'),element('h3',c.action),element('p','Serves: '+c.beneficiary),element('p','Owner: '+c.owner+' · Next check: '+c.due),element('p','Done means: '+c.outcome),element('p','Authority: '+c.permission));
+    const actions=element('div',undefined,'actions');
+    if(c.proposedOwner){card.append(element('p','Handoff awaiting '+c.proposedOwner+'. Sender is still owner.'));if(c.proposedOwner===actor)actions.append(button('Accept handoff',()=>{workflow.respondHandoff(c.id,actor,true);render();}),button('Decline handoff',()=>{workflow.respondHandoff(c.id,actor,false);render();}));}
+    if(c.owner===actor&&!closed){actions.append(button('Next check',()=>continueCommitment(c)));if(!c.proposedOwner)actions.append(button('Request handoff',()=>requestHandoff(c)),button('Close loop',()=>closeCommitment(c)));}
+    if(c.closure)card.append(element('p','Evidence: '+c.closure.evidence),element('p','Return: '+c.closure.returnRecord));
+    const details=element('details');details.append(element('summary','Transition history'));details.append(...c.history.map(h=>element('p',h.event+' · '+h.actor)));card.append(actions,details);byId('commitments').append(card);
+  });
+  byId('dayClose').hidden=true;byId('tomorrow').value='';
+}
+byId('role').addEventListener('change',e=>{actor=e.target.value;render();notify('Demo role changed. No live sign-in occurred.');});
+byId('showArchived').addEventListener('change',render);
+byId('newNote').addEventListener('click',()=>modal('Make a note of it','Private to this demo role in the interface. In-memory demonstration only; use invented details.',[{key:'text',label:'What moved or what needs remembering?',multiline:true}],v=>workflow.capture(actor,v.text)));
+byId('cancel').addEventListener('click',()=>byId('dialog').close());
+byId('endDay').addEventListener('click',()=>{const s=workflow.endDay(actor);byId('closeSummary').textContent=`${s.closed} closed dispositions · ${s.open} open commitments · ${s.pendingHandoffs} pending handoffs visible to this demo role.`;byId('dayClose').hidden=false;byId('dayClose').scrollIntoView({behavior:'smooth'});});
+byId('finishDay').addEventListener('click',()=>{const action=byId('tomorrow').value.trim();if(!action){notify('Choose tomorrow’s first action before finishing the demo day.');byId('tomorrow').focus();return;}workflow.capture(actor,'Tomorrow: '+action);render();notify('Demo day finished. Tomorrow’s first action is a private in-memory note; no live logout or duty transfer occurred.');});
+workflow.capture('Executive','Demo partner requested a one-page scope draft. Confirm the next action and a realistic return date.');
+workflow.capture('Data administrator','Demo report needs a defined period and verified denominator before external use.');
+workflow.capture('House manager','Demo next duty person needs to accept the shift handoff before it is complete.');
+workflow.capture('AI consultant','Demo release checklist should distinguish source integration from live verification.');
+render();
+
+</script></body></html>
