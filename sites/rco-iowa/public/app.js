@@ -1,4 +1,6 @@
 'use strict';
+// Enable only after the production intake secrets and live acceptance check pass.
+const INTAKE_ENABLED = false;
 const tabs = [...document.querySelectorAll('[role="tab"]')];
 function selectTab(tab, focus = false) {
   for (const item of tabs) {
@@ -50,7 +52,7 @@ const setStatus = (text, error = false) => {
   status.dataset.error = String(error);
 };
 window.rcoTurnstileReady = () => {
-  if (widgetId !== null) return;
+  if (!INTAKE_ENABLED || widgetId !== null) return;
   widgetId = window.turnstile.render('#turnstile-widget', {
     sitekey: '0x4AAAAAAFDu5DlIjHNJPMEO',
     action: 'rco_inquiry',
@@ -60,13 +62,18 @@ window.rcoTurnstileReady = () => {
   });
 };
 if (window.turnstile) window.rcoTurnstileReady();
+if (!INTAKE_ENABLED) {
+  form.querySelectorAll('input,select,textarea,button').forEach(control => { control.disabled = true; });
+  document.getElementById('turnstile-widget').hidden = true;
+  setStatus('Online submission is temporarily unavailable while secure intake is configured. Please use the email or phone below.');
+}
 form.addEventListener('input', () => {
   // A changed inquiry is a new request; unchanged retries keep the original key.
   if (!submitting) submissionId = crypto.randomUUID();
 });
 form.addEventListener('submit', async event => {
   event.preventDefault();
-  if (submitting || !form.reportValidity()) return;
+  if (!INTAKE_ENABLED || submitting || !form.reportValidity()) return;
   if (!verificationToken) { setStatus('Please complete the verification before sending.', true); return; }
   const payload = {
     name: document.getElementById('contact-name').value.trim(),

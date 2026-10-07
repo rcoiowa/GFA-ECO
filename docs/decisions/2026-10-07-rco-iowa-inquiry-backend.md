@@ -23,6 +23,8 @@ A separate project would duplicate identity, intake, operational support and rep
 
 ## Evidence and limitations
 
+Deployment/readiness update: full GitHub CI passed on `4b00478e82fa1df6cb96ca153e5bb2f13f103c19`; lead-intake v16 deployed. Production boundary probes then revealed missing `LEAD_INTAKE_SECRET` (`intake_disabled` on the legacy secret route); the RCO route correctly returns `unavailable`. The site keeps online submission disabled and offers direct email/phone contact until secrets are configured and a live Turnstile acceptance check passes. No bypass or hardcoded credential is used. This is a configuration blocker, not evidence of a completed live form-to-database test.
+
 Live schema includes all required lead columns and a unique non-null `wix_submission_id` index. RLS is enabled; the current select policy permits intake coordinators or the assigned production actor. Anonymous users have no table grant. A transaction tested a synthetic service-role insert/read and rolled it back, including transactional notifications.
 
 Security advisors reported pre-existing mutable search paths on `is_privileged_role` and `lead_contact_events_immutable`, disabled leaked-password protection, and six tables with RLS but no policies (deny by default). No schema/auth changes are made here. Follow-up references: https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable and https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection.
