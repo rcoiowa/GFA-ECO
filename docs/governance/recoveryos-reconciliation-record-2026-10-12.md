@@ -34,6 +34,8 @@ Carried-forward brand/surface distinctions (concepts kept separate — brand ≠
 
 ## B. Claims ledger
 
+> **Amended 2026-10-12** with live findings reported by the reconciliation lead (read-only; not independently verified by this Claude session). See **§E**. The amendments affect **B1, B3, B5, B6** and add **B11** (migration lineage) and **B12** (support-workflow tenant isolation). Where a §B line below is superseded by live evidence, §E names it.
+
 ### B1 — Canonical backend: CQCX; YKY retired
 - **Scope:** data backend of record for RecoveryOS.
 - **Lifecycle:** `decided` + `implemented` (CI guard enforces it in deployable source).
@@ -133,3 +135,50 @@ Carried-forward brand/surface distinctions (concepts kept separate — brand ≠
 ## D. Maintenance rule
 
 Every new claim added here gets the full field set (scope, lifecycle, verification label + date + method, source path@commit, unresolved conflict, next verification action). When an item advances (e.g., `decided → implemented`, or `unverified → live-verified`), add a new dated verification line rather than overwriting the old one, and mark superseded claims `superseded` with a pointer. A confident summary — from any assistant or author — does not become authority until it is recorded here with evidence.
+
+---
+
+## E. Dated amendments — 2026-10-12 (live findings, reported by the reconciliation lead)
+
+> **Evidence class for all of §E:** `live-verified (reported by reconciliation lead, 2026-10-12)` — a targeted read-only live inspection performed by the human lead and reported into this record. **Not independently verified by this Claude session** (the Supabase connector remains unauthenticated here). This is not a full isolation certification or a workflow acceptance test. Method as reported: GitHub read (CI #275 success on `fedae09`), Supabase live ledger read (CQCX = RecoveryOS-Launch, `ACTIVE_HEALTHY`), Cloudflare binding inspection, and read-only inspection of live function/policy/grant definitions (no user impersonation, no execution of `claim_support_request`).
+
+### E1 — Migration lineage is live; 0147–0149 are applied, not merely prepared (amends B1; adds **B11**)
+- **B11 scope:** CQCX migration lineage, live ledger.
+- **Lifecycle:** `deployed` for the entries below.
+- **Verification:** live-verified (reported, 2026-10-12). CQCX **RecoveryOS-Launch** reports `ACTIVE_HEALTHY`. Ledger-recorded application dates: **0147** (classification/authorization isolation) — Sep 17; **0148** (view/function exposure hardening) — Sep 17; **0149** (shared intake workflow) — Sep 17; **circle meeting logging** — Oct 5; **circle county/access/schedule** — Oct 5; **accountless application conversion** — Oct 5.
+- **Supersedes:** any framing of **0147–0149 as "prepared only"** (including prior lines in this engagement). They are **applied**. Successful end-to-end behavior remains a separate question (not asserted here).
+- **Unresolved conflict:** the DOC-INTEGRITY work and prior records referenced **numbered** `0150`/`0151` as the next prepared chain, and a numbered `0152` beyond them; the live ledger shows Sep-17 `0147–0149` then **Oct-5 timestamp-named** migrations and does **not** list numbered `0150`/`0151`/`0152`. The lineage convention appears to have shifted to timestamp names (e.g., `20261005093045_accountless_application_conversion`).
+- **Next verification action:** map the prepared **numbered** chain (`0150`/`0151`/`0152`) against the **live ledger names** — determine whether each was applied under a timestamp name, superseded, or is still pending — before treating any numbered prepared artifact as the live next step.
+
+### E2 — Participant domain is bound at Cloudflare (amends/supersedes B3 inference)
+- **Lifecycle:** domain binding `deployed` (staging).
+- **Verification:** live-verified (reported, 2026-10-12). Cloudflare bindings:
+
+  | Domain | Binding |
+  |---|---|
+  | `recoverycommunity.app` | enabled custom domain on `recoveryos-staging` |
+  | `recoverycommunity.center` | enabled custom domain on `recoveryos-staging` |
+  | `vrcc.app`, `www.vrcc.app` | enabled custom domains on `recoveryos-staging` |
+  | `rcoiowa.org`, `www.rcoiowa.org` | enabled custom domains on `rco-iowa-public` |
+  | `recoveryresidence.org` / `.app` | no Worker bindings/routes or A/AAAA/CNAME in the inspected zones |
+
+  Latest active deployments returned: `recoveryos-staging` Oct 6; `rco-iowa-public` Oct 7.
+- **Supersedes:** the B3 **inference** that `recoverycommunity.app` is "not routed / not implemented in routing." It **is** bound at the Cloudflare layer. The underlying repo fact (B3 repo-verified: `recoverycommunity.app` absent from code/config at `79172a4`) remains true — routing is configured at Cloudflare, not in repo config.
+- **Still unverified:** whether the bound domain **opens the intended participant experience** (HTTP/browser check). The web-retrieval tool could not load these sites; **that failure does not establish an outage.**
+- **Next verification action:** HTTP/browser check of `recoverycommunity.app` (and `.center`) against the intended participant app; reconcile README/ADR-0010 (which still center `vrcc.app`) with the deployed bindings.
+
+### E3 — Support-workflow tenant isolation: concrete live gaps (amends B5/B6; adds **B12**)
+- **B12 scope:** organization/tenant isolation in the peer-support (coaching/navigation) workflow.
+- **Lifecycle:** `decided` problem (substantive multi-org blocker); remediation `proposed`.
+- **Verification:** live-verified (reported, 2026-10-12) — read-only inspection of live function definitions, policies, and grants. **Findings are authorization-*design* gaps, not evidence that any cross-organization record was accessed.**
+  1. **Hardcoded organization:** `claim_support_request()` creates coaching and navigation relationships with `organization_id = 1`, although support requests carry their own organization field.
+  2. **Role checks without org scope:** `has_role()` checks the caller's role, revocation, and test-fixture restriction, but does **not** constrain the role to the requested organization.
+  3. **Broad support-request visibility:** the staff-pool `SELECT` policy lets qualifying support staff read open/submitted requests with **no organization predicate**.
+  4. **Broad administrator visibility:** reviewed appointment and coaching-relationship policies permit reads via `is_admin_staff()` (administrator / system-administrator role checks).
+  5. **Classification ≠ tenancy:** `same_world()` compares production-person classification, **not** organizations.
+- **Protections that do exist (reported):** RLS enabled on the reviewed tables; residence staff access uses residence assignments; revoked roles excluded; the reviewed claim/document-assignment functions deny execution to `anon`.
+- **Relationship to B6:** this supersedes B6's open "next action" for the support path — the examination has now been done at the live layer and found concrete gaps. B6's narrower conclusion (ordinary direct resident INSERT on `document_assignments` blocked; RPC path person/org-scoped via `current_person_id()`) stands; full platform isolation is **not** certified.
+- **Next implementation priority (requires separate authorization + prepared→apply / Gate B / Gate C):** explicit **organization-scoped authorization** — replace the hardcoded `organization_id = 1`; constrain support-request visibility and claiming by organization; distinguish platform administration from participant-record access. Verification must demonstrate: permitted **same-organization** work; **denied cross-organization** access; **revoked-role** denial; and **explicitly authorized cross-organization handoffs**.
+
+### E4 — Session-limitation note, updated
+B-preamble still holds for **this Claude session** (Supabase unauthenticated here). §E items were live-verified by the **reconciliation lead**, not by this session; they are recorded with that attribution. All three connectors (GitHub, Supabase, Cloudflare) were reported working in the lead's environment on 2026-10-12 — confirming the earlier limitation was session-specific, not a platform outage.
