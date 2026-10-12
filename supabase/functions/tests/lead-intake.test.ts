@@ -240,6 +240,7 @@ Deno.test('Contact Connect writes the lead and sends the minimal staff email ale
             interest: 'support',
             message: 'private details',
             contact_permission: true,
+            submission_id: 'connect-123',
             turnstile_token: 'valid-token',
           },
           { origin: 'https://vrcc.app' },
@@ -250,12 +251,59 @@ Deno.test('Contact Connect writes the lead and sends the minimal staff email ale
       assertEquals(response.status, 200);
       assertEquals((await body(response)).code, 'received');
       assertEquals(inserts[0].row.first_name, 'Lena Example');
+      assertEquals(inserts[0].row.wix_submission_id, 'connect-123');
       assertEquals(inserts[0].row.source, 'gfa_contact_connect');
       assertStringIncludes(sent, 'Lena Example');
       assertStringIncludes(sent, 'lead queue');
       assertEquals(sent.includes('private details'), false);
       assertEquals(sent.includes('lena@example.org'), false);
       assertEquals(sent.includes('515-555-1234'), false);
+    },
+  ),
+);
+
+Deno.test('Contact Connect retry returns the existing lead without another insert or email', () =>
+  withEnv(
+    {
+      ...SECRET_ON,
+      TURNSTILE_SECRET: 'turnstile-secret',
+      RESEND_API_KEY: 're_key',
+      RESEND_FROM: 'alerts@graceforaddictions.org',
+      LEAD_ALERT_TO: 'staff@graceforaddictions.org',
+    },
+    async () => {
+      const { client, inserts } = fakeAdmin({ existingWixId: 'connect-123' });
+      let emailCalls = 0;
+      const fetchFn = (async (input: string | URL | Request) => {
+        if (String(input).includes('siteverify')) {
+          return Response.json({
+            success: true,
+            hostname: 'vrcc.app',
+            action: 'contact_connect',
+          });
+        }
+        emailCalls++;
+        return new Response('{}', { status: 200 });
+      }) as typeof fetch;
+      const response = await handleRequest(
+        contactReq(
+          {
+            name: 'Lena Example',
+            email: 'lena@example.org',
+            interest: 'support',
+            contact_permission: true,
+            submission_id: 'connect-123',
+            turnstile_token: 'valid-token',
+          },
+          { origin: 'https://vrcc.app' },
+        ),
+        { getAdmin: () => client, fetch: fetchFn },
+      );
+
+      assertEquals(response.status, 200);
+      assertEquals(await body(response), { ok: true, code: 'received', lead_id: 9 });
+      assertEquals(inserts.length, 0);
+      assertEquals(emailCalls, 0);
     },
   ),
 );

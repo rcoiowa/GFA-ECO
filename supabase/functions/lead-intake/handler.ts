@@ -160,6 +160,7 @@ async function handleContactConnect(req: Request, deps: LeadIntakeDeps): Promise
   const phone = clip(payload.phone, 40)?.trim() || null;
   const interest = clip(payload.interest, 40)?.trim() || null;
   const message = clip(payload.message, 500)?.trim() || null;
+  const submissionId = clip(payload.submission_id, 120)?.trim() || null;
   const allowedInterests = new Set([
     'support',
     'loved_one',
@@ -195,10 +196,43 @@ async function handleContactConnect(req: Request, deps: LeadIntakeDeps): Promise
     phone,
     interest,
     message,
+    wix_submission_id: submissionId,
     source: 'gfa_contact_connect',
   };
-  const { data, error } = await deps.getAdmin().from('leads').insert(lead).select('id').single();
+  const admin = deps.getAdmin();
+  if (submissionId) {
+    const { data: existing, error: lookupError } = await admin
+      .from('leads')
+      .select('id')
+      .eq('wix_submission_id', submissionId)
+      .maybeSingle();
+    if (lookupError) {
+      console.error('lead-intake Contact Connect duplicate lookup failed:', lookupError.message);
+      return contactJson({ ok: false, code: 'intake_failed' }, 500, cors);
+    }
+    if (existing) {
+      return contactJson({ ok: true, code: 'received', lead_id: existing.id }, 200, cors);
+    }
+  }
+
+  const { data, error } = await admin.from('leads').insert(lead).select('id').single();
   if (error) {
+    // A retry can race the first insert; the unique submission ID remains the
+    // final deduplication boundary if both requests pass the initial lookup.
+    if (submissionId) {
+      const { data: existing, error: lookupError } = await admin
+        .from('leads')
+        .select('id')
+        .eq('wix_submission_id', submissionId)
+        .maybeSingle();
+      if (lookupError) {
+        console.error('lead-intake Contact Connect duplicate lookup failed:', lookupError.message);
+        return contactJson({ ok: false, code: 'intake_failed' }, 500, cors);
+      }
+      if (existing) {
+        return contactJson({ ok: true, code: 'received', lead_id: existing.id }, 200, cors);
+      }
+    }
     console.error('lead-intake Contact Connect insert failed:', error.message);
     return contactJson({ ok: false, code: 'intake_failed' }, 500, cors);
   }
