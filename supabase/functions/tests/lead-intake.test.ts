@@ -1,7 +1,7 @@
-// Receiver-level tests for the lead-intake handler: shared-secret gate, payload
-// validation, idempotency, generic error envelopes, and the minimized alert email
-// boundary — against an injected fake database client. No network, no Supabase
-// runtime. Run: deno test --allow-env supabase/functions/tests/
+// Receiver-level tests for the lead-intake handler: Wix shared-secret intake,
+// public Contact Connect validation, idempotency, generic error envelopes, and
+// the minimized alert email boundary — against injected dependencies. No network
+// or Supabase runtime. Run: deno test --allow-env supabase/functions/tests/
 
 import { assertEquals, assertStringIncludes } from './asserts.ts';
 import { type AdminClient, handleRequest } from '../lead-intake/handler.ts';
@@ -13,6 +13,20 @@ function req(payload: unknown, opts: { secret?: string; method?: string } = {}):
     method: opts.method ?? 'POST',
     headers,
     body: opts.method === 'GET' ? undefined : JSON.stringify(payload),
+  });
+}
+
+function contactReq(
+  payload: unknown,
+  opts: { origin?: string; method?: string } = {},
+): Request {
+  const headers = new Headers();
+  if (opts.origin) headers.set('origin', opts.origin);
+  if (opts.method !== 'OPTIONS') headers.set('content-type', 'application/json');
+  return new Request('https://x.test/functions/v1/lead-intake/contact', {
+    method: opts.method ?? 'POST',
+    headers,
+    body: opts.method === 'OPTIONS' ? undefined : JSON.stringify(payload),
   });
 }
 
@@ -192,4 +206,102 @@ Deno.test('alert email carries name + queue pointer ONLY — no message, email, 
       assertEquals(sent.includes('515-555-1234'), false);
     },
   ),
+);
+
+Deno.test('Contact Connect writes the lead and sends the minimal staff email alert', () =>
+  withEnv(
+    {
+      ...SECRET_ON,
+      TURNSTILE_SECRET: 'turnstile-secret',
+      RESEND_API_KEY: 're_key',
+      RESEND_FROM: 'alerts@graceforaddictions.org',
+      LEAD_ALERT_TO: 'staff@graceforaddictions.org',
+    },
+    async () => {
+      const { client, inserts } = fakeAdmin();
+      let sent = '';
+      const fetchFn = (async (input: string | URL | Request, init?: RequestInit) => {
+        if (String(input).includes('siteverify')) {
+          return Response.json({
+            success: true,
+            hostname: 'vrcc.app',
+            action: 'contact_connect',
+          });
+        }
+        sent = String(init?.body ?? '');
+        return new Response('{}', { status: 200 });
+      }) as typeof fetch;
+      const response = await handleRequest(
+        contactReq(
+          {
+            name: 'Lena Example',
+            email: 'lena@example.org',
+            phone: '515-555-1234',
+            interest: 'support',
+            message: 'private details',
+            contact_permission: true,
+            turnstile_token: 'valid-token',
+          },
+          { origin: 'https://vrcc.app' },
+        ),
+        { getAdmin: () => client, fetch: fetchFn },
+      );
+
+      assertEquals(response.status, 200);
+      assertEquals((await body(response)).code, 'received');
+      assertEquals(inserts[0].row.first_name, 'Lena Example');
+      assertEquals(inserts[0].row.source, 'gfa_contact_connect');
+      assertStringIncludes(sent, 'Lena Example');
+      assertStringIncludes(sent, 'lead queue');
+      assertEquals(sent.includes('private details'), false);
+      assertEquals(sent.includes('lena@example.org'), false);
+      assertEquals(sent.includes('515-555-1234'), false);
+    },
+  ),
+);
+
+Deno.test('Contact Connect rejects disallowed origins and requires consent before challenge', () =>
+  withEnv({ ...SECRET_ON, TURNSTILE_SECRET: 'turnstile-secret' }, async () => {
+    const { client, inserts } = fakeAdmin();
+    const denied = await handleRequest(
+      contactReq({}, { origin: 'https://untrusted.example' }),
+      { getAdmin: () => client },
+    );
+    assertEquals(denied.status, 403);
+    assertEquals((await body(denied)).code, 'forbidden_origin');
+
+    let challengeCalls = 0;
+    const noConsent = await handleRequest(
+      contactReq({ turnstile_token: 'valid-token' }, { origin: 'https://vrcc.app' }),
+      {
+        getAdmin: () => client,
+        fetch: (() => {
+          challengeCalls++;
+          return Promise.resolve(Response.json({ success: true }));
+        }) as typeof fetch,
+      },
+    );
+    assertEquals(noConsent.status, 400);
+    assertEquals((await body(noConsent)).code, 'consent_required');
+    assertEquals(challengeCalls, 0);
+    assertEquals(inserts.length, 0);
+  }),
+);
+
+Deno.test('Contact Connect preflight responds only for an allowed origin', () =>
+  withEnv(SECRET_ON, async () => {
+    const { client } = fakeAdmin();
+    const allowed = await handleRequest(
+      contactReq({}, { origin: 'https://vrcc.app', method: 'OPTIONS' }),
+      { getAdmin: () => client },
+    );
+    assertEquals(allowed.status, 204);
+    assertEquals(allowed.headers.get('access-control-allow-origin'), 'https://vrcc.app');
+    const denied = await handleRequest(
+      contactReq({}, { origin: 'https://untrusted.example', method: 'OPTIONS' }),
+      { getAdmin: () => client },
+    );
+    assertEquals(denied.status, 204);
+    assertEquals(denied.headers.get('access-control-allow-origin'), null);
+  }),
 );

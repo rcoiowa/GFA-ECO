@@ -12,6 +12,14 @@ export type LeadIntakeDeps = {
   fetch?: typeof fetch;
 };
 
+const CONTACT_ORIGINS = new Set([
+  'https://vrcc.app',
+  'https://www.vrcc.app',
+  'https://recoveryos-staging.thomas-499.workers.dev',
+  'https://gfa-eco-recovery-residence-os.thomas-499.workers.dev',
+  'http://localhost:5173',
+]);
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
@@ -22,7 +30,198 @@ const esc = (s: unknown) =>
     .replace(/>/g, '&gt;');
 const clip = (s: unknown, n: number) => (typeof s === 'string' ? s.slice(0, n) : null);
 
-export async function handleRequest(req: Request, deps: LeadIntakeDeps): Promise<Response> {
+function contactCors(origin: string | null): Record<string, string> {
+  const headers: Record<string, string> = { 'content-type': 'application/json' };
+  if (origin && CONTACT_ORIGINS.has(origin)) {
+    headers['access-control-allow-origin'] = origin;
+    headers['access-control-allow-methods'] = 'POST, OPTIONS';
+    headers['access-control-allow-headers'] = 'content-type';
+    headers['access-control-max-age'] = '86400';
+    headers.vary = 'origin';
+  }
+  return headers;
+}
+
+function contactJson(body: unknown, status: number, headers: Record<string, string>): Response {
+  return new Response(JSON.stringify(body), { status, headers });
+}
+
+async function contactChallengeOk(
+  token: unknown,
+  ip: string | null,
+  hostname: string,
+  secret: string,
+  fetchFn: typeof fetch,
+): Promise<boolean> {
+  if (typeof token !== 'string' || !token) return false;
+  try {
+    const form = new FormData();
+    form.append('secret', secret);
+    form.append('response', token);
+    if (ip) form.append('remoteip', ip);
+    const response = await fetchFn('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: form,
+    });
+    if (!response.ok) return false;
+    const result = (await response.json()) as {
+      success?: boolean;
+      hostname?: string;
+      action?: string;
+    };
+    return (
+      result.success === true &&
+      result.hostname === hostname &&
+      result.action === 'contact_connect'
+    );
+  } catch (error) {
+    console.error('lead-intake Contact Connect Turnstile verification failed:', error);
+    return false;
+  }
+}
+
+function sendStaffAlert(
+  lead: { first_name: string | null; last_name: string | null },
+  leadId: unknown,
+  config: { key: string; from: string; to: string[] },
+  fetchFn: typeof fetch,
+): Promise<void> {
+  const name =
+    [lead.first_name, lead.last_name].filter(Boolean).join(' ').trim() || 'A new inquiry';
+  const html = `<div style="font-family:Arial,sans-serif;max-width:560px">
+    <h2 style="margin:0 0 4px">New website inquiry</h2>
+    <p>${esc(name)} is waiting in the RecoveryOS lead queue (lead #${esc(leadId)}).</p>
+    <p style="color:#666;font-size:12px">Open the admin lead queue for the full inquiry and contact details.</p></div>`;
+  const alert = fetchFn('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${config.key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: config.from,
+      to: config.to,
+      subject: 'New website inquiry in the lead queue',
+      html,
+    }),
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        console.error(
+          'lead-intake alert email failed:',
+          response.status,
+          await response.text().catch(() => ''),
+        );
+      }
+    })
+    .catch((error) => console.error('lead-intake alert email failed:', error));
+  try {
+    // @ts-ignore EdgeRuntime is provided by the Supabase Edge runtime.
+    EdgeRuntime.waitUntil(alert);
+    return Promise.resolve();
+  } catch {
+    return alert;
+  }
+}
+
+async function handleContactConnect(req: Request, deps: LeadIntakeDeps): Promise<Response> {
+  const fetchFn = deps.fetch ?? fetch;
+  const origin = req.headers.get('origin');
+  const cors = contactCors(origin);
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+  if (req.method !== 'POST') {
+    return contactJson({ ok: false, code: 'method_not_allowed' }, 405, cors);
+  }
+  if (!origin || !CONTACT_ORIGINS.has(origin)) {
+    return contactJson({ ok: false, code: 'forbidden_origin' }, 403, cors);
+  }
+
+  const turnstileSecret = Deno.env.get('TURNSTILE_SECRET') ?? '';
+  if (!turnstileSecret) {
+    console.error('lead-intake Contact Connect is unavailable: TURNSTILE_SECRET is unset');
+    return contactJson({ ok: false, code: 'intake_unavailable' }, 503, cors);
+  }
+
+  let payload: Record<string, unknown>;
+  try {
+    const parsed: unknown = await req.json();
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error();
+    payload = parsed as Record<string, unknown>;
+  } catch {
+    return contactJson({ ok: false, code: 'bad_json' }, 400, cors);
+  }
+
+  if (typeof payload.website === 'string' && payload.website.trim()) {
+    return contactJson({ ok: true, code: 'received' }, 202, cors);
+  }
+  if (payload.contact_permission !== true) {
+    return contactJson({ ok: false, code: 'consent_required' }, 400, cors);
+  }
+
+  const name = clip(payload.name, 120)?.trim() || null;
+  const email = clip(payload.email, 320)?.trim() || null;
+  const phone = clip(payload.phone, 40)?.trim() || null;
+  const interest = clip(payload.interest, 40)?.trim() || null;
+  const message = clip(payload.message, 500)?.trim() || null;
+  const allowedInterests = new Set([
+    'support',
+    'loved_one',
+    'housing',
+    'referral',
+    'volunteer',
+    'partner',
+    'giving',
+    'not_sure',
+  ]);
+  if (!name) return contactJson({ ok: false, code: 'name_required' }, 400, cors);
+  if (!email && !phone) return contactJson({ ok: false, code: 'contact_required' }, 400, cors);
+  if (!interest || !allowedInterests.has(interest)) {
+    return contactJson({ ok: false, code: 'interest_required' }, 400, cors);
+  }
+
+  const hostname = new URL(origin).hostname;
+  const challengePassed = await contactChallengeOk(
+    payload.turnstile_token,
+    req.headers.get('cf-connecting-ip'),
+    hostname,
+    turnstileSecret,
+    fetchFn,
+  );
+  if (!challengePassed) {
+    return contactJson({ ok: false, code: 'challenge_failed' }, 403, cors);
+  }
+
+  const lead = {
+    first_name: name,
+    last_name: null,
+    email,
+    phone,
+    interest,
+    message,
+    source: 'gfa_contact_connect',
+  };
+  const { data, error } = await deps.getAdmin().from('leads').insert(lead).select('id').single();
+  if (error) {
+    console.error('lead-intake Contact Connect insert failed:', error.message);
+    return contactJson({ ok: false, code: 'intake_failed' }, 500, cors);
+  }
+
+  const resendKey = Deno.env.get('RESEND_API_KEY') ?? '';
+  const resendFrom = Deno.env.get('RESEND_FROM') ?? '';
+  const alertTo = (Deno.env.get('LEAD_ALERT_TO') ?? '')
+    .split(',')
+    .map((address) => address.trim())
+    .filter(Boolean);
+  if (resendKey && resendFrom && alertTo.length > 0) {
+    await sendStaffAlert(
+      lead,
+      data.id,
+      { key: resendKey, from: resendFrom, to: alertTo },
+      fetchFn,
+    );
+  }
+
+  return contactJson({ ok: true, code: 'received', lead_id: data.id }, 200, cors);
+}
+
+async function handleWixIntake(req: Request, deps: LeadIntakeDeps): Promise<Response> {
   const fetchFn = deps.fetch ?? fetch;
   const intakeSecret = Deno.env.get('LEAD_INTAKE_SECRET') ?? '';
   const resendKey = Deno.env.get('RESEND_API_KEY') ?? '';
@@ -109,41 +308,19 @@ export async function handleRequest(req: Request, deps: LeadIntakeDeps): Promise
   // first; until one is ratified, staff read the full inquiry only inside the
   // RecoveryOS lead queue, which is RLS/role-bounded.
   if (resendKey && resendFrom && alertTo.length > 0) {
-    const name =
-      [lead.first_name, lead.last_name].filter(Boolean).join(' ').trim() || 'A new inquiry';
-    const html = `<div style="font-family:Arial,sans-serif;max-width:560px">
-      <h2 style="margin:0 0 4px">New website inquiry</h2>
-      <p>${esc(name)} is waiting in the RecoveryOS lead queue (lead #${esc(data.id)}).</p>
-      <p style="color:#666;font-size:12px">Open the admin lead queue for the full inquiry and contact details.</p></div>`;
-    const alert = fetchFn('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: resendFrom,
-        to: alertTo,
-        subject: 'New website inquiry in the lead queue',
-        html,
-      }),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          console.error(
-            'lead-intake alert email failed:',
-            res.status,
-            await res.text().catch(() => ''),
-          );
-        }
-      })
-      .catch((e) => console.error('lead-intake alert email failed:', e));
-    // Deferred reliably past the response instead of fire-and-forget: the Edge
-    // runtime may otherwise terminate the isolate before the send completes.
-    try {
-      // @ts-ignore EdgeRuntime is provided by the Supabase Edge runtime.
-      EdgeRuntime.waitUntil(alert);
-    } catch {
-      await alert;
-    }
+    await sendStaffAlert(
+      lead,
+      data.id,
+      { key: resendKey, from: resendFrom, to: alertTo },
+      fetchFn,
+    );
   }
 
   return json({ ok: true, code: 'received', lead_id: data.id });
+}
+
+export async function handleRequest(req: Request, deps: LeadIntakeDeps): Promise<Response> {
+  const pathname = new URL(req.url).pathname.replace(/\/+$/, '');
+  if (pathname.endsWith('/lead-intake/contact')) return handleContactConnect(req, deps);
+  return handleWixIntake(req, deps);
 }

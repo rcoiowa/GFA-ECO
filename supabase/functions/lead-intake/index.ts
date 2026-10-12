@@ -2,16 +2,19 @@
 //
 // Successor to the legacy pipeline (Wix → anon PostgREST insert into public.wix_contact_submissions
 // → trigger → notify-new-lead). The legacy table granted `anon` full DML; this function is the ONLY
-// write path for canonical leads:
+// write path for canonical leads. It accepts both:
 //
 //   Wix automation (POST, shared secret) → validate → recoveryos.leads (service role)
 //     → DB trigger emits in-app staff notifications (canonical, deduped)
 //     → optional MINIMAL staff email alert via Resend (name + queue pointer only —
 //       no free text or contact detail leaves for Resend until a data-flow
 //       decision is ratified; participant-facing external delivery remains OFF).
+//   Contact Connect browser (POST /contact, allowlisted Origin + Turnstile)
+//     → validate → recoveryos.leads (service role) → same notifications
 //
 // Required secrets:
 //   LEAD_INTAKE_SECRET   shared secret the Wix automation must send as `x-lead-secret` header
+//   TURNSTILE_SECRET     server-side verification key for the public Contact Connect form
 // Optional secrets (staff email alert; omit to disable email entirely):
 //   RESEND_API_KEY, RESEND_FROM, LEAD_ALERT_TO (comma-separated staff addresses)
 //
