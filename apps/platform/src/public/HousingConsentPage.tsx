@@ -94,12 +94,17 @@ export function HousingConsentPage() {
                   </p>
                 )}
                 <p className="mt-2">
-                  {active.length ? 'Currently allowed' : 'No active permission recorded'}
+                  {active.length
+                    ? scoped
+                      ? 'Permission recorded — review the details below'
+                      : 'Currently allowed'
+                    : 'No active permission recorded'}
                 </p>
                 {scoped && (
                   <p className="mt-2">
                     A release must name the recipient, information, and purpose. Review those
-                    details with staff; there is no blanket Allow button here.
+                    details with staff. If any details are missing, this screen does not establish
+                    permission to share. There is no blanket Allow button here.
                   </p>
                 )}
                 {active.map((grant) => (
