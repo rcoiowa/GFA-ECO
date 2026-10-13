@@ -49,6 +49,17 @@ describe('housing consent', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Withdraw this permission' }));
     await waitFor(() => expect(mocks.revokeConsentGrant).toHaveBeenCalledWith({ grantId: 7 }));
   });
+  it('does not present an unscoped release as usable permission', async () => {
+    mocks.listMyConsentGrants.mockResolvedValue([
+      { id: 8, consent_type_id: 2, status: 'granted', revoked_at: null, expires_at: null, scope: {} },
+    ]);
+    wrap();
+    expect(await screen.findByText('Permission recorded — review the details below')).toBeInTheDocument();
+    expect(screen.queryByText('Currently allowed')).not.toBeInTheDocument();
+    expect(screen.getByText(/this screen does not establish permission to share/)).toBeInTheDocument();
+    expect(mocks.recordResidenceConsentGrant).not.toHaveBeenCalled();
+    expect(mocks.revokeConsentGrant).not.toHaveBeenCalled();
+  });
   it('does not describe expired permission as active', async () => {
     mocks.listMyConsentGrants.mockResolvedValue([
       { id: 7, consent_type_id: 1, status: 'granted', revoked_at: null, expires_at: '2000-01-01' },
