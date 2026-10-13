@@ -111,5 +111,5 @@ it('creates an application without signup only after identity confirmation', asy
   fireEvent.click(screen.getByLabelText(/I verified this applicant/));
   fireEvent.click(create);
   await waitFor(() => expect(mocks.createAccountlessApplicationFromIntake).toHaveBeenCalledWith({ intakeId: 7, firstName: 'Test', lastName: 'Person', confirm: true }));
-  expect(await screen.findByText(/Full application created without a login/)).toBeInTheDocument();
+  expect(await screen.findByText(/Application created without a login/)).toBeInTheDocument();
 });
