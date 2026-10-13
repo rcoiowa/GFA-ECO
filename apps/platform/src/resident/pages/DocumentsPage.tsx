@@ -23,7 +23,13 @@ const CATEGORY_ORDER: DocumentCategory[] = ['handbook', 'agreement', 'policy', '
  * then the full library. The library renders from the bundled canonical
  * package, so it works even before signature records load.
  */
-export function DocumentsPage() {
+export function DocumentsPage({
+  basePath = '/residence',
+  assignedOnly = false,
+}: {
+  basePath?: string;
+  assignedOnly?: boolean;
+}) {
   const { person } = useAuth();
   const [assignments, setAssignments] = useState<AssignmentWithDocument[] | null>(null);
   const [assignmentsError, setAssignmentsError] = useState(false);
@@ -58,7 +64,12 @@ export function DocumentsPage() {
       <PageHeader
         title="Documents"
         lede="Your agreements, your rights, and every house policy — nothing here is fine print."
-        crumbs={[{ to: '/residence/today', label: 'Today' }]}
+        crumbs={[
+          {
+            to: basePath === '/residence' ? '/residence/today' : basePath,
+            label: basePath === '/residence' ? 'Today' : 'My housing intake',
+          },
+        ]}
       />
 
       <div className="flex flex-col gap-5">
@@ -71,7 +82,7 @@ export function DocumentsPage() {
           </Alert>
         ) : pending.length > 0 ? (
           <Card>
-            <CardTitle>Waiting for your signature</CardTitle>
+            <CardTitle>Waiting for your review</CardTitle>
             <p className="mb-3 text-sm text-ink-muted">
               Take your time with these — and ask staff anything, as many times as you need.
             </p>
@@ -79,12 +90,14 @@ export function DocumentsPage() {
               {pending.map((a) => (
                 <li key={a.id}>
                   <Link
-                    to={`/residence/documents/${a.document_version.template.key}`}
+                    to={`${basePath}/documents/${a.document_version.template.key}?assignment=${a.id}`}
                     className="flex items-center justify-between rounded-md border border-line bg-surface-raised px-4 py-3 hover:bg-experience-soft"
                   >
                     <span className="font-medium text-ink">{a.document_version.template.name}</span>
                     <span className="rounded-full bg-attention-50 px-3 py-0.5 text-sm text-attention-700">
-                      Review &amp; sign
+                      {a.document_version.template.requires_signature
+                        ? 'Review & sign'
+                        : 'Review & acknowledge'}
                     </span>
                   </Link>
                 </li>
@@ -92,17 +105,21 @@ export function DocumentsPage() {
             </ul>
           </Card>
         ) : (
-          <Alert tone="positive">You're all caught up — nothing is waiting for a signature.</Alert>
+          <Alert tone="positive">
+            {assignments?.length
+              ? 'Your assigned documents are complete.'
+              : 'No documents are assigned yet. If you are waiting for intake documents, ask staff to check your application and account link.'}
+          </Alert>
         )}
 
         {signed.length > 0 ? (
           <Card>
-            <CardTitle>Signed by you</CardTitle>
+            <CardTitle>Completed by you</CardTitle>
             <ul className="flex flex-col gap-1">
               {signed.map((a) => (
                 <li key={a.id} className="flex items-center justify-between py-1">
                   <Link
-                    to={`/residence/documents/${a.document_version.template.key}`}
+                    to={`${basePath}/documents/${a.document_version.template.key}?assignment=${a.id}`}
                     className="font-medium text-experience-700 underline underline-offset-2"
                   >
                     {a.document_version.template.name}
@@ -116,42 +133,45 @@ export function DocumentsPage() {
           </Card>
         ) : null}
 
-        <Card>
-          <CardTitle>Something not right?</CardTitle>
-          <p className="text-ink-muted">
-            Any concern — rights, safety, billing, a conflict — deserves a real answer. Filing a
-            grievance can never be held against you.
-          </p>
-          <Link
-            to="/residence/documents/grievance"
-            className="mt-2 inline-block font-medium text-experience-700 underline underline-offset-2"
-          >
-            File a grievance
-          </Link>
-        </Card>
+        {!assignedOnly && (
+          <Card>
+            <CardTitle>Something not right?</CardTitle>
+            <p className="text-ink-muted">
+              Any concern — rights, safety, billing, a conflict — deserves a real answer. Filing a
+              grievance can never be held against you.
+            </p>
+            <Link
+              to="/residence/documents/grievance"
+              className="mt-2 inline-block font-medium text-experience-700 underline underline-offset-2"
+            >
+              File a grievance
+            </Link>
+          </Card>
+        )}
 
-        {CATEGORY_ORDER.map((category) => {
-          const docs = allDocuments.filter((d) => d.category === category);
-          if (docs.length === 0) return null;
-          return (
-            <Card key={category}>
-              <CardTitle>{CATEGORY_LABELS[category]}</CardTitle>
-              <ul className="flex flex-col gap-2">
-                {docs.map((d) => (
-                  <li key={d.key}>
-                    <Link
-                      to={`/residence/documents/${d.key}`}
-                      className="block rounded-md border border-line bg-surface-raised px-4 py-3 hover:bg-experience-soft"
-                    >
-                      <span className="font-medium text-ink">{d.name}</span>
-                      <span className="mt-0.5 block text-sm text-ink-muted">{d.summary}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          );
-        })}
+        {!assignedOnly &&
+          CATEGORY_ORDER.map((category) => {
+            const docs = allDocuments.filter((d) => d.category === category);
+            if (docs.length === 0) return null;
+            return (
+              <Card key={category}>
+                <CardTitle>{CATEGORY_LABELS[category]}</CardTitle>
+                <ul className="flex flex-col gap-2">
+                  {docs.map((d) => (
+                    <li key={d.key}>
+                      <Link
+                        to={`${basePath}/documents/${d.key}`}
+                        className="block rounded-md border border-line bg-surface-raised px-4 py-3 hover:bg-experience-soft"
+                      >
+                        <span className="font-medium text-ink">{d.name}</span>
+                        <span className="mt-0.5 block text-sm text-ink-muted">{d.summary}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            );
+          })}
       </div>
     </>
   );
