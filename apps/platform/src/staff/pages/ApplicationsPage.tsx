@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router';
+import { ReopenApplication } from '../components/ReopenApplication';
 
 import { useAuth } from '@recoveryos/auth';
 import {
@@ -38,7 +40,7 @@ const STATUS_LABELS: Record<ApplicationWithPerson['status'], string> = {
  * The waitlist promise (contact at least every two weeks) lives here.
  */
 export function ApplicationsPage() {
-  const { person } = useAuth();
+  const { person, roleAssignments } = useAuth();
   const { residence } = useStaff();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -102,6 +104,9 @@ export function ApplicationsPage() {
   };
 
   if (!residence) return <Alert tone="attention">Select a residence to see applications.</Alert>;
+  const canReopen = roleAssignments.some(
+    (r) => !r.revoked_at && r.role_key === 'residence_manager' && r.residence_id === residence.id,
+  );
 
   const openReferrals = referrals.filter((r) => ['received', 'contacted'].includes(r.status));
   const open = applications.filter((a) =>
@@ -124,6 +129,13 @@ export function ApplicationsPage() {
         lede="Every applicant gets a real answer, and waitlisted applicants stay in regular contact with staff — this queue tracks that follow-through."
         crumbs={[{ to: '/staff/today', label: 'Today' }]}
       />
+      <p className="mb-4">
+        Looking for a preapplication?{' '}
+        <Link className="underline" to="/residences/applications/intake">
+          Open housing intake submissions
+        </Link>
+        . Conversion creates an application for review; approval and move-in are separate actions.
+      </p>
       {loading ? (
         <LoadingState />
       ) : error ? (
@@ -225,6 +237,9 @@ export function ApplicationsPage() {
                       applicationStatus={a.status}
                       onAdmitted={() => void load()}
                     />
+                    {canReopen ? (
+                      <ReopenApplication applicationId={a.id} status={a.status} onSaved={load} />
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -322,6 +337,9 @@ export function ApplicationsPage() {
                       {STATUS_LABELS[a.status]}
                       {a.decided_at ? ` · ${new Date(a.decided_at).toLocaleDateString()}` : ''}
                     </span>
+                    {canReopen && a.status === 'declined' ? (
+                      <ReopenApplication applicationId={a.id} status={a.status} onSaved={load} />
+                    ) : null}
                   </li>
                 ))}
               </ul>
