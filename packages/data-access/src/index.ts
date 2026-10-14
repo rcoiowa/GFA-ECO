@@ -9,6 +9,7 @@ export * from './repositories/recoveryCapital';
 export * from './repositories/residenceDocuments';
 export * from './repositories/residenceOperations';
 export * from './repositories/staffOperations';
+export * from './repositories/housingRecovery';
 export * from './repositories/applications';
 export * from './repositories/providerOnboarding';
 export * from './repositories/houseBoard';
