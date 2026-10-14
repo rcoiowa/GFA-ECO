@@ -3,6 +3,14 @@
 Memory is **orientation only**. It points at governance; it never replaces it. Verified runtime
 evidence — not this file, not memory — determines factual claims about what is deployed.
 
+## Organization-wide AI instructions (READ FIRST)
+
+**Before any substantive work, read:** `docs/governance/gfa-ai-instructions-2026-10-14.md` — the
+organization-wide AI instruction set (identity, dignity, organizational/platform boundaries,
+evidence discipline, decision-vs-factual authority, measurement & attribution, privacy, autonomy &
+stop gates, verification, voice). It governs how AI-assisted work is done across GFA. This CLAUDE.md
+and the ICARE Authority below remain in force and are not weakened by it.
+
 ## ICARE / Emotional Awareness / BARC-10 Authority
 
 **Canonical governance:** `docs/product/recoveryos-icare-integration-authority-v1.0.md`
