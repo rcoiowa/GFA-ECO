@@ -45,6 +45,13 @@ export function ProfilePage() {
           </Link>
         </Card>
         <Card>
+          <CardTitle>My housing intake</CardTitle>
+          <p>Your application, assigned documents, and housing consent choices.</p>
+          <Link to="/my-housing" className="inline-block min-h-11 py-3 underline">
+            Open my housing intake
+          </Link>
+        </Card>
+        <Card>
           <CardTitle>Account</CardTitle>
           <Button variant="secondary" onClick={() => void signOut()}>
             Sign out

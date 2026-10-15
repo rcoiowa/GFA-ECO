@@ -11,7 +11,6 @@ import { ResidenceDirectoryPage } from './public/ResidenceDirectoryPage';
 import { ResidenceApplyPage } from './public/ResidenceApplyPage';
 import { EJWRHPage } from './public/EJWRHPage';
 import { EJWRHApplyPage } from './public/EJWRHApplyPage';
-import { MyApplicationPage } from './public/MyApplicationPage';
 import { ListYourResidencePage } from './public/ListYourResidencePage';
 import { SupportNowPage } from './public/SupportNowPage';
 import { OnboardingPage } from './pages/OnboardingPage';
@@ -49,6 +48,9 @@ function HostHome() {
   const home = HOST_HOMES[hostname];
   return home ? <Navigate to={home} replace /> : <LandingPage />;
 }
+const HousingIntakeArea = lazy(() =>
+  import('./public/HousingIntakeArea').then((m) => ({ default: m.HousingIntakeArea })),
+);
 const ParticipantArea = lazy(() =>
   import('./participant/ParticipantArea').then((m) => ({ default: m.ParticipantArea })),
 );
@@ -86,8 +88,17 @@ export function App() {
         path="/recovery-residences/my-application"
         element={
           <RequireAuth>
-            <MyApplicationPage />
+            <Navigate to="/my-housing" replace />
           </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/my-housing/*"
+        element={
+          <Suspense fallback={<LoadingState label="Opening your housing intake…" />}>
+            <HousingIntakeArea />
+          </Suspense>
         }
       />
 

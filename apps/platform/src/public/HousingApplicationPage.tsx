@@ -161,7 +161,7 @@ export function HousingApplicationPage({ residence }: { residence: keyof typeof 
             <h2 className="mt-6 text-xl font-semibold text-ink">Your free RecoveryOS account</h2>
             <p className="mt-2 text-ink">
               One account gives you access to the VRCC. Staff will verify your identity and connect
-              this application to your account for tracking. Resident tools become available after
+              this application to your account for tracking. Document review becomes available after approval and account linking; resident tools become available after
               admission and assignment. An account does not guarantee admission or a bed. If someone
               helped you apply, use your own account, not your helper’s.
             </p>

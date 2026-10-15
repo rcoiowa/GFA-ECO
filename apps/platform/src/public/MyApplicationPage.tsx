@@ -66,7 +66,7 @@ export function MyApplicationPage() {
   }, [person]);
 
   return (
-    <div className="min-h-dvh bg-surface">
+    <div className="bg-surface">
       <header className="border-b border-line bg-surface-raised">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
           <Link to="/" className="text-xl font-semibold text-experience-700">
@@ -89,8 +89,8 @@ export function MyApplicationPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl px-4 py-12">
-        <h1 className="text-3xl font-semibold text-ink">My residence application</h1>
+      <section className="mx-auto max-w-2xl px-4 py-6">
+        <h1 className="text-3xl font-semibold text-ink">My housing intake</h1>
 
         {loading ? (
           <div className="mt-6">
@@ -126,13 +126,13 @@ export function MyApplicationPage() {
               {application.status === 'submitted' || application.status === 'in_review' ? (
                 <p className="mt-3 text-ink">
                   <strong>Your application is with staff.</strong> A real person reads every
-                  application, and someone will contact you about yours. Nothing else is needed from
-                  you right now.
+                  application, and someone will contact you about yours. Staff will explain any next
+                  steps or information needed.
                 </p>
               ) : application.status === 'waitlisted' ? (
                 <p className="mt-3 text-ink">
                   <strong>You&rsquo;re on the waitlist for a bed.</strong> Staff will stay in touch
-                  with you while you wait, and the moment a bed opens you&rsquo;ll be first to know.
+                  with you while you wait, and contact you about availability and next steps.
                   Staying reachable at your application phone number helps.
                 </p>
               ) : application.status === 'approved' ? (
@@ -201,26 +201,31 @@ export function MyApplicationPage() {
             <Card className="mt-4">
               <CardTitle>
                 {application.status === 'approved'
-                  ? 'Next step: complete your VRCC onboarding'
+                  ? 'Next step: your housing documents and consent'
                   : 'Meanwhile, the VRCC is already yours'}
               </CardTitle>
               <p className="mt-2 text-ink">
                 {application.status === 'approved'
-                  ? 'Your RecoveryOS account also gives you access to the VRCC — coaching, peer community, and recovery tools. Completing onboarding now means your support is in place before move-in day.'
+                  ? 'Review your assigned documents and make your own consent choices before move-in. You can complete these steps before move-in. Coaching and peer support remain separate options.'
                   : 'Free coaching, peer support, recovery circles, and resource navigation — no residence stay required, starting today.'}
               </p>
               <Link
-                to="/app/today"
+                to={application.status === 'approved' ? '/my-housing/documents' : '/vrcc/today'}
                 className="mt-4 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
               >
                 {application.status === 'approved'
-                  ? 'Complete VRCC onboarding'
+                  ? 'Review my housing documents'
                   : 'Check out the VRCC'}
               </Link>
+              {application.status === 'approved' && (
+                <Link className="mt-3 block min-h-11 py-2 underline" to="/my-housing/consent">
+                  Review my housing consent choices
+                </Link>
+              )}
             </Card>
           </>
         )}
-      </main>
+      </section>
 
       <footer className="border-t border-line py-6">
         <p className="mx-auto max-w-4xl px-4 text-sm text-ink-muted">

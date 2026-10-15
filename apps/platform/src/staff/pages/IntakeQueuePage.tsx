@@ -35,7 +35,7 @@ const STATUS_LABELS: Record<ResidenceApplicationIntake['status'], string> = {
   received: 'Received — waiting for first contact',
   contacted: 'Contacted',
   account_offered: 'Account offered',
-  converted: 'Converted to a full application',
+  converted: 'Application ready for staff review',
   waitlisted: 'Waitlisted',
   declined: 'Referred elsewhere',
   closed: 'Closed',
@@ -141,7 +141,9 @@ export function IntakeQueuePage() {
 
   const openConvert = async (intakeId: number) => {
     setConvertFor(intakeId);
-    setFirstName(''); setLastName(''); setIdentityConfirmed(false);
+    setFirstName('');
+    setLastName('');
+    setIdentityConfirmed(false);
     setCandidates(null);
     setLookupEmail('');
     setLookupNote(null);
@@ -176,18 +178,29 @@ export function IntakeQueuePage() {
   };
 
   const createWithoutAccount = async (intakeId: number) => {
-    setCreating(true); setActionError(null);
+    setCreating(true);
+    setActionError(null);
     try {
       const r = await createAccountlessApplicationFromIntake({
-        intakeId, firstName: firstName.trim(), lastName: lastName.trim(), confirm: identityConfirmed,
+        intakeId,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        confirm: identityConfirmed,
       });
-      if (!r.ok) { setActionError(r.message ?? r.code ?? 'The application could not be created.'); return; }
+      if (!r.ok) {
+        setActionError(r.message ?? r.code ?? 'The application could not be created.');
+        return;
+      }
       setConvertFor(null);
-      setConverted('Full application created without a login — continue on the Applications page.');
+      setConverted(
+        'Application created without a login. Continue staff review in Applications. Consent, signatures, and move-in are separate steps; account linking can happen later.',
+      );
       await load();
     } catch (e) {
       setActionError(e instanceof Error ? e.message : 'The application could not be created.');
-    } finally { setCreating(false); }
+    } finally {
+      setCreating(false);
+    }
   };
 
   const WARNING_TEXT: Record<string, string> = {
@@ -201,7 +214,9 @@ export function IntakeQueuePage() {
     if (r.ok) {
       setConvertFor(null);
       setPendingWarnings(null);
-      setConverted('Converted — the full application now appears on the Applications page.');
+      setConverted(
+        'Application linked to the verified person. Continue in Applications for review; this does not record consent or move anyone in.',
+      );
       await load();
     } else if (r.code === 'confirm_required') {
       setPendingWarnings({ personId, warnings: r.warnings ?? [] });
@@ -229,7 +244,14 @@ export function IntakeQueuePage() {
       ) : (
         <div className="flex flex-col gap-5">
           {actionError ? <Alert tone="critical">{actionError}</Alert> : null}
-          {converted ? <Alert tone="positive">{converted}</Alert> : null}
+          {converted ? (
+            <Alert tone="positive">
+              {converted}{' '}
+              <Link className="underline" to="/staff/applications">
+                Open Applications
+              </Link>
+            </Alert>
+          ) : null}
 
           <Card>
             <CardTitle>Waiting on us ({open.length})</CardTitle>
@@ -331,10 +353,12 @@ export function IntakeQueuePage() {
                         data-testid="convert-panel"
                       >
                         <p className="text-sm font-medium text-ink">
-                          Create a full application for {r.applicant_name}
+                          Prepare application for {r.applicant_name}
                         </p>
                         {candidates === null ? (
-                          <p className="mt-1 text-sm text-ink-muted">Checking for an existing account…</p>
+                          <p className="mt-1 text-sm text-ink-muted">
+                            Checking for an existing account…
+                          </p>
                         ) : (
                           <>
                             {candidates.map((c) => (
@@ -395,11 +419,41 @@ export function IntakeQueuePage() {
                             </div>
                             <div className="mt-4 border-t border-line pt-3">
                               <h3 className="font-medium">Continue without a login</h3>
-                              <p className="mt-1 text-sm text-ink-muted">Confirm their name and identity. This creates a person record and full application, with no login, invitation, or automatic admission.</p>
-                              <TextField label="Applicant first name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-                              <TextField label="Applicant last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-                              <label className="mt-2 flex gap-2 text-sm"><input type="checkbox" checked={identityConfirmed} onChange={(e) => setIdentityConfirmed(e.target.checked)} />I verified this applicant’s identity and checked for an existing person record.</label>
-                              <Button className="mt-2" disabled={creating || !identityConfirmed || !firstName.trim() || !lastName.trim()} onClick={() => void createWithoutAccount(r.id)}>{creating ? 'Creating…' : 'Create application without a login'}</Button>
+                              <p className="mt-1 text-sm text-ink-muted">
+                                Confirm their name and identity. This creates a person record and
+                                full application, with no login, invitation, or automatic admission.
+                              </p>
+                              <TextField
+                                label="Applicant first name"
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
+                              />
+                              <TextField
+                                label="Applicant last name"
+                                value={lastName}
+                                onChange={(e) => setLastName(e.target.value)}
+                              />
+                              <label className="mt-2 flex gap-2 text-sm">
+                                <input
+                                  type="checkbox"
+                                  checked={identityConfirmed}
+                                  onChange={(e) => setIdentityConfirmed(e.target.checked)}
+                                />
+                                I verified this applicant’s identity and checked for an existing
+                                person record.
+                              </label>
+                              <Button
+                                className="mt-2"
+                                disabled={
+                                  creating ||
+                                  !identityConfirmed ||
+                                  !firstName.trim() ||
+                                  !lastName.trim()
+                                }
+                                onClick={() => void createWithoutAccount(r.id)}
+                              >
+                                {creating ? 'Creating…' : 'Create application without a login'}
+                              </Button>
                             </div>
                           </>
                         )}
@@ -438,7 +492,9 @@ export function IntakeQueuePage() {
           </Card>
 
           <p className="text-sm text-ink-faint">
-            A full application can proceed without a login. Creating a login remains the applicant’s choice. Application review, intake requirements, and admission remain separate staff actions.
+            A full application can proceed without a login. Creating a login remains the applicant’s
+            choice. Application review, intake requirements, and admission remain separate staff
+            actions.
           </p>
         </div>
       )}
