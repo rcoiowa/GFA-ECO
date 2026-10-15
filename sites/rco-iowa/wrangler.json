@@ -1,0 +1,7 @@
+{
+  "name": "rco-iowa-public",
+  "main": "worker.mjs",
+  "account_id": "499272c2f0336cc60207bad24edd0e14",
+  "compatibility_date": "2026-10-07",
+  "workers_dev": true
+}
