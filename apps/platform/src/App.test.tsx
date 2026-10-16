@@ -70,8 +70,21 @@ describe('service-critical public routes stay mounted', () => {
   it('/community-center/lobby mounts the guest journey', () => {
     renderAt('/community-center/lobby');
     expect(screen.getByRole('heading', { name: 'Welcome. Take your time.' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Open the kiosk' })).toHaveAttribute('href', '/community-center/kiosk');
+    expect(screen.getByRole('link', { name: 'Touch the front desk in the lobby scene' })).toHaveAttribute('href', '/community-center/front-desk');
+    expect(screen.getByRole('link', { name: 'Touch the self-service kiosk in the lobby scene' })).toHaveAttribute('href', '/community-center/kiosk');
     expect(screen.getByRole('link', { name: 'Support now' })).toHaveAttribute('href', '/support');
+  });
+
+  it('touching the pictured front desk navigates to the human front desk', () => {
+    renderAt('/community-center/lobby');
+    fireEvent.click(screen.getByRole('link', { name: 'Touch the front desk in the lobby scene' }));
+    expect(screen.getByRole('heading', { name: 'Let’s find your next step.' })).toBeInTheDocument();
+  });
+
+  it('touching the pictured kiosk navigates to the self-service kiosk', () => {
+    renderAt('/community-center/lobby');
+    fireEvent.click(screen.getByRole('link', { name: 'Touch the self-service kiosk in the lobby scene' }));
+    expect(screen.getByRole('heading', { name: 'What would help you today?' })).toBeInTheDocument();
   });
 
   it('/community-center/resources links to established resources without an account', () => {
