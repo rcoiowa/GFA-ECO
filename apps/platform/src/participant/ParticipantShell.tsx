@@ -17,6 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/vrcc/learn', label: 'Learn' },
   { to: '/vrcc/tools', label: 'Tools' },
   { to: '/vrcc/resources', label: 'Resources' },
+  { to: '/my-housing', label: 'My housing intake', shortLabel: 'Housing' },
   { to: '/vrcc/journey', label: 'My Journey', shortLabel: 'Journey' },
 ];
 

@@ -51,12 +51,15 @@ const CLASS_ORDER = [
 /** Who acts, in plain words, per item key. */
 function actorHint(item: ReadinessItem): string | null {
   if (item.met) return null;
-  if (item.key.startsWith('sign:')) return 'They sign it in their app — or on paper with you.';
-  if (item.key.startsWith('ack:')) return 'They confirm they received it — one tap in their app.';
+  if (item.key.startsWith('sign:'))
+    return 'They sign in My housing intake → My documents, using their own linked login — or on paper with you.';
+  if (item.key.startsWith('ack:'))
+    return 'They acknowledge receipt in My housing intake → My documents.';
   if (item.key === 'screening_consent')
-    return 'They can give it in their app, or you record it (verbal or paper).';
+    return 'They decide in My housing intake → My consent choices, or you record consent actually given verbally or on paper.';
   if (item.key === 'emergency_contact') return 'You record it during the intake conversation.';
-  if (item.key === 'medication_items') return 'You record the outcome of the medication conversation.';
+  if (item.key === 'medication_items')
+    return 'You record the outcome of the medication conversation.';
   if (item.key === 'accommodation')
     return 'Talk it through with them — it can be deferred at move-in with a follow-up.';
   if (item.key === 'supervision') return 'Record their authorization, then the officer contact.';
@@ -113,13 +116,31 @@ export function IntakeChecklist({
 
   // Inline flows (one open at a time keeps the panel calm).
   const [openFlow, setOpenFlow] = useState<
-    null | 'emergency_contact' | 'medication_add' | 'screening_consent' | 'supervision' | 'override' | 'paper_sign'
+    | null
+    | 'emergency_contact'
+    | 'medication_add'
+    | 'screening_consent'
+    | 'supervision'
+    | 'override'
+    | 'paper_sign'
   >(null);
   const [paperSign, setPaperSign] = useState({ templateKey: '', label: '', name: '' });
   const [contact, setContact] = useState({ name: '', phone: '', relationship: '' });
-  const [med, setMed] = useState({ name: '', storage: 'self_managed', isMoud: false, prescriber: false });
-  const [consentMethod, setConsentMethod] = useState<'verbal_witnessed' | 'paper'>('verbal_witnessed');
-  const [officer, setOfficer] = useState({ name: '', phone: '', agency: '', purpose: 'Probation/parole coordination' });
+  const [med, setMed] = useState({
+    name: '',
+    storage: 'self_managed',
+    isMoud: false,
+    prescriber: false,
+  });
+  const [consentMethod, setConsentMethod] = useState<'verbal_witnessed' | 'paper'>(
+    'verbal_witnessed',
+  );
+  const [officer, setOfficer] = useState({
+    name: '',
+    phone: '',
+    agency: '',
+    purpose: 'Probation/parole coordination',
+  });
   const [officerScope, setOfficerScope] = useState<string[]>(['residency_status']);
   const [overrideReason, setOverrideReason] = useState('');
 
@@ -216,7 +237,10 @@ export function IntakeChecklist({
   if (loading) return <LoadingState label="Loading the intake checklist…" />;
 
   return (
-    <div className="mt-3 rounded-md border border-line bg-surface p-4" data-testid="intake-checklist">
+    <div
+      className="mt-3 rounded-md border border-line bg-surface p-4"
+      data-testid="intake-checklist"
+    >
       <p className="mb-2 font-medium text-ink">Intake checklist</p>
       {notice ? <Alert tone="positive">{notice}</Alert> : null}
       {error ? <Alert tone="critical">{error}</Alert> : null}
@@ -243,7 +267,9 @@ export function IntakeChecklist({
                 >
                   <span className={item.met ? 'text-ink-muted' : 'text-ink'}>
                     {item.met ? '✓ ' : ''}
-                    {item.label.replace(/^Sign: /, 'Sign the ').replace(/^Acknowledge: /, 'Has read the ')}
+                    {item.label
+                      .replace(/^Sign: /, 'Sign the ')
+                      .replace(/^Acknowledge: /, 'Has read the ')}
                   </span>
                   <span className={item.met ? 'text-positive-700' : 'text-attention-700'}>
                     {statusLabel(item)}
@@ -344,7 +370,9 @@ export function IntakeChecklist({
                       isMoud: med.isMoud,
                       prescriberOnFile: med.prescriber,
                     }),
-                  ).then(() => setMed({ name: '', storage: 'self_managed', isMoud: false, prescriber: false }))
+                  ).then(() =>
+                    setMed({ name: '', storage: 'self_managed', isMoud: false, prescriber: false }),
+                  )
                 }
               >
                 Save medication
@@ -551,7 +579,12 @@ export function IntakeChecklist({
                 ))}
               </fieldset>
               <Button
-                disabled={busy || !officer.name.trim() || !officer.purpose.trim() || officerScope.length === 0}
+                disabled={
+                  busy ||
+                  !officer.name.trim() ||
+                  !officer.purpose.trim() ||
+                  officerScope.length === 0
+                }
                 onClick={() =>
                   void act(async () => {
                     const grant = await recordResidenceConsentGrant({
@@ -595,16 +628,18 @@ export function IntakeChecklist({
             </Button>
           ) : unmetHard.length > 0 ? (
             <p className="text-sm text-ink-muted">
-              Move-in unlocks when the remaining required items are done — they can never be
-              skipped or deferred.
+              Move-in unlocks when the remaining required items are done — they can never be skipped
+              or deferred.
             </p>
           ) : unmetDeferrable.length > 0 ? (
             openFlow === 'override' ? (
               <div className="flex flex-col gap-2 sm:max-w-md" data-testid="override-flow">
                 <Alert tone="attention">
                   This is an exception, not the normal path. Deferring:{' '}
-                  {unmetDeferrable.map((i) => statusLabel(i) + ' — ' + i.label.toLowerCase()).join('; ')}.
-                  A follow-up assigned to you, due in 7 days, will be created automatically.
+                  {unmetDeferrable
+                    .map((i) => statusLabel(i) + ' — ' + i.label.toLowerCase())
+                    .join('; ')}
+                  . A follow-up assigned to you, due in 7 days, will be created automatically.
                 </Alert>
                 <TextField
                   label="Why is move-in going ahead without these?"

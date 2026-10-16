@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { DocumentDetailPage } from './DocumentDetailPage';
 
@@ -13,6 +13,7 @@ import { DocumentDetailPage } from './DocumentDetailPage';
 
 const mocks = vi.hoisted(() => ({
   useAuth: vi.fn(),
+  ensureMyDocumentAssignments: vi.fn(),
   listMyDocumentAssignments: vi.fn(),
   hasElectronicRecordsConsent: vi.fn(),
   acknowledgeDocumentAssignment: vi.fn(),
@@ -52,6 +53,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.useAuth.mockReturnValue({ person: { id: 144, first_name: 'Jordan', last_name: 'Q' } });
   mocks.listMyDocumentAssignments.mockResolvedValue([ejwrhAssignment]);
+  mocks.ensureMyDocumentAssignments.mockResolvedValue([]);
+  mocks.acknowledgeDocumentAssignment.mockResolvedValue({ ok: true });
   mocks.hasElectronicRecordsConsent.mockResolvedValue(true);
 });
 
@@ -85,5 +88,55 @@ describe('DocumentDetailPage pinned-version fallback', () => {
     renderAt('ejwrh_participant_agreement');
     expect(await screen.findByText(/You signed this document on/)).toBeInTheDocument();
     expect(screen.getByText(/Jordan Q/)).toBeInTheDocument();
+  });
+});
+
+describe('document acknowledgment and isolation UI', () => {
+  it('acknowledges an ack-only document without inventing a signature or electronic consent', async () => {
+    mocks.hasElectronicRecordsConsent.mockResolvedValue(false);
+    mocks.listMyDocumentAssignments.mockResolvedValue([
+      {
+        ...ejwrhAssignment,
+        document_version: {
+          ...ejwrhAssignment.document_version,
+          template: {
+            ...ejwrhAssignment.document_version.template,
+            requires_signature: false,
+            requires_acknowledgment: true,
+          },
+        },
+      },
+    ]);
+    renderAt('ejwrh_participant_agreement');
+    fireEvent.click(await screen.findByRole('button', { name: 'Acknowledge receipt' }));
+    await waitFor(() =>
+      expect(mocks.acknowledgeDocumentAssignment).toHaveBeenCalledWith({
+        assignmentId: 501,
+        signatureName: undefined,
+      }),
+    );
+    expect(mocks.recordResidenceConsentGrant).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText(/Type your full name/)).not.toBeInTheDocument();
+  });
+  it('loads only the current person and hides actions after a server load failure', async () => {
+    mocks.listMyDocumentAssignments.mockRejectedValue(new Error('denied'));
+    renderAt('ejwrh_participant_agreement');
+    expect(await screen.findByText(/couldn’t load your document/)).toBeInTheDocument();
+    expect(mocks.listMyDocumentAssignments).toHaveBeenCalledWith(144);
+    expect(screen.queryByRole('button', { name: /Sign / })).not.toBeInTheDocument();
+  });
+  it('does not substitute a bundled document in the applicant assigned-only route', async () => {
+    mocks.listMyDocumentAssignments.mockResolvedValue([]);
+    render(
+      <MemoryRouter initialEntries={['/my-housing/documents/resident_handbook']}>
+        <Routes>
+          <Route
+            path="/my-housing/documents/:key"
+            element={<DocumentDetailPage basePath="/my-housing" assignedOnly />}
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText(/can't find that page/i)).toBeInTheDocument();
   });
 });
