@@ -38,8 +38,39 @@
 .rcc-scene { position: relative; overflow: hidden; border-radius: .5rem; aspect-ratio: 1.75; background: #dcd8cc; }
 .rcc-scene img { width: 100%; height: 100%; object-fit: cover; }
 .rcc-caption, .rcc-note { font-size: .9rem; color: #57514c; margin-top: .55rem !important; }
-.rcc-hotspot { position: absolute; bottom: 12%; padding: .6rem .85rem; border-radius: 1.5rem; background: #fffef2; box-shadow: 0 2px 12px #0006; font-weight: 700; text-decoration: none; }
-.rcc-hotspot-desk { left: 7%; }.rcc-hotspot-kiosk { right: 7%; }
+/* Touch targets sit over the pictured objects, not just over their captions.
+   Coordinates are percentages of the fixed-aspect-ratio scene, so the desk and
+   kiosk remain tappable at different viewport widths. */
+.rcc-hotspot {
+  position: absolute;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1;
+  padding: .45rem;
+  border: 2px solid transparent;
+  border-radius: .6rem;
+  background: transparent;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.rcc-hotspot-desk { left: 5%; top: 30%; width: 45%; height: 62%; }
+.rcc-hotspot-kiosk { right: 4%; top: 16%; width: 25%; height: 76%; }
+.rcc-hotspot span {
+  display: block;
+  padding: .45rem .7rem;
+  border-radius: 1.5rem;
+  background: #fffef2;
+  box-shadow: 0 2px 12px #0006;
+  color: #433354;
+  font-size: clamp(.72rem, 1.5vw, .95rem);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+}
+.rcc-hotspot:hover, .rcc-hotspot:focus-visible { border-color: #80eeee; background: #80eeee22; }
+.rcc-hotspot:hover span, .rcc-hotspot:focus-visible span { background: #ffffff; }
 .rcc-welcome { background: #244840; border-radius: .5rem; padding: 2rem; color: white; display: flex; flex-direction: column; justify-content: space-between; }
 .rcc-welcome .rcc-eyebrow { color: #ddcff4; }
 .rcc-welcome h2 { font-size: clamp(1.6rem, 2.5vw, 2.3rem); }
@@ -69,5 +100,5 @@
 .rcc-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin: 0 5%; padding: 1.5rem 0; border-top: 1px solid var(--rcc-line); font-size: .9rem; }
 .rcc-large { font-size: 1.2rem; }
 @media (max-width: 900px) { .rcc-header { flex-wrap: wrap; } .rcc-lobby { grid-template-columns: 1fr; } .rcc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 650px) { .rcc-main { padding: 2rem 5%; } .rcc-heading, .rcc-callout, .rcc-kiosk-top, .rcc-kiosk-foot { align-items: flex-start; flex-direction: column; } .rcc-grid, .rcc-filters { grid-template-columns: 1fr; } .rcc-scene { aspect-ratio: 1.3; } .rcc-hotspot { bottom: 4%; font-size: .8rem; max-width: 45%; } .rcc-brand small { font-size: .7rem; } }
+@media (max-width: 650px) { .rcc-main { padding: 2rem 5%; } .rcc-heading, .rcc-callout, .rcc-kiosk-top, .rcc-kiosk-foot { align-items: flex-start; flex-direction: column; } .rcc-grid, .rcc-filters { grid-template-columns: 1fr; } .rcc-scene { aspect-ratio: 1.75; } .rcc-hotspot { padding: .15rem; } .rcc-hotspot span { padding: .35rem .35rem; font-size: .7rem; } .rcc-brand small { font-size: .7rem; } }
 @media (prefers-reduced-motion: reduce) { .rcc-journey * { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
