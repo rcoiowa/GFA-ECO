@@ -24,19 +24,19 @@ function fixture(t) {
 function cryptoFixture() {
  const {publicKey,privateKey}=generateKeyPairSync('ec',{namedCurve:'prime256v1'});const jwk={...publicKey.export({format:'jwk'}),kid:'synthetic-key',alg:'ES256',use:'sig'};
  const config={issuer:'https://auth.synthetic.example',jwksUrl:'https://auth.synthetic.example/keys',audience:'https://app.synthetic.example/mcp',clientIds:[client],channel:'mcp'};
- const claims={iss:config.issuer,aud:config.audience,sub:owner,session_id:session,client_id:client,scope:'collaboration:exchange',iat:Math.floor(Date.now()/1000),exp:Math.floor(Date.now()/1000)+600};
+ const claims={iss:config.issuer,aud:config.audience,sub:owner,session_id:session,client_id:client,scope:'openid',role:'recoveryos_bridge_client',recoveryos_permission:'collaboration:exchange',iat:Math.floor(Date.now()/1000),exp:Math.floor(Date.now()/1000)+600};
  const token=(overrides={},header={})=>{const h=Buffer.from(JSON.stringify({alg:'ES256',typ:'at+jwt',kid:jwk.kid,...header})).toString('base64url'),p=Buffer.from(JSON.stringify({...claims,...overrides})).toString('base64url');return `${h}.${p}.${sign('sha256',Buffer.from(`${h}.${p}`),{key:privateKey,dsaEncoding:'ieee-p1363'}).toString('base64url')}`;};
  return {config,token,fetcher:async()=>new Response(JSON.stringify({keys:[jwk]}))};
 }
 test('OAuth validates signature, audience, issuer, expiry, client, scope and session',async()=>{
  const f=cryptoFixture(),verify=createTokenVerifier(f.config,{fetcher:f.fetcher});assert.equal((await verify(f.token())).subject,owner);
- for(const bad of [{aud:'authenticated'},{iss:'https://wrong.example'},{exp:1},{client_id:'other'},{scope:'openid'},{session_id:null},{nbf:Math.floor(Date.now()/1000)+5000}])await assert.rejects(verify(f.token(bad)));
+ for(const bad of [{aud:'authenticated'},{iss:'https://wrong.example'},{exp:1},{client_id:'other'},{scope:'email'},{role:'authenticated'},{recoveryos_permission:undefined},{session_id:null},{nbf:Math.floor(Date.now()/1000)+5000}])await assert.rejects(verify(f.token(bad)));
  await assert.rejects(verify(f.token({}, {alg:'HS256'})));await assert.rejects(verify(f.token({}, {jku:'https://wrong.example/key'})));
  const parts=f.token().split('.');parts[1]=Buffer.from(JSON.stringify({sub:owner})).toString('base64url');await assert.rejects(verify(parts.join('.')));
 });
 test('first-party verifier rejects OAuth token even when audience matches',async()=>{
  const f=cryptoFixture();const verify=createTokenVerifier({...f.config,channel:'app'},{fetcher:f.fetcher});await assert.rejects(verify(f.token()));
- assert.equal((await verify(f.token({client_id:undefined}))).channel,'app');
+ assert.equal((await verify(f.token({client_id:undefined,role:'authenticated'}))).channel,'app');
 });
 test('public egress blocks private/reserved/mapped/transition addresses',()=>{
  for(const ip of ['127.0.0.1','10.0.0.1','169.254.169.254','100.64.1.1','192.0.2.1','198.18.0.1','203.0.113.8','224.1.1.1','::1','fc00::1','fe80::1','::ffff:8.8.8.8','2002:808:808::1','2001:db8::1','3fff::1'])assert.equal(publicAddress(ip),false,ip);
@@ -91,13 +91,13 @@ test('retention deletes request content/replies and expires encrypted subscripti
 
 test('composed local runtime: signed auth, explicit app queue, event, scoped reply and app restore',async t=>{
  const {createRuntime}=await import('./runtime.mjs');const f=cryptoFixture();const dir=mkdtempSync(join(tmpdir(),'recoveryos-runtime-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));let events=0;
- const runtime=createRuntime({enabled:true,retentionApproved:true,storagePath:join(dir,'store.sqlite'),appOrigin:'https://app.synthetic.example',resource:f.config.audience,appAudience:'authenticated',oauth:f.config}, {
+ const runtime=createRuntime({enabled:true,localPrototype:true,retentionApproved:true,storagePath:join(dir,'store.sqlite'),appOrigin:'https://app.synthetic.example',resource:f.config.audience,appAudience:'authenticated',oauth:f.config}, {
   query:async()=>({rows:[{allowed:true}]}),encryptionKey:Buffer.alloc(32,9),fetcher:f.fetcher,
   post:async(_url,message)=>{const b=JSON.parse(message.body);if(b.type==='verification')return {status:200,body:JSON.stringify({challenge:b.challenge})};events++;return {status:200,body:'{}'};},
  });t.after(()=>runtime.close());
  const rpc=async(method,params)=> (await runtime.fetch(new Request(f.config.audience,{method:'POST',headers:{authorization:`Bearer ${f.token()}`},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})}))).json();
  assert.ok((await rpc('events/subscribe',params)).result);
- const appCall=async data=>(await runtime.fetch(new Request('https://app.synthetic.example/app/requests',{method:'POST',headers:{authorization:`Bearer ${f.token({aud:'authenticated',client_id:undefined})}`,origin:'https://app.synthetic.example','content-type':'application/json'},body:JSON.stringify(data)}))).json();
+ const appCall=async data=>(await runtime.fetch(new Request('https://app.synthetic.example/app/requests',{method:'POST',headers:{authorization:`Bearer ${f.token({aud:'authenticated',client_id:undefined,role:'authenticated'})}`,origin:'https://app.synthetic.example','content-type':'application/json'},body:JSON.stringify(data)}))).json();
  const queued=await appCall({residence_id:'10',operation_id:'synthetic-operation',context:'Synthetic selected context',approved:true});assert.ok(queued.request_id);
  await runtime.deliverOne();assert.equal(events,1);
  const args={residence_id:'10',request_id:queued.request_id};const read=await rpc('tools/call',{name:'read_request',arguments:args});assert.equal(JSON.parse(read.result.content[0].text).selectedContext,'Synthetic selected context');
@@ -113,4 +113,8 @@ test('transient outbox retry preserves event identity and signs with a fresh tim
  await a.deliverOne();assert.equal(await a.deliverOne(),false);now+=3000;await a.deliverOne();
  assert.equal(sent[0].headers['webhook-id'],sent[1].headers['webhook-id']);assert.equal(sent[0].body,sent[1].body);assert.notEqual(sent[0].headers['webhook-timestamp'],sent[1].headers['webhook-timestamp']);
  assert.equal(await a.deliverOne(),false);
+});
+test('Node prototype cannot activate through ordinary deployment configuration',async()=>{
+ const {createRuntime}=await import('./runtime.mjs');
+ assert.throws(()=>createRuntime({enabled:true},{}),/deployment_transport_unverified/);
 });

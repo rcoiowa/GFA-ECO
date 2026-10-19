@@ -2,7 +2,7 @@
 // All adapters must be implemented and reviewed before deploying an endpoint.
 const VERSION = '2026-07-28';
 const EVENT = 'collaboration.requested';
-const scope = 'collaboration:exchange';
+const scope = 'openid';
 const objectSchema = (properties, required = Object.keys(properties)) => ({ type: 'object', properties, required, additionalProperties: false });
 const idSchema = { type: 'string', minLength: 1, maxLength: 128 };
 const contextSchema = objectSchema({ residence_id: idSchema, request_id: idSchema });

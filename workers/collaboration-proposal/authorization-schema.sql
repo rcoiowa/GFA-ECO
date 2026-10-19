@@ -3,6 +3,16 @@
 begin;
 create schema recoveryos_bridge_private;
 revoke all on schema recoveryos_bridge_private from public,anon,authenticated;
+-- OAuth openid is identity consent, not permission to exchange workspace text.
+create table recoveryos_bridge_private.client_approvals (
+ client_id uuid primary key, resource text not null check(resource like 'https://%'), enabled boolean not null default false
+);
+create table recoveryos_bridge_private.exchange_approvals (
+ subject uuid not null, client_id uuid not null references recoveryos_bridge_private.client_approvals,
+ residence_id bigint not null references recoveryos.residences, revoked_at timestamptz,
+ primary key(subject,client_id,residence_id)
+);
+revoke all on all tables in schema recoveryos_bridge_private from public,anon,authenticated;
 create function recoveryos_bridge_private.authorized(p_subject uuid,p_session uuid,p_client uuid,p_residence bigint)
 returns boolean language sql stable security definer set search_path='' as $$
  select exists (
@@ -21,9 +31,13 @@ returns boolean language sql stable security definer set search_path='' as $$
    and (p_residence is null or exists(select 1 from recoveryos.residences r where r.id=p_residence and r.is_active))
    and (p_client is null or (
      exists(select 1 from auth.oauth_clients c where c.id=p_client and c.deleted_at is null)
-     and 'collaboration:exchange'=any(string_to_array(s.scopes,' '))
+     and exists(select 1 from recoveryos_bridge_private.client_approvals ca
+       join recoveryos_bridge_private.exchange_approvals ea on ea.client_id=ca.client_id
+       where ca.client_id=p_client and ca.enabled and ea.subject=p_subject and ea.revoked_at is null
+        and (p_residence is null or ea.residence_id=p_residence))
+     and 'openid'=any(string_to_array(s.scopes,' '))
      and exists(select 1 from auth.oauth_consents c where c.user_id=u.id and c.client_id=p_client
-       and c.revoked_at is null and 'collaboration:exchange'=any(string_to_array(c.scopes,' ')))
+       and c.revoked_at is null and 'openid'=any(string_to_array(c.scopes,' ')))
    ))
  );
 $$;
