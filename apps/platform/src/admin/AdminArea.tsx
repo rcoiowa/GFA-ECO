@@ -1,3 +1,4 @@
+import { CollaborationPage } from './pages/CollaborationPage';
 import { Route, Routes } from 'react-router';
 import { RequireRole } from '@recoveryos/auth';
 import { AppShell } from '@recoveryos/ui';
@@ -25,6 +26,7 @@ import { NotFoundPage } from '../pages/StatusPages';
  */
 const NAV_ITEMS = [
   { to: '/admin', label: 'Home' },
+  { to: '/admin/collaboration', label: 'Collaboration' },
   { to: '/admin/operations', label: 'Operations', shortLabel: 'Ops' },
   { to: '/admin/access', label: 'Access' },
   { to: '/admin/people', label: 'People' },
@@ -51,6 +53,14 @@ export function AdminArea() {
         <div data-register="crisp">
           <Routes>
             <Route index element={<AdminHomePage />} />
+            <Route
+              path="collaboration"
+              element={
+                <RequireRole anyOf={['administrator', 'system_administrator']}>
+                  <CollaborationPage />
+                </RequireRole>
+              }
+            />
             <Route path="operations" element={<OperationsPage />} />
             <Route path="access" element={<AccessPage />} />
             <Route path="people" element={<PeoplePage />} />
