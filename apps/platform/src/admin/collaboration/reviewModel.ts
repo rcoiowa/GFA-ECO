@@ -26,6 +26,7 @@ export interface ReviewItem {
   proposedChange: string;
   evidence: string;
   decision: Decision | 'pending';
+  reviewReason?: string;
   history: { at: string; actorId: number; decision: Decision; reason: string; snapshot: string }[];
 }
 export interface ReviewBatch {
@@ -107,6 +108,7 @@ export function decideReview(
   return {
     ...item,
     decision,
+    reviewReason: reason.trim(),
     history: [
       ...item.history,
       {
@@ -130,6 +132,7 @@ export function editReview(
     ...item,
     ...patch,
     decision: 'pending',
+    reviewReason: undefined,
     history: [
       ...item.history,
       {

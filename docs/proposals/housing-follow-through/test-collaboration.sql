@@ -1,0 +1,32 @@
+-- Isolated synthetic database ONLY; after test-bootstrap, schema, test-contract and collaboration-schema.
+\set ON_ERROR_STOP on
+set role authenticated;
+set test.uid='00000000-0000-0000-0000-000000000004';
+set test.actor='1';
+select public.assert_true(recoveryos.read_admin_collaboration_workspace(10)->>'code'='not_authorized','staff cannot read admin drafts');
+set test.actor='4';
+select public.assert_true((recoveryos.read_admin_collaboration_workspace(10)->'workspace'->>'version')::int=0,'new private workspace');
+select public.assert_true(recoveryos.read_admin_collaboration_workspace(999)->>'code'='not_authorized','unknown residence denied');
+select public.assert_true(recoveryos.save_admin_collaboration_workspace(10,0,'{"brief":"Synthetic brief","notes":"Review only","intakeId":100,"batches":[]}')->>'ok'='true','save durable draft');
+select public.assert_true(recoveryos.read_admin_collaboration_workspace(10)->'workspace'->'document'->>'brief'='Synthetic brief','read saved draft');
+select public.assert_true(recoveryos.save_admin_collaboration_workspace(10,0,'{"brief":"Stale overwrite","notes":"","intakeId":null,"batches":[]}')->>'code'='stale_version','stale save denied');
+select public.assert_true(recoveryos.save_admin_collaboration_workspace(10,1,'{"brief":"","notes":"","intakeId":200,"batches":[]}')->>'code'='context_mismatch','cross residence intake denied');
+select public.assert_true(recoveryos.save_admin_collaboration_workspace(10,1,'{"brief":"","notes":"","intakeId":null,"batches":[{"items":[{"residenceId":20,"decision":"pending"}]}]}')->>'code'='context_mismatch','cross residence item denied');
+select public.assert_true(recoveryos.save_admin_collaboration_workspace(10,1,'{"brief":"","notes":"","intakeId":null,"batches":[{"items":[{"residenceId":10,"personId":999,"decision":"pending"}]}]}')->>'code'='resident_mismatch','unmatched resident denied');
+select public.assert_true(recoveryos.save_admin_collaboration_workspace(10,1,'{"brief":"","notes":"","intakeId":null,"batches":[{"items":[{"decision":"executed"}]}]}')->>'code'='review_only','execution state denied');
+select public.assert_true(recoveryos.save_admin_collaboration_workspace(10,1,'{"brief":"","notes":"","intakeId":null,"batches":[{"items":[{"decision":"approved for review","residenceId":10,"type":"meeting follow-through","reportState":"reported"}]}]}')->>'code'='review_incomplete','forged incomplete approval denied');
+select public.assert_true(recoveryos.save_admin_collaboration_workspace(10,1,'{"brief":"Updated synthetic brief","notes":"","intakeId":100,"batches":[{"items":[{"residenceId":10,"personId":5,"decision":"approved for review","matchingConfirmed":true,"type":"restricted resident-specific question","reportState":"reported","reviewReason":"Synthetic reviewed reason","currentRecord":"Manual evidence reviewed","proposedChange":"Request clarification only","history":[{"actorId":999}]}]}]}')->>'ok'='true','matched review saved');
+select public.assert_true(recoveryos.read_admin_collaboration_workspace(10)->'workspace'->'audit'->1->>'actor_person_id'='4','server actor overrides client annotation');
+select public.expect_failure($q$select * from recoveryos.admin_collaboration_workspaces$q$,'permission denied');
+select public.expect_failure($q$delete from recoveryos.admin_collaboration_revisions$q$,'permission denied');
+set test.actor='6';
+select public.assert_true(recoveryos.read_admin_collaboration_workspace(10)->'workspace'->>'version'='0','other authorized administrator cannot read private draft');
+set test.actor='3';
+select public.assert_true(recoveryos.save_admin_collaboration_workspace(10,0,'{}')->>'code'='not_authorized','unauthorized writer denied');
+reset role;
+select public.assert_true((select count(*)=2 from recoveryos.admin_collaboration_revisions),'immutable server revisions retained');
+select public.assert_true((select status='converted' from recoveryos.residence_application_intake where id=100),'review never changes resident/application state');
+set role anon;
+select public.expect_failure($q$select recoveryos.read_admin_collaboration_workspace(10)$q$,'permission denied');
+reset role;
+select 'PASS: durable collaboration contract tests' as result;

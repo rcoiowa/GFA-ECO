@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@recoveryos/auth';
 import {
   adminListResidences,
+  loadCollaborationWorkspace,
+  saveCollaborationWorkspace,
+  type CollaborationWorkspaceRecord,
   getAdminOperationsSummary,
   listApplicationIntake,
   listResidenceRoster,
@@ -53,6 +56,76 @@ export function CollaborationWorkspace({ actorId }: { actorId: number }) {
   const [anonymized, setAnonymized] = useState(false);
   const [batches, setBatches] = useState<ReviewBatch[]>([]);
   const [reason, setReason] = useState('');
+  const [record, setRecord] = useState<CollaborationWorkspaceRecord | null>(null);
+  const [persistenceError, setPersistenceError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [reload, setReload] = useState(0);
+  const document = { brief, notes, intakeId, batches };
+  const dirty =
+    record !== null &&
+    JSON.stringify(document) !==
+      JSON.stringify({
+        brief: record.document.brief,
+        notes: record.document.notes,
+        intakeId: record.document.intakeId,
+        batches: record.document.batches,
+      });
+  useEffect(() => {
+    let cancelled = false;
+    setRecord(null);
+    setPersistenceError('');
+    setBrief('');
+    setNotes('');
+    setBatches([]);
+    setIntakeId(null);
+    setSummary('');
+    setAnonymized(false);
+    if (authorized && residenceId)
+      void loadCollaborationWorkspace(residenceId)
+        .then((saved) => {
+          if (cancelled) return;
+          setRecord(saved);
+          setBrief(saved.document.brief);
+          setNotes(saved.document.notes);
+          setIntakeId(saved.document.intakeId);
+          setBatches(saved.document.batches as ReviewBatch[]);
+        })
+        .catch(() => {
+          if (!cancelled)
+            setPersistenceError(
+              'Persistence unavailable. This residence workspace cannot be edited or saved until the reviewed schema and access are available.',
+            );
+        });
+    return () => {
+      cancelled = true;
+    };
+  }, [authorized, residenceId, reload]);
+  const save = async () => {
+    if (!record || !residenceId || saving || persistenceError) return;
+    setSaving(true);
+    setError('');
+    try {
+      const saved = await saveCollaborationWorkspace(residenceId, record.version, document);
+      setRecord(saved);
+      setBatches(saved.document.batches as ReviewBatch[]);
+    } catch (e) {
+      setPersistenceError(
+        e instanceof Error ? e.message : 'Persistence unavailable; save not confirmed.',
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      if (dirty) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [dirty]);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -153,39 +226,80 @@ export function CollaborationWorkspace({ actorId }: { actorId: number }) {
         lede="Prepare context, review proposed work, and preserve uncertainty before any operational action."
       />
       <Alert tone="attention">
-        Local session workspace. Drafts and review history exist only in this page’s memory and are
-        lost on navigation or refresh. No live assistant connection is verified. Nothing here sends
-        messages, executes actions or updates resident records.
+        Private, residence-scoped review workspace. Use Save to persist a server revision; unsaved
+        edits are not retained. No browser localStorage is used. No live assistant connection is
+        verified. Nothing here sends messages, executes actions or updates resident records.
       </Alert>
       {error && <Alert tone="critical">{error}</Alert>}
+      {authorized && (
+        <Card>
+          <CardTitle>Open a private residence workspace</CardTitle>
+          <label>
+            Authorized residence{' '}
+            <select
+              aria-label="Authorized residence"
+              value={residenceId ?? ''}
+              disabled={saving || dirty}
+              onChange={(e) => setResidenceId(Number(e.target.value) || null)}
+            >
+              <option value="">Select explicitly</option>
+              {residences.map((r) => (
+                <option key={r.id} value={r.id}>
+                  Residence #{r.id}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p>
+            {record
+              ? dirty
+                ? 'Unsaved changes — save before switching residence.'
+                : `Server revision ${record.version} · ${record.saved_at ?? 'No saved draft yet'}`
+              : residenceId
+                ? 'Opening server workspace…'
+                : 'Choose a residence to check durable persistence.'}
+          </p>
+          {persistenceError && <Alert tone="critical">{persistenceError}</Alert>}
+          <Button
+            disabled={!record || !dirty || saving || !!persistenceError}
+            onClick={() => void save()}
+          >
+            {saving ? 'Saving…' : 'Save review workspace'}
+          </Button>{' '}
+          <Button
+            variant="secondary"
+            disabled={!residenceId || saving}
+            onClick={() => {
+              if (!dirty || window.confirm('Discard unsaved edits and reload the server revision?'))
+                setReload((n) => n + 1);
+            }}
+          >
+            Reload server revision
+          </Button>
+          {record && (
+            <details>
+              <summary>Server save audit ({record.audit.length})</summary>
+              <ul>
+                {record.audit.map((a) => (
+                  <li key={a.version}>
+                    Revision {a.version} · Admin #{a.actor_person_id} · {a.saved_at}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </Card>
+      )}
       {!authorized ? (
         <p>Waiting for authorized administrator context.</p>
-      ) : (
-        <>
+      ) : !record ? null : (
+        <fieldset disabled={saving || !!persistenceError} className="space-y-5">
           <Card>
             <CardTitle>Contextual brief</CardTitle>
             <p>
               Use anonymized notes and internal IDs only. Never paste names, contact details,
               screenshots or original chat transcripts.
             </p>
-            <label className="block">
-              Authorized residence{' '}
-              <select
-                aria-label="Authorized residence"
-                value={residenceId ?? ''}
-                onChange={(e) => {
-                  setResidenceId(Number(e.target.value) || null);
-                  setIntakeId(null);
-                }}
-              >
-                <option value="">Select explicitly</option>
-                {residences.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    Residence #{r.id}
-                  </option>
-                ))}
-              </select>
-            </label>
             <label className="block">
               Existing intake / application{' '}
               <select
@@ -228,9 +342,10 @@ export function CollaborationWorkspace({ actorId }: { actorId: number }) {
           <Card>
             <CardTitle>Review a periodic summary</CardTitle>
             <p>
-              One anonymized event per line. Extraction splits lines only; it does not infer
-              sentiment, risk, misconduct, policy approval or completion. Relative weekdays remain
-              text. Overlapping recaps need manual comparison even when wording differs.
+              Paste buffer is not saved; extract a batch before saving. One anonymized event per
+              line. Extraction splits lines only; it does not infer sentiment, risk, misconduct,
+              policy approval or completion. Relative weekdays remain text. Overlapping recaps need
+              manual comparison even when wording differs.
             </p>
             <label>
               Source type{' '}
@@ -301,6 +416,7 @@ export function CollaborationWorkspace({ actorId }: { actorId: number }) {
                   <label>
                     Item type{' '}
                     <select
+                      aria-label="Item type"
                       value={item.type}
                       onChange={(e) =>
                         change(batch.id, item, {
@@ -317,6 +433,7 @@ export function CollaborationWorkspace({ actorId }: { actorId: number }) {
                   <label>
                     Evidence state{' '}
                     <select
+                      aria-label="Evidence state"
                       value={item.reportState}
                       onChange={(e) =>
                         change(batch.id, item, {
@@ -413,13 +530,15 @@ export function CollaborationWorkspace({ actorId }: { actorId: number }) {
                     </Button>
                   ))}
                   <details>
-                    <summary>Local review and edit history ({item.history.length})</summary>
+                    <summary>Draft review annotations ({item.history.length})</summary>
                     <ul>
                       {item.history.map((h, n) => (
                         <li key={n}>
                           {h.at} · Admin #{h.actorId} · {h.decision} · {h.reason}
                           <details>
-                            <summary>Prior draft</summary>
+                            <summary>
+                              Prior draft annotation (server save audit is authoritative)
+                            </summary>
                             <pre className="whitespace-pre-wrap">{h.snapshot}</pre>
                           </details>
                         </li>
@@ -430,7 +549,7 @@ export function CollaborationWorkspace({ actorId }: { actorId: number }) {
               ))}
             </Card>
           ))}
-        </>
+        </fieldset>
       )}
     </div>
   );

@@ -29,6 +29,15 @@ create table recoveryos.housing_follow_through_events (
   action text not null,
   detail jsonb not null
 );
+create table recoveryos.housing_source_references (
+  source text not null,
+  reference text not null,
+  intake_id bigint not null references recoveryos.housing_follow_through(intake_id),
+  primary key (source, reference)
+);
+alter table recoveryos.housing_source_references enable row level security;
+revoke all on recoveryos.housing_source_references from public, anon, authenticated;
+-- References are surfaced through the authorized event stream only. Global uniqueness prevents duplicate intake linking.
 alter table recoveryos.housing_follow_through enable row level security;
 alter table recoveryos.housing_follow_through_events enable row level security;
 revoke all on recoveryos.housing_follow_through, recoveryos.housing_follow_through_events from public, anon, authenticated;
@@ -95,7 +104,8 @@ begin
         v_row.bed_evidence := p_detail->>'evidence'; v_row.bed_verified_at := v_when; v_row.bed_verified_by := v_actor;
       when 'link_source' then
         if coalesce(p_detail->>'source','') not in ('wix_contact','contact_connect_submission','pre_application','other') or nullif(trim(p_detail->>'reference'),'') is null then raise exception 'source_reference_required'; end if;
-        if exists (select 1 from recoveryos.housing_follow_through_events where intake_id = p_intake_id and action = 'link_source' and detail->'input'->>'source' = p_detail->>'source' and detail->'input'->>'reference' = p_detail->>'reference') then raise exception 'source_already_linked'; end if;
+        insert into recoveryos.housing_source_references(source,reference,intake_id) values(p_detail->>'source',trim(p_detail->>'reference'),p_intake_id) on conflict do nothing;
+        if not found then raise exception 'source_already_linked'; end if;
       when 'contact' then
         if coalesce(p_detail->>'kind','') not in ('attempted','connected') or nullif(trim(p_detail->>'evidence'),'') is null then raise exception 'contact_evidence_required'; end if;
         v_when := (p_detail->>'occurred_at')::timestamptz;
