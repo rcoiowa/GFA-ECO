@@ -1,6 +1,6 @@
 # Supabase bridge feasibility — 2026-10-19
 
-Status: **not deployable; no external delivery or live conversation connection**.
+Status: **code implemented and locally tested; activation blocked on external verification and approvals. No live conversation connection.**
 Housing and the private admin review workspace are independent of this bridge.
 
 ## Corrected authorization
@@ -28,7 +28,7 @@ read/save and housing mutation requests were denied (403); changing audience to
 `authenticated` did not bypass denial. No audience check was configured in PostgREST:
 isolation comes from database privileges. The test-only probe is removed afterward.
 Existing trigger functions inherit PUBLIC execute but are not callable RPCs; application
-schema usage is also denied. No bridge exchange RPC grant exists yet.
+schema usage is also denied. The new exchange proposal grants only the dedicated backend worker access to its private dispatcher; OAuth/client roles receive no dispatcher or table rights.
 
 Reproduce on a fresh isolated replay database:
 ```
@@ -60,12 +60,33 @@ This is an isolated user-worker test, not a deployed managed Edge Function.
   bounded HTTP parsing, redirects, DNS rebinding protection, or managed-host compatibility.
   No callback URL or secret from ChatGPT was used.
 
-Missing capability: a verified bounded resolver and pinned HTTPS callback path in the
-actual approved managed runtime. Do not replace this with ordinary `fetch`, a URL-only
-filter, or a permissive DNS fallback. The original Node/SQLite runtime is now explicitly
-local-prototype-only. Supabase `/tmp` is ephemeral; SQLite/WAL there is not deployable
-persistence. A complete Postgres request/reply/subscription/outbox adapter and hardened
-Edge HTTP transport remain unimplemented; no durable-volume or paid Node host is proposed.
+Completed deployment code: `edge/postgres.mjs`, `edge/adapters.mjs`, `edge/crypto.mjs`,
+`edge/oauth.mjs`, `edge/egress.mjs`, `edge/runtime.mjs`, `exchange-schema.sql`, and the
+Supabase `collaboration-bridge` entrypoint. No Node SQLite/filesystem dependency remains
+in the intended deployment graph. The old Node prototype is reference-only.
+
+Additional isolated Edge-runtime evidence: the real entrypoint booted and returned disabled
+503; pinned `postgres@3.4.7` connected through a synthetic restricted LOGIN, called the private
+dispatcher and received permission denial for participant tables. The actual new HTTPS
+transport sent a synthetic challenge through a fixture-pinned connection, parsed the 200
+response, and rejected a wrong TLS hostname. The fixture deliberately maps the vetted address
+to a local test server and supplies a test trust certificate; this proves implementation/runtime
+compatibility, **not** public DNS, public CA trust or managed-host callback reachability.
+The container initially lacked the environment proxy CA for npm downloads; dependencies were
+fetched through the host's normal trusted npm path and supplied locally, without disabling TLS.
+
+Remaining external verification: a successful public resolver and pinned HTTPS callback path
+in the actual approved managed runtime. The implementation rejects failures with no `fetch`
+fallback. `COLLABORATION_MANAGED_EGRESS_VERIFIED` remains false, and the whole request/reply
+API stays disabled until both gates are explicitly activated. No paid Node host is needed.
+
+Real local Postgres tests now cover concurrent enqueue, encrypted restart persistence,
+explicit selected-context approval, owner/residence scoping, callback verification, concurrent
+outbox leases, stale-lease refusal/recovery, retries and stable IDs, immutable reply replay,
+no reply-generated events, terminal failures, revoked consent/role/client/session, expiry,
+unsubscribe, rotated subscription leases and the composed HTTP/JWT request/reply/status flow.
+Dedicated worker and OAuth roles have no ordinary participant/admin API access. Automatic
+retention deletion is not part of the adapter, proposal or CI runtime.
 
 ## Read-only configuration boundary
 
@@ -87,8 +108,7 @@ in production. Cloudflare Containers listing previously returned provider 401/Wo
 required; it was not retried, and no paid service was provisioned. Automatic retention
 is excluded from the pending storage approval; never install/schedule cleanup under it.
 
-Activation requires: resolve configuration, implement/test Postgres persistence and managed
-safe egress, separately approve exact roles/RPC grants/hook/client/secret custody, then deploy
+Activation requires: resolve configuration, verify public managed DNS/TLS delivery (storage/transport code and local tests are complete), separately approve exact roles/RPC grants/hook/client/secret custody, then deploy
 an explicitly chosen HTTPS resource and verify a synthetic authenticated event/request/reply
 round trip with this dot. ChatGPT setup availability must be checked on the user's web account.
-Until then the request/reply API remains disabled and the app must say **Not connected**.
+No automatic retry scheduler was installed; bounded drains run on authenticated API activity or an explicit admin delivery check. Until activation the request/reply API remains disabled and the app must say **Not connected**.

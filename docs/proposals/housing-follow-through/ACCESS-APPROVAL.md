@@ -1,4 +1,4 @@
-> Bridge compatibility update: [current feasibility and restricted token-role proposal](../../../workers/collaboration-proposal/FEASIBILITY.md) supersedes the Node host, SQLite and custom OAuth scope assumptions below. No bridge deployment is ready. Automatic retention deletion is explicitly excluded from pending storage approval; do not install or schedule cleanup under that approval.
+> Bridge compatibility update: [current feasibility and restricted token-role proposal](../../../workers/collaboration-proposal/FEASIBILITY.md) supersedes the Node host, SQLite and custom OAuth scope assumptions below. The Edge/Postgres deployment code is implemented and tested locally; production activation still requires explicit approval and managed callback verification. Automatic retention deletion is explicitly excluded from pending storage approval; do not install or schedule cleanup under that approval.
 
 # Concrete access approval — proposed, not applied
 
