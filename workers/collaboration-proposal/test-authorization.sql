@@ -18,6 +18,12 @@ select public.assert_true(not recoveryos_bridge_private.authorized('00000000-000
 update recoveryos_bridge_private.exchange_approvals set revoked_at=now();
 select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000009',10),'exchange approval revocation enforced');
 update recoveryos_bridge_private.exchange_approvals set revoked_at=null;
+update auth.sessions set scopes='email';
+select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000009',10),'session without requested openid scope denied');
+update auth.sessions set scopes='openid';
+update auth.oauth_consents set scopes='email';
+select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000009',10),'consent without openid scope denied');
+update auth.oauth_consents set scopes='openid';
 update auth.oauth_consents set revoked_at=now();
 select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000009',10),'revoked consent denied');
 update auth.oauth_consents set revoked_at=null;

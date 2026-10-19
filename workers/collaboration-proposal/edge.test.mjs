@@ -8,6 +8,7 @@ const owner='00000000-0000-0000-0000-000000000004',session='00000000-0000-0000-0
 import {authFixture} from './edge/test-auth-fixture.mjs';
 test('Edge WebCrypto verifies signatures and rejects broad, expired, wrong audience or forged tokens',async()=>{
  const f=await authFixture(),verify=createVerifier(f.config,{fetcher:f.fetcher});assert.equal((await verify(await f.token())).subject,owner);
+ assert.equal((await verify(await f.token({scope:undefined}))).subject,owner); // Actual consent/scopes are checked in Postgres.
  for(const bad of [{role:'authenticated'},{aud:'authenticated'},{client_id:undefined},{recoveryos_permission:undefined},{scope:'email'},{exp:1},{session_id:undefined},{iss:'https://bad.example'}])await assert.rejects(verify(await f.token(bad)));
  const token=await f.token(),parts=token.split('.');parts[1]=parts[1].slice(0,-2)+'AA';await assert.rejects(verify(parts.join('.')));
 });

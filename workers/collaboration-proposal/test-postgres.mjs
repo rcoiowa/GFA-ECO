@@ -103,7 +103,7 @@ const {authFixture}=await import('./edge/test-auth-fixture.mjs');
 const f=await authFixture(),pending=[];
 const runtime=createEdgeRuntime({enabled:true,egressVerified:true,resource:f.config.audience,appOrigin:'https://app.synthetic.example',activeKeyId:'test',oauth:f.config},{query,keys,fetcher:f.fetcher,waitUntil:p=>pending.push(p),post:async(_url,message)=>{const b=JSON.parse(message.body);return {status:200,body:b.type==='verification'?JSON.stringify({challenge:b.challenge}):'{}'};}});
 const appToken=await f.token({aud:'authenticated',client_id:undefined,role:'authenticated',session_id:app.sessionId});
-const mcpToken=await f.token();
+const mcpToken=await f.token({scope:undefined});
 async function call(path,body,token=appToken,origin='https://app.synthetic.example'){
  const response=await runtime.fetch(new Request('https://app.synthetic.example'+path,{method:'POST',headers:{authorization:'Bearer '+token,origin,'content-type':'application/json'},body:JSON.stringify(body)}));
  await Promise.all(pending.splice(0));return {status:response.status,body:await response.json()};
