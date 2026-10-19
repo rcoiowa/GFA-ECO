@@ -14,7 +14,7 @@
 
 The durable adapter already uses the authenticated Supabase RPC transport and server-derived current person. No additional token or secret is embedded in the frontend.
 
-The official MCP Events route supports dots. The separate [disconnected endpoint proposal](../../../workers/collaboration-proposal/README.md) prepares scoped request/reply/status tools and event methods. It requires approved OAuth, durable owner-private request/outbox persistence and DNS-safe callback egress adapters; those adapters and an actual ChatGPT round trip are not implemented. It is not mounted by the production worker. No generic model-provider session substitutes for this dot.
+The official MCP Events route supports dots. The separate [disconnected endpoint proposal](../../../workers/collaboration-proposal/README.md) prepares scoped request/reply/status tools and event methods. It requires approved OAuth, durable owner-private request/outbox persistence and DNS-safe callback egress adapters; the adapters are now implemented and tested locally, while a live issuer/host configuration and actual ChatGPT round trip remain unverified. It is not mounted by the production worker. No generic model-provider session substitutes for this dot.
 
 Only explicitly selected app exchanges would appear in RecoveryOS. MCP Events does not stream or expose this private transcript. Callback acceptance is not a completed response. Account/workspace availability and installation remain unverified. See the linked proposal for exact approvals and the harmless round-trip gate.
 
@@ -52,3 +52,5 @@ Branch is pushed for review: https://github.com/rcoiowa/GFA-ECO/pull/41 (draft).
 Explicit infrastructure/content exclusions: 0104 pg_cron scheduling (extension absent in isolated PostgreSQL), 0146 document edition activation (requires pre-existing content editions), synthetic auth.users/auth.uid and empty storage bucket catalog. These exclusions prevent a claim of complete live-schema/runtime parity. The production-connected staging workflow is NOT an isolated database. Do not run synthetic integration tests against it.
 
 New persistent access still requires approval: authenticated SELECT on housing state/events under existing intake RLS, EXECUTE on act_housing_follow_through, read_admin_collaboration_workspace and save_admin_collaboration_workspace, and the associated owner-private storage/audit retention. No direct client table writes are granted. Bridge persistence/OAuth/egress access is a separate, not-yet-specified approval.
+
+Concrete grants, bounded retention proposals, rollback and the parent-ready approval request are in [ACCESS-APPROVAL.md](ACCESS-APPROVAL.md).

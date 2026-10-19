@@ -87,6 +87,9 @@ export function createEndpoint(config, adapters) {
         return result(await adapters.subscriptions(rpc.method, principal, p));
       }
       return error(-32601, 'method_not_found');
-    } catch { return error(-32000, 'operation_unavailable'); }
+    } catch (e) {
+      if (e?.code === -32015) return json({ jsonrpc: '2.0', id: rpc.id, error: { code: -32015, message: 'callback_verification_failed', data: { reason: 'challenge_failed' } } });
+      return error(-32000, 'operation_unavailable');
+    }
   };
 }

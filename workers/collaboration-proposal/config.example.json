@@ -5,5 +5,14 @@
   "scope": "collaboration:exchange",
   "maxContextBytes": 24576,
   "maxReplyCharacters": 16000,
-  "subscriptionLifetimeSeconds": 3600
+  "subscriptionLifetimeSeconds": 3600,
+  "retentionApproved": false,
+  "storagePath": "",
+  "appOrigin": "",
+  "appAudience": "authenticated",
+  "oauth": {
+    "issuer": "",
+    "jwksUrl": "",
+    "clientIds": []
+  }
 }
