@@ -2,7 +2,7 @@
   "enabled": false,
   "resource": "",
   "issuer": "",
-  "scope": "collaboration:exchange",
+  "scope": "openid",
   "maxContextBytes": 24576,
   "maxReplyCharacters": 16000,
   "subscriptionLifetimeSeconds": 3600,

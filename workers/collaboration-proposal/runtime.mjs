@@ -5,6 +5,7 @@ import { createTokenVerifier,createAuthorizer } from './oauth.mjs';
 import { ExchangeStore } from './store.mjs';
 import { createAdapters } from './adapters.mjs';
 export function createRuntime(config,{query,encryptionKey,fetcher,post}) {
+  if(config.localPrototype!==true)throw new Error('deployment_transport_unverified');
   if(config.enabled!==true||config.retentionApproved!==true||!config.storagePath||!config.appOrigin)throw new Error('approved_configuration_required');
   const verifyAccessToken=createTokenVerifier({...config.oauth,audience:config.resource,channel:'mcp'},{fetcher});
   const verifyApp=createTokenVerifier({...config.oauth,audience:config.appAudience,channel:'app'},{fetcher});
