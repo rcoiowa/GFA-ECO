@@ -75,7 +75,7 @@ jobs:
         run: |
           docker run -d --name recoveryos-ci-postgres -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17-alpine
           for attempt in $(seq 1 30); do
-            if docker exec recoveryos-ci-postgres pg_isready -U postgres; then break; fi
+            if docker exec recoveryos-ci-postgres pg_isready -h 127.0.0.1 -U postgres; then break; fi
             sleep 1
           done
           python workers/collaboration-proposal/test-edge-postgres.py recoveryos-ci-postgres housing_ci_bridge
