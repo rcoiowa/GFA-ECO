@@ -48,3 +48,6 @@ for name in ['schema.sql','collaboration-schema.sql','test-full-contract.sql']:
 bridge=root/'workers/collaboration-proposal'
 bridge_test=(bridge/'test-authorization.sql').read_text().replace('\\ir authorization-schema.sql',(bridge/'authorization-schema.sql').read_text())
 run(bridge_test,'test-authorization.sql')
+
+for name in ['retention-schema.sql','test-retention.sql']:
+    run((Path(__file__).parent/name).read_text(),name)
