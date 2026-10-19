@@ -44,3 +44,7 @@ for p in paths:
     run(p.read_text(),p.name)
 for name in ['schema.sql','collaboration-schema.sql','test-full-contract.sql']:
     run((Path(__file__).parent/name).read_text(),name)
+
+bridge=root/'workers/collaboration-proposal'
+bridge_test=(bridge/'test-authorization.sql').read_text().replace('\\ir authorization-schema.sql',(bridge/'authorization-schema.sql').read_text())
+run(bridge_test,'test-authorization.sql')
