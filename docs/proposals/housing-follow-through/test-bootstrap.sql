@@ -26,3 +26,6 @@ create table recoveryos.residences(id bigint primary key, organization_id bigint
 insert into recoveryos.residences values(10,1000),(20,2000);
 create table recoveryos.residencies(person_id bigint, residence_id bigint, residency_status text);
 insert into recoveryos.residencies values(5,10,'active');
+
+create table recoveryos.person_classification(person_id bigint primary key, classification text);
+insert into recoveryos.person_classification values(1,'production'),(2,'production'),(3,'production'),(4,'production'),(5,'test_fixture'),(6,'production');

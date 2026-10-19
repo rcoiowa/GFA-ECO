@@ -46,7 +46,7 @@ node apps/platform/node_modules/vite/bin/vite.js build --config apps/platform/vi
 
 ## Database proposal and reproducible local tests
 
-`schema.sql` and `collaboration-schema.sql` are proposals, **not approved production migrations**. `test-bootstrap.sql` creates only synthetic IDs and minimal authorization contract stubs. These tests prove SQL behavior against those contracts; they do not prove the live helpers or full migration history. Never run the bootstrap/test scripts against an existing database.
+`schema.sql` and `collaboration-schema.sql` are proposals, **not approved production migrations**. `test-bootstrap.sql` creates only synthetic IDs and minimal authorization contract stubs. Those contract tests alone do not prove live helper semantics. `test-full-schema.py` additionally replays the canonical application schema and tests real RLS/helpers/conversion with synthetic data; its documented infrastructure/content exclusions prevent a claim of complete production parity. Never run the bootstrap/test scripts against an existing database.
 
 ```sh
 docker run --name recoveryos-housing-review -e POSTGRES_HOST_AUTH_METHOD=trust -d postgres:17-alpine

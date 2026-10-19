@@ -29,7 +29,7 @@ create function recoveryos.read_admin_collaboration_workspace(p_residence_id big
 returns jsonb language plpgsql security definer set search_path = recoveryos, pg_temp as $$
 declare v_actor bigint := recoveryos.current_person_id(); v_row recoveryos.admin_collaboration_workspaces; v_audit jsonb;
 begin
-  if auth.uid() is null or v_actor is null or not coalesce(recoveryos.is_platform_admin(), false)
+  if auth.uid() is null or v_actor is null or not exists (select 1 from recoveryos.person_classification where person_id=v_actor and classification='production') or not coalesce(recoveryos.is_platform_admin(), false)
      or not coalesce((p_residence_id in (select recoveryos.staff_residence_ids()) or recoveryos.is_care_operations_staff()),false)
      or not exists(select 1 from recoveryos.residences where id=p_residence_id) then
     return jsonb_build_object('ok',false,'code','not_authorized');
