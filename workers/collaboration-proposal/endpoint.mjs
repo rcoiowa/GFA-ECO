@@ -38,14 +38,14 @@ export function createEndpoint(config, adapters) {
     if (!ready) return json({ error: 'bridge_not_configured', connected: false }, 503);
     const url = new URL(request.url);
     if (url.origin !== new URL(config.resource).origin) return json({ error: 'invalid_origin' }, 400);
-    if (request.method === 'GET' && url.pathname === '/.well-known/oauth-protected-resource') return json({ resource: config.resource, authorization_servers: [config.issuer], scopes_supported: [scope] });
+    if (request.method === 'GET' && url.pathname === (config.metadataPath ?? '/.well-known/oauth-protected-resource')) return json({ resource: config.resource, authorization_servers: [config.issuer], scopes_supported: [scope] });
     if (url.pathname !== new URL(config.resource).pathname) return json({ error: 'not_found' }, 404);
     if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405, { Allow: 'POST' });
     // No cookie authentication, CORS reflection, JWT decoding shortcut, or anonymous discovery.
     const token = /^Bearer ([^\s]+)$/.exec(request.headers.get('authorization') ?? '')?.[1];
     let principal;
     try { principal = token && await adapters.verifyAccessToken(token, { resource: config.resource, issuer: config.issuer, requiredScope: scope }); } catch { /* Invalid credentials never expose detail. */ }
-    if (!principal?.subject) return json({ error: 'unauthorized' }, 401, { 'WWW-Authenticate': `Bearer resource_metadata="${url.origin}/.well-known/oauth-protected-resource", scope="${scope}"` });
+    if (!principal?.subject) return json({ error: 'unauthorized' }, 401, { 'WWW-Authenticate': `Bearer resource_metadata="${url.origin}${config.metadataPath ?? '/.well-known/oauth-protected-resource'}", scope="${scope}"` });
     let rpc;
     try { rpc = await boundedJson(request); } catch { return json({ error: 'invalid_or_oversized_request' }, 400); }
     if (rpc?.jsonrpc !== '2.0' || !['string','number'].includes(typeof rpc.id)) return json({ error: 'invalid_rpc_request' }, 400);

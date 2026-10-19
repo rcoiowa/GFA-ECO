@@ -1,44 +1,92 @@
-# RecoveryOS MCP Events bridge — disconnected proposal
+# RecoveryOS collaboration bridge — implemented, disconnected
 
-**Compatibility correction:** the Node/SQLite adapters below are local prototypes only, not an activation plan. No managed runtime or durable Postgres adapter is verified. Read [FEASIBILITY.md](FEASIBILITY.md) for the current authority, tested credential isolation, exact dashboard gaps and blocked transport. Automatic cleanup is excluded from pending storage approval.
+The intended deployment path is now
+[`supabase/functions/collaboration-bridge/index.ts`](../../supabase/functions/collaboration-bridge/index.ts)
+→ `edge/runtime.mjs` → Web Crypto, the pinned Deno TLS transport, and the durable
+Postgres dispatcher in `exchange-schema.sql`. It does **not** import the Node/SQLite
+prototype. All production proposals remain unapplied. Both activation gates default off;
+unconfigured requests return 503 and `connected:false`.
 
-`endpoint.mjs` is a tested transport core with implemented Node adapters, **not a deployed or connected bridge**. It is not imported by the platform worker. Empty configuration returns 503. No OAuth grant, credential, subscription, external callback or persistent access has been created. The adapter tests are synthetic, not a ChatGPT round trip.
+## Implemented behavior
 
-Official protocol checked 2026-10-19:
-- https://developers.openai.com/plugins/build/mcp-events — MCP 2.0 (`2026-07-28`), event discovery, subscription verification and signed webhook delivery; dots supported.
-- https://developers.openai.com/plugins/build/auth — OAuth 2.1 resource server, issuer discovery, PKCE and account-specific authorization.
-- https://developers.openai.com/plugins/deploy/connect-chatgpt — authenticated public HTTPS or supported Secure MCP Tunnel connection, plugin setup subject to workspace policy.
+- First-party administrator JWTs can enqueue only explicitly approved, selected context
+  (16 KiB UTF-8 maximum), and read owner/residence-bound request status. No automatic
+  upload of workspace notes, application history, GroupMe text or this conversation.
+- OAuth uses standard `openid`, an exact resource audience, the restricted bridge role,
+  a separately signed exchange permission, and revocable subject/client/residence approval.
+  Every operation and each send rechecks canonical production/admin/session/client authority.
+- Requests, immutable replies and callback secrets are AES-GCM encrypted with an externally
+  supplied versioned keyring. Associated data binds ciphertext to its owner/context.
+  No access tokens are persisted. Audit rows contain IDs, action kinds and server timestamps.
+- Postgres advisory locks enforce owner quotas and enqueue idempotency. Unique outbox rows,
+  `FOR UPDATE SKIP LOCKED`, expiring leases and lease-token checks protect concurrent workers.
+  Retries survive restarts, retain the event ID, use fresh signatures and stop after five attempts.
+  410 disables the subscription; expiry/revocation/unsubscribe cancel pending events. No deletion.
+- A fresh signed challenge must succeed before subscription persistence. Secret rotation supports
+  a brief dual-signature overlap; refresh invalidates old delivery leases. Callback requests validate
+  all DNS answers, pin the selected public address, verify TLS against the original hostname,
+  enforce a total deadline and bounded HTTP framing, and never follow redirects.
+- Only app-created requests emit events. Replies are untrusted proposals and cannot change
+  housing, discipline, eligibility, resident records, disclosures or other operational decisions.
+  A 2xx event receipt is reported separately from a reply.
+- App APIs enforce the configured Origin and narrowly scoped CORS preflight; no cookies or
+  broad CORS reflection. MCP discovery/tools/events remain authenticated except public OAuth metadata.
 
-## Narrow exchange
+With a resource ending `/mcp`, endpoints share its prefix: `/mcp`,
+`/.well-known/oauth-protected-resource`, `/app/requests`, `/app/deliver`.
+The authenticated `/app/deliver` POST accepts `{}` and drains at most five due deliveries.
+Successful API activity also schedules a bounded drain with `EdgeRuntime.waitUntil`.
+There is no background scheduler installation: retries remain durable until another drain.
+An unattended wake-up integration requires separate authorization/configuration; do not imply
+that dormant requests will deliver on a timer. No browser polling or fake assistant reply is used.
 
-An administrator explicitly selects and approves an anonymized snapshot of ONE residence workspace revision. A server-side enqueue operation must verify their current admin/production/residence authority, bind owner and residence, cap context at 24 KiB and atomically persist the immutable request and outbox event. Reusing the enqueue idempotency key with different content must conflict. No automatic upload of briefs, GroupMe paste buffers, application histories or this dot transcript is allowed.
+## Validation and exact activation boundary
 
-The only event is `collaboration.requested`, filtered to a residence and authenticated owner, carrying only opaque residence/request IDs. This dot subscribes through ChatGPT, reads the selected request via `read_request`, and writes an untrusted proposal via `reply_to_request`. `request_status` distinguishes queued, event accepted, reply received, rejected and delivery failed. An accepted event is not a completed reply. Only app-originated requests emit events: replies never recursively emit new requests.
+See [FEASIBILITY.md](FEASIBILITY.md) for actual runtime evidence and external blockers.
+Local validation includes real Postgres concurrency/revocation/HTTP/JWT contracts,
+real PostgREST denial of ordinary participant/admin APIs, Web Crypto/TLS parser tests,
+Deno compilation, and isolated Supabase Edge user-worker boot/driver/HTTPS fixture checks.
 
-The app renders these exchanges as plain text in the same private workspace. It must not claim the entire existing conversation is visible or synchronized. There is no generic model API substitute and no Grace provider change. Replies cannot execute housing, discipline, eligibility, disclosure, messaging or participant edits.
+Run unit tests with `node --test workers/collaboration-proposal/*.test.mjs`.
+Run full isolated storage tests with:
+```
+python workers/collaboration-proposal/test-edge-postgres.py recoveryos-housing-review housing_fresh_bridge
+```
+The harness creates a fresh local database and applies proposals only there. CI runs it
+in a disposable PostgreSQL container, alongside the Deno compile check and full app checks.
 
-## Implemented adapters and activation contracts
+Apply order, **only after separate approval**:
+1. Housing/admin proposals independently, with their own feature flags and rollback review.
+2. `authorization-schema.sql`, `token-role-schema.sql`, then `exchange-schema.sql`.
+3. Register the exact OAuth client and exchange approvals; compose the conditional token hook
+   with the existing hook, never silently replace it. Review the exact audience and redirect URIs.
+4. Provision a dedicated database LOGIN inheriting only `recoveryos_bridge_worker`, TLS required.
+   That role has only private-schema usage and dispatcher execution. No application table/RPC
+   grants, `authenticated` membership, service role, owner connection or broad signing key.
+   The Edge entrypoint checks this role restriction at startup.
+5. Provision externally managed encryption keyring and the approved configuration. Retain old
+   key versions for existing ciphertext. No key/credential is generated or committed by this code.
+6. Configure the function gateway for application-level JWT verification (Supabase legacy gateway
+   JWT verification must not reject OAuth resource tokens before the handler). This is an explicit
+   deployment configuration review, not an authentication bypass: the handler verifies every token.
+7. Verify public DNS/pinned HTTPS in the actual managed environment, then approve activation and
+   set both gates. Complete a synthetic authenticated callback/event/request/reply/status/replay/
+   unsubscribe round trip with the intended ChatGPT dot before claiming **Connected**.
 
-The core deliberately has no permissive fallbacks. `runtime.mjs` refuses ordinary deployment configuration; synthetic tests must explicitly select `localPrototype`. `oauth.mjs` implements bounded JWKS signature verification and a current database authorization adapter; `store.mjs` supplies encrypted, transactional SQLite request/reply/subscription/outbox/audit persistence; `egress.mjs` validates public DNS answers and pins the TLS connection; `adapters.mjs` verifies/signs callbacks, applies expiry/revocation and bounded retry leases; `runtime.mjs` composes the unmounted service with a first-party administrator queue/status endpoint. No listener, scheduler, deployment, credential or OAuth grant is created.
+Configuration names (values are intentionally absent):
+`COLLABORATION_BRIDGE_ENABLED`, `COLLABORATION_MANAGED_EGRESS_VERIFIED`,
+`COLLABORATION_WORKER_DATABASE_URL`, `COLLABORATION_ENCRYPTION_KEYRING`,
+`COLLABORATION_ACTIVE_KEY_ID`, `COLLABORATION_RESOURCE`, `COLLABORATION_APP_ORIGIN`,
+`COLLABORATION_OAUTH_ISSUER`, `COLLABORATION_JWKS_URL`, `COLLABORATION_CLIENT_IDS` (JSON array).
 
-These contracts remain enforced at activation:
+Automatic deletion is excluded from the pending storage approval. This deployment path never
+calls the old prototype's prune method and installs no purge function or schedule.
+GroupMe's three screenshots were reviewed and anonymous categories incorporated; remaining
+limits are verified source evidence, explicit matching and approved changes, not missing screenshots.
 
-1. `verifyAccessToken` must validate OAuth token signature with trusted issuer keys, exact audience/resource, issuer, expiration/not-before and `openid` scope plus the separately signed exchange permission and restricted database role. OAuth subject must map to the existing RecoveryOS account. Decoding a JWT, using Sign in with ChatGPT, or treating a Supabase login token as an MCP resource token is insufficient. Do not build a custom OAuth issuer casually: choose and approve a supported authorization service first.
-2. `authorize` must re-evaluate current canonical administrator and residence authority plus explicit production classification on every call and before each event delivery. Its null-residence discovery call still requires administrator status. No coaching claim shortcut. Use the actor's existing authorization; do not add a broad service-role token.
-3. `exchange` must enforce owner AND residence AND request matching in storage, only return explicitly shared immutable snapshots, cap data before retrieval, and atomically deduplicate replies by owner/request/operation ID plus payload hash. A repeated identical reply returns its original result; changed payload conflicts. Record server actor/time and review-only status. This requires a reviewed persistence schema/adapter, not in-memory maps.
-4. `subscriptions` must derive an idempotent ID from principal/callback/event/canonical arguments, enforce finite TTL (default one hour, no more than requested), support refresh/unsubscribe, and encrypt signing secrets at rest. Validate `whsec_` decoded length 24–64 bytes. Callback verification requires a fresh single-use expiring challenge and signed POST, 2xx plus constant-time challenge comparison. Callback egress must resolve and reject private/local/nonpublic destinations **at connection time**, pin the validated address with original TLS hostname, and never follow redirects. A normal Worker `fetch` plus URL validation is insufficient; an approved hardened egress service or equivalent verified facility is required. Return MCP error -32015 with categorized reason on verification failure.
-5. Durable outbox delivery must use Standard Webhooks HMAC over stable event ID, fresh Unix signing timestamp and exact serialized bytes; include `X-MCP-Subscription-Id`, `webhook-id`, `webhook-timestamp`, `webhook-signature`. Persist retry state across restarts, bounded exponential retries, and stop on 410/413, expiry, unsubscribe or access revocation. No context in events or logs. Event IDs stay stable across retry. Return `cursor:null`; no replay support is claimed.
-
-Eighteen local tests now cover OAuth signature/claim rejection, first-party versus MCP separation, DNS pinning/private-address rejection, encrypted restart persistence, owner/residence isolation, idempotent immutable replies, signed verification/delivery, bad challenges, revocation, durable leases, terminal retry statuses, retention and a composed local request/event/reply/status round trip. This is **not** a real ChatGPT round trip. The SQL authorization function is tested against the isolated application schema with synthetic sessions/client consent; production grants remain absent.
-
-The local prototype needs Node 22.13+ (24 recommended) and a private durable volume, separate from the current public Cloudflare assets worker. `createRuntime` accepts an already-provisioned parameterized PostgreSQL connection restricted to the private boolean authorization function and an externally supplied 32-byte encryption key. It never creates credentials. `deliverOne` must be driven by an approved service scheduler; startup must validate volume custody, backups, TLS host and issuer configuration. See [the concrete access/retention approval](../../docs/proposals/housing-follow-through/ACCESS-APPROVAL.md).
-
-## Exact setup approvals and smallest next step
-
-First verify that this user's ChatGPT Plugins interface offers **Add custom MCP server** and permits events for this dot. This capability check creates no grant and does not connect anything. RecoveryOS is not yet a connected event source.
-
-Before creating anything persistent, present the chosen HTTPS endpoint/resource and OAuth issuer, exact account mapping and `openid` scope plus the separately signed exchange permission and restricted database role, callback-secret storage/retention, owner-private request/reply/outbox tables and grants, and hardened egress deployment for approval. The current public weather/assets worker has no such auth/egress service. Configuration remains blank until those concrete infrastructure choices are approved; no guessed hostnames or secrets are deployable defaults.
-
-Then verify the implemented adapters against the chosen issuer/host and complete production-parity checks, approve the specific new security grants, expose the endpoint, inspect discovery/tools/events, and explicitly approve plugin installation/OAuth connection. Subscribe THIS dot to one approved residence. Require a harmless synthetic round trip: queue request, verify callback, receive event, read request, save reply, observe the same reply/status in RecoveryOS, replay the event without a duplicate reply, and unsubscribe. Only that verified result may change UI from **Not connected**. Do not create a subscription merely because the endpoint is reachable.
-
-Read-only auth inspection found OAuth support tables but zero active clients. Public discovery was blocked by the environment proxy. Supabase's documented default OAuth scopes do not constrain database access. The bridge refuses default `aud=authenticated` MCP tokens; a verified resource-specific issuer/consent setup is required. Custom scopes are unsupported; the restricted role/hook proposal replaces that assumption. Setup is documented on ChatGPT web, not verified on iOS. See ACCESS-APPROVAL.md for exact scope and remaining material decisions.
+Official contracts: [MCP events](https://developers.openai.com/plugins/build/mcp-events),
+[OAuth](https://developers.openai.com/plugins/build/auth),
+[Supabase OAuth scopes](https://supabase.com/docs/guides/auth/oauth-server/oauth-flows),
+[conditional token hook](https://supabase.com/docs/guides/auth/auth-hooks/custom-access-token-hook).
+The files at this directory's root named `store.mjs`, `runtime.mjs`, `oauth.mjs`, `adapters.mjs`
+and `egress.mjs` remain reference prototypes/tests only; they are not deployable dependencies.
