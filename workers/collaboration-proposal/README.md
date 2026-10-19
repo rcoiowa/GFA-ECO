@@ -14,6 +14,8 @@ unconfigured requests return 503 and `connected:false`.
   upload of workspace notes, application history, GroupMe text or this conversation.
 - OAuth uses standard `openid`, an exact resource audience, the restricted bridge role,
   a separately signed exchange permission, and revocable subject/client/residence approval.
+  Supabase need not mirror scope in the JWT: current session and consent scopes are
+  checked in Postgres (a conflicting scope claim is rejected). No scope is synthesized.
   Every operation and each send rechecks canonical production/admin/session/client authority.
 - Requests, immutable replies and callback secrets are AES-GCM encrypted with an externally
   supplied versioned keyring. Associated data binds ciphertext to its owner/context.

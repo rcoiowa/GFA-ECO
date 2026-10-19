@@ -8,7 +8,9 @@ Housing and the private admin review workspace are independent of this bridge.
 Supabase OAuth Server supports standard OIDC scopes, not arbitrary custom scopes:
 https://supabase.com/docs/guides/auth/oauth-server/oauth-flows
 
-Discovery now requests `openid`. This means identity consent only. Exchange permission
+Discovery now requests `openid`. Supabase does not guarantee a JWT `scope` claim
+(https://supabase.com/docs/guides/auth/oauth-server/token-security); current session and
+consent scopes are enforced in Postgres, without fabricating a token claim. This means identity consent only. Exchange permission
 is a separate `recoveryos_permission=collaboration:exchange` signed claim, registered
 client approval, and revocable subject/client/residence approval. The verifier also
 requires the exact resource audience and `role=recoveryos_bridge_client`. An ordinary

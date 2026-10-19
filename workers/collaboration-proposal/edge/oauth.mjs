@@ -19,7 +19,7 @@ export function createVerifier(config,{fetcher=fetch,now=Date.now}={}) {
   if(!await crypto.subtle.verify(algorithm,key,decode(parts[2]),bytes(`${parts[0]}.${parts[1]}`)))throw new Error('invalid_signature');
   const seconds=Math.floor(now()/1000);
   if(claims.iss!==config.issuer||claims.aud!==config.audience||!Number.isInteger(claims.exp)||claims.exp<=seconds||!Number.isInteger(claims.iat)||claims.iat>seconds+30||claims.exp-claims.iat>3600||(claims.nbf!==undefined&&(!Number.isInteger(claims.nbf)||claims.nbf>seconds))||!uuid(claims.sub)||!uuid(claims.session_id))throw new Error('invalid_claims');
-  if(config.channel==='mcp'&&(!config.clientIds?.includes(claims.client_id)||claims.role!=='recoveryos_bridge_client'||claims.recoveryos_permission!=='collaboration:exchange'||typeof claims.scope!=='string'||!claims.scope.split(' ').includes('openid')))throw new Error('invalid_permission');
+  if(config.channel==='mcp'&&(!config.clientIds?.includes(claims.client_id)||claims.role!=='recoveryos_bridge_client'||claims.recoveryos_permission!=='collaboration:exchange'||(claims.scope!==undefined&&(typeof claims.scope!=='string'||!claims.scope.split(' ').includes('openid')))))throw new Error('invalid_permission');
   if(config.channel==='app'&&(claims.client_id||claims.role!=='authenticated'))throw new Error('first_party_required');
   return {subject:claims.sub,sessionId:claims.session_id,clientId:claims.client_id??null,expiresAt:claims.exp*1000,channel:config.channel};
  };
