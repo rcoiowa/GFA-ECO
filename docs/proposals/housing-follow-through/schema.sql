@@ -1,6 +1,6 @@
 -- REVIEW PROPOSAL ONLY. Outside migration ledger. Never run against production from this branch.
 -- Requires verified current classification-aware staff_residence_ids / is_care_operations_staff
--- and strict is_production_person (0151 semantics; verify actual deployed definitions).
+-- Explicit production checks below do not depend on unapplied 0151 helper semantics.
 -- Does not redefine permissions, role helpers, coaching claims, intake conversion, or bed inventory.
 begin;
 create table recoveryos.housing_follow_through (
@@ -58,7 +58,7 @@ declare
   v_cover bigint;
   v_when timestamptz;
 begin
-  if auth.uid() is null or v_actor is null then raise exception 'not_authorized'; end if;
+  if auth.uid() is null or v_actor is null or not exists (select 1 from recoveryos.person_classification where person_id=v_actor and classification='production') then raise exception 'not_authorized'; end if;
   select * into v_intake from recoveryos.residence_application_intake where id = p_intake_id;
   if not found or not coalesce((v_intake.residence_id in (select recoveryos.staff_residence_ids()) or recoveryos.is_care_operations_staff()), false) then
     raise exception 'not_authorized';
@@ -85,7 +85,7 @@ begin
         v_cover := (p_detail->>'person_id')::bigint;
         if v_cover is null or v_cover = v_actor then raise exception 'different_cover_required'; end if;
         -- This proposal grants no access. Only a currently authorized recipient may accept.
-        if not coalesce(recoveryos.is_production_person(v_cover), false) or not exists (select 1 from recoveryos.role_assignments ra where ra.person_id = v_cover and ra.residence_id = v_intake.residence_id and ra.role_key::text in ('residence_staff','residence_manager') and ra.revoked_at is null) then raise exception 'eligible_residence_cover_required'; end if;
+        if not exists (select 1 from recoveryos.person_classification where person_id=v_cover and classification='production') or not exists (select 1 from recoveryos.role_assignments ra where ra.person_id = v_cover and ra.residence_id = v_intake.residence_id and ra.role_key::text in ('residence_staff','residence_manager') and ra.revoked_at is null) then raise exception 'eligible_residence_cover_required'; end if;
         v_row.proposed_cover_person_id := v_cover;
       when 'cancel_cover' then v_row.proposed_cover_person_id := null;
       when 'next_action' then
