@@ -65,8 +65,23 @@ jobs:
             supabase/functions/lead-intake/index.ts \
             supabase/functions/residence-intake/index.ts \
             supabase/functions/ejwrh/index.ts
+      - name: Disconnected collaboration Edge compile check
+        run: deno check --config supabase/functions/collaboration-bridge/deno.json supabase/functions/collaboration-bridge/index.ts
       - name: Edge Function receiver tests (deno test)
         run: deno test --allow-env supabase/functions/tests/
+      - name: Disconnected collaboration transport contract tests
+        run: node --test workers/collaboration-proposal/*.test.mjs
+      - name: Isolated collaboration Postgres contracts
+        run: |
+          docker run -d --name recoveryos-ci-postgres -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17-alpine
+          for attempt in $(seq 1 30); do
+            if docker exec recoveryos-ci-postgres pg_isready -h 127.0.0.1 -U postgres; then break; fi
+            sleep 1
+          done
+          python workers/collaboration-proposal/test-edge-postgres.py recoveryos-ci-postgres housing_ci_bridge
+      - name: Stop isolated collaboration database
+        if: always()
+        run: docker rm -f recoveryos-ci-postgres || true
       - name: Platform weather proxy tests
         run: node --test workers/platform/*.test.mjs
       - run: pnpm typecheck

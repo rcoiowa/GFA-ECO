@@ -1,0 +1,18 @@
+{
+  "enabled": false,
+  "resource": "",
+  "issuer": "",
+  "scope": "openid",
+  "maxContextBytes": 24576,
+  "maxReplyCharacters": 16000,
+  "subscriptionLifetimeSeconds": 3600,
+  "retentionApproved": false,
+  "storagePath": "",
+  "appOrigin": "",
+  "appAudience": "authenticated",
+  "oauth": {
+    "issuer": "",
+    "jwksUrl": "",
+    "clientIds": []
+  }
+}

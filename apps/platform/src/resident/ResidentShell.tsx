@@ -14,6 +14,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/residence/connect', label: 'Connect' },
   { to: '/residence/schedule', label: 'Schedule' },
   { to: '/residence/documents', label: 'Documents' },
+  { to: '/my-housing/consent', label: 'My consent choices', shortLabel: 'Consent' },
   { to: '/residence/journey', label: 'My Journey', shortLabel: 'Journey' },
 ];
 

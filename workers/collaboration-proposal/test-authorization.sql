@@ -1,0 +1,34 @@
+-- Isolated application-schema database ONLY, after test-full-contract.sql.
+create table auth.sessions(id uuid primary key,user_id uuid,not_after timestamptz,oauth_client_id uuid,scopes text);
+create table auth.oauth_clients(id uuid primary key,deleted_at timestamptz);
+create table auth.oauth_consents(user_id uuid,client_id uuid,revoked_at timestamptz,scopes text);
+insert into auth.sessions values('00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000004',now()+interval '1 hour',null,null);
+\ir authorization-schema.sql
+select public.assert_true(recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008',null,10),'existing active admin app session authorized');
+select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008',null,999),'unknown residence denied');
+select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000008',null,10),'another subject cannot use session');
+insert into recoveryos_bridge_private.client_approvals values ('00000000-0000-0000-0000-000000000009','https://bridge.synthetic.example/mcp',true);
+insert into recoveryos_bridge_private.exchange_approvals values ('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000009',10,null);
+insert into auth.oauth_clients values('00000000-0000-0000-0000-000000000009',null);
+update auth.sessions set oauth_client_id='00000000-0000-0000-0000-000000000009',scopes='openid';
+select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000009',10),'OAuth consent required');
+insert into auth.oauth_consents values('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000009',null,'openid');
+select public.assert_true(recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000009',10),'approved client scope consent authorized');
+select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000009',20),'unapproved residence denied despite global admin authority');
+update recoveryos_bridge_private.exchange_approvals set revoked_at=now();
+select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000009',10),'exchange approval revocation enforced');
+update recoveryos_bridge_private.exchange_approvals set revoked_at=null;
+update auth.sessions set scopes='email';
+select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000009',10),'session without requested openid scope denied');
+update auth.sessions set scopes='openid';
+update auth.oauth_consents set scopes='email';
+select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000009',10),'consent without openid scope denied');
+update auth.oauth_consents set scopes='openid';
+update auth.oauth_consents set revoked_at=now();
+select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000009',10),'revoked consent denied');
+update auth.oauth_consents set revoked_at=null;
+update recoveryos.role_assignments set revoked_at=now() where person_id=4;
+select public.assert_true(not recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000009',10),'revoked admin denied');
+set role authenticated;
+select public.expect_failure($q$select recoveryos_bridge_private.authorized('00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008',null,10)$q$,'permission denied');
+reset role;
