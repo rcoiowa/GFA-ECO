@@ -113,3 +113,14 @@ it('creates an application without signup only after identity confirmation', asy
   await waitFor(() => expect(mocks.createAccountlessApplicationFromIntake).toHaveBeenCalledWith({ intakeId: 7, firstName: 'Test', lastName: 'Person', confirm: true }));
   expect(await screen.findByText(/Full application created without a login/)).toBeInTheDocument();
 });
+
+describe('housing continuity after conversion', () => {
+  it('keeps converted intake visible with original contact context and canonical links', async () => {
+    mocks.listApplicationIntake.mockResolvedValue([{ ...row, status: 'converted', converted_person_id: 51, converted_application_id: 91, review_notes: 'Synthetic prior contact completed; timing still unresolved.' }]);
+    wrap();
+    expect(await screen.findByText('Waiting on us (1)')).toBeInTheDocument();
+    expect(screen.getByText(/Application #91 · Person #51/)).toBeInTheDocument();
+    expect(screen.getAllByText(/prior contact completed/).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: 'Create full application…' })).not.toBeInTheDocument();
+  });
+});

@@ -1,3 +1,4 @@
+import { HousingFollowThrough } from '../components/HousingFollowThrough';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import {
@@ -71,7 +72,7 @@ const NEXT_STEPS: Record<
   closed: [],
 };
 
-const OPEN_STATUSES = new Set(['received', 'contacted', 'account_offered', 'waitlisted']);
+const OPEN_STATUSES = new Set(['received', 'contacted', 'account_offered', 'waitlisted', 'converted']);
 
 export function IntakeQueuePage() {
   const [loading, setLoading] = useState(true);
@@ -283,6 +284,7 @@ export function IntakeQueuePage() {
                     {r.review_notes ? (
                       <p className="mt-2 text-sm text-ink-muted">Notes: {r.review_notes}</p>
                     ) : null}
+                    <HousingFollowThrough intake={r} />
                     {notesFor === r.id ? (
                       <div className="mt-2">
                         <TextAreaField
@@ -305,7 +307,7 @@ export function IntakeQueuePage() {
                       </button>
                     )}
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {OPEN_STATUSES.has(r.status) ? (
+                      {OPEN_STATUSES.has(r.status) && r.status !== 'converted' ? (
                         <Button size="md" onClick={() => void openConvert(r.id)}>
                           Create full application…
                         </Button>
@@ -419,9 +421,9 @@ export function IntakeQueuePage() {
           </Card>
 
           <Card>
-            <CardTitle>Settled</CardTitle>
+            <CardTitle>Other intake dispositions — review remaining housing commitments</CardTitle>
             {settled.length === 0 ? (
-              <p className="text-ink-muted">Nothing settled yet.</p>
+              <p className="text-ink-muted">No other intake dispositions.</p>
             ) : (
               <ul className="mt-2 flex flex-col gap-2">
                 {settled.map((r) => (
@@ -431,6 +433,7 @@ export function IntakeQueuePage() {
                   >
                     <span className="text-ink">{r.applicant_name}</span>
                     <span className="text-sm text-ink-muted">{STATUS_LABELS[r.status]}</span>
+                    <HousingFollowThrough intake={r} />
                   </li>
                 ))}
               </ul>
