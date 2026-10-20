@@ -1,4 +1,4 @@
-# Manual-only deployment of the active staging pilot. Branch pushes must never deploy.
+# Manual-only deployment of the live custom-domain Worker (legacy staging name). Branch pushes must never deploy.
 name: Deploy staging
 
 on:
@@ -8,6 +8,11 @@ on:
         description: Exact commit SHA or reviewed release ref to deploy
         required: true
         type: string
+      housing_follow_through_enabled:
+        description: Enable approved Housing Follow-through database integration
+        required: true
+        default: false
+        type: boolean
       confirmation:
         description: Type DEPLOY_STAGING
         required: true
@@ -74,6 +79,7 @@ jobs:
           VITE_SUPABASE_URL: https://cqcxvwoukyhxyokfwnjm.supabase.co
           VITE_SUPABASE_ANON_KEY: sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x
           VITE_RELEASE: ${{ env.RELEASE_SHA }}
+          VITE_HOUSING_FOLLOW_THROUGH_ENABLED: ${{ inputs.housing_follow_through_enabled && 'true' || 'false' }}
           VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
       - name: Enforce canonical backend in staging assets
         run: |
@@ -84,4 +90,4 @@ jobs:
       - name: Deploy recoveryos-staging
         run: pnpm dlx wrangler@4.14.0 deploy --config wrangler.staging.jsonc
       - name: Record deployment
-        run: echo "Deployed immutable commit $RELEASE_SHA to recoveryos-staging at $(date -u +%FT%TZ)" >> "$GITHUB_STEP_SUMMARY"
+        run: echo "Deployed immutable commit $RELEASE_SHA to recoveryos-staging (live custom domains), Housing Follow-through=${{ inputs.housing_follow_through_enabled }}, collaboration bridge disabled, at $(date -u +%FT%TZ)" >> "$GITHUB_STEP_SUMMARY"
