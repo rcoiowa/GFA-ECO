@@ -66,7 +66,7 @@ Avoid in GFA-authored descriptions
 	Victim or survivor imposed on someone
 	The person’s preferred term; person affected by the event
 	Preserve required legal terminology and the person’s own account.
-	
+
 
 Do not replace one judgment with an unsupported explanation. “Chose not to,” “was unable to,” and “has not completed” describe different facts.
 5. Identity, disability, and belonging
@@ -100,7 +100,7 @@ Topic
 	Underserved or underrepresented groups
 	Identify the service gap or comparison, when known
 	Using an adjective without explaining the relevant need or measure
-	
+
 
 Forms should explain why sensitive demographic information is requested. Use the approved data-collection rules, including optional responses or “prefer not to answer” where appropriate. A language guide does not authorize collecting additional personal information.
 Faith, culture, disability, gender, or recovery pathway should never be used as an assumed explanation for a person’s behavior.
@@ -141,7 +141,7 @@ Term
 	Systemic / historical / institutional
 	Use the relevant scope, time, or setting accurately
 	Treating these distinct concepts as synonyms
-	
+
 
 Keep required wording in funding applications, legal records, policies, clinical records, validated instruments, and data fields. Explain difficult wording in surrounding prose where helpful. Do not alter a direct quotation, official title, or instrument item and present it as unchanged.
 7. Tone and sentence choices
