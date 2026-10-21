@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
-import { safeAuthReturnPath } from './authReturnPath';
+import { safeAuthReturnPath, authFlowPath } from './authReturnPath';
 import { signInSchema } from '@recoveryos/domain';
 import { getSupabase } from '@recoveryos/data-access';
 import { Alert, Button, Card, TextField } from '@recoveryos/ui';
@@ -9,6 +9,10 @@ export function SignInPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation() as { state?: { from?: string } };
+  const next =
+    safeAuthReturnPath(searchParams.get('next')) ??
+    safeAuthReturnPath(location.state?.from) ??
+    '/home';
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,7 +47,7 @@ export function SignInPage() {
       );
       return;
     }
-    navigate(safeAuthReturnPath(searchParams.get('next')) ?? location.state?.from ?? '/home', {
+    navigate(next, {
       replace: true,
     });
   }
@@ -86,7 +90,7 @@ export function SignInPage() {
           <p className="mt-5 text-ink-muted">
             New here?{' '}
             <Link
-              to="/register"
+              to={authFlowPath('/register', next)}
               className="font-medium text-experience-700 underline underline-offset-2"
             >
               Create your account
@@ -94,7 +98,7 @@ export function SignInPage() {
           </p>
           <p className="mt-2 text-ink-muted">
             <Link
-              to="/forgot-password"
+              to={authFlowPath('/forgot-password', next)}
               className="font-medium text-experience-700 underline underline-offset-2"
             >
               Forgot your password?

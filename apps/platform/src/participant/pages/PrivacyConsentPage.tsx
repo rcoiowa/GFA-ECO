@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router';
+import { HOUSING_CONSENT_KEYS, activeGrant } from '../../public/HousingConsentPage';
 import { useAuth } from '@recoveryos/auth';
 import {
   listActiveConsentTypes,
@@ -81,46 +83,62 @@ export function PrivacyConsentPage() {
         </Alert>
       </div>
 
+      <Card>
+        <h2 className="font-semibold">Housing consent choices</h2>
+        <p>
+          Screening, electronic signatures, and any permissions to share housing information are
+          managed separately.
+        </p>
+        <Link className="inline-block min-h-11 py-3 underline" to="/my-housing/consent">
+          Manage my housing consent
+        </Link>
+      </Card>
       {loading ? (
         <LoadingState />
       ) : error ? (
         <ErrorState onRetry={() => void load()} />
       ) : (
         <ul className="flex flex-col gap-4">
-          {types.map((type) => {
-            const current = currentByType.get(type.id);
-            const isGranted = current?.status === 'granted';
-            return (
-              <li key={type.id}>
-                <Card>
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="max-w-prose">
-                      <h2 className="font-semibold text-ink">{type.name}</h2>
-                      {type.description ? (
-                        <p className="mt-1 text-sm text-ink-muted">{type.description}</p>
-                      ) : null}
-                      <p className="mt-2 text-sm font-medium">
-                        {isGranted ? (
-                          <span className="text-positive-700">Currently: allowed</span>
-                        ) : current ? (
-                          <span className="text-ink-muted">Currently: not allowed</span>
-                        ) : (
-                          <span className="text-ink-muted">No decision yet</span>
-                        )}
-                      </p>
+          {types
+            .filter((type) => !HOUSING_CONSENT_KEYS.includes(type.key))
+            .map((type) => {
+              const current = currentByType.get(type.id);
+              const isGranted = current ? activeGrant(current) : false;
+              return (
+                <li key={type.id}>
+                  <Card>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="max-w-prose">
+                        <h2 className="font-semibold text-ink">{type.name}</h2>
+                        {type.description ? (
+                          <p className="mt-1 text-sm text-ink-muted">{type.description}</p>
+                        ) : null}
+                        <p className="mt-2 text-sm font-medium">
+                          {isGranted ? (
+                            <span className="text-positive-700">Currently: allowed</span>
+                          ) : current ? (
+                            <span className="text-ink-muted">
+                              {current.status === 'granted'
+                                ? 'Currently: not allowed (permission expired or withdrawn)'
+                                : 'Currently: not allowed'}
+                            </span>
+                          ) : (
+                            <span className="text-ink-muted">No decision yet</span>
+                          )}
+                        </p>
+                      </div>
+                      <Button
+                        variant={isGranted ? 'secondary' : 'primary'}
+                        disabled={busyTypeId === type.id}
+                        onClick={() => void decide(type, isGranted ? 'revoked' : 'granted')}
+                      >
+                        {busyTypeId === type.id ? 'Saving…' : isGranted ? 'Withdraw' : 'Allow'}
+                      </Button>
                     </div>
-                    <Button
-                      variant={isGranted ? 'secondary' : 'primary'}
-                      disabled={busyTypeId === type.id}
-                      onClick={() => void decide(type, isGranted ? 'revoked' : 'granted')}
-                    >
-                      {busyTypeId === type.id ? 'Saving…' : isGranted ? 'Withdraw' : 'Allow'}
-                    </Button>
-                  </div>
-                </Card>
-              </li>
-            );
-          })}
+                  </Card>
+                </li>
+              );
+            })}
         </ul>
       )}
     </>

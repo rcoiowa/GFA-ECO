@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
+import { safeAuthReturnPath, authFlowPath } from './authReturnPath';
 import { updatePassword, useAuth } from '@recoveryos/auth';
 import { Alert, Button, Card, CardTitle, LoadingState, TextField } from '@recoveryos/ui';
 
@@ -11,6 +12,8 @@ import { Alert, Button, Card, CardTitle, LoadingState, TextField } from '@recove
  * that would bounce the recovery arrival to /sign-in before the token is read.
  */
 export function ResetPasswordPage() {
+  const [searchParams] = useSearchParams();
+  const next = safeAuthReturnPath(searchParams.get('next')) ?? '/home';
   const { ready, session } = useAuth();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
@@ -53,7 +56,7 @@ export function ResetPasswordPage() {
         ) : done ? (
           <div className="mt-3 space-y-4">
             <Alert tone="positive">Your password is updated. You’re signed in.</Alert>
-            <Button onClick={() => navigate('/home', { replace: true })}>Continue</Button>
+            <Button onClick={() => navigate(next, { replace: true })}>Continue</Button>
           </div>
         ) : !session ? (
           <div className="mt-3 space-y-3">
@@ -61,7 +64,10 @@ export function ResetPasswordPage() {
               This reset link is invalid or has expired. Request a new one and it’ll arrive within a
               few minutes.
             </Alert>
-            <Link className="text-experience-700 underline underline-offset-2" to="/forgot-password">
+            <Link
+              className="text-experience-700 underline underline-offset-2"
+              to={authFlowPath('/forgot-password', next)}
+            >
               Send a new reset link
             </Link>
           </div>

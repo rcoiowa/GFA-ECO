@@ -6,7 +6,11 @@ import {
   listMissingRequiredConsents,
   recordConsentDecision,
 } from '@recoveryos/data-access';
-import { participantOnboardingApplies, type ConsentType } from '@recoveryos/domain';
+import {
+  safeAuthReturnPath,
+  participantOnboardingApplies,
+  type ConsentType,
+} from '@recoveryos/domain';
 import { Alert, Button, Card, ErrorState, LoadingState } from '@recoveryos/ui';
 import { track } from '../lib/analytics';
 
@@ -43,7 +47,7 @@ export function OnboardingPage() {
   const viewedTracked = useRef(false);
   // Internal-only return path (e.g. back to a residence application).
   const rawNext = searchParams.get('next');
-  const destination = rawNext?.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/home';
+  const destination = safeAuthReturnPath(rawNext) ?? '/home';
 
   useEffect(() => {
     if (!session) return;
@@ -211,9 +215,8 @@ export function OnboardingPage() {
                 ))}
                 {needAllMessage ? (
                   <p role="alert" className="text-sm font-medium text-ink">
-                    Each agreement above is needed to use the VRCC. If you&rsquo;d rather not
-                    decide right now, that&rsquo;s okay — support below stays open to you either
-                    way.
+                    Each agreement above is needed to use the VRCC. If you&rsquo;d rather not decide
+                    right now, that&rsquo;s okay — support below stays open to you either way.
                   </p>
                 ) : null}
                 <Button type="submit" size="lg" disabled={saving}>

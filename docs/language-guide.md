@@ -1,97 +1,96 @@
 # Language Guide
 
-Person-first, trauma-aware, neuro-informed, grace-based language is a
-platform requirement — for every document, UI string, record note, and
-form label in RecoveryOS. This guide is the canonical rule set; the
-residence document library (`packages/residence-content`) and the app UI
-are written to it, and code review checks against it.
+Editorial edition: October 21, 2026. Applies to RecoveryOS copy, forms,
+records, metadata, and generated content. Based on the user-supplied revised
+Language Guide 08 §§1–12 and Developer Handoff 05. This is an editorial
+reference, not a change to residence policy, legal rights, validated instruments,
+AI authorization, or provider configuration. Operational authorities still govern
+actual requirements. Flag conflicts rather than silently rewriting policy.
 
-> **Reconciled (2026-07-30):** the canonical Grace House operational
-> document set (v2, `docs/source-documents/grace-house/`) is now the
-> authoritative rules source and confirms this guide's commitments —
-> including the explicit rejection of "relapse" as a moral verdict
-> (Handbook §Return-to-Use), "prescription-consistent" screening
-> language, grace-based accountability, and trauma-informed principles
-> (safety, trust, choice, collaboration, empowerment). Where any wording
-> here differs from the operational set, the operational set governs.
+## Identity
 
-## The four commitments
+- Organization: Grace For Addictions.
+- Mission: Transforming lives by inspiring hope to empower communities.
+- Primary tagline: No Shame, No Stigma, Just Grace.
+- Values: Grace. Connection. Transformation.
+- AI: Grace, AI Support Navigator; short name Grace; role AI support navigator.
+- Human roles: Peer Recovery Coach, Recovery Ally, Recovery Navigator.
 
-### 1. Person-first
+“Connection Prevents Crisis” is a supporting principle, not a guarantee.
+Retire current-facing companion and AI-peer labels; retain historical quotations
+and stable route, database, and function identifiers pending compatibility review.
+Grace has no lived experience and does not provide human peer services, treatment,
+or emergency response. Keep the required AI disclosure visible in the experience.
 
-People are people before they are any condition, status, or history.
+## Four commitments
 
-| Never                                                     | Always                                                                          |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| addict, junkie, abuser, alcoholic (as a noun for someone) | person in recovery, person with a substance use disorder, resident, participant |
-| the homeless                                              | people experiencing homelessness                                                |
-| ex-con, felon, offender                                   | person with legal-system involvement                                            |
-| "a relapser," "a no-show"                                 | a person who returned to use; a person who missed an appointment                |
+**Person-centered:** person-first language is a starting point, not a correction
+of someone's identity. Respect identity-first preferences and self-description,
+including a person's own use of “relapse.” Do not infer a diagnosis or assume
+someone identifies as being in recovery.
 
-### 2. Trauma-aware
+**Trauma-aware:** offer clarity, dignity, and choices where they actually exist.
+Explain why information is requested and what happens next. Do not assume trauma
+or turn mandatory requirements into optional requests. Curfew compliance does
+not prove that someone is safe.
 
-Most people in recovery carry trauma. Language (and process) must offer
-choice, transparency, and dignity — and never shame.
+**Neuro-informed:** stress, learning, routines, and recovery are complex. Do not
+infer a person's brain state, motive, or nervous-system explanation from a
+conversation, return to use, or missed appointment. Do not promise neurological
+healing from a service without relevant evidence.
 
-- Explain _why_ before _what_ wherever an instruction appears.
-- Offer choices and alternatives explicitly ("a different observer, a
-  different method") instead of demanding compliance.
-- Never frame help-seeking as weakness or crisis as misbehavior:
-  a mental-health crisis is "a health event, never a rule event."
-- No surveillance framing: curfew and passes are "how the house knows
-  you're safe," not monitoring.
-- Announce and document any entry into private space; no surprises.
+**Grace-based:** honor inherent dignity and explain accountability without
+humiliation. Describe actual choices, responsibilities, and review processes.
+Do not guarantee housing, admission, a safe destination, exemption from consequences,
+or that disclosure always produces a particular response.
 
-### 3. Neuro-informed
+## Contextual wording, not automatic substitutions
 
-Recovery is neurological healing. Expectations are explained in terms of
-what healing brains need, which turns rules into care:
+| Context                 | Editorial standard                                                                                                                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Substance use           | Use accurate person-centered descriptions; do not assign “addict,” “alcoholic,” or a diagnosis. Respect self-description.                                                         |
+| Housing                 | Distinguish homelessness from housing instability. Retain precise legal/policy terms, including eviction where applicable.                                                        |
+| Justice involvement     | Describe the relevant situation; retain required legal terminology.                                                                                                               |
+| Missed appointment      | Record the event, not presumed refusal, inability, motive, or re-engagement.                                                                                                      |
+| Return to use           | Appropriate in GFA-authored descriptions; preserve a person's own language and exact instrument items.                                                                            |
+| Screening               | Use the actual reported result, such as positive or negative; do not infer overall sobriety, impairment, or worth.                                                                |
+| Identity and disability | Respect self-description and relevant data definitions. Do not replace disability with “challenges,” race with “background,” or gender/sexual orientation with vague substitutes. |
+| Service definitions     | Keep peer support, harm reduction, case management, resource navigation, and care coordination distinct. AI conversation is not human peer support.                               |
+| Measures                | Preserve retention, recidivism, and other defined measures, populations, denominators, and reporting periods. Evidence-based and evidence-informed are not interchangeable.       |
 
-- Sleep, routine, and predictability are "recovery infrastructure."
-- Cravings and hard days are "expected parts of healing, not character
-  flaws."
-- A return to use is "the brain's old survival pathway firing under
-  load" — a medical and human event, never a moral failure.
-- Structure "exists to carry you through those days, not to catch you
-  failing."
+Keep required legal wording, official titles, direct quotations, validated
+instrument items, and data categories intact. Explain them in surrounding prose.
+The guide does not authorize additional demographic collection or changes to
+required fields. Explain sensitive-field purposes and use approved optionality.
 
-### 4. Grace-based
+## Records, claims, and action honesty
 
-Grace means the response to failure is restoration, not punishment — and
-it's the organization's namesake, so it shows everywhere:
+Distinguish direct observation, participant report, third-party report, and
+inference. Attribute reported reasons; do not invent explanations.
 
-| Never                                        | Always                                                               |
-| -------------------------------------------- | -------------------------------------------------------------------- |
-| relapse (in resident-facing text)            | return to use                                                        |
-| dirty / clean (screens)                      | positive / negative; substance-free                                  |
-| violation, infraction, write-up              | agreement concern; a commitment that slipped                         |
-| sanction, punishment, consequence (punitive) | restorative step; safety response                                    |
-| eviction, kicked out, discharge to street    | transition; safety-required transition (with a safe landing, always) |
-| non-compliant, refused, failed to            | declined, chose not to, wasn't able to                               |
-| enabling, manipulative, drug-seeking         | (describe the observable behavior, without motive attribution)       |
-| "you must / failure to X will result in Y"   | "we ask of you… when a commitment isn't kept, here's the process"    |
+Describe intentions as intentions and targets as targets. Outcome, causal,
+certification, award, partnership, availability, price, and privacy claims require
+current evidence for the precise service/channel. Never infer a completed human
+connection from a referral, appointment, button click, or successful API response.
+A draft is not sent; an AI conversation is not a human service event. Modeled cost
+avoidance is not realized savings or demonstrated causal ROI.
 
-Grace-based structure in documents:
+Use exact canonical Recovering the Mind/GFARC content. If unavailable, do not
+invent official slogans. Stories, photos, and attributed quotations require
+appropriate specific permission; service consent is not marketing consent.
+Label hypothetical examples honestly. Never publish private source packets.
 
-- Every consequence appears **with its path back** ("the door stays
-  open"). No dead ends.
-- Every hard rule gets its reason ("_Why:_ one unprotected moment can
-  cost a housemate everything").
-- "We" language: the residence makes commitments first, then asks for
-  the resident's ("What you can count on from us" precedes "What we ask
-  of you").
-- Honesty is always rewarded in process design: self-disclosure is met
-  with more support, never more punishment, and it is "never too late to
-  be honest."
+## Experience and review
 
-## Mechanics
+Use clear headings, descriptive actions, accessible labels, specific errors,
+and truthful failure states. General information and urgent-support paths must
+remain practical independently of AI. Do not promise continuous human availability,
+complete anonymity, compliance certification, zero provider retention, or successful
+outcomes without channel-specific evidence. Web Grace and telephone services have
+separate authorities and data flows.
 
-- Pronouns: use "they" for any person whose pronouns aren't known; forms
-  offer optional pronoun fields, never required ones.
-- Records and incident reports: observable facts only, no motive
-  attribution, person-first phrasing even in internal notes — "how we
-  speak about people when they're absent is who we are."
-- Screening results in UI and records: "positive/negative," never
-  "passed/failed."
-- Crisis resources appear wherever a hard topic is discussed (988,
-  Your Life Iowa, Support Now).
+Before sharing: check naming, factual precision, self-description, actual
+requirements, source dates, permissions, accessibility, and unresolved claims.
+Record material changes and review ownership. Locked prompt, security, consent,
+privacy, and residence-policy conflicts need separate review; editorial changes
+must not silently enact them.

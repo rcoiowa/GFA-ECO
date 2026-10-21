@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production-candidate
     env:
+      CLOUDFLARE_ACCOUNT_ID: 499272c2f0336cc60207bad24edd0e14
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_API_TOKEN || vars.CLOUDFLARE_API_TOKEN }}
       VITE_SUPABASE_URL: https://cqcxvwoukyhxyokfwnjm.supabase.co
       VITE_SUPABASE_ANON_KEY: sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x

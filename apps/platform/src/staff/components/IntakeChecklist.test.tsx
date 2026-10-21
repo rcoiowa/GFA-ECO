@@ -93,7 +93,9 @@ describe('IntakeChecklist', () => {
     expect(screen.getByText('If it applies')).toBeInTheDocument();
     // Not-applicable items collapse to one honest line; taxonomy words never leak.
     expect(screen.getByText(/Doesn’t apply here:/)).toBeInTheDocument();
-    expect(document.body.textContent).not.toMatch(/conditionally_required|unconfirmed|not_applicable/);
+    expect(document.body.textContent).not.toMatch(
+      /conditionally_required|unconfirmed|not_applicable/,
+    );
   });
 
   it('shows what is done, what remains, and who acts', async () => {
@@ -101,7 +103,7 @@ describe('IntakeChecklist', () => {
     render(<IntakeChecklist {...props} />);
     expect(await screen.findByText('Still needed')).toBeInTheDocument();
     expect(screen.getByText('Done')).toBeInTheDocument();
-    expect(screen.getByText(/They sign it in their app/)).toBeInTheDocument();
+    expect(screen.getByText(/They sign in My housing intake/)).toBeInTheDocument();
   });
 
   it('medication not reviewed: one-tap "No current medications" calls the RPC — no fake rows', async () => {
@@ -119,7 +121,9 @@ describe('IntakeChecklist', () => {
       readiness([item({ ...medUnconfirmed, status: 'reviewed_none', met: true })]),
     );
     render(<IntakeChecklist {...props} />);
-    expect((await screen.findAllByText(/Reviewed — no current medications/)).length).toBeGreaterThan(0);
+    expect(
+      (await screen.findAllByText(/Reviewed — no current medications/)).length,
+    ).toBeGreaterThan(0);
     expect(screen.queryByText('No current medications')).not.toBeInTheDocument();
   });
 
@@ -140,7 +144,9 @@ describe('IntakeChecklist', () => {
       },
     ]);
     render(<IntakeChecklist {...props} />);
-    expect((await screen.findAllByText(/Reviewed — medications recorded/)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Reviewed — medications recorded/)).length).toBeGreaterThan(
+      0,
+    );
     expect(screen.getByText(/lisinopril/)).toBeInTheDocument();
   });
 
@@ -155,7 +161,9 @@ describe('IntakeChecklist', () => {
       ]),
     );
     render(<IntakeChecklist {...props} />);
-    expect(await screen.findByText(/documents aren’t ready to sign in the app yet/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/documents aren’t ready to sign in the app yet/),
+    ).toBeInTheDocument();
     expect(screen.getByText(/can never be skipped or deferred/)).toBeInTheDocument();
     expect(screen.queryByText(/Move in with a follow-up/)).not.toBeInTheDocument();
   });
@@ -241,7 +249,9 @@ describe('IntakeChecklist', () => {
   it('before approval the checklist works but move-in is not offered', async () => {
     mocks.applicationIntakeReadiness.mockResolvedValue(readiness([ackDone]));
     render(<IntakeChecklist {...props} applicationStatus="submitted" />);
-    expect(await screen.findByText(/move-in becomes available once the application is approved/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/move-in becomes available once the application is approved/),
+    ).toBeInTheDocument();
     expect(screen.queryByText('Move Jordan in')).not.toBeInTheDocument();
   });
 });
