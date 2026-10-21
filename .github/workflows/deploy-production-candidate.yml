@@ -7,6 +7,11 @@ on:
         description: Exact commit SHA or reviewed release ref to deploy
         required: true
         type: string
+      housing_follow_through_enabled:
+        description: Enable reviewed housing follow-through only after isolated acceptance
+        required: true
+        default: false
+        type: boolean
       confirmation:
         description: Type DEPLOY_CANDIDATE
         required: true
@@ -69,6 +74,7 @@ jobs:
           fi
       - run: pnpm build
         env:
+          VITE_HOUSING_FOLLOW_THROUGH_ENABLED: ${{ inputs.housing_follow_through_enabled && 'true' || 'false' }}
           VITE_RELEASE: ${{ env.RELEASE_SHA }}
           VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
       - name: Enforce canonical backend in candidate assets

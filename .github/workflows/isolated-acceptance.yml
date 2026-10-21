@@ -1,0 +1,31 @@
+name: Isolated acceptance
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: isolated-acceptance-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  acceptance:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pin official local CLI
+        run: |
+          npm install --prefix "$RUNNER_TEMP/gfa-cli" --ignore-scripts=false supabase@2.121.0
+          echo "$RUNNER_TEMP/gfa-cli/node_modules/.bin" >> "$GITHUB_PATH"
+      - name: Local services and synthetic acceptance only
+        env:
+          ACCEPTANCE_SHA: ${{ github.event.pull_request.head.sha }}
+          SUPABASE_TELEMETRY_DISABLED: 'true'
+        run: python3 scripts/isolated-acceptance/run.py
