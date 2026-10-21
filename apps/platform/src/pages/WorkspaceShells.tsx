@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router';
 import { RequireRole, useAuth } from '@recoveryos/auth';
 import { AppShell, Card, CardTitle, EmptyState, LoadingState } from '@recoveryos/ui';
-import { workspacesForRoles } from '@recoveryos/domain';
+import { workspacesForRoles, authFlowPath, locationReturnPath } from '@recoveryos/domain';
 import { Link } from 'react-router';
 
 /**
@@ -89,11 +89,18 @@ export function NavigatorWorkspaceShell() {
  * /recovery-residences (live links preserved).
  */
 export function ResidencesDispatcher() {
+  const location = useLocation();
   const { ready, session, person, roles } = useAuth();
   if (!ready) return <LoadingState label="Opening residences…" />;
-  if (!session) return <Navigate to="/sign-in" replace />;
-  if (!person) return <Navigate to="/onboarding" replace />;
-  if (roles.some((r) => r === 'residence_staff' || r === 'residence_manager' || r === 'program_manager'))
+  if (!session)
+    return <Navigate to={authFlowPath('/sign-in', locationReturnPath(location))} replace />;
+  if (!person)
+    return <Navigate to={authFlowPath('/onboarding', locationReturnPath(location))} replace />;
+  if (
+    roles.some(
+      (r) => r === 'residence_staff' || r === 'residence_manager' || r === 'program_manager',
+    )
+  )
     return <Navigate to="/staff/today" replace />;
   if (roles.includes('resident')) return <Navigate to="/residence/today" replace />;
   return <Navigate to="/recovery-residences" replace />;
@@ -102,6 +109,6 @@ export function ResidencesDispatcher() {
 /** Splat-preserving redirect for the legacy /app/* participant paths → /vrcc/*. */
 export function LegacyAppRedirect() {
   const location = useLocation();
-  const target = location.pathname.replace(/^\/app/, '/vrcc') + location.search;
+  const target = location.pathname.replace(/^\/app/, '/vrcc') + location.search + location.hash;
   return <Navigate to={target} replace />;
 }

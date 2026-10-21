@@ -45,7 +45,7 @@ export function LandingPage() {
           The Virtual Recovery Community Center
         </h1>
         <p className="mt-3 max-w-2xl text-lg text-ink-muted">
-          Free recovery support from Grace For Addictions — coaching, peer support, resource
+          Recovery support from Grace For Addictions — coaching, peer support, resource
           navigation, and a community that meets you exactly where you are. No residence stay
           required, no cost, no judgment.
         </p>
@@ -147,7 +147,7 @@ export function LandingPage() {
 
       <footer className="border-t border-line py-6">
         <p className="mx-auto max-w-4xl px-4 text-sm text-ink-muted">
-          Grace For Addictions · Connection prevents crisis · No shame. No stigma. Just grace. ·
+          Grace For Addictions · Connection prevents crisis · No Shame, No Stigma, Just Grace. ·
           Your information is private and protected. VRCC is not an emergency service — in immediate
           danger, call 911. ·{' '}
           <Link to="/support" className="underline underline-offset-2 hover:text-ink">

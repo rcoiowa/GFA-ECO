@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { Alert, Button, Card, LoadingState, PageHeader } from '@recoveryos/ui';
 import { SupportNowButton } from '@recoveryos/safety';
@@ -71,24 +71,33 @@ export function GracePage() {
     };
   }, []);
 
-  const loadConsent = useCallback(async () => {
-    if (!personId) return;
-    setChecking(true);
-    try {
-      setConsented(await hasActiveAiConsent(personId));
-    } catch {
-      setConsented(false);
-    } finally {
-      setChecking(false);
+  useEffect(() => {
+    let current = true;
+    setConsented(false);
+    setChecking(Boolean(personId));
+    if (personId) {
+      void hasActiveAiConsent(personId)
+        .then((active) => {
+          if (current) setConsented(active);
+        })
+        .catch(() => {
+          if (current) setConsented(false);
+        })
+        .finally(() => {
+          if (current) setChecking(false);
+        });
     }
+    return () => {
+      current = false;
+    };
   }, [personId]);
 
   useEffect(() => {
-    void loadConsent();
-  }, [loadConsent]);
-
-  useEffect(() => {
-    logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' });
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    logRef.current?.scrollTo?.({
+      top: logRef.current.scrollHeight,
+      behavior: reducedMotion ? 'auto' : 'smooth',
+    });
   }, [messages, sending]);
 
   async function grant() {
@@ -159,20 +168,43 @@ export function GracePage() {
     }
   }
 
-  if (checking) return <LoadingState label="Opening Grace…" />;
-
   const disclosureBanner = (
     <Alert tone="info">
       <span className="font-medium">About Grace:</span> {DISCLOSURE}
     </Alert>
   );
 
+  // Support and AI identity remain available while identity/consent is unresolved.
+  if (checking || !personId) {
+    return (
+      <div className="space-y-4">
+        <PageHeader
+          title="Grace, AI Support Navigator"
+          lede="AI support is optional. Human support options remain available."
+        />
+        {disclosureBanner}
+        {checking ? (
+          <LoadingState label="Checking Grace consent…" />
+        ) : (
+          <Alert tone="info">
+            Grace needs a verified account link before you can use it. Your team can help verify
+            that link.
+          </Alert>
+        )}
+        <SupportNowButton basePath="/vrcc" />
+        <Link to="/support" className="underline underline-offset-2">
+          View public support options
+        </Link>
+      </div>
+    );
+  }
+
   // ---- Consent-required state (§9, §25) ------------------------------------
   if (!consented) {
     return (
       <div className="space-y-4">
         <PageHeader
-          title="Grace"
+          title="Grace, AI Support Navigator"
           lede="An optional AI support navigator for reflection, options, and next steps."
           crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
         />
@@ -214,21 +246,22 @@ export function GracePage() {
   return (
     <div className="flex h-[calc(100dvh-11rem)] min-h-[26rem] flex-col space-y-3">
       <PageHeader
-        title="Grace"
-        lede="A calm place to think out loud. Grace is AI — real people are one tap away."
+        title="Grace, AI Support Navigator"
+        lede="Explore options with Grace AI, or use the links below to ask for human support."
         crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
       />
       {disclosureBanner}
 
       {!online ? (
         <Alert tone="attention">
-          Grace needs an internet connection. Support Now still works offline.
+          Grace needs an internet connection. You can try Support Now for support options; calls,
+          texts, and online services need a connection.
         </Alert>
       ) : null}
       {surfaceSupport ? (
         <Alert tone="critical">
           It sounds like this is really heavy. You don’t have to carry it alone — you can reach a
-          real person right now.
+          support service using the options below.
           <span className="mt-2 block">
             <SupportNowButton basePath="/vrcc" />
           </span>
@@ -281,7 +314,7 @@ export function GracePage() {
             </div>
           ))
         )}
-        {sending ? <p className="text-sm text-ink-muted">Grace is thinking…</p> : null}
+        {sending ? <p className="text-sm text-ink-muted">Grace is preparing a response…</p> : null}
       </div>
 
       <form

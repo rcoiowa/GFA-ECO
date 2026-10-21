@@ -18,6 +18,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: New table access review gate
+        run: |
+          node scripts/check-table-access.mjs
+          node --test scripts/check-table-access.test.mjs
       - name: Enforce canonical backend in deployable source (Phase H guardrail)
         run: node scripts/check-no-retired-ref.mjs
       - name: Verify ICARE governance lock (Authority ↔ lock ↔ BARC code)

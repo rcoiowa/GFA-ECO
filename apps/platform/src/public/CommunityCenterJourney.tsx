@@ -173,7 +173,7 @@ export function CommunityCenterJourney() {
           <><h1>This room is not available.</h1><Link className="rcc-button" to={path('lobby')}>Return to the lobby</Link></>
         )}
       </main>
-      <footer className="rcc-footer"><span>Grace For Addictions · No Shame. No Stigma. Just Grace.</span><Link to="/community-center">Front door</Link></footer>
+      <footer className="rcc-footer"><span>Grace For Addictions · No Shame, No Stigma, Just Grace.</span><Link to="/community-center">Front door</Link></footer>
     </div>
   );
 }

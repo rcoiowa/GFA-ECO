@@ -213,6 +213,11 @@ export function ApplicationsPage() {
                         {a.decided_at ? ` ${new Date(a.decided_at).toLocaleDateString()}` : ''}
                       </p>
                     </div>
+                    <p className="mt-2 text-sm text-ink-muted">
+                      {a.person.auth_user_id
+                        ? 'Login linked. They can open My housing intake in their own account.'
+                        : 'No login linked. Continue staff-assisted intake, or verify identity and arrange account linking. Do not create another application or grant staff access.'}
+                    </p>
                     <IntakeChecklist
                       applicationId={a.id}
                       personId={a.person_id}

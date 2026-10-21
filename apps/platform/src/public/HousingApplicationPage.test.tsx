@@ -90,7 +90,7 @@ describe('authentication return routes', () => {
     expect(safeAuthReturnPath('/recovery-residences/my-application')).toBe(
       '/recovery-residences/my-application',
     );
-    for (const path of ['https://example.com', '//example.com', '/admin', '/\\example.com', null])
+    for (const path of ['https://example.com', '//example.com', '/unknown', '/\\example.com', null])
       expect(safeAuthReturnPath(path)).toBeNull();
   });
 });

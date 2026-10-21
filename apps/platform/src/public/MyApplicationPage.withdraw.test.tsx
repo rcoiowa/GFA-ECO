@@ -72,3 +72,17 @@ describe('MyApplicationPage withdraw', () => {
     expect(await screen.findByText('not_withdrawable')).toBeInTheDocument();
   });
 });
+
+it('sends an approved applicant to housing documents without requiring VRCC onboarding', async () => {
+  mocks.getMyLatestApplication.mockResolvedValue(application('approved'));
+  wrap();
+  expect(await screen.findByRole('link', { name: 'Review my housing documents' })).toHaveAttribute(
+    'href',
+    '/my-housing/documents',
+  );
+  expect(screen.getByRole('link', { name: 'Review my housing consent choices' })).toHaveAttribute(
+    'href',
+    '/my-housing/consent',
+  );
+  expect(screen.queryByRole('link', { name: 'Complete VRCC onboarding' })).not.toBeInTheDocument();
+});
