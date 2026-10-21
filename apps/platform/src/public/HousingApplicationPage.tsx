@@ -211,7 +211,7 @@ export function HousingApplicationPage({ residence }: { residence: keyof typeof 
             </p>
 
             <section className="mt-7 rounded-lg bg-experience-soft p-5">
-              <h2 className="font-semibold text-experience-700">Another way is always available</h2>
+              <h2 className="font-semibold text-experience-700">Other ways to apply</h2>
               <p className="mt-2 text-ink">
                 Apply by phone at{' '}
                 <a href="tel:15152208771" className="underline">

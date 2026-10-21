@@ -3,6 +3,10 @@
 Memory is **orientation only**. It points at governance; it never replaces it. Verified runtime
 evidence — not this file, not memory — determines factual claims about what is deployed.
 
+## Current editorial authority
+
+Read `docs/language-guide.md` before changing UI, forms, current narrative, records, or Grace wording. It incorporates the user-confirmed October 21, 2026 contextual guide. Preserve self-description, precise service states, required terminology, and actual operational requirements. See `docs/decisions/2026-10-21-language-guide-reconciliation.md` for implementation scope and remaining release checks.
+
 ## ICARE / Emotional Awareness / BARC-10 Authority
 
 **Canonical governance:** `docs/product/recoveryos-icare-integration-authority-v1.0.md`

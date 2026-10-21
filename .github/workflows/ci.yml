@@ -18,6 +18,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Contextual language guide regression checks
+        run: |
+          python3 scripts/test-language-guide.py
+          python3 scripts/check-language-guide.py
       - name: Enforce canonical backend in deployable source (Phase H guardrail)
         run: node scripts/check-no-retired-ref.mjs
       - name: Verify ICARE governance lock (Authority ↔ lock ↔ BARC code)

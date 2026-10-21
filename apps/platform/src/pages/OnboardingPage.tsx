@@ -244,7 +244,7 @@ export function OnboardingPage() {
             <Link to="/support" className="underline underline-offset-2 hover:text-ink">
               Support options
             </Link>{' '}
-            are always available — no agreement or account needed.
+            can be viewed without an agreement or account. Contact availability and response times vary.
           </p>
         ) : null}
       </div>

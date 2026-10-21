@@ -125,29 +125,29 @@ export function MyApplicationPage() {
 
               {application.status === 'submitted' || application.status === 'in_review' ? (
                 <p className="mt-3 text-ink">
-                  <strong>Your application is with staff.</strong> A real person reads every
-                  application, and someone will contact you about yours. Nothing else is needed from
-                  you right now.
+                  <strong>Your application was received.</strong> It is awaiting or undergoing staff
+                  review. This status does not confirm that someone has read it. Keep your contact
+                  information current and ask the residence about any next steps.
                 </p>
               ) : application.status === 'waitlisted' ? (
                 <p className="mt-3 text-ink">
-                  <strong>You&rsquo;re on the waitlist for a bed.</strong> Staff will stay in touch
-                  with you while you wait, and the moment a bed opens you&rsquo;ll be first to know.
-                  Staying reachable at your application phone number helps.
+                  <strong>You&rsquo;re on the waitlist for a bed.</strong> A waitlist status does not
+                  confirm a bed or move-in date. Stay reachable at your application phone number and
+                  ask staff about current availability and follow-up.
                 </p>
               ) : application.status === 'approved' ? (
                 <p className="mt-3 text-ink">
                   <strong>You&rsquo;ve been accepted — welcome.</strong>{' '}
                   {residency?.bed_assignment_id
-                    ? 'Your bed is ready. Staff will confirm your move-in day and walk you through the move-in signature set.'
-                    : 'Staff will contact you about your bed and move-in day.'}
+                    ? 'A bed assignment is recorded. Confirm readiness, your move-in date, and required documents with staff.'
+                    : 'A bed assignment is not shown here. Contact staff to confirm availability, your move-in date, and required documents.'}
                 </p>
               ) : application.status === 'declined' ? (
                 <p className="mt-3 text-ink">
-                  <strong>{application.residence.name} wasn&rsquo;t the right fit this time</strong>{' '}
-                  — and staff will help you find a residence that is. &ldquo;Referred
-                  elsewhere&rdquo; is a service, not a rejection. The statewide directory is a good
-                  next step, and a VRCC navigator can make calls with you.
+                  <strong>{application.residence.name} declined this application.</strong>{' '}
+                  Ask staff for the reason, any available review process, and help exploring other
+                  options. This status does not confirm a referral or another placement. You can
+                  also browse the statewide directory and ask about resource navigation.
                 </p>
               ) : (
                 <p className="mt-3 text-ink">This application was withdrawn.</p>
@@ -172,7 +172,7 @@ export function MyApplicationPage() {
                   {confirmingWithdraw ? (
                     <div className="flex flex-wrap items-center gap-3">
                       <p className="text-sm text-ink-muted">
-                        Withdraw this application? You can always apply again — the door stays open.
+                        Withdraw this application? Ask the residence about requirements if you decide to reapply.
                       </p>
                       <Button variant="secondary" size="md" onClick={() => void withdraw()}>
                         Yes, withdraw it

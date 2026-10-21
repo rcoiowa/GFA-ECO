@@ -65,7 +65,7 @@ export function CommunityCenterPage() {
         </section>
       </main>
       <footer className="border-t border-white/10 px-4 py-6 text-sm text-[#c6d0dc]">
-        <p className="mx-auto max-w-6xl">Grace For Addictions · Connection Prevents Crisis · No Shame. No Stigma. Just Grace. · In immediate danger, call 911. <Link to="/support" className="underline underline-offset-2">All support options</Link></p>
+        <p className="mx-auto max-w-6xl">Grace For Addictions · Connection Prevents Crisis · No Shame, No Stigma, Just Grace. · In immediate danger, call 911. <Link to="/support" className="underline underline-offset-2">All support options</Link></p>
         <p className="mx-auto mt-2 max-w-6xl">Weather data: <a href="https://open-meteo.com/" className="underline underline-offset-2">Open-Meteo</a> (CC BY 4.0). Conditions are model estimates and may differ from what you see outside.</p>
       </footer>
     </div>

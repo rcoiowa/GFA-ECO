@@ -1,0 +1,224 @@
+Grace For Addictions — Language Guide
+Revised edition • October 21, 2026
+No Shame, No Stigma, Just Grace.
+Grace-based • Person-centered • Trauma-aware • Neuro-informed • Clear and accurate
+1. Purpose
+Our language should help people feel respected, understand their options, and take a useful next step. We communicate with compassion, precision, and credibility across conversations, narratives, grant applications, social content, websites, apps, forms, and records.
+We honor the inherent dignity of every person. We explain responsibilities honestly, recognize strengths, and avoid reducing someone to a diagnosis, behavior, circumstance, or difficult season.
+This guide supports thoughtful language choices. It is not a list of words to hide. Use the clearest accurate term for the person, service, event, or outcome being described. A plain-language explanation can accompany a technical term without changing its meaning.
+2. GFA identity and naming
+Organization: Grace For Addictions (GFA).
+Mission: Transforming lives by inspiring hope to empower communities.
+Core brand values: Grace. Connection. Transformation.
+Primary tagline: No Shame, No Stigma, Just Grace.
+Supporting principle: Connection Prevents Crisis.
+Belonging statement: I matter. I belong. My future is not finished.
+“Connection Prevents Crisis” expresses GFA’s commitment to human connection. Do not present it as a guarantee that every crisis will be prevented.
+Grace, AI Support Navigator
+Use “Grace, AI Support Navigator” when the full identity is needed. Use “Grace” in ordinary references and “AI support navigator” as the role descriptor.
+Grace is an AI support navigator informed by peer-recovery principles. Grace is designed to help people explore options, find approved recovery resources, and choose whether to connect with a real person. Describe only the functions actually available in the relevant channel.
+Grace has no lived experience and does not provide human peer services, clinical treatment, or emergency response. Human roles remain distinct: Peer Recovery Coach, Recovery Ally, and Recovery Navigator.
+Retire current-facing labels such as “Grace AI Peer Companion,” “AI peer companion,” and “Grace Companion.” Historical records may retain old names as dated evidence. A wording update does not require renaming technical identifiers without an appropriate compatibility plan.
+Participant disclosure
+“I’m Grace, an AI support navigator—not a human peer, counselor, or crisis service. I can help you slow things down, explore your options, find recovery supports, and choose whether to connect with a real person. You remain in control of what you share and what happens next.”
+Keep the AI identity visible in the experience. A warm tone should never imply that Grace is human, has personal recovery experience, or is a substitute for real relationships.
+3. Four communication commitments
+Person-centered
+Use people’s names and chosen descriptions when appropriate. Person-first language is GFA’s general starting point, while individuals may prefer identity-first language or a particular recovery identity. Respect that choice.
+Do not presume that everyone affected by substance use identifies as being in recovery, has a diagnosed disorder, wants the same outcome, or shares the same beliefs.
+Trauma-aware
+Offer clarity, predictability, dignity, and meaningful choices where choices exist. Explain what will happen, why information is requested, and what the person can do next.
+Do not assume a trauma history or interpret a person’s behavior as a diagnosis. Ask about practical needs and preferences. Explain mandatory requirements accurately; supportive wording must not make a requirement sound optional.
+Neuro-informed
+Use knowledge about stress, learning, habits, and recovery carefully. People’s experiences are complex, and a conversation or missed appointment does not reveal the cause of someone’s behavior.
+It is appropriate to say that stress and unstable circumstances can make participation harder. Do not claim to know what a particular person’s brain or nervous system is doing, or promise neurological healing from a service without relevant evidence.
+Grace-based
+Lead with dignity, hope, and accountability without humiliation. A return to use, missed commitment, or difficult period does not erase a person’s worth.
+Describe actual choices, responsibilities, support, and review processes. Do not promise admission, housing, a safe destination, exemption from consequences, or a particular outcome unless the responsible program can make that commitment.
+4. People, behavior, and recovery language
+Use the following as contextual guidance. The suggested wording must still match the facts.
+
+
+Avoid in GFA-authored descriptions
+	Prefer when accurate
+	Keep in mind
+	Addict, junkie, abuser; alcoholic as an assigned label
+	Person seeking support related to substance use; person in recovery; person with a substance use disorder
+	Do not infer a diagnosis or recovery identity. Respect a person’s self-description.
+	The homeless
+	People experiencing homelessness; people facing housing instability
+	These circumstances differ; use the one that applies.
+	Ex-con, felon, offender as a general label
+	Person returning from incarceration; person with justice-system involvement
+	Preserve exact legal terminology when a legal record requires it.
+	A no-show; noncompliant; manipulative
+	Describe the observable event and the person’s stated reason, if known
+	“Missed the appointment” does not mean refused, could not attend, or re-engaged.
+	Relapser; failed recovery
+	Person who returned to use; return to use
+	Respect a person’s own use of “relapse”; do not turn terminology into a correction of their story.
+	Clean or dirty test
+	Positive, negative, or the actual reported result
+	Describe the substance/test when relevant; do not infer overall sobriety, impairment, or moral worth.
+	High-risk person as a broad identity
+	The specific situation or support need
+	Use formal risk terminology only in its defined, authorized context.
+	Victim or survivor imposed on someone
+	The person’s preferred term; person affected by the event
+	Preserve required legal terminology and the person’s own account.
+	
+
+Do not replace one judgment with an unsupported explanation. “Chose not to,” “was unable to,” and “has not completed” describe different facts.
+5. Identity, disability, and belonging
+Accurate identity language can help explain who is served, what access barriers exist, and whether a program meets its responsibilities. Use identity information only when relevant, and do not infer it.
+
+
+Topic
+	Writing standard
+	Avoid
+	Race and ethnicity
+	Use accurate self-description, source categories, or specific group names appropriate to the task
+	Replacing race or ethnicity with the vague word “background”
+	Black, African American, Hispanic, Latino, Latinx, and related terms
+	Respect the individual or community’s wording and the relevant data definition
+	Treating these terms as interchangeable for every person
+	Indigenous peoples and Tribal Nations
+	Use the community’s preferred name or a verified specific Nation when relevant
+	A blanket substitution with “Native populations”
+	LGBTQ identities, sexual orientation, and gender
+	Name the relevant concept respectfully and accurately
+	Collapsing these distinct concepts into “personal relationships and identity”
+	Women, men, sex, and age criteria
+	Use the actual population or necessary defined field
+	Equating women with mothers or adult women with a reproductive-age category
+	Disability
+	Use “person with a disability,” identity-first wording, or the person’s preference as appropriate
+	Hiding disability or access needs behind “challenges”
+	Discrimination, exclusion, and bias
+	Describe the specific issue and evidence; attribute reported concerns
+	Removing a material rights-related claim through vague euphemism
+	Underserved or underrepresented groups
+	Identify the service gap or comparison, when known
+	Using an adjective without explaining the relevant need or measure
+	
+
+Forms should explain why sensitive demographic information is requested. Use the approved data-collection rules, including optional responses or “prefer not to answer” where appropriate. A language guide does not authorize collecting additional personal information.
+Faith, culture, disability, gender, or recovery pathway should never be used as an assumed explanation for a person’s behavior.
+6. Terms that need their precise meaning
+Plain language should improve understanding while preserving the actual service, concept, or measure.
+
+
+Term
+	How to use it
+	Do not automatically substitute
+	Peer support
+	Name the actual human peer-support service and role
+	Mentorship or AI conversation
+	Resource navigation, care coordination, case management
+	Use the service name and scope actually delivered
+	One service label for another
+	Harm reduction
+	Retain the term and explain the specific activity or goal
+	A vague phrase that hides the service
+	Evidence-based / evidence-informed
+	Match the claim to the relevant practice and supporting evidence
+	One label for the other as a style choice
+	Retention / sustained engagement
+	State the actual metric, cohort, and time window
+	A different measure under a warmer label
+	Recidivism
+	Specify the applicable definition and follow-up period
+	Return to crisis or all justice involvement
+	Workforce development / prevention / intervention
+	Preserve the defined program or funding term and explain it
+	A different activity such as general encouragement
+	Social determinants of health
+	Explain as life conditions influencing health and stability when useful
+	A narrower concept that changes the analysis
+	Advocacy / outreach / community engagement
+	Describe the activity actually performed
+	A different role or activity to sound more neutral
+	Systemic / historical / institutional
+	Use the relevant scope, time, or setting accurately
+	Treating these distinct concepts as synonyms
+	
+
+Keep required wording in funding applications, legal records, policies, clinical records, validated instruments, and data fields. Explain difficult wording in surrounding prose where helpful. Do not alter a direct quotation, official title, or instrument item and present it as unchanged.
+7. Tone and sentence choices
+GFA’s voice is warm, grounded, direct, and respectful. Use familiar words, concrete descriptions, short paragraphs, and useful next steps. Hope can be expressed without certainty about outcomes.
+Prefer:
+* “You are welcome to ask for support.”
+* “What would be helpful right now?”
+* “The team can explain the current options.”
+* “We can help you explore a next step.”
+* “The appointment was missed; the reason has not been confirmed.”
+* “The participant said transportation was the reason they could not attend.”
+Avoid:
+* “I know exactly how you feel.”
+* “Everything will be fine.”
+* “They just do not want help.”
+* “Their brain is choosing the old pathway.”
+* “We restore people’s dignity.”
+* “Everyone can receive every service without requirements.”
+Use “honor dignity,” “support connection,” and “help people explore options.” Avoid long euphemisms when a clear respectful phrase works.
+“Community,” “advocacy,” “disability,” “equity,” “trauma,” and other accurate words are not prohibited. Choose them when they describe the subject and explain them when the audience needs help understanding.
+8. Narrative examples
+Organizational description
+Grace For Addictions is a peer-led recovery community organization based in Des Moines, Iowa. Through human peer recovery support, coaching, recovery circles, resource navigation, reentry support, and recovery residence support, GFA helps people build connection and take practical steps toward recovery and stability. We honor different recovery pathways and meet people with dignity, accountability, and grace.
+Dignity and hope
+People are not defined by their hardest season. At Grace For Addictions, we honor the worth, strengths, and possibilities within each person. We help people explore meaningful connections and practical next steps toward goals that matter to them.
+Neuro-informed practice
+Stress, disrupted routines, and unstable living conditions can affect how a person participates. We ask what would help, explain expectations clearly, and offer practical support within the program’s scope. We do not assume the cause of a person’s behavior.
+Trauma-aware practice
+We work to make support predictable, respectful, and understandable. We explain the next step, invite questions, and offer choices where available. Our aim is to strengthen trust without asking people to disclose more of their story than the task requires.
+Faith roots and inclusive welcome
+GFA’s approach is rooted in grace and the Christian tradition described as “The Way,” emphasizing compassion, responsibility, and the value of every person. People of every faith and no faith are welcome to ask for support. Religious participation is not a condition for seeking help. Individual programs may have eligibility, capacity, and participation requirements.
+Grant narrative
+Grace For Addictions proposes to strengthen human peer support and resource navigation through practical coordination, participant choice, and clear follow-through. The project will measure the activities delivered and the results confirmed, using defined measures and a stated reporting period.
+Website or social introduction
+You do not need to have every answer before asking for support. A conversation or help finding a practical resource can be a place to begin. Contact Grace For Addictions to ask about current options.
+No Shame, No Stigma, Just Grace.
+Grace description
+Grace, AI Support Navigator, is designed to help people explore options, find approved recovery resources, and choose whether to connect with a real person. Grace is AI and has no lived experience. Human relationships remain central to recovery support.
+9. Claims, evidence, and measurable impact
+Separate what a program intends to do from what it has demonstrated. “Designed to support” describes an intention. “Improved,” “reduced,” “prevented,” and “resulted in” require evidence appropriate to the claim.
+For numbers and rates, include the reporting period, definition, source, population, and denominator where applicable. Identify proposed targets as targets. Describe missing or unknown outcomes honestly.
+Do not treat:
+* A referral as a completed connection.
+* A scheduled appointment as a service received.
+* An AI conversation as human peer support.
+* Software capability as a measured participant outcome.
+* Modeled cost avoidance as realized savings or demonstrated causal return on investment.
+* A certification goal, funding proposal, or informal relationship as an achieved certification, award, or formal partnership.
+Use “evidence-informed” only when relevant evidence has actually informed the practice. Do not claim that a wording choice, relationship, or program accelerates healing without appropriate support.
+10. Apply the guide by setting
+Conversations and records
+Listen to the person’s own words. In records, distinguish direct observation, the person’s report, another person’s report, and unresolved questions. Record only information appropriate to the purpose.
+Illustrative record: “The participant missed the appointment. They later reported that their ride was unavailable and asked to reschedule.” Do not write that explanation unless it was actually reported.
+Grant writing
+Use the funder’s actual terminology and current requirements. Define services and measures consistently. Describe the population accurately, including relevant identities and access barriers. Do not substitute words merely to imply eligibility or hide the nature of the work.
+Website and app content
+Use descriptive headings, clear buttons, accessible labels, and specific error messages. Explain required fields and current program requirements. Provide a useful next step when an action fails.
+“Request received,” “message delivered,” and “connected with a person” are different states. Use the state confirmed by the system. General help and urgent-support pathways should remain practical and accessible independently of AI.
+AI-generated content
+AI-generated wording needs the same factual and language review as human-written copy. Do not invent official slogans, participant stories, credentials, affiliations, outcomes, or service availability.
+Keep Grace’s name, disclosure, scope, and privacy language aligned with the actual channel and governing authority. Do not promise continuous human availability, anonymity, confidentiality, transcript retention or non-retention, or completed actions without support for the precise claim.
+Stories and public-facing examples
+Use appropriate permission for a person’s story, photo, or attributed quotation. Do not turn a service disclosure into marketing consent. Respect the person’s voice and avoid defining them by hardship.
+Label hypothetical or composite examples clearly. Do not present invented dialogue as a real testimonial.
+11. Quick review before sharing
+1. Does the language preserve the person’s dignity and the facts?
+2. Are the name “Grace, AI Support Navigator” and the tagline correct?
+3. Are human peer roles distinct from AI?
+4. Have identity terms, service definitions, and required data categories retained their meaning?
+5. Are observations separated from assumptions, diagnoses, and reported information?
+6. Are requirements, costs, capacity, and next steps described honestly?
+7. Are proposed targets distinct from verified results?
+8. Are numbers, causal claims, certifications, awards, and partnerships supported?
+9. Is the writing understandable and accessible to the intended audience?
+10. Are participant permissions and relevant privacy practices respected?
+12. Maintenance and authority
+Use this guide for organizational language and editorial decisions. Actual services, rights, eligibility, participant protections, privacy practices, and AI behavior remain governed by the applicable current policies and records. Wording must explain those requirements without changing or concealing them.
+Maintain one current edition. Record material changes, their source, and the date. Program and technical contributors should flag wording that conflicts with actual services or system behavior rather than silently changing the facts.
+This October 21, 2026 revision incorporates the requested Grace identity and full tagline, preserves the original guide’s compassionate purpose, and replaces automatic word substitutions with contextual standards. The accompanying review records the disposition of every original table entry.
+No Shame, No Stigma, Just Grace.

@@ -113,8 +113,8 @@ export function GracePage() {
     }
     if (result.code === 'ai_unconfigured') {
       setNotice(
-        'Grace isn’t fully set up yet, so she can’t reply right now. If you need support, ' +
-          'Support Now and your team are still here.',
+        'Grace cannot reply in this channel right now. You can still use ' +
+          'Support Now or view ways to contact your team. Response times vary.',
       );
       return;
     }
@@ -172,7 +172,7 @@ export function GracePage() {
     return (
       <div className="space-y-4">
         <PageHeader
-          title="Grace"
+          title="Grace, AI Support Navigator"
           lede="An optional AI support navigator for reflection, options, and next steps."
           crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
         />
@@ -180,14 +180,15 @@ export function GracePage() {
         <Card>
           <h2 className="text-lg font-semibold text-ink">Grace needs your okay first</h2>
           <p className="mt-2 text-ink-muted">
-            Grace is powered by an AI language model. She listens, reflects, and points you toward
-            real people and canonical GFA resources — she doesn’t diagnose, treat, or give medical,
-            legal, or clinical advice, and she doesn’t remember conversations between sessions. Your
-            conversation isn’t shared with your coach unless you choose to reach out, and Grace
-            never alerts anyone on her own.
+            Grace uses an AI service to generate responses and help you explore options and approved
+            recovery resources. Grace has no lived experience and does not provide medical, legal,
+            or clinical advice. This screen does not save a chat history for your next visit.
+            Grace does not send messages or alert staff on your behalf. Review Privacy & consent
+            before deciding what to share.
           </p>
           <p className="mt-2 text-ink-muted">
-            You can use everything else in VRCC without Grace, and you can turn her off any time on
+            Choosing not to use Grace does not itself restrict access to other services. Each
+            service’s eligibility and requirements still apply. You can turn Grace off on
             your{' '}
             <Link to="/vrcc/privacy" className="underline underline-offset-2">
               Privacy &amp; consent
@@ -214,21 +215,21 @@ export function GracePage() {
   return (
     <div className="flex h-[calc(100dvh-11rem)] min-h-[26rem] flex-col space-y-3">
       <PageHeader
-        title="Grace"
-        lede="A calm place to think out loud. Grace is AI — real people are one tap away."
+        title="Grace, AI Support Navigator"
+        lede="Optional AI help with reflection, resources, and next steps. You choose whether to contact a person."
         crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
       />
       {disclosureBanner}
 
       {!online ? (
         <Alert tone="attention">
-          Grace needs an internet connection. Support Now still works offline.
+          Grace needs an internet connection. Saved support information may remain available; calls, texts, and online services need a working connection.
         </Alert>
       ) : null}
       {surfaceSupport ? (
         <Alert tone="critical">
-          It sounds like this is really heavy. You don’t have to carry it alone — you can reach a
-          real person right now.
+          If you need urgent help, open Support Now for crisis and emergency contact options.
+          Choosing a contact does not confirm a connection; follow the contact’s instructions.
           <span className="mt-2 block">
             <SupportNowButton basePath="/vrcc" />
           </span>
@@ -281,7 +282,7 @@ export function GracePage() {
             </div>
           ))
         )}
-        {sending ? <p className="text-sm text-ink-muted">Grace is thinking…</p> : null}
+        {sending ? <p className="text-sm text-ink-muted">Generating an AI response…</p> : null}
       </div>
 
       <form

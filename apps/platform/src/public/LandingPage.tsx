@@ -147,8 +147,8 @@ export function LandingPage() {
 
       <footer className="border-t border-line py-6">
         <p className="mx-auto max-w-4xl px-4 text-sm text-ink-muted">
-          Grace For Addictions · Connection prevents crisis · No shame. No stigma. Just grace. ·
-          Your information is private and protected. VRCC is not an emergency service — in immediate
+          Grace For Addictions · Connection prevents crisis · No Shame, No Stigma, Just Grace. ·
+          Review privacy and consent information before sharing. VRCC is not an emergency service — in immediate
           danger, call 911. ·{' '}
           <Link to="/support" className="underline underline-offset-2 hover:text-ink">
             All support options

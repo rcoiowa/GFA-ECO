@@ -149,7 +149,7 @@ export function CommunityCenterJourney() {
         {screen === 'quiet' && (
           <>
             <Link className="rcc-back" to={path('lobby')}>← Lobby</Link><p className="rcc-eyebrow">The quiet corner</p><h1>Take a moment.</h1><p className="rcc-lede">You can pause here without an account or a check-in. Notice what feels steady around you, then choose your next step when you are ready.</p>
-            <div className="rcc-callout"><p>If you need immediate support, it is available without signing in.</p><Link className="rcc-button" to="/support">Support now</Link></div>
+            <div className="rcc-callout"><p>View urgent support contacts without signing in. Contact availability and response times vary.</p><Link className="rcc-button" to="/support">Support now</Link></div>
           </>
         )}
 
@@ -173,7 +173,7 @@ export function CommunityCenterJourney() {
           <><h1>This room is not available.</h1><Link className="rcc-button" to={path('lobby')}>Return to the lobby</Link></>
         )}
       </main>
-      <footer className="rcc-footer"><span>Grace For Addictions · No Shame. No Stigma. Just Grace.</span><Link to="/community-center">Front door</Link></footer>
+      <footer className="rcc-footer"><span>Grace For Addictions · No Shame, No Stigma, Just Grace.</span><Link to="/community-center">Front door</Link></footer>
     </div>
   );
 }
