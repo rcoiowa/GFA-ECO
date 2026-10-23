@@ -9,6 +9,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/staff/beds', label: 'Bed Board', shortLabel: 'Beds' },
   { to: '/staff/residents', label: 'Residents' },
   { to: '/staff/applications', label: 'Applications', shortLabel: 'Apps' },
+  { to: '/staff/document-review', label: 'Document review', shortLabel: 'Documents' },
   { to: '/staff/inquiries', label: 'Inquiries' },
   { to: '/residences/applications/intake', label: 'Intake' },
   { to: '/staff/screenings', label: 'Screenings' },

@@ -73,6 +73,8 @@ jobs:
         run: deno test --allow-env supabase/functions/tests/
       - name: Platform weather proxy tests
         run: node --test workers/platform/*.test.mjs
+      - name: Isolated document review database workflow
+        run: python3 scripts/test-document-review.py
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build

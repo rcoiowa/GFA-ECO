@@ -1,5 +1,7 @@
+import { MemoryRouter } from 'react-router';
+import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render as rtlRender, screen, waitFor } from '@testing-library/react';
 import { IntakeChecklist } from './IntakeChecklist';
 import type { ReadinessItem } from '@recoveryos/data-access';
 
@@ -10,6 +12,10 @@ import type { ReadinessItem } from '@recoveryos/data-access';
  * rows), the override is an exception flow that only exists when the backend
  * says every unmet item is deferrable, and admission stays a deliberate act.
  */
+
+function render(ui: ReactElement) {
+  return rtlRender(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 const mocks = vi.hoisted(() => ({
   applicationIntakeReadiness: vi.fn(),
@@ -225,25 +231,13 @@ describe('IntakeChecklist', () => {
     expect(await screen.findByText(/residence-manager decision/)).toBeInTheDocument();
   });
 
-  it('paper signature path: staff record a witnessed paper signature for an unmet document', async () => {
+  it('paper review links to the scoped exact-version workflow', async () => {
     mocks.applicationIntakeReadiness.mockResolvedValue(readiness([signMissing]));
-    mocks.recordPaperSignature.mockResolvedValue({ ok: true, code: 'signed_paper' });
     render(<IntakeChecklist {...props} />);
-    fireEvent.click(await screen.findByText('Record a paper signature…'));
-    fireEvent.change(screen.getByLabelText('Document'), {
-      target: { value: 'participant_agreement' },
-    });
-    fireEvent.change(screen.getByLabelText(/exactly as signed on paper/), {
-      target: { value: 'Jordan Fixture' },
-    });
-    fireEvent.click(screen.getByText('Record paper signature'));
-    await waitFor(() =>
-      expect(mocks.recordPaperSignature).toHaveBeenCalledWith({
-        personId: 144,
-        templateKey: 'participant_agreement',
-        signatureName: 'Jordan Fixture',
-      }),
-    );
+    expect(
+      await screen.findByRole('link', { name: /record a witnessed paper review/ }),
+    ).toHaveAttribute('href', '/staff/document-review?application=5');
+    expect(mocks.recordPaperSignature).not.toHaveBeenCalled();
   });
 
   it('before approval the checklist works but move-in is not offered', async () => {
