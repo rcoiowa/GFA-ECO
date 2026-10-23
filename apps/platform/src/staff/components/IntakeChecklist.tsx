@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   admitApplicant,
@@ -6,7 +7,6 @@ import {
   listActiveMedicationItems,
   recordEmergencyContact,
   recordMedicationItem,
-  recordPaperSignature,
   recordResidenceConsentGrant,
   recordSupervisionCoordination,
   type MedicationItem,
@@ -116,15 +116,8 @@ export function IntakeChecklist({
 
   // Inline flows (one open at a time keeps the panel calm).
   const [openFlow, setOpenFlow] = useState<
-    | null
-    | 'emergency_contact'
-    | 'medication_add'
-    | 'screening_consent'
-    | 'supervision'
-    | 'override'
-    | 'paper_sign'
+    null | 'emergency_contact' | 'medication_add' | 'screening_consent' | 'supervision' | 'override'
   >(null);
-  const [paperSign, setPaperSign] = useState({ templateKey: '', label: '', name: '' });
   const [contact, setContact] = useState({ name: '', phone: '', relationship: '' });
   const [med, setMed] = useState({
     name: '',
@@ -269,10 +262,17 @@ export function IntakeChecklist({
                     {item.met ? '✓ ' : ''}
                     {item.label
                       .replace(/^Sign: /, 'Sign the ')
-                      .replace(/^Acknowledge: /, 'Has read the ')}
+                      .replace(/^Acknowledge: /, 'Review: ')}
                   </span>
                   <span className={item.met ? 'text-positive-700' : 'text-attention-700'}>
                     {statusLabel(item)}
+                    {item.version ? ` — version ${item.version}` : ''}
+                    {item.historical_completed && !item.met
+                      ? ' (earlier edition completed; current edition pending)'
+                      : ''}
+                    {item.completion_evidence === 'legacy_recorded'
+                      ? ' (existing record; checkbox statements not recorded)'
+                      : ''}
                   </span>
                   {!item.met && actorHint(item) ? (
                     <span className="w-full text-ink-faint">{actorHint(item)}</span>
@@ -382,61 +382,14 @@ export function IntakeChecklist({
         </div>
       ) : null}
 
-      {/* Paper signature: the resident signed on paper with staff — record it onto the
-          same assignment (same pinned version + hash; never an adverse consequence). */}
-      {items.some((i) => i.key.startsWith('sign:') && !i.met) ? (
-        <div className="mt-3">
-          {openFlow === 'paper_sign' ? (
-            <div className="flex flex-col gap-2 sm:max-w-md" data-testid="paper-sign-flow">
-              <p className="text-sm text-ink-muted">
-                For a document {personName} signed on paper with you, witnessed. The recorded
-                signature carries the exact document version — keep the paper copy per house
-                practice.
-              </p>
-              <label className="text-sm text-ink">
-                Document
-                <select
-                  className="mt-1 block w-full rounded-md border border-line bg-surface p-2"
-                  value={paperSign.templateKey}
-                  onChange={(e) => setPaperSign({ ...paperSign, templateKey: e.target.value })}
-                >
-                  <option value="">Choose…</option>
-                  {items
-                    .filter((i) => i.key.startsWith('sign:') && !i.met)
-                    .map((i) => (
-                      <option key={i.key} value={i.key.slice(5)}>
-                        {i.label.replace(/^Sign: /, '')}
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <TextField
-                label="Their full name, exactly as signed on paper"
-                value={paperSign.name}
-                onChange={(e) => setPaperSign({ ...paperSign, name: e.target.value })}
-              />
-              <Button
-                disabled={busy || !paperSign.templateKey || paperSign.name.trim().length < 2}
-                onClick={() =>
-                  void act(() =>
-                    recordPaperSignature({
-                      personId,
-                      templateKey: paperSign.templateKey,
-                      signatureName: paperSign.name.trim(),
-                    }),
-                  )
-                }
-              >
-                Record paper signature
-              </Button>
-            </div>
-          ) : (
-            <Button variant="secondary" onClick={() => setOpenFlow('paper_sign')}>
-              Record a paper signature…
-            </Button>
-          )}
-        </div>
-      ) : null}
+      {items.some((i) => (i.key.startsWith('sign:') || i.key.startsWith('ack:')) && !i.met) && (
+        <Link
+          className="mt-3 block underline"
+          to={`/staff/document-review?application=${applicationId}`}
+        >
+          Review documents, answer questions, or record a witnessed paper review
+        </Link>
+      )}
 
       {/* Emergency contact inline add. */}
       {items.some((i) => i.key === 'emergency_contact' && !i.met) ? (

@@ -99,6 +99,21 @@ beforeEach(() => {
   m.missing.mockResolvedValue([]);
 });
 describe('auth destination journeys', () => {
+  it.each(['/my-housing/documents/resident_handbook', '/residence/documents/resident_handbook'])(
+    'preserves document intent through sign-in/register links and successful return: %s',
+    async (destination) => {
+      mount(`/sign-in?next=${encodeURIComponent(destination)}`);
+      expect(screen.getByRole('link', { name: 'Create your account' })).toHaveAttribute(
+        'href',
+        `/register?next=${encodeURIComponent(destination)}`,
+      );
+      fill('Email', 'synthetic@example.test');
+      fill('Password', 'synthetic-passphrase');
+      fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+      expect(await screen.findByTestId('destination')).toHaveTextContent(destination);
+    },
+  );
+
   it('keeps guarded housing intent through registration, email callback, refresh and sign-in', async () => {
     const first = mount('/my-housing/consent?tab=overview#main');
     fireEvent.click(await screen.findByRole('link', { name: 'Create your account' }));
