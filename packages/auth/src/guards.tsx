@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router';
-import type { RoleKey } from '@recoveryos/domain';
+import { authFlowPath, locationReturnPath, type RoleKey } from '@recoveryos/domain';
 import { LoadingState } from '@recoveryos/ui';
 import { useAuth } from './AuthContext';
 
@@ -19,17 +19,20 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const location = useLocation();
   if (!ready) return <AuthLoading />;
   if (!session) {
-    return <Navigate to="/sign-in" state={{ from: location.pathname }} replace />;
+    return <Navigate to={authFlowPath('/sign-in', locationReturnPath(location))} replace />;
   }
   return <>{children}</>;
 }
 
 /** Requires a provisioned person record; otherwise routes to onboarding. */
 export function RequirePerson({ children }: { children: ReactNode }) {
+  const location = useLocation();
   const { ready, session, person } = useAuth();
   if (!ready) return <AuthLoading />;
-  if (!session) return <Navigate to="/sign-in" replace />;
-  if (!person) return <Navigate to="/onboarding" replace />;
+  if (!session)
+    return <Navigate to={authFlowPath('/sign-in', locationReturnPath(location))} replace />;
+  if (!person)
+    return <Navigate to={authFlowPath('/onboarding', locationReturnPath(location))} replace />;
   return <>{children}</>;
 }
 
@@ -42,10 +45,13 @@ export function RequireRole({
   children: ReactNode;
   fallbackPath?: string;
 }) {
+  const location = useLocation();
   const { ready, session, person, roles } = useAuth();
   if (!ready) return <AuthLoading />;
-  if (!session) return <Navigate to="/sign-in" replace />;
-  if (!person) return <Navigate to="/onboarding" replace />;
+  if (!session)
+    return <Navigate to={authFlowPath('/sign-in', locationReturnPath(location))} replace />;
+  if (!person)
+    return <Navigate to={authFlowPath('/onboarding', locationReturnPath(location))} replace />;
   if (!anyOf.some((r) => roles.includes(r))) {
     return <Navigate to={fallbackPath} replace />;
   }

@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { RequireRole } from '@recoveryos/auth';
+import { DocumentReviewPage } from './pages/DocumentReviewPage';
 import { StaffProvider } from './staffContext';
 import { StaffShell } from './StaffShell';
 import { StaffTodayPage } from './pages/StaffTodayPage';
@@ -38,6 +39,7 @@ export function StaffArea() {
             <Route path="beds" element={<BedBoardPage />} />
             <Route path="residents" element={<ResidentsPage />} />
             <Route path="house-ops" element={<HouseOpsPage />} />
+            <Route path="document-review" element={<DocumentReviewPage />} />
             <Route path="applications" element={<ApplicationsPage />} />
             <Route path="inquiries" element={<InquiriesPage />} />
             <Route path="screenings" element={<ScreeningsPage />} />

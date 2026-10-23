@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
+import { safeAuthReturnPath, authFlowPath } from './authReturnPath';
 import { requestPasswordReset } from '@recoveryos/auth';
 import { Alert, Button, Card, CardTitle, TextField } from '@recoveryos/ui';
 
@@ -9,6 +10,8 @@ import { Alert, Button, Card, CardTitle, TextField } from '@recoveryos/ui';
  * address has an account.
  */
 export function ForgotPasswordPage() {
+  const [searchParams] = useSearchParams();
+  const next = safeAuthReturnPath(searchParams.get('next')) ?? '/home';
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +25,10 @@ export function ForgotPasswordPage() {
     }
     setBusy(true);
     setError(null);
-    await requestPasswordReset(email.trim(), `${window.location.origin}/reset-password`);
+    await requestPasswordReset(
+      email.trim(),
+      `${window.location.origin}${authFlowPath('/reset-password', next)}`,
+    );
     // Deliberately identical outcome whether or not the account exists.
     setBusy(false);
     setSent(true);
@@ -35,10 +41,12 @@ export function ForgotPasswordPage() {
         {sent ? (
           <div className="mt-3 space-y-3">
             <Alert tone="positive">
-              If an account exists for {email.trim()}, a reset link is on its way. Check your
-              email.
+              If an account exists for {email.trim()}, a reset link is on its way. Check your email.
             </Alert>
-            <Link className="text-experience-700 underline underline-offset-2" to="/sign-in">
+            <Link
+              className="text-experience-700 underline underline-offset-2"
+              to={authFlowPath('/sign-in', next)}
+            >
               Back to sign in
             </Link>
           </div>
@@ -57,7 +65,10 @@ export function ForgotPasswordPage() {
             </Button>
             <p className="text-sm text-ink-muted">
               Remembered it?{' '}
-              <Link className="text-experience-700 underline underline-offset-2" to="/sign-in">
+              <Link
+                className="text-experience-700 underline underline-offset-2"
+                to={authFlowPath('/sign-in', next)}
+              >
                 Sign in
               </Link>
             </p>

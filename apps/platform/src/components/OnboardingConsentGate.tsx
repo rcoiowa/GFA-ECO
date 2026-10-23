@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { Navigate } from 'react-router';
+import { Navigate, useLocation } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import { listMissingRequiredConsents } from '@recoveryos/data-access';
-import { participantOnboardingApplies } from '@recoveryos/domain';
+import { participantOnboardingApplies, authFlowPath, locationReturnPath } from '@recoveryos/domain';
 import { ErrorState, LoadingState } from '@recoveryos/ui';
 
 /**
@@ -23,6 +23,7 @@ import { ErrorState, LoadingState } from '@recoveryos/ui';
  * path is never gated: /support stays public regardless of this boundary.
  */
 export function OnboardingConsentGate({ children }: { children: ReactNode }) {
+  const location = useLocation();
   const { person, roles } = useAuth();
   const applicable = !!person && participantOnboardingApplies(roles);
   const [state, setState] = useState<'checking' | 'complete' | 'incomplete' | 'error'>('checking');
@@ -60,6 +61,7 @@ export function OnboardingConsentGate({ children }: { children: ReactNode }) {
         onRetry={retry}
       />
     );
-  if (state === 'incomplete') return <Navigate to="/onboarding" replace />;
+  if (state === 'incomplete')
+    return <Navigate to={authFlowPath('/onboarding', locationReturnPath(location))} replace />;
   return <>{children}</>;
 }

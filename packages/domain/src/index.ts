@@ -15,3 +15,5 @@ export * from './domains';
 export * from './serviceProvenance';
 export * from './residence';
 export * from './admin';
+export * from './authReturnPath';
+export * from './documentAttestations';

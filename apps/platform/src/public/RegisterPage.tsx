@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import { safeAuthReturnPath } from './authReturnPath';
+import { safeAuthReturnPath, authFlowPath } from './authReturnPath';
 import { registrationSchema } from '@recoveryos/domain';
 import { getSupabase } from '@recoveryos/data-access';
 import { Alert, Button, Card, TextField } from '@recoveryos/ui';
@@ -39,7 +39,7 @@ export function RegisterPage() {
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/sign-in${next ? `?next=${encodeURIComponent(next)}` : ''}`,
+        emailRedirectTo: `${window.location.origin}${authFlowPath('/sign-in', next)}`,
         data: {
           first_name: parsed.data.firstName,
           last_name: parsed.data.lastName,
@@ -59,7 +59,11 @@ export function RegisterPage() {
       setConfirmEmail(parsed.data.email);
       return;
     }
-    navigate(next ? `/onboarding?next=${encodeURIComponent(next)}` : '/onboarding');
+    navigate(
+      next?.startsWith('/my-housing') || next === '/recovery-residences/my-application'
+        ? next
+        : authFlowPath('/onboarding', next),
+    );
   }
 
   if (confirmEmail) {
@@ -73,10 +77,7 @@ export function RegisterPage() {
               <strong>{confirmEmail}</strong> — open it (check spam too), then sign in and
               you&rsquo;re on your way.
             </p>
-            <Button
-              className="mt-5"
-              onClick={() => navigate('/sign-in', next ? { state: { from: next } } : undefined)}
-            >
+            <Button className="mt-5" onClick={() => navigate(authFlowPath('/sign-in', next))}>
               Go to sign in
             </Button>
           </Card>
@@ -140,7 +141,7 @@ export function RegisterPage() {
           <p className="mt-5 text-ink-muted">
             Already have an account?{' '}
             <Link
-              to={next ? `/sign-in?next=${encodeURIComponent(next)}` : '/sign-in'}
+              to={authFlowPath('/sign-in', next)}
               className="font-medium text-experience-700 underline underline-offset-2"
             >
               Sign in

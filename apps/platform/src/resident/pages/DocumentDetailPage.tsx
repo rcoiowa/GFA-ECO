@@ -1,31 +1,27 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import {
-  acknowledgeDocumentAssignment,
+  completeDocumentReview,
+  confirmDocumentExplanation,
+  documentWorkflowState,
   ensureMyDocumentAssignments,
   hasElectronicRecordsConsent,
   listMyDocumentAssignments,
   recordResidenceConsentGrant,
+  requestDocumentExplanation,
   type AssignmentWithDocument,
+  type DocumentWorkflowState,
 } from '@recoveryos/data-access';
+import { allDocumentAttestationsSelected, emptyDocumentAttestations } from '@recoveryos/domain';
 import { getDocument } from '@recoveryos/residence-content';
-import { Alert, Button, Card, PageHeader, TextField } from '@recoveryos/ui';
+import { Alert, Button, Card, LoadingState, PageHeader, TextField } from '@recoveryos/ui';
 import { MarkdownView } from '../../components/MarkdownView';
+import { DocumentAttestationFields } from '../../components/documents/DocumentAttestationFields';
+import { DocumentReceipt } from '../../components/documents/DocumentReceipt';
+import { documentReviewMessage } from '../../components/documents/documentReviewMessages';
 import { NotFoundPage } from '../../pages/StatusPages';
 
-/**
- * A single document, rendered in full, with the signing flow when this
- * document is pending for the current resident. Signing is a typed-name
- * e-signature recorded on the person's assignment row.
- *
- * Rendering source: when the person has an assignment for this key, the page
- * renders the assignment's PINNED published version — the exact text they act
- * on or signed — and the bundled residence-content library is only a metadata
- * fallback. This is what makes residence-scoped editions (all six EJWRH
- * documents, Grace House Resident Rights) render here without a bundled copy,
- * with provenance guaranteed by the version's content hash.
- */
 export function DocumentDetailPage({
   basePath = '/residence',
   assignedOnly = false,
@@ -34,202 +30,300 @@ export function DocumentDetailPage({
   assignedOnly?: boolean;
 }) {
   const { key } = useParams<{ key: string }>();
-  const [searchParams] = useSearchParams();
-  const assignmentId = searchParams.get('assignment');
+  const [params] = useSearchParams();
   const { person } = useAuth();
-  const staticDocument = key ? getDocument(key) : undefined;
-
+  const assignmentId = params.get('assignment');
   const [assignments, setAssignments] = useState<AssignmentWithDocument[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const [signatureName, setSignatureName] = useState('');
-  const [signing, setSigning] = useState(false);
-  const [signError, setSignError] = useState(false);
-  const [justSigned, setJustSigned] = useState(false);
   const [eConsent, setEConsent] = useState(false);
-  const [paperInfo, setPaperInfo] = useState(false);
-
-  const load = useCallback(async () => {
-    if (!person) {
-      setLoaded(true);
-      return;
-    }
-    setLoadError(false);
-    setLoaded(false);
-    setAssignments([]);
-    try {
-      await ensureMyDocumentAssignments();
-      setAssignments(await listMyDocumentAssignments(person.id));
-      setEConsent(await hasElectronicRecordsConsent(person.id));
-    } catch {
-      setLoadError(true);
-    } finally {
-      setLoaded(true);
-    }
-  }, [person]);
-
   useEffect(() => {
-    void load();
-  }, [load]);
-
-  const myAssignment = useMemo(
+    let cancelled = false;
+    setLoaded(false);
+    setLoadError(false);
+    setAssignments([]);
+    setEConsent(false);
+    void (async () => {
+      try {
+        if (person) {
+          await ensureMyDocumentAssignments();
+          const rows = await listMyDocumentAssignments(person.id);
+          const consent = await hasElectronicRecordsConsent(person.id);
+          if (!cancelled) {
+            setAssignments(rows);
+            setEConsent(consent);
+          }
+        }
+      } catch {
+        if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [person?.id, key, assignmentId]);
+  const assignment = useMemo(
     () =>
-      [...assignments]
-        .reverse()
-        .find(
+      assignments
+        .filter(
           (a) =>
+            a.person_id === person?.id &&
             a.document_version.template.key === key &&
             (!assignmentId || String(a.id) === assignmentId),
-        ),
-    [assignments, key, assignmentId],
+        )
+        .sort(
+          (a, b) =>
+            (b.document_version.published_at ?? '').localeCompare(
+              a.document_version.published_at ?? '',
+            ) ||
+            b.document_version.id - a.document_version.id ||
+            b.id - a.id,
+        )[0],
+    [assignments, key, assignmentId, person?.id],
   );
-
-  // The person's pinned version wins; the bundled library is the fallback for
-  // documents the person has no assignment for (e.g. browsing before intake).
-  const display = myAssignment
+  const bundled = key ? getDocument(key) : undefined;
+  const display = assignment
     ? {
-        name: myAssignment.document_version.template.name,
-        summary: staticDocument?.summary,
-        body: myAssignment.document_version.body_markdown,
-        version: myAssignment.document_version.version,
-        requiresSignature: myAssignment.document_version.template.requires_signature,
+        name: assignment.document_version.template.name,
+        body: assignment.document_version.body_markdown,
+        version: assignment.document_version.version,
       }
-    : staticDocument && !assignedOnly && !assignmentId
-      ? {
-          name: staticDocument.name,
-          summary: staticDocument.summary,
-          body: staticDocument.body,
-          version: staticDocument.version,
-          requiresSignature: staticDocument.requiresSignature,
-        }
+    : !assignedOnly && !assignmentId && bundled
+      ? bundled
       : undefined;
-
-  if (!loaded) return null;
+  if (!loaded) return <LoadingState label="Loading your document…" />;
   if (loadError)
     return (
-      <Alert tone="attention">
-        We couldn’t load your document. Please reload or ask staff for help. No completion was
-        recorded.
-      </Alert>
+      <Alert tone="attention">We couldn’t load your document. Reload or ask staff for help.</Alert>
     );
-  if (!display) {
-    // Don't flash NotFound while the assignment (the only source for
-    // residence-scoped editions) is still loading.
-    return loaded ? <NotFoundPage /> : null;
-  }
-  const document = display;
-
-  const sign = async () => {
-    if (!myAssignment || (document.requiresSignature && !signatureName.trim())) return;
-    setSigning(true);
-    setSignError(false);
-    try {
-      const result = await acknowledgeDocumentAssignment({
-        assignmentId: myAssignment.id,
-        signatureName: document.requiresSignature ? signatureName.trim() : undefined,
-      });
-      if (!result.ok && result.code !== 'already_acknowledged') throw new Error(result.code);
-      setJustSigned(true);
-      await load();
-    } catch {
-      setSignError(true);
-    } finally {
-      setSigning(false);
-    }
-  };
-
-  const pendingSignature = myAssignment && !myAssignment.acknowledged_at;
-
+  if (!display) return <NotFoundPage />;
   return (
     <>
       <PageHeader
-        title={document.name}
-        lede={document.summary}
-        crumbs={[
-          {
-            to: basePath === '/residence' ? '/residence/today' : basePath,
-            label: basePath === '/residence' ? 'Today' : 'My housing intake',
-          },
-          { to: `${basePath}/documents`, label: 'Documents' },
-        ]}
+        title={display.name}
+        crumbs={[{ to: `${basePath}/documents`, label: 'Documents' }]}
       />
-
       <div className="flex flex-col gap-5">
-        {justSigned ? (
-          <Alert tone="positive">
-            {document.requiresSignature ? 'Signed.' : 'Receipt acknowledged.'} Your record is saved
-            with this document. Staff can provide a copy.
-          </Alert>
-        ) : myAssignment?.acknowledged_at ? (
-          <Alert tone="positive">
-            You {document.requiresSignature ? 'signed' : 'acknowledged receipt of'} this document on{' '}
-            {new Date(myAssignment.acknowledged_at).toLocaleDateString(undefined, {
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric',
-            })}
-            {myAssignment.signature_name ? ` as “${myAssignment.signature_name}”` : ''}.
-          </Alert>
-        ) : null}
-
         <Card>
-          <MarkdownView markdown={document.body} />
-          <p className="mt-4 text-sm text-ink-faint">
-            Version {document.version}. Paper copies are always available from the house manager.
+          <MarkdownView markdown={display.body} />
+          <p className="mt-4 text-sm">
+            Version {display.version}. Paper copies are available from housing staff.
           </p>
+          {assignment && (
+            <p className="break-all text-xs">SHA-256: {assignment.document_version.content_hash}</p>
+          )}
         </Card>
-
-        {pendingSignature && !justSigned ? (
-          <Card>
-            <h2 className="mb-1 text-lg font-semibold text-ink">
-              {document.requiresSignature ? 'Ready to sign?' : 'Acknowledge receipt'}
-            </h2>
-            <p className="mb-3 text-sm text-ink-muted">
-              {document.requiresSignature
-                ? 'Only sign once you have read it and had your questions answered. You can choose paper instead.'
-                : 'Confirm that you received and reviewed this document. This is a receipt, not a signature or permission to share information.'}
-            </p>
-            {signError ? (
-              <Alert tone="critical">
-                Your action didn’t save. Please try again or ask staff for help.
-              </Alert>
-            ) : null}
-            <div className="flex flex-col gap-3 sm:max-w-md">
-              {!document.requiresSignature ? (
-                <Button onClick={() => void sign()} disabled={signing}>
-                  Acknowledge receipt
-                </Button>
-              ) : !eConsent ? (
+        {assignment && (
+          <AssignedDocumentReview
+            key={`${person?.id}:${assignment.id}`}
+            assignment={assignment}
+            eConsent={eConsent}
+            setEConsent={setEConsent}
+            basePath={basePath}
+          />
+        )}
+      </div>
+    </>
+  );
+}
+function AssignedDocumentReview({
+  assignment,
+  eConsent,
+  setEConsent,
+  basePath,
+}: {
+  assignment: AssignmentWithDocument;
+  eConsent: boolean;
+  setEConsent: (v: boolean) => void;
+  basePath: string;
+}) {
+  const { person } = useAuth();
+  const [state, setState] = useState<DocumentWorkflowState | null>(null);
+  const [checks, setChecks] = useState(emptyDocumentAttestations);
+  const [signature, setSignature] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [ask, setAsk] = useState(false);
+  const [question, setQuestion] = useState('');
+  const [answered, setAnswered] = useState(false);
+  const [paper, setPaper] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+  const v = assignment.document_version;
+  const needsSignature = v.template.requires_signature;
+  useEffect(() => {
+    let cancelled = false;
+    void documentWorkflowState(assignment.id)
+      .then((s) => {
+        if (!cancelled) {
+          if (s.ok) setState(s);
+          else setError(documentReviewMessage(s.code));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setError(documentReviewMessage());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [assignment.id, refresh]);
+  const act = async (action: () => Promise<DocumentWorkflowState>) => {
+    setBusy(true);
+    setError('');
+    try {
+      const result = await action();
+      if (!result.ok) {
+        setError(documentReviewMessage(result.code));
+        if (result.code === 'electronic_consent_required') setEConsent(false);
+      } else {
+        // The committed RPC response is authoritative; do not hide it behind another read.
+        if (result.receipt || typeof result.current === 'boolean') setState(result);
+        setChecks(emptyDocumentAttestations());
+        setSignature('');
+        setAnswered(false);
+        setAsk(false);
+        if (result.receipt) return;
+      }
+      // Reconcile with server evidence even after a business refusal.
+      const saved = await documentWorkflowState(assignment.id);
+      if (saved.ok) setState(saved);
+    } catch {
+      setError(documentReviewMessage());
+      // A network error can follow a commit. Read back before offering any retry.
+      try {
+        const saved = await documentWorkflowState(assignment.id);
+        if (saved.ok) setState(saved);
+        else setState(null);
+      } catch {
+        setState(null);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (state?.receipt) return <DocumentReceipt receipt={state.receipt} />;
+  if (!state)
+    return (
+      <Card>
+        {error ? (
+          <Alert tone="attention">{error}</Alert>
+        ) : (
+          <LoadingState label="Checking your document record…" />
+        )}
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setError('');
+            setRefresh((n) => n + 1);
+          }}
+        >
+          Reload saved record
+        </Button>
+      </Card>
+    );
+  if (!state.current)
+    return (
+      <Alert tone="info">
+        This edition is no longer pending for your current housing context.{' '}
+        <Link to={`${basePath}/documents`}>Return to Documents</Link> to review applicable
+        documents. Historical records remain available.
+      </Alert>
+    );
+  return (
+    <Card>
+      <h2 className="text-lg font-semibold">
+        {needsSignature ? 'Review and sign this document' : 'Review and acknowledge this document'}
+      </h2>
+      <p className="my-3">
+        Select each statement only when it is true. You can ask for an explanation before completing
+        this document. These statements do not grant optional permission to share your information.
+      </p>
+      {error && <Alert tone="attention">{error}</Alert>}
+      {state.clarification ? (
+        <div className="my-4 flex flex-col gap-3">
+          <Alert tone="info">
+            Your explanation request is saved for housing staff. Speak with them before completing
+            this document. General recovery support remains available.
+          </Alert>
+          {state.clarification.question && <p>Your question: {state.clarification.question}</p>}
+          <label className="flex gap-3">
+            <input
+              type="checkbox"
+              checked={answered}
+              disabled={busy}
+              onChange={(e) => setAnswered(e.target.checked)}
+            />
+            I received an explanation and my questions were answered.
+          </label>
+          <Button
+            disabled={busy || !answered}
+            onClick={() => void act(() => confirmDocumentExplanation(assignment.id, answered))}
+          >
+            Confirm explanation received
+          </Button>
+        </div>
+      ) : (
+        <>
+          <DocumentAttestationFields value={checks} onChange={setChecks} disabled={busy || ask} />
+          <div className="my-4">
+            <Button
+              variant="secondary"
+              disabled={busy}
+              onClick={() => {
+                setAsk(!ask);
+                setChecks(emptyDocumentAttestations());
+              }}
+            >
+              I need an explanation
+            </Button>
+          </div>
+          {ask && (
+            <div className="my-3 flex flex-col gap-3">
+              <label>
+                What would you like explained? (optional)
+                <textarea
+                  className="mt-1 block w-full border p-2"
+                  maxLength={2000}
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  disabled={busy}
+                />
+              </label>
+              <p>
+                Your request will be available to authorized housing staff in the app. You can also
+                speak with them directly.
+              </p>
+              <Button
+                disabled={busy}
+                onClick={() => void act(() => requestDocumentExplanation(assignment.id, question))}
+              >
+                Send explanation request to housing staff
+              </Button>
+            </div>
+          )}
+          {!ask && (
+            <div className="mt-4 flex flex-col gap-3">
+              {needsSignature && !eConsent ? (
                 <div data-testid="e-consent-step">
-                  <p className="text-sm font-medium text-ink">Before signing electronically</p>
-                  <ul className="mt-1 list-disc pl-5 text-sm text-ink-muted">
-                    <li>You can sign on paper with staff instead — always, at no cost.</li>
-                    <li>
-                      You can withdraw electronic consent at any time; anything already signed stays
-                      valid.
-                    </li>
-                    <li>Your signed documents stay available to you here, unrestricted.</li>
-                  </ul>
+                  <h3 className="font-semibold">Before signing electronically</h3>
+                  <p>
+                    Electronic records and signatures are optional. You may use paper with staff at
+                    no cost. You may withdraw electronic consent; existing signed records remain
+                    available. You can download or print your receipt here.
+                  </p>
                   <Button
-                    className="mt-2"
-                    disabled={signing}
+                    disabled={busy}
                     onClick={() =>
-                      void (async () => {
-                        if (!person) return;
-                        setSigning(true);
-                        try {
-                          const r = await recordResidenceConsentGrant({
-                            personId: person.id,
-                            typeKey: 'electronic_records',
-                          });
-                          if (r.ok || r.code === 'already_granted') setEConsent(true);
-                          else setSignError(true);
-                        } catch {
-                          setSignError(true);
-                        } finally {
-                          setSigning(false);
-                        }
-                      })()
+                      void act(async () => {
+                        if (!person) return { ok: false, code: 'unauthenticated' };
+                        const result = await recordResidenceConsentGrant({
+                          personId: person.id,
+                          typeKey: 'electronic_records',
+                        });
+                        if (result.ok) setEConsent(true);
+                        return result;
+                      })
                     }
                   >
                     I agree to use electronic records and signatures
@@ -237,42 +331,67 @@ export function DocumentDetailPage({
                 </div>
               ) : (
                 <>
-                  <TextField
-                    label="Type your full name as your signature"
-                    value={signatureName}
-                    onChange={(e) => setSignatureName(e.target.value)}
-                    placeholder={person ? `${person.first_name} ${person.last_name}` : ''}
-                    autoComplete="name"
-                  />
-                  <p className="text-sm text-ink-muted">
-                    Selecting &ldquo;Sign {document.name}&rdquo; is your electronic signature and
-                    your agreement to be bound by this document.
-                  </p>
-                  <Button onClick={() => void sign()} disabled={signing || !signatureName.trim()}>
-                    {signing ? 'Signing…' : `Sign ${document.name}`}
+                  {needsSignature && (
+                    <>
+                      <TextField
+                        label="Type your full name as your signature"
+                        value={signature}
+                        maxLength={200}
+                        autoComplete="off"
+                        onChange={(e) => setSignature(e.target.value)}
+                        disabled={busy}
+                      />
+                      <p>
+                        Selecting “Sign {v.template.name}” records your electronic signature and
+                        agreement to this document.
+                      </p>
+                    </>
+                  )}
+                  <Button
+                    disabled={
+                      busy ||
+                      !allDocumentAttestationsSelected(checks) ||
+                      (needsSignature && signature.trim().length < 2)
+                    }
+                    onClick={() =>
+                      void act(() =>
+                        completeDocumentReview({
+                          assignmentId: assignment.id,
+                          versionId: v.id,
+                          contentHash: v.content_hash ?? '',
+                          attestations: checks,
+                          ...(needsSignature ? { signatureName: signature.trim() } : {}),
+                        }),
+                      )
+                    }
+                  >
+                    {busy
+                      ? 'Saving…'
+                      : needsSignature
+                        ? `Sign ${v.template.name}`
+                        : 'Acknowledge this document'}
                   </Button>
                 </>
               )}
-              {document.requiresSignature && (
-                <button
-                  type="button"
-                  className="self-start text-sm text-experience-700 underline underline-offset-2"
-                  onClick={() => setPaperInfo(!paperInfo)}
-                >
-                  I prefer to sign on paper
-                </button>
-              )}
-              {paperInfo ? (
-                <Alert tone="info">
-                  No problem — tell any staff member. They&rsquo;ll print it, you sign with them,
-                  and they record your paper signature. Choosing paper never affects your standing,
-                  your eligibility, or anything else.
-                </Alert>
-              ) : null}
             </div>
-          </Card>
-        ) : null}
+          )}
+        </>
+      )}
+      <div className="mt-4 flex flex-col gap-3">
+        <Button variant="secondary" onClick={() => setPaper(!paper)}>
+          I prefer to review {needsSignature ? 'and sign ' : ''}on paper
+        </Button>
+        {paper && (
+          <Alert tone="info">
+            Ask housing staff for this exact document and the paper acknowledgment statements. They
+            can record your choices and {needsSignature ? 'signature' : 'acknowledgment'} after
+            witnessing your paper review. Nothing is completed by selecting this option.
+          </Alert>
+        )}
+        <Link to="/support" className="underline">
+          Access general recovery support
+        </Link>
       </div>
-    </>
+    </Card>
   );
 }
