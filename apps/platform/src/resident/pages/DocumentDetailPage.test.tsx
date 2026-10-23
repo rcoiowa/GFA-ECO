@@ -259,3 +259,17 @@ describe('explicit document review', () => {
     expect(mocks.completeDocumentReview).not.toHaveBeenCalled();
   });
 });
+
+it('uses the successful RPC receipt even when subsequent reads would fail', async () => {
+  renderAt();
+  const button = await screen.findByRole('button', { name: 'Sign Synthetic Policy' });
+  mocks.completeDocumentReview.mockResolvedValue({ ok: true, receipt });
+  mocks.documentWorkflowState.mockRejectedValue(new Error('network failed after commit'));
+  selectStatements();
+  fireEvent.change(screen.getByLabelText(/Type your full name/), {
+    target: { value: 'Synthetic Person' },
+  });
+  fireEvent.click(button);
+  expect(await screen.findByText('Your receipt')).toBeInTheDocument();
+  expect(mocks.documentWorkflowState).toHaveBeenCalledTimes(1);
+});

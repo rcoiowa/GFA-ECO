@@ -151,4 +151,17 @@ check('move to another house receives separate applicable shared assignment',sql
 ready=rpc('application_intake_readiness','90009',90008)
 x=next(x for x in ready['items'] if x['key']=='ack:synthetic_shared')
 check('another residence completion does not satisfy current readiness',not x['met'])
+# Approved application elsewhere must not generate unusable duplicate assignments.
+sql("insert into recoveryos.residence_applications(id,person_id,residence_id,status) overriding system value values(90010,90002,90002,'approved')")
+prepared=[rpc('prepare_application_document_review','90010',90005) for _ in range(2)]
+check('active residency elsewhere blocks repeated preparation',all(r.get('code')=='live_residency_elsewhere' for r in prepared) and sql('select count(*) from recoveryos.document_assignments where person_id=90002 and application_id=90010')=='0')
+# History metadata must not disclose another residence's earlier shared edition.
+sql("insert into recoveryos.document_versions(id,template_id,version,body_markdown,published_at) overriding system value values(90009,90006,'2','# Synthetic common policy next edition','2026-04-01');insert into recoveryos.role_assignments(person_id,role_key,residence_id,organization_id) values(90005,'residence_staff',90003,90001)")
+ready=rpc('application_intake_readiness','90009',90005)
+x=next(x for x in ready['items'] if x['key']=='ack:synthetic_shared')
+check('other-residence earlier edition history is not disclosed to current staff',not x['met'] and not x['historical_completed'])
+check('application residence resolution is scoped',rpc('document_review_application_context','90003',90005).get('residence_id')==90002 and rpc('document_review_application_context','90003',90004).get('code')=='not_authorized')
+queue=rpc('list_staff_document_reviews','90001,90001',90004)
+check('staff can retrieve completed paper receipt after a new request',any(i['state'].get('receipt',{}).get('method')=='paper' for i in queue['items']))
+check('wrong residence cannot retrieve completed paper receipts',rpc('list_staff_document_reviews','90001,90001',90005).get('code')=='not_authorized')
 print('TOTAL',count)

@@ -7,6 +7,7 @@ import {
   prepareApplicationDocumentReview,
   recordDocumentPaperReview,
   documentWorkflowState,
+  documentReviewApplicationContext,
   type StaffDocumentReview,
   type DocumentReceiptRecord,
 } from '@recoveryos/data-access';
@@ -23,7 +24,7 @@ import { DocumentReceipt } from '../../components/documents/DocumentReceipt';
 import { documentReviewMessage } from '../../components/documents/documentReviewMessages';
 
 export function DocumentReviewPage() {
-  const { residence } = useStaff();
+  const { residence, setResidenceId } = useStaff();
   const [params] = useSearchParams();
   const app = params.get('application');
   const applicationId = app && /^\d+$/.test(app) ? Number(app) : undefined;
@@ -35,9 +36,19 @@ export function DocumentReviewPage() {
     let cancelled = false;
     setItems([]);
     setError('');
-    if (!residence) return;
+    if (!residence && !applicationId) return;
     setLoading(true);
-    void listStaffDocumentReviews(residence.id, applicationId)
+    void (async () => {
+      let residenceId = residence?.id;
+      if (applicationId) {
+        const context = await documentReviewApplicationContext(applicationId);
+        if (!context.ok || !context.residence_id) return { ok: false, code: context.code };
+        residenceId = context.residence_id;
+        if (!cancelled && residenceId !== residence?.id) setResidenceId(residenceId);
+      }
+      if (cancelled || !residenceId) return { ok: false, code: 'not_authorized' };
+      return listStaffDocumentReviews(residenceId, applicationId);
+    })()
       .then((r) => {
         if (!cancelled) {
           if (r.ok) setItems(r.items ?? []);
@@ -53,7 +64,7 @@ export function DocumentReviewPage() {
     return () => {
       cancelled = true;
     };
-  }, [residence?.id, applicationId, revision]);
+  }, [residence?.id, applicationId, revision, setResidenceId]);
   return (
     <>
       <PageHeader
@@ -99,7 +110,9 @@ export function DocumentReviewPage() {
           {loading ? (
             <LoadingState label="Loading document reviews…" />
           ) : !items.length && !error ? (
-            <Alert tone="info">No current pending document assignments in this selection.</Alert>
+            <Alert tone="info">
+              No pending documents or recorded completions in this selection.
+            </Alert>
           ) : (
             items.map((item) => (
               <PaperDocumentReview
@@ -120,8 +133,9 @@ function PaperDocumentReview({ item }: { item: StaffDocumentReview }) {
   const [answered, setAnswered] = useState(false);
   const [signature, setSignature] = useState('');
   const [state, setState] = useState(item.state);
-  const [receipt, setReceipt] = useState<DocumentReceiptRecord | null>(null);
+  const [receipt, setReceipt] = useState<DocumentReceiptRecord | null>(item.state.receipt ?? null);
   const [busy, setBusy] = useState(false);
+  const [unconfirmed, setUnconfirmed] = useState(false);
   const [error, setError] = useState('');
   if (receipt) return <DocumentReceipt receipt={receipt} />;
   const run = async (paper: boolean) => {
@@ -139,6 +153,11 @@ function PaperDocumentReview({ item }: { item: StaffDocumentReview }) {
           })
         : await confirmDocumentExplanation(item.assignment_id, answered);
       if (!r.ok) setError(documentReviewMessage(r.code));
+      if (r.ok && r.receipt) {
+        setState(r);
+        setReceipt(r.receipt);
+        return;
+      }
       const saved = await documentWorkflowState(item.assignment_id);
       if (saved.ok) {
         setState(saved);
@@ -156,14 +175,27 @@ function PaperDocumentReview({ item }: { item: StaffDocumentReview }) {
         if (saved.ok) {
           setState(saved);
           setReceipt(saved.receipt ?? null);
+        } else {
+          setOpen(false);
+          setUnconfirmed(true);
         }
       } catch {
         setOpen(false);
+        setUnconfirmed(true);
       }
     } finally {
       setBusy(false);
     }
   };
+  if (unconfirmed)
+    return (
+      <Card>
+        <Alert tone="attention">
+          The result could not be confirmed. Refresh document requests to load the saved record
+          before trying again.
+        </Alert>
+      </Card>
+    );
   return (
     <Card>
       <h2 className="text-lg font-semibold">

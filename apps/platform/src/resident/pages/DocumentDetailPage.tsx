@@ -177,10 +177,13 @@ function AssignedDocumentReview({
         setError(documentReviewMessage(result.code));
         if (result.code === 'electronic_consent_required') setEConsent(false);
       } else {
+        // The committed RPC response is authoritative; do not hide it behind another read.
+        setState(result);
         setChecks(emptyDocumentAttestations());
         setSignature('');
         setAnswered(false);
         setAsk(false);
+        if (result.receipt) return;
       }
       // Reconcile with server evidence even after a business refusal.
       const saved = await documentWorkflowState(assignment.id);

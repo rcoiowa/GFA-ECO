@@ -276,11 +276,24 @@ BEGIN
  IF current_person_id() IS NULL THEN RETURN jsonb_build_object('ok',false,'code','unauthenticated'); END IF;
  SELECT * INTO p FROM residence_applications WHERE id=p_application_id;
  IF NOT FOUND OR (NOT is_platform_admin() AND p.residence_id NOT IN(SELECT staff_residence_ids())) THEN RETURN jsonb_build_object('ok',false,'code','not_authorized'); END IF;
+ IF EXISTS(SELECT 1 FROM residencies WHERE person_id=p.person_id AND residence_id<>p.residence_id AND residency_status IN ('active','on_pass','transitioning')) THEN RETURN jsonb_build_object('ok',false,'code','live_residency_elsewhere'); END IF;
  SELECT id INTO rid FROM residencies WHERE person_id=p.person_id AND residence_id=p.residence_id AND residency_status IN ('active','on_pass','transitioning') ORDER BY created_at DESC,id DESC LIMIT 1;
  IF p.status<>'approved' AND rid IS NULL THEN RETURN jsonb_build_object('ok',false,'code','application_not_approved'); END IF;
  PERFORM _issue_document_review_assignments(p.person_id,p.residence_id,rid,CASE WHEN rid IS NULL THEN p.id END);
  RETURN jsonb_build_object('ok',true,'code','prepared','residence_id',p.residence_id);
 END $$;
+-- Read-only deep-link resolution: no assignment issuance and no other application fields.
+CREATE FUNCTION recoveryos.document_review_application_context(p_application_id bigint)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = recoveryos, pg_temp AS $$
+DECLARE rid bigint;
+BEGIN
+ IF current_person_id() IS NULL THEN RETURN jsonb_build_object('ok',false,'code','unauthenticated'); END IF;
+ SELECT residence_id INTO rid FROM residence_applications WHERE id=p_application_id;
+ IF NOT FOUND OR (NOT is_platform_admin() AND rid NOT IN(SELECT staff_residence_ids())) THEN RETURN jsonb_build_object('ok',false,'code','not_authorized'); END IF;
+ RETURN jsonb_build_object('ok',true,'residence_id',rid);
+END $$;
+REVOKE ALL ON FUNCTION recoveryos.document_review_application_context(bigint) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION recoveryos.document_review_application_context(bigint) TO authenticated;
 CREATE FUNCTION recoveryos.list_staff_document_reviews(p_residence_id bigint,p_application_id bigint DEFAULT NULL)
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = recoveryos, pg_temp AS $$
 DECLARE items jsonb;
@@ -293,7 +306,7 @@ BEGIN
     'document_name',t.name,'template_key',t.key,'requires_signature',t.requires_signature,'document_version_id',v.id,'version',v.version,'content_hash',v.content_hash,'body_markdown',v.body_markdown,
     'state',document_workflow_state(a.id)) AS item
    FROM document_assignments a JOIN people p ON p.id=a.person_id JOIN document_versions v ON v.id=a.document_version_id JOIN document_templates t ON t.id=v.template_id
-   WHERE a.acknowledged_at IS NULL AND _document_assignment_residence(a.id)=p_residence_id AND _document_assignment_current(a.id)
+   WHERE _document_assignment_residence(a.id)=p_residence_id AND (a.acknowledged_at IS NOT NULL OR _document_assignment_current(a.id))
     AND (p_application_id IS NULL OR a.person_id=(SELECT person_id FROM residence_applications WHERE id=p_application_id AND residence_id=p_residence_id))
  )x;
  RETURN jsonb_build_object('ok',true,'items',items);
@@ -356,7 +369,7 @@ begin
       'status', case when v_met then 'met' else 'missing' end,
       'met', v_met, 'overridable', false,
       'document_version_id',v_t.document_version_id,'version',v_t.version,'content_hash',v_t.content_hash,
-      'historical_completed',exists(select 1 from recoveryos.document_assignments a join recoveryos.document_versions dv on dv.id=a.document_version_id where a.person_id=v_app.person_id and dv.template_id=v_t.template_id and dv.id<>v_t.document_version_id and a.acknowledged_at is not null),
+      'historical_completed',exists(select 1 from recoveryos.document_assignments a join recoveryos.document_versions dv on dv.id=a.document_version_id where a.person_id=v_app.person_id and _document_assignment_residence(a.id)=v_app.residence_id and dv.template_id=v_t.template_id and dv.id<>v_t.document_version_id and a.acknowledged_at is not null),
       'completion_evidence',case when not v_met then 'pending' when exists(select 1 from recoveryos.document_review_receipts dr where dr.person_id=v_app.person_id and dr.document_version_id=v_t.document_version_id and _document_assignment_residence(dr.assignment_id)=v_app.residence_id) then 'attested' else 'legacy_recorded' end);
   end loop;
 
@@ -392,7 +405,7 @@ begin
       'status', case when v_met then 'met' else 'missing' end,
       'met', v_met, 'overridable', false,
       'document_version_id',v_t.document_version_id,'version',v_t.version,'content_hash',v_t.content_hash,
-      'historical_completed',exists(select 1 from recoveryos.document_assignments a join recoveryos.document_versions dv on dv.id=a.document_version_id where a.person_id=v_app.person_id and dv.template_id=v_t.template_id and dv.id<>v_t.document_version_id and a.acknowledged_at is not null),
+      'historical_completed',exists(select 1 from recoveryos.document_assignments a join recoveryos.document_versions dv on dv.id=a.document_version_id where a.person_id=v_app.person_id and _document_assignment_residence(a.id)=v_app.residence_id and dv.template_id=v_t.template_id and dv.id<>v_t.document_version_id and a.acknowledged_at is not null),
       'completion_evidence',case when not v_met then 'pending' when exists(select 1 from recoveryos.document_review_receipts dr where dr.person_id=v_app.person_id and dr.document_version_id=v_t.document_version_id and _document_assignment_residence(dr.assignment_id)=v_app.residence_id) then 'attested' else 'legacy_recorded' end);
   end loop;
 

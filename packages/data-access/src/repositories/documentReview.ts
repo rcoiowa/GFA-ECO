@@ -93,3 +93,11 @@ export const prepareApplicationDocumentReview = (applicationId: number) =>
   call<DocumentWorkflowState>('prepare_application_document_review', {
     p_application_id: applicationId,
   });
+
+export const documentReviewApplicationContext = (applicationId: number) =>
+  call<{ ok: boolean; code?: string; residence_id?: number }>(
+    'document_review_application_context',
+    {
+      p_application_id: applicationId,
+    },
+  );

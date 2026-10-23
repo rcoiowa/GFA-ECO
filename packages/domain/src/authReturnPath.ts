@@ -52,6 +52,7 @@ const destinations = new Set([
   '/staff/beds',
   '/staff/board',
   '/staff/compliance',
+  '/staff/document-review',
   '/staff/fees',
   '/staff/grievances',
   '/staff/house-ops',

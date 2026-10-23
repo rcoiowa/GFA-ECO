@@ -13,6 +13,8 @@ export function documentReviewMessage(code?: string): string {
     not_pending_current:
       'This is not a current pending document. Return to Documents to find the applicable edition.',
     not_authorized: 'This document action is not available to your account.',
+    live_residency_elsewhere:
+      'This person has an active residency at another residence. Resolve that housing context before preparing these documents.',
     application_not_approved:
       'Documents are available after application approval or active residency.',
   };
