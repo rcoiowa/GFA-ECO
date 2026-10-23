@@ -14,8 +14,11 @@ def sql(s,label):
 try:
  subprocess.run(['docker','run','--rm','-d','--name',C,'--network','none','--tmpfs','/var/lib/postgresql/data:rw,size=1g','-e','POSTGRES_HOST_AUTH_METHOD=trust',IMAGE,'-c',"listen_addresses="],check=True,stdout=subprocess.DEVNULL)
  import time
- for _ in range(60):
-  if subprocess.run(['docker','exec',C,'pg_isready','-U','postgres'],capture_output=True).returncode==0:break
+ # The image runs a temporary initialization server first. Wait for PID 1 to
+ # become the final postgres process before accepting socket readiness.
+ for _ in range(150):
+  main=subprocess.run(['docker','exec',C,'cat','/proc/1/comm'],capture_output=True,text=True)
+  if main.stdout.strip()=='postgres' and subprocess.run(['docker','exec',C,'pg_isready','-U','postgres'],capture_output=True).returncode==0:break
   time.sleep(.2)
  else:raise RuntimeError('Isolated PostgreSQL startup timed out')
  sql('''create role anon;create role authenticated;create role service_role bypassrls;create role authenticator;
