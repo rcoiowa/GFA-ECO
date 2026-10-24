@@ -2,8 +2,8 @@
  * Iowa recovery-residence directory listings (public page — no auth, no DB).
  * External organizations are compiled from public sources and operator
  * submissions; inclusion is not an endorsement, and details change — always
- * verify directly. GFA residences carry `apply` links into their own
- * application flows.
+ * verify directly. Featured residences carry links into their own application
+ * flows; inclusion does not imply common ownership or operation.
  */
 export type ResidenceListing = {
   name: string;
@@ -14,9 +14,11 @@ export type ResidenceListing = {
   type: string;
   contact: string;
   description: string;
-  /** External application/information site (GFA residences). */
+  /** Verified public operator distinction, when available. */
+  operatorLabel?: string;
+  /** Application/information site for the residence. */
   applyUrl?: string;
-  /** In-app profile route (GFA residences). */
+  /** In-app profile route for the residence. */
   profilePath?: string;
 };
 
@@ -24,6 +26,7 @@ export const GFA_RESIDENCES: ResidenceListing[] = [
   {
     name: 'Grace House',
     org: 'Grace For Addictions',
+    operatorLabel: 'Operated by Grace For Addictions',
     city: 'Des Moines',
     county: 'Polk',
     population: 'Women',
@@ -37,13 +40,14 @@ export const GFA_RESIDENCES: ResidenceListing[] = [
   {
     name: 'Ernest & Johnnie White Recovery House',
     org: 'EJWRH · supported by Grace For Addictions',
+    operatorLabel: 'Independently Operated',
     city: 'Des Moines',
     county: 'Polk',
     population: 'Men',
     type: 'Peer-led · Iowa DOC approved',
     contact: '515-220-8771 · ejwrh@rcoiowa.org',
     description:
-      "Men's recovery residence with wraparound recovery support services; Iowa DOC approved placement.",
+      "Independently operated men's recovery residence. Grace For Addictions provides wraparound recovery support.",
     applyUrl: '/recovery-residences/ejwrh/apply',
     profilePath: '/recovery-residences/ejwrh',
   },

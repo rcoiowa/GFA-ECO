@@ -1,12 +1,16 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { GFA_RESIDENCES, IOWA_LISTINGS, type ResidenceListing } from './residenceListings';
+import {
+  GFA_RESIDENCES as FEATURED_RESIDENCES,
+  IOWA_LISTINGS,
+  type ResidenceListing,
+} from './residenceListings';
 
 /**
- * Public recovery-housing directory — the "Residence" front door. Grace For
- * Addictions residences come first with a direct path into their application
- * flow; the statewide list helps every visitor find a bed somewhere, not
- * just with us ("referred elsewhere is a service, not a rejection").
+ * Public recovery-housing directory — the "Residence" front door. Featured
+ * residences link to their own application flows. Operator labels distinguish
+ * Grace For Addictions operations from independently operated residences.
+ * The statewide list helps visitors explore housing across Iowa.
  */
 export function ResidenceDirectoryPage() {
   const [query, setQuery] = useState('');
@@ -50,7 +54,7 @@ export function ResidenceDirectoryPage() {
               to="/sign-in"
               className="min-h-11 rounded-md px-4 py-2 font-medium text-ink hover:bg-surface-sunken"
             >
-              Sign in
+              Sign In
             </Link>
           </nav>
         </div>
@@ -63,22 +67,22 @@ export function ResidenceDirectoryPage() {
           </Link>
           <span aria-hidden> / </span>
           <span aria-current="page" className="text-ink">
-            Recovery residences
+            Recovery Residences
           </span>
         </nav>
 
-        <h1 className="text-3xl font-semibold text-ink">Recovery housing options</h1>
+        <h1 className="text-3xl font-semibold text-ink">Recovery Housing Options</h1>
         <p className="mt-2 max-w-2xl text-lg text-ink-muted">
-          Safe, substance-free homes for people building recovery. Start with a Grace For Addictions
-          residence and apply today, or search recovery housing across Iowa.
+          Safe, substance-free homes for people building recovery. Explore featured residences and
+          their application options, or search recovery housing across Iowa.
         </p>
 
         <section aria-labelledby="gfa-residences" className="mt-10">
           <h2 id="gfa-residences" className="text-xl font-semibold text-ink">
-            Grace For Addictions residences
+            Featured Recovery Residences
           </h2>
           <ul className="mt-4 grid gap-4 sm:grid-cols-2">
-            {GFA_RESIDENCES.map((r) => (
+            {FEATURED_RESIDENCES.map((r) => (
               <li
                 key={r.name}
                 className="flex min-w-0 flex-col rounded-lg border border-line bg-surface-raised p-5"
@@ -87,6 +91,9 @@ export function ResidenceDirectoryPage() {
                 <p className="text-sm text-ink-muted">
                   {r.city}, Iowa · {r.population} · {r.type}
                 </p>
+                {r.operatorLabel ? (
+                  <p className="mt-2 text-sm font-medium text-ink">{r.operatorLabel}</p>
+                ) : null}
                 <p className="mt-2 flex-1 text-ink-muted">{r.description}</p>
                 <p className="mt-2 break-words text-sm text-ink-muted">{r.contact}</p>
                 <div className="mt-4 flex flex-wrap gap-3">
@@ -95,7 +102,7 @@ export function ResidenceDirectoryPage() {
                       href={r.applyUrl}
                       className="inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
                     >
-                      Visit {r.name} &amp; apply
+                      Visit {r.name} &amp; Apply
                     </a>
                   ) : null}
                   {r.profilePath ? (
@@ -114,7 +121,7 @@ export function ResidenceDirectoryPage() {
 
         <section aria-labelledby="iowa-directory" className="mt-12">
           <h2 id="iowa-directory" className="text-xl font-semibold text-ink">
-            Recovery housing across Iowa
+            Recovery Housing Across Iowa
           </h2>
           <p className="mt-1 max-w-2xl text-ink-muted">
             Compiled from public sources; inclusion is not an endorsement and details change —
@@ -148,7 +155,7 @@ export function ResidenceDirectoryPage() {
               </select>
             </label>
             <label className="flex flex-col text-sm font-medium text-ink">
-              Who it serves
+              Who It Serves
               <select
                 value={population}
                 onChange={(e) => setPopulation(e.target.value)}
@@ -190,7 +197,7 @@ export function ResidenceDirectoryPage() {
           className="mt-12 rounded-lg border border-line bg-surface-raised p-6"
         >
           <h2 id="operators" className="text-xl font-semibold text-ink">
-            Run a recovery house?
+            Run a Recovery House?
           </h2>
           <p className="mt-2 max-w-2xl text-ink-muted">
             Every recovery house deserves great operations. Create a residence profile and get bed
@@ -200,12 +207,12 @@ export function ResidenceDirectoryPage() {
             to="/recovery-residences/list-your-residence"
             className="mt-4 inline-flex min-h-11 items-center rounded-md border border-experience-600 px-5 font-semibold text-experience-700 hover:bg-surface-sunken"
           >
-            List your residence
+            List Your Residence
           </Link>
         </section>
 
         <section className="mt-6 rounded-lg bg-experience-soft p-6">
-          <h2 className="text-xl font-semibold text-experience-700">Not sure where to start?</h2>
+          <h2 className="text-xl font-semibold text-experience-700">Not Sure Where to Start?</h2>
           <p className="mt-2 max-w-2xl text-ink">
             The VRCC is free for everyone — housed or not. A resource navigator can help you sort
             options, make calls, and land somewhere safe.
@@ -214,7 +221,7 @@ export function ResidenceDirectoryPage() {
             to="/register"
             className="mt-4 inline-flex min-h-11 items-center rounded-md bg-experience-600 px-5 font-semibold text-white hover:bg-experience-strong"
           >
-            Join the VRCC free
+            Join the VRCC Free
           </Link>
         </section>
       </main>
@@ -224,7 +231,7 @@ export function ResidenceDirectoryPage() {
           Grace For Addictions · Connection prevents crisis · In immediate danger, call 911. For
           crisis support, call or text 988. ·{' '}
           <Link to="/support" className="underline underline-offset-2 hover:text-ink">
-            All support options
+            All Support Options
           </Link>
         </p>
       </footer>
