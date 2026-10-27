@@ -96,6 +96,17 @@ export default {
     const url = new URL(request.url);
     if (
       ['GET', 'HEAD'].includes(request.method) &&
+      ['recoveryresidence.org', 'www.recoveryresidence.org'].includes(url.hostname) &&
+      url.pathname === '/'
+    ) {
+      url.pathname = '/residence/directory/';
+      return new Response(null, {
+        status: 302,
+        headers: { Location: url.href, 'Cache-Control': 'no-store' },
+      });
+    }
+    if (
+      ['GET', 'HEAD'].includes(request.method) &&
       ['/residence/directory/', '/residence/directory', '/residence/directory/index.html'].includes(
         url.pathname,
       )

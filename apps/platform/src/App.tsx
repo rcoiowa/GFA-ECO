@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { LoadingState } from '@recoveryos/ui';
 import { LandingPage } from './public/LandingPage';
@@ -25,20 +25,30 @@ import { RequireAuth, RequireRole } from '@recoveryos/auth';
  * One platform, several intentional front doors (ADR-0010), now also
  * domain-scoped (ADR-0014): the same deployment answers every domain, and
  * the hostname picks the front door — vrcc.app is the community-center hub,
- * recoveryresidence.org opens the housing directory, recoveryresidence.app
+ * recoveryresidence.org opens the static housing directory, recoveryresidence.app
  * opens the operator entrance, and Grace House vanity hosts open the Grace
  * House page. Every route stays reachable on every domain; only `/` differs.
  */
 const HOST_HOMES: Record<string, string> = {
-  'recoveryresidence.org': '/recovery-residences',
-  'www.recoveryresidence.org': '/recovery-residences',
   'recoveryresidence.app': '/recovery-residences/list-your-residence',
   'www.recoveryresidence.app': '/recovery-residences/list-your-residence',
   'gracehouse.graceforaddictions.org': '/recovery-residences/grace-house',
 };
 
+function PublicDirectoryRedirect() {
+  const target = `/residence/directory/${window.location.search}${window.location.hash}`;
+  useEffect(() => {
+    // This is a static asset, so in-app Home links need a full document navigation.
+    window.location.replace(target);
+  }, [target]);
+  return <a href={target}>Open the recovery residence directory</a>;
+}
+
 function HostHome() {
   const hostname = window.location.hostname.toLowerCase();
+  if (hostname === 'recoveryresidence.org' || hostname === 'www.recoveryresidence.org') {
+    return <PublicDirectoryRedirect />;
+  }
   if (hostname === 'recoverycommunity.center' || hostname === 'www.recoverycommunity.center') {
     return <CommunityCenterPage />;
   }
