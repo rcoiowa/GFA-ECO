@@ -56,6 +56,8 @@ jobs:
         run: node scripts/verify-prepared-chain.mjs
       - name: Cloudflare execution and deployment boundaries
         run: node scripts/verify-cloudflare-boundaries.mjs
+      - name: Development backend isolation tests
+        run: node --test scripts/development-config.test.mjs
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x

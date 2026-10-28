@@ -2,6 +2,7 @@ const form = document.querySelector('#contact-connect');
 const status = document.querySelector('#form-status');
 const submit = form.querySelector('button[type="submit"]');
 let widget;
+let contactEndpoint;
 let submissionId = crypto.randomUUID();
 const show = (text) => {
   status.textContent = text;
@@ -11,7 +12,8 @@ window.contactChallengeReady = async () => {
     const response = await fetch('/gfa/contact-config.json');
     if (!response.ok) throw new Error();
     const config = await response.json();
-    if (!config.siteKey) throw new Error();
+    if (!config.siteKey || !config.contactEndpoint) throw new Error();
+    contactEndpoint = config.contactEndpoint;
     widget = window.turnstile.render('#contact-challenge', {
       sitekey: config.siteKey,
       action: 'contact_connect',
@@ -51,7 +53,7 @@ form.addEventListener('submit', async (event) => {
   show('Sending your request. Please keep this page open.');
   try {
     const response = await fetch(
-      'https://cqcxvwoukyhxyokfwnjm.supabase.co/functions/v1/lead-intake/contact',
+      contactEndpoint,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
