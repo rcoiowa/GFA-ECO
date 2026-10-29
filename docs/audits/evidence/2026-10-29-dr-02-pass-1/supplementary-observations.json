@@ -1,0 +1,143 @@
+{
+ "note": "Observations whose raw responses were printed to the session transcript but not written to capture files. Values are transcribed from that output. Timestamps are as printed by the probe command (date -u) or, where none was printed, given as a bounded window.",
+ "dns_lookups": {
+  "evidence_type": "live_http_observation",
+  "method": "GET https://cloudflare-dns.com/dns-query?name=<host>&type=A|CNAME (Accept: application/dns-json)",
+  "observed_window": "2026-10-29T04:06:15Z to 04:06:33Z (not individually timestamped)",
+  "results": {
+   "recoverycommunity.center": {
+    "status": 0,
+    "A": [
+     "172.67.184.106",
+     "104.21.32.79"
+    ]
+   },
+   "recoverycommunity.app": {
+    "status": 0,
+    "A": [
+     "172.67.130.115",
+     "104.21.3.71"
+    ]
+   },
+   "vrcc.app": {
+    "status": 0,
+    "A": [
+     "104.21.46.106",
+     "172.67.137.198"
+    ]
+   },
+   "www.vrcc.app": {
+    "status": 0,
+    "A": [
+     "104.21.46.106",
+     "172.67.137.198"
+    ]
+   },
+   "www.recoverycommunity.center": {
+    "status": 3,
+    "meaning": "NXDOMAIN",
+    "A": []
+   },
+   "www.recoverycommunity.app": {
+    "status": 3,
+    "meaning": "NXDOMAIN",
+    "A": []
+   }
+  },
+  "related": "The 'HTTP/1.1 502 Bad Gateway' recorded for both www.recoverycommunity.* roots in http-observations.json was returned by the session's egress proxy (20-byte text/plain body), not by an origin server; it is consistent with the NXDOMAIN results above."
+ },
+ "release_json_bodies": {
+  "evidence_type": "live_http_observation",
+  "method": "GET /release.json",
+  "observed_at": {
+   "recoverycommunity.center": "2026-10-29T04:08:20Z",
+   "recoverycommunity.app": "2026-10-29T04:08:20Z",
+   "vrcc.app": "2026-10-29T04:08:21Z"
+  },
+  "body_all_hosts": {
+   "release": "95b3e6c17ab5ce6ed9431e7f2a5eb4a54c7eec8b",
+   "supabaseProject": "cqcxvwoukyhxyokfwnjm"
+  },
+  "limitation": "Self-declared by the build (VITE_RELEASE at build time). Not a deployment record."
+ },
+ "auth_settings": {
+  "evidence_type": "live_http_observation",
+  "method": "GET https://cqcxvwoukyhxyokfwnjm.supabase.co/auth/v1/settings",
+  "credential_used": "Public publishable (anon) key from the release commit's deploy workflow, sent as the apikey header. No user session, no Authorization bearer for a user. Key value intentionally not recorded here.",
+  "observed_at": "2026-10-29T04:11:40Z",
+  "http_status": 200,
+  "non_secret_fields": {
+   "external_enabled": [
+    "email"
+   ],
+   "disable_signup": false,
+   "mailer_autoconfirm": false,
+   "phone_autoconfirm": false,
+   "saml_enabled": false,
+   "passkeys_enabled": false
+  },
+  "authorization_status": "Within the 2026-10-29 Pass 1 authorization (publicly observable authentication configuration).",
+  "limitation": "Describes server auth settings only. Does not establish CAPTCHA enforcement, redirect allowlists, session behavior, identity continuity, or security."
+ },
+ "cors_preflight_residence_intake": {
+  "evidence_type": "live_http_observation",
+  "authorization_status": "PROCEDURAL SCOPE DEVIATION. The 2026-10-29 Pass 1 authorization excluded invoking write endpoints. residence-intake is a write endpoint; these OPTIONS requests reached it. Ruled by the Executive Director (2026-10-29): retain with qualification; do not repeat under the existing authorization.",
+  "mutation": "None expected. At release 95b3e6c, supabase/functions/residence-intake/handler.ts returns 204 for OPTIONS before any validation or write.",
+  "requests": [
+   {
+    "origin_header": "https://vrcc.app",
+    "observed_at": "2026-10-29T04:12:01Z",
+    "status": 204,
+    "access_control_allow_origin": "https://vrcc.app",
+    "access_control_allow_methods": "POST, OPTIONS",
+    "sb_request_id": "01a185db-9214-734a-b97e-bd46a6503117",
+    "x_served_by": "supabase-edge-runtime"
+   },
+   {
+    "origin_header": "https://recoverycommunity.center",
+    "observed_at": "2026-10-29T04:12:01Z",
+    "status": 204,
+    "access_control_allow_origin": null,
+    "sb_request_id": "01a185db-9443-7fa2-aa75-185523a73284",
+    "x_served_by": "supabase-edge-runtime"
+   },
+   {
+    "origin_header": "https://recoverycommunity.app",
+    "observed_at": "2026-10-29T04:12:02Z",
+    "status": 204,
+    "access_control_allow_origin": null,
+    "sb_request_id": "01a185db-95b3-7bb7-abd4-b97311cfe6e3",
+    "x_served_by": "supabase-edge-runtime"
+   }
+  ],
+  "request_headers": "OPTIONS /functions/v1/residence-intake; Origin: <origin>; Access-Control-Request-Method: POST; Access-Control-Request-Headers: authorization,apikey,content-type,x-client-info. No apikey or Authorization header sent.",
+  "what_it_does_not_establish": "A preflight response is not a submission. These observations do not show that any application succeeded or failed, nor how a browser, Turnstile hostname attestation, or the receiver would treat an actual POST.",
+  "verification_required": "A separately authorized synthetic submission (preferably against staging) from each recoverycommunity.* apply page, or equivalent receiver logs, before treating this as a confirmed participant-facing defect."
+ },
+ "reproducible_build_comparison": {
+  "evidence_type": "reproducible_source_build",
+  "source_revision": "95b3e6c17ab5ce6ed9431e7f2a5eb4a54c7eec8b",
+  "method": "git worktree add --detach <dir> 95b3e6c; pnpm install --frozen-lockfile (pnpm 10.34.5, Node v22.22.0); pnpm build",
+  "build_environment_variable_names": [
+   "NODE_ENV=production",
+   "VITE_SUPABASE_URL",
+   "VITE_SUPABASE_ANON_KEY",
+   "VITE_TURNSTILE_SITE_KEY",
+   "VITE_RELEASE=95b3e6c17ab5ce6ed9431e7f2a5eb4a54c7eec8b"
+  ],
+  "build_environment_sources": "VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY from .github/workflows/deploy-production-candidate.yml at 95b3e6c; VITE_TURNSTILE_SITE_KEY from the served /gfa/contact-config.json. Values intentionally not recorded here.",
+  "first_attempt": "Container default NODE_ENV=development; output bundled React development builds and did not match. Discarded as a method error.",
+  "result": {
+   "javascript_assets_compared": 28,
+   "byte_identical": 28,
+   "differing": 0,
+   "index_html_identical": true,
+   "manifest_webmanifest_identical": true,
+   "release_json_matches_served": true,
+   "comparison_tool": "cmp",
+   "css_asset": "index-HKWrEb7g.css (sha256 3c0d92cebfca2cca2995e1b61df86cc21b7f44fe16aa756ba3922879b0dca44b) matched the served file by SHA-256 in the first, discarded development-mode build; it was not re-compared in the production-mode build. The build emitted 29 assets (28 JS + 1 CSS)."
+  },
+  "completed_at": "2026-10-29T04:09:45Z (production-mode build log mtime; byte comparison ran immediately after)",
+  "limitation": "Shows that 95b3e6c's build inputs reproduce the served bytes. Any revision with identical build inputs would do the same. Does not identify the deployment event, the deployed Worker script version, or Cloudflare bindings."
+ }
+}

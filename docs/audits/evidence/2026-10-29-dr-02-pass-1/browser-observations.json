@@ -1,0 +1,509 @@
+[
+ {
+  "url": "https://recoverycommunity.center/",
+  "observed_at": "2026-10-29T04:10:16.645Z",
+  "navigation_status": 200,
+  "final_url": "https://recoverycommunity.center/",
+  "requests": [
+   "GET recoverycommunity.center/",
+   "GET recoverycommunity.center/assets/index-DGeObB_M.js",
+   "GET recoverycommunity.center/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "GET recoverycommunity.center/images/recovery-community-center-night.png",
+   "POST recoverycommunity.center/cdn-cgi/rum",
+   "GET recoverycommunity.center/api/weather/des-moines"
+  ],
+  "aborted_non_get": [
+   "POST https://recoverycommunity.center/cdn-cgi/rum"
+  ],
+  "form_field_names": [],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "835abdcfd32f14074f9213d026748bda79b8e47147fc3e1e6ca83d357a7fbab6",
+  "rendered_text_bytes": 1134
+ },
+ {
+  "url": "https://recoverycommunity.app/",
+  "observed_at": "2026-10-29T04:10:21.015Z",
+  "navigation_status": 200,
+  "final_url": "https://recoverycommunity.app/sign-in",
+  "requests": [
+   "GET recoverycommunity.app/",
+   "GET recoverycommunity.app/assets/index-DGeObB_M.js",
+   "GET recoverycommunity.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "POST recoverycommunity.app/cdn-cgi/rum",
+   "GET recoverycommunity.app/assets/ParticipantArea-DU95lhzR.js",
+   "GET recoverycommunity.app/assets/GroundingPage-DtNjcXiE.js",
+   "GET recoverycommunity.app/assets/AppShell-D8-PiYtn.js",
+   "GET recoverycommunity.app/assets/SupportNow-BJqBkxuS.js",
+   "GET recoverycommunity.app/assets/ExperienceSwitcher-C64ZCyQa.js",
+   "GET recoverycommunity.app/assets/PageHeader-BwsrN_op.js",
+   "GET recoverycommunity.app/assets/HousingConsentPage-BaunIvuA.js",
+   "GET recoverycommunity.app/assets/intakeReadiness-B0JQULbZ.js",
+   "GET recoverycommunity.app/assets/useQueries-SLcs1Fon.js",
+   "GET recoverycommunity.app/assets/useMutation-SD7dS-Wv.js",
+   "GET recoverycommunity.app/assets/coachingWrites-ZmaBw3DP.js",
+   "GET recoverycommunity.app/assets/MessageThread-tv_DwkbB.js",
+   "GET recoverycommunity.app/assets/useScheduling-D0rmZGpS.js",
+   "GET recoverycommunity.app/assets/residenceDocuments-CG7pW0Uy.js"
+  ],
+  "aborted_non_get": [
+   "POST https://recoverycommunity.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [
+   "input[email] name=email",
+   "input[password] name=password"
+  ],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "a1f310f0fd508a24f30055b7f63c93575a6b7dc9fa1aa6accd3ee6fd3e1f890f",
+  "rendered_text_bytes": 147
+ },
+ {
+  "url": "https://vrcc.app/",
+  "observed_at": "2026-10-29T04:10:24.617Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/",
+  "requests": [
+   "GET vrcc.app/",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "POST vrcc.app/cdn-cgi/rum"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "173730095568dbde78ee946cba79e6db317325663401a62abdf657a63a15ebb2",
+  "rendered_text_bytes": 1532
+ },
+ {
+  "url": "https://vrcc.app/vrcc/today",
+  "observed_at": "2026-10-29T04:10:27.518Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/sign-in",
+  "requests": [
+   "GET vrcc.app/vrcc/today",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "GET vrcc.app/assets/ParticipantArea-DU95lhzR.js",
+   "GET vrcc.app/assets/GroundingPage-DtNjcXiE.js",
+   "GET vrcc.app/assets/AppShell-D8-PiYtn.js",
+   "GET vrcc.app/assets/SupportNow-BJqBkxuS.js",
+   "GET vrcc.app/assets/ExperienceSwitcher-C64ZCyQa.js",
+   "GET vrcc.app/assets/PageHeader-BwsrN_op.js",
+   "GET vrcc.app/assets/HousingConsentPage-BaunIvuA.js",
+   "GET vrcc.app/assets/intakeReadiness-B0JQULbZ.js",
+   "GET vrcc.app/assets/useQueries-SLcs1Fon.js",
+   "GET vrcc.app/assets/useMutation-SD7dS-Wv.js",
+   "GET vrcc.app/assets/coachingWrites-ZmaBw3DP.js",
+   "GET vrcc.app/assets/MessageThread-tv_DwkbB.js",
+   "GET vrcc.app/assets/useScheduling-D0rmZGpS.js",
+   "GET vrcc.app/assets/residenceDocuments-CG7pW0Uy.js",
+   "POST vrcc.app/cdn-cgi/rum"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [
+   "input[email] name=email",
+   "input[password] name=password"
+  ],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "a1f310f0fd508a24f30055b7f63c93575a6b7dc9fa1aa6accd3ee6fd3e1f890f",
+  "rendered_text_bytes": 147
+ },
+ {
+  "url": "https://vrcc.app/app/today",
+  "observed_at": "2026-10-29T04:10:30.786Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/sign-in",
+  "requests": [
+   "GET vrcc.app/app/today",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "POST vrcc.app/cdn-cgi/rum",
+   "GET vrcc.app/assets/ParticipantArea-DU95lhzR.js",
+   "GET vrcc.app/assets/GroundingPage-DtNjcXiE.js",
+   "GET vrcc.app/assets/AppShell-D8-PiYtn.js",
+   "GET vrcc.app/assets/SupportNow-BJqBkxuS.js",
+   "GET vrcc.app/assets/ExperienceSwitcher-C64ZCyQa.js",
+   "GET vrcc.app/assets/PageHeader-BwsrN_op.js",
+   "GET vrcc.app/assets/HousingConsentPage-BaunIvuA.js",
+   "GET vrcc.app/assets/intakeReadiness-B0JQULbZ.js",
+   "GET vrcc.app/assets/useQueries-SLcs1Fon.js",
+   "GET vrcc.app/assets/useMutation-SD7dS-Wv.js",
+   "GET vrcc.app/assets/coachingWrites-ZmaBw3DP.js",
+   "GET vrcc.app/assets/MessageThread-tv_DwkbB.js",
+   "GET vrcc.app/assets/useScheduling-D0rmZGpS.js",
+   "GET vrcc.app/assets/residenceDocuments-CG7pW0Uy.js"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [
+   "input[email] name=email",
+   "input[password] name=password"
+  ],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "a1f310f0fd508a24f30055b7f63c93575a6b7dc9fa1aa6accd3ee6fd3e1f890f",
+  "rendered_text_bytes": 147
+ },
+ {
+  "url": "https://vrcc.app/staff",
+  "observed_at": "2026-10-29T04:10:34.066Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/sign-in",
+  "requests": [
+   "GET vrcc.app/staff",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "GET vrcc.app/assets/StaffArea-BFEQgSoC.js",
+   "GET vrcc.app/assets/documentReviewMessages-FvpuRpGB.js",
+   "GET vrcc.app/assets/PageHeader-BwsrN_op.js",
+   "GET vrcc.app/assets/houseBoard-hnN4hx9v.js",
+   "GET vrcc.app/assets/AppShell-D8-PiYtn.js",
+   "GET vrcc.app/assets/coachWorkspace-CW4eu9Xc.js",
+   "GET vrcc.app/assets/intakeReadiness-B0JQULbZ.js",
+   "GET vrcc.app/assets/useMutation-SD7dS-Wv.js",
+   "GET vrcc.app/assets/MessageThread-tv_DwkbB.js",
+   "GET vrcc.app/assets/NotificationsPanel-BIaKygB4.js",
+   "POST vrcc.app/cdn-cgi/rum"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [
+   "input[email] name=email",
+   "input[password] name=password"
+  ],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "a1f310f0fd508a24f30055b7f63c93575a6b7dc9fa1aa6accd3ee6fd3e1f890f",
+  "rendered_text_bytes": 147
+ },
+ {
+  "url": "https://vrcc.app/admin",
+  "observed_at": "2026-10-29T04:10:37.399Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/sign-in",
+  "requests": [
+   "GET vrcc.app/admin",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "GET vrcc.app/assets/AdminArea-eT-9c69f.js",
+   "GET vrcc.app/assets/AppShell-D8-PiYtn.js",
+   "GET vrcc.app/assets/ExperienceSwitcher-C64ZCyQa.js",
+   "GET vrcc.app/assets/PageHeader-BwsrN_op.js",
+   "GET vrcc.app/assets/useMutation-SD7dS-Wv.js",
+   "GET vrcc.app/assets/coachingWrites-ZmaBw3DP.js",
+   "GET vrcc.app/assets/intakeReview-manHO7On.js",
+   "GET vrcc.app/assets/NotificationsPanel-BIaKygB4.js",
+   "POST vrcc.app/cdn-cgi/rum"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [
+   "input[email] name=email",
+   "input[password] name=password"
+  ],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "a1f310f0fd508a24f30055b7f63c93575a6b7dc9fa1aa6accd3ee6fd3e1f890f",
+  "rendered_text_bytes": 147
+ },
+ {
+  "url": "https://vrcc.app/my-housing",
+  "observed_at": "2026-10-29T04:10:40.551Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/sign-in?next=%2Fmy-housing",
+  "requests": [
+   "GET vrcc.app/my-housing",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "GET vrcc.app/assets/HousingIntakeArea-DFgZga2p.js",
+   "GET vrcc.app/assets/HousingConsentPage-BaunIvuA.js",
+   "GET vrcc.app/assets/PageHeader-BwsrN_op.js",
+   "GET vrcc.app/assets/intakeReadiness-B0JQULbZ.js",
+   "GET vrcc.app/assets/DocumentDetailPage-Nv3zX9HM.js",
+   "GET vrcc.app/assets/residenceDocuments-CG7pW0Uy.js",
+   "GET vrcc.app/assets/documentReviewMessages-FvpuRpGB.js",
+   "POST vrcc.app/cdn-cgi/rum"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [
+   "input[email] name=email",
+   "input[password] name=password"
+  ],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "a1f310f0fd508a24f30055b7f63c93575a6b7dc9fa1aa6accd3ee6fd3e1f890f",
+  "rendered_text_bytes": 147
+ },
+ {
+  "url": "https://vrcc.app/sign-in",
+  "observed_at": "2026-10-29T04:10:43.702Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/sign-in",
+  "requests": [
+   "GET vrcc.app/sign-in",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "POST vrcc.app/cdn-cgi/rum"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [
+   "input[email] name=email",
+   "input[password] name=password"
+  ],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "a1f310f0fd508a24f30055b7f63c93575a6b7dc9fa1aa6accd3ee6fd3e1f890f",
+  "rendered_text_bytes": 147
+ },
+ {
+  "url": "https://vrcc.app/register",
+  "observed_at": "2026-10-29T04:10:46.293Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/register",
+  "requests": [
+   "GET vrcc.app/register",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "POST vrcc.app/cdn-cgi/rum"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [
+   "input[text] name=firstName",
+   "input[text] name=lastName",
+   "input[email] name=email",
+   "input[password] name=password"
+  ],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "da1bc7a502c62c80e2a1965f6987409a810fc4d87818ee4fbe8b7f913efe8425",
+  "rendered_text_bytes": 227
+ },
+ {
+  "url": "https://vrcc.app/support",
+  "observed_at": "2026-10-29T04:10:48.916Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/support",
+  "requests": [
+   "GET vrcc.app/support",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "POST vrcc.app/cdn-cgi/rum"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "f95b495151151880f1d9dcb74ce7dfa01cc364504543c046d2beb1055ff3b91b",
+  "rendered_text_bytes": 1364
+ },
+ {
+  "url": "https://vrcc.app/community-center",
+  "observed_at": "2026-10-29T04:10:51.604Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/community-center",
+  "requests": [
+   "GET vrcc.app/community-center",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "GET vrcc.app/images/recovery-community-center-night.png",
+   "POST vrcc.app/cdn-cgi/rum",
+   "GET vrcc.app/api/weather/des-moines"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "835abdcfd32f14074f9213d026748bda79b8e47147fc3e1e6ca83d357a7fbab6",
+  "rendered_text_bytes": 1134
+ },
+ {
+  "url": "https://vrcc.app/recovery-residences",
+  "observed_at": "2026-10-29T04:10:54.601Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/recovery-residences",
+  "requests": [
+   "GET vrcc.app/recovery-residences",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "POST vrcc.app/cdn-cgi/rum"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [
+   "input[search] name=",
+   "select[select-one] name=",
+   "select[select-one] name="
+  ],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "4f0c8423b95367a8f1679d66a0c3661f32f10e7de5315ce71d79fe164e2eceb1",
+  "rendered_text_bytes": 7813
+ },
+ {
+  "url": "https://vrcc.app/recovery-residences/grace-house/apply",
+  "observed_at": "2026-10-29T04:10:57.215Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/recovery-residences/grace-house/apply",
+  "requests": [
+   "GET vrcc.app/recovery-residences/grace-house/apply",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "POST vrcc.app/cdn-cgi/rum",
+   "GET challenges.cloudflare.com/turnstile/v0/api.js",
+   "GET challenges.cloudflare.com/turnstile/v0/g/c787ce48cf6b/api.js",
+   "GET challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/turnstile/f/av0/rch/[id]/0x4AAAAA…[sitekey-truncated]/auto/fbE/new/normal",
+   "POST challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/fo/[redacted-per-session-token]"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum",
+   "POST https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/fo/[redacted-per-session-token]",
+   "POST https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/fo/[redacted-per-session-token]",
+   "POST https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/fo/[redacted-per-session-token]"
+  ],
+  "form_field_names": [
+   "input[text] name=companyWebsite",
+   "input[text] name=applicantName",
+   "input[tel] name=applicantPhone",
+   "input[email] name=applicantEmail",
+   "select[select-one] name=preferredContact",
+   "select[select-one] name=voicemail_ok",
+   "input[checkbox] name=age18",
+   "input[text] name=county",
+   "select[select-one] name=timing",
+   "input[text] name=housing_situation",
+   "textarea[textarea] name=why_housing",
+   "input[text] name=accommodation_needs",
+   "input[text] name=referralSource",
+   "input[checkbox] name=consentToContact",
+   "input[hidden] name=cf-turnstile-response"
+  ],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "374cf5b68440f8bad1c46810c851ab5fb8ebf49616cc28e1096551253b117acb",
+  "rendered_text_bytes": 1927
+ },
+ {
+  "url": "https://vrcc.app/recovery-residences/ejwrh/apply",
+  "observed_at": "2026-10-29T04:11:01.047Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/recovery-residences/ejwrh/apply",
+  "requests": [
+   "GET vrcc.app/recovery-residences/ejwrh/apply",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "POST vrcc.app/cdn-cgi/rum",
+   "GET challenges.cloudflare.com/turnstile/v0/api.js",
+   "GET challenges.cloudflare.com/turnstile/v0/g/c787ce48cf6b/api.js",
+   "GET challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/turnstile/f/av0/rch/[id]/0x4AAAAA…[sitekey-truncated]/auto/fbE/new/normal",
+   "POST challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/fo/[redacted-per-session-token]"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum",
+   "POST https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/fo/[redacted-per-session-token]",
+   "POST https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/fo/[redacted-per-session-token]",
+   "POST https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/g/fo/[redacted-per-session-token]"
+  ],
+  "form_field_names": [
+   "input[text] name=companyWebsite",
+   "input[text] name=applicantName",
+   "input[tel] name=applicantPhone",
+   "input[email] name=applicantEmail",
+   "select[select-one] name=preferredContact",
+   "select[select-one] name=voicemail_ok",
+   "input[checkbox] name=age18",
+   "input[text] name=county",
+   "select[select-one] name=timing",
+   "input[text] name=housing_situation",
+   "textarea[textarea] name=why_housing",
+   "input[text] name=accommodation_needs",
+   "input[text] name=referralSource",
+   "input[checkbox] name=consentToContact",
+   "input[hidden] name=cf-turnstile-response"
+  ],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "b3a31fa13eb7e14485f98d8a83e41585780c1a058299511e6724e603c72a5e10",
+  "rendered_text_bytes": 1834
+ },
+ {
+  "url": "https://vrcc.app/recovery-residences/list-your-residence",
+  "observed_at": "2026-10-29T04:11:04.688Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/recovery-residences/list-your-residence",
+  "requests": [
+   "GET vrcc.app/recovery-residences/list-your-residence",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "POST vrcc.app/cdn-cgi/rum"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "a3ab58eeca5c1c4d2463eb9a24d3cf04b8c49e2fdd24f5ea32f73d3bc6d94b2d",
+  "rendered_text_bytes": 945
+ },
+ {
+  "url": "https://vrcc.app/recovery-residences/my-application",
+  "observed_at": "2026-10-29T04:11:07.294Z",
+  "navigation_status": 200,
+  "final_url": "https://vrcc.app/sign-in?next=%2Frecovery-residences%2Fmy-application",
+  "requests": [
+   "GET vrcc.app/recovery-residences/my-application",
+   "GET vrcc.app/assets/index-DGeObB_M.js",
+   "GET vrcc.app/assets/index-HKWrEb7g.css",
+   "GET static.cloudflareinsights.com/beacon.min.js/[version-id]",
+   "POST vrcc.app/cdn-cgi/rum"
+  ],
+  "aborted_non_get": [
+   "POST https://vrcc.app/cdn-cgi/rum"
+  ],
+  "form_field_names": [
+   "input[email] name=email",
+   "input[password] name=password"
+  ],
+  "cookies_count": 0,
+  "local_storage_keys": [],
+  "rendered_text_sha256": "a1f310f0fd508a24f30055b7f63c93575a6b7dc9fa1aa6accd3ee6fd3e1f890f",
+  "rendered_text_bytes": 147
+ }
+]

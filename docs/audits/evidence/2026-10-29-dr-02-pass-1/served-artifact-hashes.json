@@ -1,0 +1,201 @@
+{
+ "note": "All lazy chunks referenced by /assets/index-DGeObB_M.js, fetched from vrcc.app with GET. Main JS/CSS were also fetched from the other two hosts; see http-observations.json body_sha256 for cross-host equality.",
+ "artifacts": [
+  {
+   "served_path": "/assets/AdminArea-eT-9c69f.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "7260b251358c05431dab01cb0f40e58e4751c6d407d4ca7a5d055f49c85d3de5",
+   "bytes": 42843,
+   "retrieved_at": "2026-10-29T04:07:03.223Z"
+  },
+  {
+   "served_path": "/assets/AppShell-D8-PiYtn.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "b352dd595fb552a73fddb0afd0d42ebd14b9742d8166be9937fb42654ae8430d",
+   "bytes": 6205,
+   "retrieved_at": "2026-10-29T04:07:03.718Z"
+  },
+  {
+   "served_path": "/assets/CoachArea-C8w9JMVQ.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "2050ef2ed4f25ff6d9f91dc270536b3d8b50109631abaf16dd449a41e68ac8e1",
+   "bytes": 36945,
+   "retrieved_at": "2026-10-29T04:07:04.043Z"
+  },
+  {
+   "served_path": "/assets/DocumentDetailPage-Nv3zX9HM.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "5cc5eccaa7dd1881283918b8bd65d03851448f129c2a4fc32d3e4276c6dbe927",
+   "bytes": 286131,
+   "retrieved_at": "2026-10-29T04:07:04.471Z"
+  },
+  {
+   "served_path": "/assets/ExperienceSwitcher-C64ZCyQa.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "923079faa7a6da5d43a68533035ec7ac711be8319318a4da737ac41abb296673",
+   "bytes": 926,
+   "retrieved_at": "2026-10-29T04:07:04.777Z"
+  },
+  {
+   "served_path": "/assets/GroundingPage-DtNjcXiE.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "716697fc0dc4a2beb2bce9164440d92e6c5f4f8afa150c75b66c85f2ecac0555",
+   "bytes": 1941,
+   "retrieved_at": "2026-10-29T04:07:05.078Z"
+  },
+  {
+   "served_path": "/assets/HousingConsentPage-BaunIvuA.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "62a3da6f30953d8db5985a7a11f4d29aa0c3f0a6ccd7e3d113c5036503532530",
+   "bytes": 4330,
+   "retrieved_at": "2026-10-29T04:07:05.353Z"
+  },
+  {
+   "served_path": "/assets/HousingIntakeArea-DFgZga2p.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "9e5583f6492dd34695a9e8e924119c83f54c62eac0e9c1cad9e03658d8dd3afb",
+   "bytes": 7653,
+   "retrieved_at": "2026-10-29T04:07:05.643Z"
+  },
+  {
+   "served_path": "/assets/IntakeQueuePage-BJGuG23j.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "9215af7d8bcd453096c50fbbcf79452c95fd3e8b4e29574acc3201dc14638ba4",
+   "bytes": 9969,
+   "retrieved_at": "2026-10-29T04:07:06.016Z"
+  },
+  {
+   "served_path": "/assets/MessageThread-tv_DwkbB.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "59787610ed67f5ff2f32dcf5c4df7491e0a0d62ecb6210d8ec9cd4229c335e69",
+   "bytes": 6301,
+   "retrieved_at": "2026-10-29T04:07:06.270Z"
+  },
+  {
+   "served_path": "/assets/NavigatorArea-MBC-CLZ2.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "4251246c8794fd907dea89b7e5bd1b0ab290901efba4aba2f46fbd35162af3f1",
+   "bytes": 28613,
+   "retrieved_at": "2026-10-29T04:07:06.539Z"
+  },
+  {
+   "served_path": "/assets/NotificationsPanel-BIaKygB4.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "0a3bb4515dd2fc46c64ed7715d46f42d1160f1f28d4c945f94cc02a67b78dc42",
+   "bytes": 2162,
+   "retrieved_at": "2026-10-29T04:07:06.770Z"
+  },
+  {
+   "served_path": "/assets/PageHeader-BwsrN_op.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "51d453a9053ede509723cb759e8ae99e193c17ee536d1ed8d550b32bd586c003",
+   "bytes": 904,
+   "retrieved_at": "2026-10-29T04:07:07.062Z"
+  },
+  {
+   "served_path": "/assets/ParticipantArea-DU95lhzR.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "c235089ef0cc60f2c1497b93da6ca1a3f945773527874fbec1c75b5371a673d5",
+   "bytes": 262938,
+   "retrieved_at": "2026-10-29T04:07:07.355Z"
+  },
+  {
+   "served_path": "/assets/ResidentArea-CfEyYqHr.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "b43c608e7cda4b8bcc7bb2fe224031953f1ffe0f9ef9f03a9bde3a35e0cfa380",
+   "bytes": 25661,
+   "retrieved_at": "2026-10-29T04:07:07.695Z"
+  },
+  {
+   "served_path": "/assets/StaffArea-BFEQgSoC.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "7e8fc3602f0831ddac4c0859645979e30e9992de6fcad961995e59ecc2c2adf1",
+   "bytes": 101399,
+   "retrieved_at": "2026-10-29T04:07:08.019Z"
+  },
+  {
+   "served_path": "/assets/SupportNow-BJqBkxuS.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "7fa612f88b86bd8647964952da46cbfaf0aea1e0b094d95d49f31b1aac821b2b",
+   "bytes": 1861,
+   "retrieved_at": "2026-10-29T04:07:08.337Z"
+  },
+  {
+   "served_path": "/assets/coachWorkspace-CW4eu9Xc.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "919049d4e7c6b0dcbd4daed2d33b3d0d0f19e5fb8bf331a3ef7333c5df9f6de9",
+   "bytes": 858,
+   "retrieved_at": "2026-10-29T04:07:08.639Z"
+  },
+  {
+   "served_path": "/assets/coachingWrites-ZmaBw3DP.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "558d99294ca006c59dd8436d566e9ac247dcdf44f03990f83a616b8c551079f6",
+   "bytes": 1721,
+   "retrieved_at": "2026-10-29T04:07:08.935Z"
+  },
+  {
+   "served_path": "/assets/documentReviewMessages-FvpuRpGB.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "1e5eef8fd297edc8ad7082e57c6f6deb22db1ef10896b15370af96baab304efb",
+   "bytes": 163943,
+   "retrieved_at": "2026-10-29T04:07:09.235Z"
+  },
+  {
+   "served_path": "/assets/houseBoard-hnN4hx9v.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "de205d5c97709a464899a7c0536b03a2360b299a399dcb9b1ecafce1c4709abe",
+   "bytes": 13058,
+   "retrieved_at": "2026-10-29T04:07:09.531Z"
+  },
+  {
+   "served_path": "/assets/intakeReadiness-B0JQULbZ.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "d6490e271f11350ceffa04a5be7f918ae9bb6d9c6e68b67adece55471243a3dd",
+   "bytes": 2664,
+   "retrieved_at": "2026-10-29T04:07:09.892Z"
+  },
+  {
+   "served_path": "/assets/intakeReview-manHO7On.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "06f10c880ea9984cdfdd96075220e4c7bac4759c4eeea8c97b90d5acbb913b68",
+   "bytes": 1134,
+   "retrieved_at": "2026-10-29T04:07:10.313Z"
+  },
+  {
+   "served_path": "/assets/residenceDocuments-CG7pW0Uy.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "11dfd9c7a69f20233850f6704b614af075830680299e9fc32615ade21b1edbbb",
+   "bytes": 422,
+   "retrieved_at": "2026-10-29T04:07:10.514Z"
+  },
+  {
+   "served_path": "/assets/useMutation-SD7dS-Wv.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "412a7bd3f6c7a92734c88170bbe39fae02f6e1e24ca5c618c0678afcb26f0161",
+   "bytes": 19229,
+   "retrieved_at": "2026-10-29T04:07:10.791Z"
+  },
+  {
+   "served_path": "/assets/useQueries-SLcs1Fon.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "400f04bf47bce2883b726d149f03365bc914b4352d1b5c955cf114b9fad8d37e",
+   "bytes": 11721,
+   "retrieved_at": "2026-10-29T04:07:11.048Z"
+  },
+  {
+   "served_path": "/assets/useScheduling-D0rmZGpS.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "f4cc734dc941272d0013db6a90bffd5c1f0c76946ee1446a60ad321762794299",
+   "bytes": 3189,
+   "retrieved_at": "2026-10-29T04:07:11.310Z"
+  },
+  {
+   "served_path": "/assets/index-DGeObB_M.js",
+   "retrieved_from": "https://vrcc.app",
+   "sha256": "0507457aeefd742c3242d4baedd9ccb692304e9046882e44ca2cd65db7f22c39",
+   "bytes": 668398,
+   "retrieved_at": "2026-10-29T04:06:35.079Z"
+  }
+ ]
+}

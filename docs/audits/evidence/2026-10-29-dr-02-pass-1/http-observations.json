@@ -1,0 +1,821 @@
+[
+ {
+  "kind": "root",
+  "url": "https://recoverycommunity.center/",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:06:14.387Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:06:14 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f4e73d9d31278-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "root",
+  "url": "https://www.recoverycommunity.center/",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:06:14.695Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/1.1 502 Bad Gateway",
+  "headers_sanitized": {
+   "content-type": "text/plain; charset=utf-8",
+   "x-content-type-options": "nosniff",
+   "content-length": "20"
+  },
+  "body_sha256": null,
+  "body_bytes": null,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "root",
+  "url": "https://recoverycommunity.app/",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:06:15.111Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:06:15 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f4e782a987c81-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "root",
+  "url": "https://www.recoverycommunity.app/",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:06:15.407Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/1.1 502 Bad Gateway",
+  "headers_sanitized": {
+   "content-type": "text/plain; charset=utf-8",
+   "x-content-type-options": "nosniff",
+   "content-length": "20"
+  },
+  "body_sha256": null,
+  "body_bytes": null,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "root",
+  "url": "https://vrcc.app/",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:06:15.791Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:06:15 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f4e7c897e0f45-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "root",
+  "url": "https://www.vrcc.app/",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:06:16.235Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:06:16 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f4e7f7a192ef5-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "asset",
+  "url": "https://recoverycommunity.center/assets/index-DGeObB_M.js",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:06:33.627Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:06:33 GMT",
+   "content-type": "application/javascript",
+   "content-length": "668398",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "etag": "\"b99b3ab78944e80dda7c05135723eb8c\"",
+   "server": "cloudflare",
+   "cf-ray": "a51f4eec0ce9e563-EWR"
+  },
+  "body_sha256": "0507457aeefd742c3242d4baedd9ccb692304e9046882e44ca2cd65db7f22c39",
+  "body_bytes": 668398,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "asset",
+  "url": "https://recoverycommunity.center/assets/index-HKWrEb7g.css",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:06:34.063Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:06:34 GMT",
+   "content-type": "text/css",
+   "content-length": "47408",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "etag": "\"fa18bbf08bd49fba20dac619483a2522\"",
+   "server": "cloudflare",
+   "cf-ray": "a51f4eeeb8630f94-EWR"
+  },
+  "body_sha256": "3c0d92cebfca2cca2995e1b61df86cc21b7f44fe16aa756ba3922879b0dca44b",
+  "body_bytes": 47408,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "asset",
+  "url": "https://recoverycommunity.app/assets/index-DGeObB_M.js",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:06:34.407Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:06:34 GMT",
+   "content-type": "application/javascript",
+   "content-length": "668398",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "etag": "\"b99b3ab78944e80dda7c05135723eb8c\"",
+   "server": "cloudflare",
+   "cf-ray": "a51f4ef0d99572aa-EWR"
+  },
+  "body_sha256": "0507457aeefd742c3242d4baedd9ccb692304e9046882e44ca2cd65db7f22c39",
+  "body_bytes": 668398,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "asset",
+  "url": "https://recoverycommunity.app/assets/index-HKWrEb7g.css",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:06:34.707Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:06:34 GMT",
+   "content-type": "text/css",
+   "content-length": "47408",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "etag": "\"fa18bbf08bd49fba20dac619483a2522\"",
+   "server": "cloudflare",
+   "cf-ray": "a51f4ef2eab343e7-EWR"
+  },
+  "body_sha256": "3c0d92cebfca2cca2995e1b61df86cc21b7f44fe16aa756ba3922879b0dca44b",
+  "body_bytes": 47408,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "asset",
+  "url": "https://vrcc.app/assets/index-DGeObB_M.js",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:06:35.011Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:06:35 GMT",
+   "content-type": "application/javascript",
+   "content-length": "668398",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "etag": "\"b99b3ab78944e80dda7c05135723eb8c\"",
+   "server": "cloudflare",
+   "cf-ray": "a51f4ef47dd35e76-EWR"
+  },
+  "body_sha256": "0507457aeefd742c3242d4baedd9ccb692304e9046882e44ca2cd65db7f22c39",
+  "body_bytes": 668398,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "asset",
+  "url": "https://vrcc.app/assets/index-HKWrEb7g.css",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:06:35.351Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:06:35 GMT",
+   "content-type": "text/css",
+   "content-length": "47408",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "etag": "\"fa18bbf08bd49fba20dac619483a2522\"",
+   "server": "cloudflare",
+   "cf-ray": "a51f4ef6ed404388-EWR"
+  },
+  "body_sha256": "3c0d92cebfca2cca2995e1b61df86cc21b7f44fe16aa756ba3922879b0dca44b",
+  "body_bytes": 47408,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.center/api/weather/des-moines",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:52.439Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:52 GMT",
+   "content-type": "application/json; charset=utf-8",
+   "content-length": "150",
+   "cache-control": "public, max-age=300, s-maxage=900",
+   "x-content-type-options": "nosniff",
+   "server": "cloudflare",
+   "cf-ray": "a51f50d81c045e79-EWR"
+  },
+  "body_sha256": "873d15184d16c03c6b3261543ad9efb3e3c62ae495ce40387d03ea8b0fd5b095",
+  "body_bytes": 150,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.center/residence/directory?apply=ejwrh",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:53.187Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 302",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:53 GMT",
+   "content-length": "0",
+   "location": "https://recoverycommunity.center/recovery-residences/ejwrh/apply",
+   "cache-control": "no-store",
+   "server": "cloudflare",
+   "cf-ray": "a51f50dd6bb142db-EWR"
+  },
+  "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "body_bytes": 0,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.center/residence/directory?apply=grace",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:53.519Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 302",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:53 GMT",
+   "content-length": "0",
+   "location": "https://recoverycommunity.center/recovery-residences/grace-house/apply",
+   "cache-control": "no-store",
+   "server": "cloudflare",
+   "cf-ray": "a51f50df6b1c421c-EWR"
+  },
+  "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "body_bytes": 0,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.center/vrcc/today",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:53.743Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:53 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f50e0ed474399-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.center/app/today",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:54.039Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:54 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f50e2ba57e80f-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.center/sign-in",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:54.295Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:54 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f50e46c7ff659-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.center/recovery-residences",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:54.559Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:54 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f50e5ec7c9630-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.center/definitely-not-a-route-xyz",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:54.783Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:54 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f50e79c070cfb-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.center/manifest.webmanifest",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:55.059Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:55 GMT",
+   "content-type": "application/manifest+json",
+   "content-length": "739",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "etag": "\"45d3fb5210b3cf6769053c0cb87d65d1\"",
+   "server": "cloudflare",
+   "cf-ray": "a51f50e918a3f25f-EWR"
+  },
+  "body_sha256": "08b3277098d1d2ecb59ddc4459cd1290ab0d352831e47f83abe16e823103b009",
+  "body_bytes": 739,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.app/api/weather/des-moines",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:55.791Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:55 GMT",
+   "content-type": "application/json; charset=utf-8",
+   "content-length": "150",
+   "cache-control": "public, max-age=300, s-maxage=900",
+   "x-content-type-options": "nosniff",
+   "server": "cloudflare",
+   "cf-ray": "a51f50eaffb64321-EWR"
+  },
+  "body_sha256": "873d15184d16c03c6b3261543ad9efb3e3c62ae495ce40387d03ea8b0fd5b095",
+  "body_bytes": 150,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.app/residence/directory?apply=ejwrh",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:56.011Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 302",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:56 GMT",
+   "content-length": "0",
+   "location": "https://recoverycommunity.app/recovery-residences/ejwrh/apply",
+   "cache-control": "no-store",
+   "server": "cloudflare",
+   "cf-ray": "a51f50ef3eaef797-EWR"
+  },
+  "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "body_bytes": 0,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.app/residence/directory?apply=grace",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:56.295Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 302",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:56 GMT",
+   "content-length": "0",
+   "location": "https://recoverycommunity.app/recovery-residences/grace-house/apply",
+   "cache-control": "no-store",
+   "server": "cloudflare",
+   "cf-ray": "a51f50f0fbc37c99-EWR"
+  },
+  "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "body_bytes": 0,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.app/vrcc/today",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:56.555Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:56 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f50f288ea9cdd-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.app/app/today",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:56.903Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:56 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f50f4c96ab1f3-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.app/sign-in",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:57.163Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:57 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f50f65fd80c23-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.app/recovery-residences",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:57.435Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:57 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f50f81ab67290-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.app/definitely-not-a-route-xyz",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:57.659Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:57 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f50f96b8843b9-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://recoverycommunity.app/manifest.webmanifest",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:57.915Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:57 GMT",
+   "content-type": "application/manifest+json",
+   "content-length": "739",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "etag": "\"45d3fb5210b3cf6769053c0cb87d65d1\"",
+   "server": "cloudflare",
+   "cf-ray": "a51f50fafaf66e18-EWR"
+  },
+  "body_sha256": "08b3277098d1d2ecb59ddc4459cd1290ab0d352831e47f83abe16e823103b009",
+  "body_bytes": 739,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://vrcc.app/api/weather/des-moines",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:58.399Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:58 GMT",
+   "content-type": "application/json; charset=utf-8",
+   "content-length": "150",
+   "cache-control": "public, max-age=300, s-maxage=900",
+   "x-content-type-options": "nosniff",
+   "server": "cloudflare",
+   "cf-ray": "a51f50fc9d8e8c5f-EWR"
+  },
+  "body_sha256": "873d15184d16c03c6b3261543ad9efb3e3c62ae495ce40387d03ea8b0fd5b095",
+  "body_bytes": 150,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://vrcc.app/residence/directory?apply=ejwrh",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:58.643Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 302",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:58 GMT",
+   "content-length": "0",
+   "location": "https://vrcc.app/recovery-residences/ejwrh/apply",
+   "cache-control": "no-store",
+   "server": "cloudflare",
+   "cf-ray": "a51f50ffbae4ae20-EWR"
+  },
+  "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "body_bytes": 0,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://vrcc.app/residence/directory?apply=grace",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:58.831Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 302",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:58 GMT",
+   "content-length": "0",
+   "location": "https://vrcc.app/recovery-residences/grace-house/apply",
+   "cache-control": "no-store",
+   "server": "cloudflare",
+   "cf-ray": "a51f5100e8fede0e-EWR"
+  },
+  "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "body_bytes": 0,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://vrcc.app/vrcc/today",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:59.151Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:59 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f51025dc44270-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://vrcc.app/app/today",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:59.411Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:59 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f51043a6f428b-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://vrcc.app/sign-in",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:59.651Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:59 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f5105dfe8ace5-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://vrcc.app/recovery-residences",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:07:59.847Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:07:59 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f51072dbae8c4-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://vrcc.app/definitely-not-a-route-xyz",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:08:00.051Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:08:00 GMT",
+   "content-type": "text/html",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "server": "cloudflare",
+   "cf-ray": "a51f51087e34f629-EWR"
+  },
+  "body_sha256": "f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d",
+  "body_bytes": 2183,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "route",
+  "url": "https://vrcc.app/manifest.webmanifest",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:08:00.315Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:08:00 GMT",
+   "content-type": "application/manifest+json",
+   "content-length": "739",
+   "cf-cache-status": "HIT",
+   "cache-control": "public, max-age=0, must-revalidate",
+   "etag": "\"45d3fb5210b3cf6769053c0cb87d65d1\"",
+   "server": "cloudflare",
+   "cf-ray": "a51f5109fb7f4223-EWR"
+  },
+  "body_sha256": "08b3277098d1d2ecb59ddc4459cd1290ab0d352831e47f83abe16e823103b009",
+  "body_bytes": 739,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "release_json",
+  "url": "https://recoverycommunity.center/release.json",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:08:20.791Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:08:20 GMT",
+   "content-type": "application/json",
+   "content-length": "95",
+   "cf-cache-status": "HIT",
+   "cache-control": "no-store",
+   "etag": "\"0f4b2d5b21d07ba183880fb85870c8db\"",
+   "server": "cloudflare",
+   "cf-ray": "a51f5189effc0cba-EWR"
+  },
+  "body_sha256": null,
+  "body_bytes": null,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "release_json",
+  "url": "https://recoverycommunity.app/release.json",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:08:21.207Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:08:21 GMT",
+   "content-type": "application/json",
+   "content-length": "95",
+   "cf-cache-status": "HIT",
+   "cache-control": "no-store",
+   "etag": "\"0f4b2d5b21d07ba183880fb85870c8db\"",
+   "server": "cloudflare",
+   "cf-ray": "a51f518c9c2c436c-EWR"
+  },
+  "body_sha256": null,
+  "body_bytes": null,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ },
+ {
+  "kind": "release_json",
+  "url": "https://vrcc.app/release.json",
+  "method": "GET",
+  "observed_at": "2026-10-29T04:08:21.411Z",
+  "timestamp_source": "capture-file mtime (UTC), written when curl completed",
+  "status": "HTTP/2 200",
+  "headers_sanitized": {
+   "date": "Thu, 29 Oct 2026 04:08:21 GMT",
+   "content-type": "application/json",
+   "content-length": "95",
+   "cf-cache-status": "HIT",
+   "cache-control": "no-store",
+   "etag": "\"0f4b2d5b21d07ba183880fb85870c8db\"",
+   "server": "cloudflare",
+   "cf-ray": "a51f518e0aeb0f63-EWR"
+  },
+  "body_sha256": null,
+  "body_bytes": null,
+  "retrieval": "curl -sS -m 20 -D <hdr> -o <body> via egress proxy"
+ }
+]

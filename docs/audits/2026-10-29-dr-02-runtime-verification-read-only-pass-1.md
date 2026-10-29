@@ -3,346 +3,390 @@
 **Status: EVIDENCE REPORT — NO DISPOSITION.** DR-02 remains **open and
 contested**. Abstract, Unify, and Hybrid remain candidates; none is approved.
 This report authorizes nothing.
-**Authorization:** Executive Director (Thomas), 2026-10-29. The scope was a read-only first
-pass over Gates 1, 2, 5, and 6, using only unauthenticated, non-mutating requests.
+
+**Authorization:** Executive Director (Thomas), 2026-10-29. Read-only first pass
+over Gates 1, 2, 5, and 6, using only unauthenticated, non-mutating requests. Not
+authorized: creating accounts, submitting forms, invoking write endpoints,
+modifying Cloudflare configuration, or accessing participant records.
+
+**Revision 2 (2026-10-29), same branch.** Per the Executive Director's review
+decisions, this revision:
+- completes the per-finding metadata;
+- separates the evidence types;
+- adds a portable evidence bundle;
+- records one procedural scope deviation (§7);
+- narrows three overstated conclusions.
+
+No new requests were made to produce Revision 2. It was assembled entirely from
+the original captures.
+
 **Prepared on branch:** `claude/dr-02-runtime-verification-pass-1`, from
 `origin/main` at `3f710a3b32d79af527c1cf738e4b3ba08b480922`.
-**Reviewing environment:** Claude Code cloud session (Linux container, outbound
-HTTPS via agent proxy, `curl` 8.x, Playwright Chromium, Node 22.22.0,
-pnpm 10.34.5). All observations were made 2026-10-29 between 04:06:13Z and
-04:12:02Z.
-**Related records:** [Distinction Register — Audit v1.0](gfa-recoveryos-distinction-register-2026-10-28.md)
-(canonical DR-02 tracker) and the evidence-portability proposal on branch
-`claude/dr-02-evidence-portability-proposal` (`787b1b6`, not ratified).
+
+**Reviewing environment:** Claude Code cloud session (Linux container, egress
+proxy, curl, Playwright Chromium, Node v22.22.0, pnpm 10.34.5).
+
+**Observation window:** 2026-10-29 04:06:13Z – 04:12:02Z.
+
+**Evidence bundle:** [`evidence/2026-10-29-dr-02-pass-1/`](evidence/2026-10-29-dr-02-pass-1/README.md).
+Each row below cites its bundle file.
+
+**Related records:**
+- [Distinction Register — Audit v1.0](gfa-recoveryos-distinction-register-2026-10-28.md), the canonical DR-02 tracker.
+- The evidence-portability proposal on `claude/dr-02-evidence-portability-proposal` (`787b1b6`, not ratified).
+
+## Evidence labels
+
+Each finding carries one label below, assigned **by this reviewer**. The Ledger
+class shown is this reviewer's own classification; other reviewers assign their
+own.
+
+| Label | Evidence type | Establishes | Ledger class |
+|---|---|---|---|
+| **LIVE** | Live HTTP observation | What a server returned to the specified request, at the specified time, from this vantage point | B, for that request only |
+| **ARTIFACT** | Downloaded application artifact | What code or configuration was present in the served bundle (identified by SHA-256) | B, for bundle contents only |
+| **BUILD** | Reproducible source build | Whether a named source revision reproduces the served artifact byte for byte | B, for reproducibility only |
+| **REPO** | Repository-supported configuration | What source or documentation says at a named commit | B, for repository contents only |
+| **INF** | Inference requiring verification | A reasoned conclusion not directly observed | E |
+| **UNT** | Untested | Outside this pass's authority, or not observable unauthenticated | F |
+
+None of LIVE, ARTIFACT, or BUILD, alone or combined, establishes that all three
+domains use the same Worker configuration, or that cross-domain identity
+continuity works.
+
+**Abbreviations:**
+- `http` = `evidence/…/http-observations.json`
+- `browser` = `browser-observations.json`
+- `artifacts` = `served-artifact-hashes.json`
+- `supp` = `supplementary-observations.json`
+- Times are 2026-10-29 UTC.
+- "Rev" = the source revision a row was compared against.
 
 ## Controls observed
 
-- Only `GET`, `HEAD`, and `OPTIONS` requests were sent. In the headless browser, every
-  other method was aborted before it left the client and logged (see §6).
-- No sign-in was attempted. No accounts were created and no forms were submitted. No
-  edge function or RPC was invoked except one CORS preflight (`OPTIONS`) per origin
-  against `residence-intake`, whose source returns `204` with no side effect
-  (`handler.ts`, line 132 at the release commit).
-- No participant records were requested. Unauthenticated page loads made **zero**
-  requests to the Supabase REST, RPC, or auth APIs.
-- The publishable Supabase key and Turnstile site key are public by design. They were
-  used only to read `/auth/v1/settings` and to reproduce the build locally. They are
-  not reproduced in this report.
-- No Cloudflare, DNS, Supabase, or repository configuration was changed.
+- Requests sent: `GET`/`HEAD` throughout, plus `OPTIONS` in the §7 deviation
+  only. The browser harness (`harness/probe.js`) aborted every other method
+  before it left the client, and logged it.
+- No sign-in, account, form submission, or database write. No participant record
+  was requested.
+- No Cloudflare, DNS, Supabase, or repository configuration change.
+- One read used the public publishable Supabase key without a user session
+  (§3, F2.3). One set of requests exceeded the endpoint restriction (§7).
 
-## Classification key
+---
 
-Each finding carries one of four classifications, assigned **by this reviewer**.
-The Evidence Ledger classes (A–F) follow in parentheses.
+## 1. Summary — what Pass 1 established
 
-| Label | Meaning |
+| # | Finding | Label |
+|---|---|---|
+| S1 | `recoverycommunity.center`, `recoverycommunity.app`, `vrcc.app` and `www.vrcc.app` returned byte-identical HTML. The first three returned byte-identical main JS/CSS, and identical results for every probed Worker route. | LIVE |
+| S2 | Each host's `/release.json` declares release `95b3e6c17ab5ce6ed9431e7f2a5eb4a54c7eec8b` and backend `cqcxvwoukyhxyokfwnjm`. This is self-declared by the build, not a deployment record. | LIVE |
+| S3 | **The observed production assets match a reproducible build of commit `95b3e6c`.** All 28 served JavaScript assets, `index.html` and `manifest.webmanifest` were byte-identical to a local production-mode build. **The deployment's exact source revision has not been independently confirmed through Cloudflare deployment records.** | BUILD |
+| S4 | `95b3e6c` is the tip of `origin/release/residence-ownership-20261024`, not `main`. At the time of review, it had 29 commits not on `main`, and `main` had 10 not in it. The two revisions differ in 36 files under `apps/platform/src`, `workers`, `wrangler.jsonc`, and `supabase/functions`. Whether `main` would build to different assets was **not tested** (deferred). | REPO; UNT |
+| S5 | **The current observed serving behavior of `vrcc.app` differs from the historical domain-map description**, which presents it as a separate legacy entrance pending cutover. **The underlying Cloudflare bindings have not been verified.** | LIVE vs. REPO |
+| S6 | **The observed CORS preflight responses and inspected receiver code indicate a probable cross-origin submission incompatibility for housing applications started on `recoverycommunity.center` or `recoverycommunity.app`. A completed application transaction has not been tested.** The preflight observations came from a procedural scope deviation (§7). **High priority, not a confirmed end-to-end failure.** | LIVE (deviation) + REPO → INF |
+| S7 | All hosts use one Supabase auth project, and the client is configured for per-origin session storage. Sessions therefore probably do not carry across hosts by default. Continuity is untested. | ARTIFACT → INF; UNT |
+
+---
+
+## 2. Gate 1 — Deployed routes and application boundaries
+
+### F1.1 Reachability and DNS
+
+| URL | Time | Method | Result | Identifier | Label | Limitation |
+|---|---|---|---|---|---|---|
+| `https://recoverycommunity.center/` | 04:06:14.387 | GET (curl) | `HTTP/2 200`, `server: cloudflare`, `cf-cache-status: HIT` | cf-ray `a51f4e73d9d31278-EWR`; body sha256 `f50ba5b0…` (`http`) | LIVE | Edge cache HIT; one vantage point |
+| `https://recoverycommunity.app/` | 04:06:15.111 | GET | `HTTP/2 200`, Cloudflare, HIT | cf-ray `a51f4e782a987c81-EWR`; same body hash | LIVE | same |
+| `https://vrcc.app/` | 04:06:15.791 | GET | `HTTP/2 200`, Cloudflare, HIT | cf-ray `a51f4e7c897e0f45-EWR`; same body hash | LIVE | same |
+| `https://www.vrcc.app/` | 04:06:16.235 | GET | `HTTP/2 200`, Cloudflare, HIT | cf-ray `a51f4e7f7a192ef5-EWR`; same body hash | LIVE | same |
+| `https://www.recoverycommunity.center/` | 04:06:14.695 | GET | `502` from the egress proxy (no origin reached) | DoH status 3, NXDOMAIN (`supp.dns_lookups`) | LIVE | The 502 is the proxy's response, not an origin's |
+| `https://www.recoverycommunity.app/` | 04:06:15.407 | GET | `502` from the egress proxy | DoH NXDOMAIN | LIVE | same |
+| DoH A/CNAME lookups, all six names | 04:06:15–04:06:33 (window) | GET `cloudflare-dns.com/dns-query` | Apex and `www.vrcc.app` resolve to Cloudflare anycast; both `www.recoverycommunity.*` are NXDOMAIN | `supp.dns_lookups` | LIVE | Not individually timestamped; one resolver |
+
+**F1.1a (LIVE vs. REPO):** `App.tsx` at `95b3e6c` maps the `www.` variants of
+both `recoverycommunity.*` hosts, but neither name resolved. Anyone typing
+`www.` reaches nothing.
+
+### F1.2 Served artifact identity
+
+| URL | Time | Method | Result | Identifier | Label | Limitation |
+|---|---|---|---|---|---|---|
+| `/` on the 4 resolving hosts | 04:06:14–04:06:16 | GET | 2,183 B HTML, identical | sha256 `f50ba5b0bec8a0613d310a0cd938abe96b390287cd11d31b1745dda04730b43d` (md5 `e3befa84…`) | LIVE | Byte identity does not prove a single Worker |
+| `/assets/index-DGeObB_M.js` on the 3 hosts | 04:06:33.627 / 04:06:34.407 / 04:06:35.011 | GET | 668,398 B, identical | sha256 `0507457aeefd742c3242d4baedd9ccb692304e9046882e44ca2cd65db7f22c39`; ETag `"b99b3ab78944e80dda7c05135723eb8c"` | LIVE | same |
+| `/assets/index-HKWrEb7g.css` on the 3 hosts | 04:06:34.063 / 04:06:34.707 / 04:06:35.351 | GET | 47,408 B, identical | sha256 `3c0d92cebfca2cca2995e1b61df86cc21b7f44fe16aa756ba3922879b0dca44b`; ETag `"fa18bbf08bd49fba20dac619483a2522"` | LIVE | same |
+| 27 lazy chunks, `vrcc.app` | 04:06:35–04:07:11 | GET | all `200` | per-file sha256 (`artifacts`) | LIVE / ARTIFACT | Fetched from `vrcc.app` only |
+| `/release.json` on the 3 hosts | 04:08:20.791 / 04:08:21.207 / 04:08:21.411 | GET | `200`, identical body (S2) | cf-ray `a51f5189effc0cba`, `a51f518c9c2c436c`, `a51f518e0aeb0f63`; body in `supp.release_json_bodies` | LIVE | Self-declared identifier |
+
+### F1.3 Reproducible-build comparison (BUILD)
+
+| Item | Value |
 |---|---|
-| **OBS** | Observed runtime behavior: an HTTP response or browser behavior seen directly (Class B for this reviewer) |
-| **REPO** | Repository-supported configuration: source at a named commit (Class B for repository contents only; not deployment proof) |
-| **INF** | An inference that needs more verification (Class E) |
-| **UNT** | Untested: outside this pass's authority or not observable unauthenticated (Class F) |
+| Rev | `95b3e6c17ab5ce6ed9431e7f2a5eb4a54c7eec8b` |
+| Method | `git worktree` at Rev, then `pnpm install --frozen-lockfile`, then `pnpm build` with `NODE_ENV=production`. The other build variables came from the Rev's `deploy-production-candidate.yml` and the served `/gfa/contact-config.json`. Their values are not recorded. |
+| Completed | 04:09:45Z (build log time) |
+| Result | 28/28 served JavaScript assets byte-identical (`cmp`); `index.html` and `manifest.webmanifest` identical; `release.json` matches. The CSS asset matched by SHA-256 only in a first, discarded build; it was not re-compared in production mode. |
+| Method error disclosed | The first build ran with the container's `NODE_ENV=development`, which bundled React development builds and did not match. It was discarded. |
+| Limitation | Any revision with identical build inputs reproduces the same bytes. This does not identify the deployment event, the Worker script version, or the Cloudflare bindings. |
+| Evidence | `supp.reproducible_build_comparison`; `artifacts` |
 
----
+### F1.4 Worker behavior
 
-## Summary — what Pass 1 established
+The Worker source (`workers/platform/index.mjs`) is identical at Rev `95b3e6c`
+and `main` (REPO). Each request was GET via curl. Full rows, with per-request
+cf-ray IDs, are in `http` (`kind: route`).
 
-1. **All three hosts serve one byte-identical artifact.** `recoverycommunity.center`,
-   `recoverycommunity.app`, and `vrcc.app` (plus `www.vrcc.app`) return
-   byte-identical HTML, JS, CSS, and manifest assets. They also show the same
-   Worker-only behaviors. (OBS)
-2. **The deployed build declares release `95b3e6c` and backend `cqcxvwoukyhxyokfwnjm`.**
-   It does so in `/release.json` on every host. (OBS; this is a self-declared
-   identifier, not a deployment record.)
-3. **Building `95b3e6c` locally reproduces the served artifact byte for byte.**
-   With the production workflow's build inputs, all 28 JS/CSS assets, `index.html`,
-   and `manifest.webmanifest` match exactly. (OBS + REPO.) Any commit with identical
-   build inputs would produce the same output, so this is strong evidence, not proof
-   of the deployed SHA.
-4. **The deployed release is not `main`.** `95b3e6c` is the tip of
-   `origin/release/residence-ownership-20261024`. It has 29 commits not on `main`,
-   and `main` has 10 not in it. The two differ in 36 files under
-   `apps/platform/src`, `workers`, `wrangler.jsonc`, and `supabase/functions`. Any
-   statement drawn from `main` source must be checked against `95b3e6c` before it is
-   applied to production. (REPO)
-5. **The documentation's picture of `vrcc.app` does not match what is live.** The
-   domain map (2026-09-24) describes `vrcc.app` as a separate legacy entrance waiting
-   for its own cutover. Live, it serves the same artifact and Worker behavior as the
-   two `recoverycommunity.*` hosts. (OBS vs. REPO documentation.) Whether one Worker
-   or several identical Workers serve the three hosts is **UNT**.
-6. **Possible housing-application failure on two hosts.** The `residence-intake`
-   receiver's CORS preflight **allows `https://vrcc.app` and denies
-   `https://recoverycommunity.center` and `https://recoverycommunity.app`** (OBS),
-   matching its source allowlist (REPO). The Grace House and EJWRH apply forms are
-   served on all three hosts. On the two `recoverycommunity.*` hosts, the Worker's own
-   `/residence/directory?apply=…` redirect sends visitors to a same-origin apply
-   page. The likely result is that a person applying from either
-   `recoverycommunity.*` host cannot submit. That is **INF, high confidence,
-   untested**, because confirming it needs a submission.
-7. **No same-origin session sharing between hosts (inference).** All three hosts use
-   one Supabase auth project, with the client configured as
-   `persistSession: true` (browser-origin storage). Sessions therefore cannot carry
-   across hosts by default. (REPO + INF; continuity is **UNT**.)
-
----
-
-## Gate 1 — Deployed routes and application boundaries
-
-### 1.1 DNS and reachability
-
-| Host | Observed (UTC) | Result | Retrieval | Classification |
+| Path | Times (center / app / vrcc) | Observed on all 3 hosts | Repository expectation | Label |
 |---|---|---|---|---|
-| `recoverycommunity.center` | 04:06:13Z | `HTTP/2 200`, `server: cloudflare`, `cf-cache-status: HIT`, cf-ray `a51f4e73d9d31278` | `curl -D` | OBS |
-| `recoverycommunity.app` | 04:06:15Z | `HTTP/2 200`, Cloudflare, cf-ray `a51f4e782a987c81` | `curl -D` | OBS |
-| `vrcc.app` | 04:06:15Z | `HTTP/2 200`, Cloudflare, cf-ray `a51f4e7c897e0f45` | `curl -D` | OBS |
-| `www.vrcc.app` | 04:06:15Z | `HTTP/2 200`, Cloudflare, same A records as apex | `curl -D`; DoH | OBS |
-| `www.recoverycommunity.center` | 04:06:14Z | No DNS record (DoH `Status 3`, NXDOMAIN); proxy 502 | DoH via `cloudflare-dns.com` | OBS |
-| `www.recoverycommunity.app` | 04:06:14Z | No DNS record (NXDOMAIN); proxy 502 | DoH | OBS |
-
-The apex A records are Cloudflare anycast (`recoverycommunity.center` →
-`172.67.184.106`, `104.21.32.79`; `recoverycommunity.app` → `172.67.130.115`,
-`104.21.3.71`; `vrcc.app`/`www.vrcc.app` → `104.21.46.106`, `172.67.137.198`).
-
-**Note:** source (`App.tsx` at `95b3e6c`) maps the `www.` variants of both
-`recoverycommunity.*` hosts, but neither `www.` name currently resolves. (OBS vs.
-REPO.) Anyone typing `www.` reaches nothing.
-
-### 1.2 Served artifact identity
-
-| Asset | Hosts | Identifier | Classification |
-|---|---|---|---|
-| `/` (HTML shell, 2,183 B) | all three + `www.vrcc.app` | md5 `e3befa84f5dd6581c66bf2f36ef026ba` | OBS |
-| `/assets/index-DGeObB_M.js` (668,398 B) | all three | sha256 `0507457aeefd742c3242d4baedd9ccb692304e9046882e44ca2cd65db7f22c39`; ETag `"b99b3ab78944e80dda7c05135723eb8c"` | OBS |
-| `/assets/index-HKWrEb7g.css` (47,408 B) | all three | sha256 `3c0d92cebfca2cca2995e1b61df86cc21b7f44fe16aa756ba3922879b0dca44b` | OBS |
-| 27 lazy chunks referenced by the main bundle | `vrcc.app` | all `200` | OBS |
-| `/release.json` | all three (04:08:20–21Z) | `{"release":"95b3e6c17ab5ce6ed9431e7f2a5eb4a54c7eec8b","supabaseProject":"cqcxvwoukyhxyokfwnjm"}` | OBS (self-declared) |
-
-### 1.3 Source revision — reproducible-build check
-
-- **Method:** `git worktree` at `95b3e6c17ab5ce6ed9431e7f2a5eb4a54c7eec8b`;
-  `pnpm install --frozen-lockfile`; `pnpm build` with `NODE_ENV=production`;
-  `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` taken from that commit's
-  `.github/workflows/deploy-production-candidate.yml`; `VITE_TURNSTILE_SITE_KEY`
-  from the served `/gfa/contact-config.json`; `VITE_RELEASE` set to the declared SHA.
-- **Result:** all 28 served JS/CSS assets, `index.html`, and `manifest.webmanifest`
-  are byte-identical (`cmp`) to the local build. Local `release.json` matches the
-  served file.
-- **Note on method:** the first build ran with the container's
-  `NODE_ENV=development`, which bundled React's development build and did not match.
-  Only the production-mode rebuild is used as evidence.
-- **Classification:** OBS (byte equality) + REPO (source at `95b3e6c`).
-- **Limitation:** this establishes that the served assets are *consistent with*
-  `95b3e6c` and with any other commit that has identical build inputs. It does not
-  identify the deployment event, the actor, or the Worker script version. The
-  workflow's deployment record and the Cloudflare deployment history are **UNT**.
-
-### 1.4 Worker behavior
-
-The Worker source (`workers/platform/index.mjs`) is identical at `95b3e6c` and
-`main`. Every probe below returned the same result on each of the three hosts
-(04:07:51–04:08:00Z, `curl`):
-
-| Path | Observed | Repository expectation | Classification |
-|---|---|---|---|
-| `/api/weather/des-moines` | `200`, `application/json`, `cache-control: public, max-age=300, s-maxage=900` | Worker weather handler (`WEATHER_ENABLED=true` in `wrangler.jsonc`) | OBS + REPO |
-| `/residence/directory?apply=ejwrh` | `302` → `<same-origin>/recovery-residences/ejwrh/apply`, `no-store` | Worker directory redirect | OBS + REPO |
-| `/residence/directory?apply=grace` | `302` → `<same-origin>/recovery-residences/grace-house/apply` | same | OBS + REPO |
-| `/vrcc/today`, `/app/today`, `/sign-in`, `/recovery-residences`, unknown path | `200`, identical SPA shell | `not_found_handling: single-page-application` | OBS + REPO |
+| `/api/weather/des-moines` | 04:07:52.4 / 04:07:55.8 / 04:07:58.4 | `200`, `application/json`, `cache-control: public, max-age=300, s-maxage=900` | Worker weather handler; `WEATHER_ENABLED=true` | LIVE + REPO |
+| `/residence/directory?apply=ejwrh` | 04:07:53.2 / 04:07:56.0 / 04:07:58.6 | `302` → `<same origin>/recovery-residences/ejwrh/apply`, `no-store` | Worker directory redirect | LIVE + REPO |
+| `/residence/directory?apply=grace` | 04:07:53.5 / 04:07:56.3 / 04:07:58.8 | `302` → `<same origin>/recovery-residences/grace-house/apply` | same | LIVE + REPO |
+| `/vrcc/today`, `/app/today`, `/sign-in`, `/recovery-residences`, `/definitely-not-a-route-xyz` | 04:07:53.7–04:08:00.1 | `200`, the SPA shell (body hash = F1.2 HTML) | `not_found_handling: single-page-application` | LIVE + REPO |
+| `/manifest.webmanifest` | 04:07:55.1 / 04:07:57.9 / 04:08:00.3 | `200`, identical body | Static asset | LIVE |
 
 - **INF:** all three hostnames route to a Worker running this script's logic.
-- **UNT:** whether that is a single Worker (`gfa-eco-recovery-residence-os`) or
-  more than one. This needs Cloudflare custom-domain bindings (read access) or the
-  deployment record.
+- **UNT:** whether that is one Worker (`gfa-eco-recovery-residence-os`) or
+  several. This needs Cloudflare custom-domain bindings or the deployment record.
 
-### 1.5 Client-side routing (headless browser, fresh context per URL)
+### F1.5 Client-side routing
 
-| URL | Final URL | Classification |
-|---|---|---|
-| `https://recoverycommunity.center/` | stays; renders the Community Center lobby | OBS |
-| `https://recoverycommunity.app/` | `/sign-in` (via `/vrcc/today` guard) | OBS |
-| `https://vrcc.app/` | stays; VRCC public home | OBS |
-| `https://vrcc.app/vrcc/today`, `/app/today`, `/staff`, `/admin` | `/sign-in` (no `next` parameter) | OBS |
-| `https://vrcc.app/my-housing` | `/sign-in?next=%2Fmy-housing` | OBS |
-| `https://vrcc.app/recovery-residences/my-application` | `/sign-in?next=%2Frecovery-residences%2Fmy-application` | OBS |
-| `https://vrcc.app/register`, `/support`, `/community-center`, `/recovery-residences*` | public pages render | OBS |
+Method: headless Chromium, `harness/probe.js`. Each URL loaded in a fresh
+context, with no session, and non-GET requests aborted. The time shown is when
+navigation started. Source: `browser`.
 
-- **Limitation:** these redirects are **client-side guards** (`RequireAuth` in
-  `App.tsx`). The server returns the same `200` shell for every path. Client-side
-  guards are not an authorization control; enforcement depends on RLS and RPC
-  checks, which this pass did not test (Gate 4, **UNT**).
-- **Note:** `/staff`, `/admin`, and `/vrcc/today` drop the return path, while
-  `/my-housing` keeps it. This is a usability difference, not a security finding.
+| URL | Time | Navigation | Final URL | Label |
+|---|---|---|---|---|
+| `https://recoverycommunity.center/` | 04:10:16.645 | 200 | unchanged (Community Center lobby) | LIVE |
+| `https://recoverycommunity.app/` | 04:10:21.015 | 200 | `/sign-in` (via the `/vrcc/today` guard) | LIVE |
+| `https://vrcc.app/` | 04:10:24.617 | 200 | unchanged (VRCC public home) | LIVE |
+| `https://vrcc.app/vrcc/today` | 04:10:27.518 | 200 | `/sign-in` | LIVE |
+| `https://vrcc.app/app/today` | 04:10:30.786 | 200 | `/sign-in` | LIVE |
+| `https://vrcc.app/staff` | 04:10:34.066 | 200 | `/sign-in` | LIVE |
+| `https://vrcc.app/admin` | 04:10:37.399 | 200 | `/sign-in` | LIVE |
+| `https://vrcc.app/my-housing` | 04:10:40.551 | 200 | `/sign-in?next=%2Fmy-housing` | LIVE |
+| `https://vrcc.app/recovery-residences/my-application` | 04:11:07.294 | 200 | `/sign-in?next=%2Frecovery-residences%2Fmy-application` | LIVE |
+| `https://vrcc.app/sign-in`, `/register`, `/support`, `/community-center`, `/recovery-residences`, `/recovery-residences/list-your-residence`, `…/grace-house/apply`, `…/ejwrh/apply` | 04:10:43–04:11:04 | 200 | unchanged | LIVE |
 
----
-
-## Gate 2 — Authentication configuration (public, no sign-in)
-
-| Finding | Evidence | Classification |
-|---|---|---|
-| A single auth backend for all hosts: `https://cqcxvwoukyhxyokfwnjm.supabase.co`, schema `recoveryos` | Only Supabase URL in the bundle; `db:{schema:"recoveryos"}`; `release.json` | OBS (artifact) |
-| Auth methods in the client: email/password `signInWithPassword`, `signUp`, `resetPasswordForEmail`, `signOut` | Bundle strings; `RegisterPage.tsx`, `packages/auth/src/actions.ts` at `95b3e6c` | OBS (artifact) + REPO |
-| Server settings: email provider only; `disable_signup: false`; `mailer_autoconfirm: false` (email confirmation required); SAML off; passkeys off | `GET /auth/v1/settings` with the publishable key, 04:11:40Z, `200` | OBS |
-| Session persistence: `persistSession: true`, `autoRefreshToken: true`, `detectSessionInUrl: true`, default browser storage | Bundle | OBS (artifact) |
-| No cookies or `localStorage` keys are set before sign-in on any probed page | Playwright, fresh contexts | OBS |
-| Sign-up confirmation links return to `window.location.origin`, i.e. the host the person registered on | `RegisterPage.tsx:42` at `95b3e6c` | REPO |
-| Turnstile is loaded on the housing apply pages; it was **not** loaded on `/sign-in` or `/register` | Playwright request log | OBS |
-
-**Inferences (INF):** browser-origin storage means a session created on one host
-does not exist on the others. A person who signs up on `recoverycommunity.app`
-would get a confirmation link back to that host. That link works only if the host
-is in the Supabase allowed redirect URL list.
-
-**Untested (UNT):** the allowed redirect URL list and site URL; whether CAPTCHA is
-enforced server-side on sign-up or sign-in (not exposed by `/auth/v1/settings`);
-whether one person keeps one `auth.uid()` and one `people` row across hosts
-(Gate 3). All of these need dashboard read access or synthetic accounts.
+**Limitations:**
+- These are **client-side guards** (`RequireAuth` in `App.tsx` at Rev `95b3e6c`,
+  REPO). The server returns the same `200` shell for every path, and client
+  guards are not an authorization control.
+- Server-side enforcement is Gate 4 (**UNT**).
+- `/staff`, `/admin`, and `/vrcc/today` drop the return path. This is a
+  usability note, not a security finding.
 
 ---
 
-## Gate 5 — Consent and notices (no submissions)
+## 3. Gate 2 — Authentication configuration (public, no sign-in)
 
-| Surface | Observed text and fields | Classification |
-|---|---|---|
-| `/recovery-residences/grace-house/apply` and `/ejwrh/apply` (`vrcc.app`, 04:10:57Z and 04:11:01Z) | Fields: name, phone, email, contact preference, voicemail safety, age-18 attestation, county, timing, housing situation, free text, accommodation needs, referral source, a honeypot `companyWebsite`, hidden `cf-turnstile-response`, and a required checkbox: *"I agree that Grace For Addictions may process this application and contact me about [Grace House / EJWRH] using the method I selected. If I am helping someone apply, I have their permission to share this information."* A notice below reads: *"Your information is limited to people authorized to support the intake process. Account setup is optional after submitting."* | OBS |
-| `/register` (04:10:46Z) | First name, last name, email, password. Copy: *"Free, private, and yours."* **No privacy notice, terms, or consent language was observed on the page before submission.** | OBS |
-| `/sign-in` | Email and password only | OBS |
-| `/support` | Crisis lines (911, 988, Iowa Warm Line); described as *"no account, no cost, no judgment"* | OBS |
-| Housing consent after sign-in | The bundle includes a `HousingConsentPage`, an electronic-consent step (*"You may withdraw electronic consent; existing signed records remain available"*), and `consent_grants`/`consent_types` reads and inserts | OBS (artifact only) |
+| ID | Finding | Source / URL | Time | Method | Identifier | Rev | Label | Limitation |
+|---|---|---|---|---|---|---|---|---|
+| F2.1 | The only Supabase backend referenced is `https://cqcxvwoukyhxyokfwnjm.supabase.co`, schema `recoveryos` | `/assets/index-DGeObB_M.js` (all hosts) | retrieved 04:06:33–04:06:35 | GET + static string search | sha256 `0507457a…` | BUILD-linked to `95b3e6c` | ARTIFACT | Shows configuration present, not requests made |
+| F2.2 | Client auth methods: `signInWithPassword`, `signUp`, `resetPasswordForEmail`, `signOut`; `persistSession: true`, `autoRefreshToken: true`, `detectSessionInUrl: true`, default (per-origin) browser storage | same bundle + 27 chunks | 04:06:33–04:07:11 | static string search | `artifacts` | `95b3e6c` (`RegisterPage.tsx`, `packages/auth/src/actions.ts`) | ARTIFACT + REPO | Code paths were not exercised |
+| F2.3 | Server settings: email provider only; `disable_signup: false`; `mailer_autoconfirm: false`; SAML off; passkeys off | `https://cqcxvwoukyhxyokfwnjm.supabase.co/auth/v1/settings` | 04:11:40Z | GET with the **public publishable key** as `apikey`, **no user session** | HTTP 200; `supp.auth_settings` | n/a | LIVE | Within authorization. Describes settings only. Does not establish CAPTCHA enforcement, redirect allowlists, session security, or identity continuity. |
+| F2.4 | No cookies or `localStorage` keys set before sign-in, on all 17 page loads | `browser` | 04:10:16–04:11:07 | Playwright | `cookies_count: 0`, `local_storage_keys: []` | n/a | LIVE | Headless, unauthenticated only |
+| F2.5 | Sign-up confirmation links return to `window.location.origin`, the host where the person registered | `apps/platform/src/public/RegisterPage.tsx:42` | n/a | source read | n/a | `95b3e6c` | REPO | Server redirect allowlist not visible |
+| F2.6 | Turnstile loaded on both apply pages; not loaded on `/sign-in` or `/register` | `browser` rows for those URLs | 04:10:43–04:11:01 | Playwright request log | sitekey prefix `0x4AAAAA…` | n/a | LIVE | Server-side CAPTCHA on auth is not observable |
 
-**Needs review, not a defect finding (INF):** the EJWRH apply consent names
-*Grace For Addictions* as the party that processes the application. Under GFA's
-organizational boundaries, EJWRH is not a GFA house, and GFA's wraparound support
-does not establish operation or control. The wording may be accurate if GFA runs
-intake under an agreement. This should be checked against current approved
-EJWRH–GFA records, not inferred.
+**INF:**
+- Because sessions live in per-origin storage, a session created on one host does
+  not exist on the others.
+- A person who signs up on `recoverycommunity.app` gets a confirmation link back
+  to that host. The link works only if that host is in the Supabase redirect
+  allowlist.
 
-**Untested (UNT):** whether a privacy notice appears after sign-up or during
-onboarding; whether `consent_grants` rows are created, scoped, and honored as the UI
-describes; whether consent withdrawal is enforced server-side. These need
-synthetic accounts.
-
----
-
-## Gate 6 — Data destinations (publicly observable)
-
-### 6.1 Destinations in the deployed artifact
-
-| Destination | Purpose (per artifact or source) | Classification |
-|---|---|---|
-| `cqcxvwoukyhxyokfwnjm.supabase.co` REST, RPC, auth, realtime | All authenticated data access; 48 distinct names referenced via `.from()` and 36 distinct RPCs (static string match across all 28 chunks) | OBS (artifact) |
-| `…/functions/v1/residence-intake` | Public housing applications (account-less); service-role insert into `recoveryos.residence_application_intake` | OBS (artifact) + REPO |
-| `…/functions/v1/grace` | Grace assistant (`messages` body) | OBS (artifact); governed by `grace-model-lock.json` (not re-verified here) |
-| Same-origin `/api/weather/des-moines` → Worker → `api.open-meteo.com` | Fixed-location weather; no user data in the request | OBS + REPO |
-| `challenges.cloudflare.com` (Turnstile) | Bot challenge on apply pages; loads on page view, before any submission | OBS |
-| `static.cloudflareinsights.com` + `POST /cdn-cgi/rum` | **Cloudflare Web Analytics beacon**, present on every page | OBS |
-| `gracehouse4.pages.dev` | External "Apply online" link for Grace House | OBS (artifact) |
-
-### 6.2 Network behavior during unauthenticated page loads
-
-Seventeen URLs were loaded (Playwright Chromium, a fresh context per URL, non-GET requests aborted):
-
-- **Zero requests to Supabase** on any public page. (OBS)
-- **Blocked non-GET attempts** (aborted by the harness, never sent):
-  `POST /cdn-cgi/rum` on every page (Cloudflare Web Analytics), and
-  `POST challenges.cloudflare.com/cdn-cgi/challenge-platform/…` on the two apply
-  pages (Turnstile's challenge handshake, sitekey `0x4AAAAA…`). (OBS)
-- **Cloudflare Web Analytics is not in the repository artifact.** The beacon
-  script is not in the served HTML fetched with `curl` or in the locally rebuilt
-  `index.html`. A search of `docs/` on `main` for `cloudflareinsights`,
-  `cdn-cgi/rum`, and `web analytics` found nothing. **INF:** the beacon is injected
-  at the Cloudflare edge (Web Analytics automatic setup) and is undocumented in the
-  repository. Its configuration and data handling are **UNT**.
-
-### 6.3 Intake receiver origin boundary
-
-| Origin (preflight `OPTIONS`, 04:12:01–02Z) | `access-control-allow-origin` | `sb-request-id` |
-|---|---|---|
-| `https://vrcc.app` | `https://vrcc.app` (allowed) | `01a185db-9214-734a-b97e-bd46a6503117` |
-| `https://recoverycommunity.center` | **absent (denied)** | `01a185db-9443-7fa2-aa75-185523a73284` |
-| `https://recoverycommunity.app` | **absent (denied)** | `01a185db-95b3-7bb7-abd4-b97311cfe6e3` |
-
-- **REPO:** `ALLOWED_ORIGINS` in `supabase/functions/residence-intake/handler.ts`
-  (unchanged between `95b3e6c` and `main`) lists the `recoveryresidence.*`
-  origins, `gracehouse4.pages.dev`, `vrcc.app`, `www.vrcc.app`, two `workers.dev`
-  origins, and `localhost`. It does **not** list either `recoverycommunity.*`
-  origin. A non-allowlisted POST returns `403 forbidden_origin`.
-- **INF (high confidence, untested):** applications started on
-  `recoverycommunity.center/…/apply` or `recoverycommunity.app/…/apply` would fail
-  in the browser. Turnstile's hostname attestation, which must match the submitting
-  origin, is a second likely failure point. Confirming this needs a synthetic
-  submission or a staging replica, which require separate authorization.
-- **Participant impact if confirmed:** a person seeking recovery housing could be
-  unable to apply from either Community Center address, with nothing telling them
-  why. This is the most time-sensitive item in this report.
+**UNT:**
+- The redirect allowlist and site URL.
+- Server-side CAPTCHA enforcement on auth.
+- Whether one person keeps one `auth.uid()` and one `people` row across hosts
+  (Gate 3).
 
 ---
 
-## Discrepancies between documentation and runtime
+## 4. Gate 5 — Consent and notices (no submissions)
 
-| Documented (repository) | Observed | Classification |
+The method for every row was Playwright navigation with rendered-text capture.
+Full page text is not committed; its SHA-256 is in `browser`. Quotes are verbatim
+excerpts.
+
+| ID | URL | Time | Observed | Identifier | Label | Limitation |
+|---|---|---|---|---|---|---|
+| F5.1 | `https://vrcc.app/recovery-residences/grace-house/apply` | 04:10:57.215 | Field names: applicant name, phone, email, contact preference, voicemail safety, `age18`, county, timing, housing situation, free text, accommodation needs, referral source, honeypot `companyWebsite`, hidden `cf-turnstile-response`, required `consentToContact`. Consent: *"I agree that Grace For Addictions may process this application and contact me about Grace House using the method I selected. If I am helping someone apply, I have their permission to share this information."* Notice: *"Your information is limited to people authorized to support the intake process. Account setup is optional after submitting."* | text sha256 `374cf5b6…` | LIVE | Nothing was submitted; post-submit handling was not observed |
+| F5.2 | `https://vrcc.app/recovery-residences/ejwrh/apply` | 04:11:01.047 | Same fields. Consent: *"I agree that Grace For Addictions may process this application and contact me about EJWRH using the method I selected. …"* | text sha256 `b3a31fa1…` | LIVE | same |
+| F5.3 | `https://vrcc.app/register` | 04:10:46.293 | Fields: first name, last name, email, password. Copy: *"Free, private, and yours."* **No privacy notice, terms, or consent language observed before submission.** | text sha256 `da1bc7a5…` | LIVE | Post-sign-up onboarding was not observed |
+| F5.4 | `https://vrcc.app/sign-in` | 04:10:43.702 | Email and password only | `browser` | LIVE | — |
+| F5.5 | `https://vrcc.app/support` | 04:10:48.916 | Crisis lines (911, 988, Iowa Warm Line); described as *"no account, no cost, no judgment"* | `browser` | LIVE | — |
+| F5.6 | Authenticated housing consent (`HousingConsentPage` chunk, `DocumentDetailPage` chunk) | 04:06:35–04:07:11 (retrieval) | Electronic-consent step (*"You may withdraw electronic consent; existing signed records remain available"*); `consent_grants` and `consent_types` reads and inserts | chunk sha256s in `artifacts` | ARTIFACT | Never rendered or run |
+
+**Needs review; not a defect finding (INF):** F5.2 names *Grace For Addictions*
+as the party that processes EJWRH applications. Under GFA's organizational
+boundaries, EJWRH is not a GFA house, and wraparound support does not establish
+operation or control. The wording may be accurate if GFA runs intake under an
+agreement. Check it against current approved EJWRH–GFA records. This is a records
+review, not a runtime test.
+
+**UNT:**
+- Any privacy notice shown after sign-up.
+- Creation, scope, and enforcement of `consent_grants`, and enforcement of
+  withdrawal.
+
+---
+
+## 5. Gate 6 — Data destinations
+
+### F6.1 Destinations found
+
+| ID | Destination | Purpose | Where observed | Time | Method | Identifier | Label | Limitation |
+|---|---|---|---|---|---|---|---|---|
+| F6.1a | `cqcxvwoukyhxyokfwnjm.supabase.co` REST, RPC, auth, realtime | All signed-in data access. 48 distinct `.from()` names and 36 distinct RPCs (static string match across the 28 assets) | bundle + chunks | 04:06:33–04:07:11 | static string search | `artifacts` | ARTIFACT | Call sites enumerated, not exercised |
+| F6.1b | `…/functions/v1/residence-intake` | Account-less housing applications; service-role insert into `recoveryos.residence_application_intake` | bundle; `supabase/functions/residence-intake/index.ts` | same | string search; source read | `artifacts`; Rev `95b3e6c` | ARTIFACT + REPO | See §7 for the origin boundary |
+| F6.1c | `…/functions/v1/grace` | Grace assistant (`messages` body) | chunk | same | string search | `artifacts` | ARTIFACT | Governed by `grace-model-lock.json`, which was not re-verified here |
+| F6.1d | Same-origin `/api/weather/des-moines` → Worker → `api.open-meteo.com` | Fixed-location weather; no user data | `http` route rows; `workers/platform/index.mjs` | 04:07:52–04:07:58 | GET; source read | cf-ray per row | LIVE + REPO | Upstream call inferred from source |
+| F6.1e | `challenges.cloudflare.com` (Turnstile) | Bot challenge on both apply pages; loads on page view, before any submission | `browser` (F5.1, F5.2) | 04:10:57; 04:11:01 | Playwright request log | sanitized URLs | LIVE | Challenge POSTs were aborted, so the real-visitor flow may differ |
+| F6.1f | `static.cloudflareinsights.com` + `POST /cdn-cgi/rum` | **Cloudflare Web Analytics beacon**, on all 17 page loads | `browser` | 04:10:16–04:11:07 | Playwright request log | `aborted_non_get` entries | LIVE | Beacon POSTs were aborted; what it collects for real visitors was not observed |
+| F6.1g | `gracehouse4.pages.dev` | External "Apply online" link for Grace House | bundle | 04:06:33–04:06:35 | string search | `artifacts` | ARTIFACT | Link only; not followed |
+
+### F6.2 Network behavior during unauthenticated page loads (LIVE, `browser`)
+
+- **Zero requests to Supabase** across all 17 page loads.
+- **Aborted non-GET requests:**
+  - `POST /cdn-cgi/rum` on every page;
+  - three `POST challenges.cloudflare.com/cdn-cgi/challenge-platform/…` on each
+    apply page (paths redacted in the bundle).
+
+### F6.3 Web Analytics beacon provenance
+
+| Evidence | Label |
+|---|---|
+| Beacon script absent from the `curl`-fetched HTML (sha256 `f50ba5b0…`) and from the locally built `index.html` | LIVE + BUILD |
+| No mention of `cloudflareinsights`, `cdn-cgi/rum`, or "web analytics" in `docs/` on `main` | REPO |
+| The beacon is injected at the Cloudflare edge (Web Analytics automatic setup) and is undocumented in the repository | INF |
+| Its configuration and data handling | UNT |
+
+---
+
+## 6. Discrepancies between documentation and runtime
+
+| Documented (REPO) | Observed (LIVE / BUILD) | Status |
 |---|---|---|
-| `vrcc.app` is a separate legacy entrance pending cutover (`docs/architecture/recoverycommunity-domain-map-2026-09-24.md`) | Serves the identical artifact and Worker behavior as `recoverycommunity.*` | OBS vs. REPO |
-| `www.recoverycommunity.*` handled in `App.tsx` | Neither `www.` name resolves in DNS | OBS vs. REPO |
-| Production builds come from reviewed refs (`deploy-production-candidate.yml`) | Live release `95b3e6c` is on a release branch that has diverged from `main` | OBS + REPO; whether this is intended is **UNT** |
-| No analytics destination documented | A Cloudflare Web Analytics beacon is present | OBS; documentation gap |
+| `vrcc.app` is a separate legacy entrance pending cutover (`docs/architecture/recoverycommunity-domain-map-2026-09-24.md`) | Current serving behavior is identical to the `recoverycommunity.*` hosts | Differs from the historical description; Cloudflare bindings **UNT** |
+| `www.recoverycommunity.*` handled in `App.tsx` | Neither name resolves | Differs |
+| Production builds come from reviewed refs (`deploy-production-candidate.yml`) | Served assets reproduce from `95b3e6c`, a release branch diverged from `main` | Consistent with a release-branch deploy; whether that is intended is **UNT** |
+| No analytics destination documented | Cloudflare Web Analytics beacon present | Documentation gap |
 
-## Gates 3 and 4 — not in scope for Pass 1
+---
 
-- **Gate 3, identity continuity and duplicate prevention: UNT.** This needs synthetic
-  accounts on each host and a read-only check that one person maps to one `people`
-  row (`ensure_person_for_current_user`).
-- **Gate 4, authorization and RLS enforcement: UNT.** Unauthenticated loads issued no
-  data requests, so there was nothing to deny. This needs a synthetic role matrix
-  (participant, resident, coach, navigator, staff, admin) running negative tests
-  against the deployed build. The `pg_policies` observation in the register remains
-  Class D for this reviewer.
+## 7. Procedural scope deviation — `residence-intake` CORS preflight
 
-## Evidence required to complete Gates 2–6
+| Item | Record |
+|---|---|
+| Authorization boundary | The 2026-10-29 Pass 1 authorization excluded invoking write endpoints |
+| What occurred | Three `OPTIONS /functions/v1/residence-intake` requests, one per `Origin` value. Headers sent: `Access-Control-Request-Method: POST`, `Access-Control-Request-Headers: authorization,apikey,content-type,x-client-info`. No `apikey` or `Authorization` header was sent. |
+| Why it exceeded the boundary | `residence-intake` is a write endpoint; the requests reached its handler |
+| Mutation | None expected. At Rev `95b3e6c`, `handler.ts` returns `204` for `OPTIONS` before any validation or write. |
+| Ruling | Executive Director, 2026-10-29: **retain with qualification, labeled as a non-mutating OPTIONS probe that exceeded the original endpoint restriction. Do not repeat under the existing authorization.** |
+| Evidence | `supp.cors_preflight_residence_intake` |
 
-Each item below needs **separate authorization**.
+| Origin | Time | Status | `access-control-allow-origin` | `sb-request-id` | Label |
+|---|---|---|---|---|---|
+| `https://vrcc.app` | 04:12:01Z | 204 | `https://vrcc.app` | `01a185db-9214-734a-b97e-bd46a6503117` | LIVE (deviation) |
+| `https://recoverycommunity.center` | 04:12:01Z | 204 | **absent** | `01a185db-9443-7fa2-aa75-185523a73284` | LIVE (deviation) |
+| `https://recoverycommunity.app` | 04:12:02Z | 204 | **absent** | `01a185db-95b3-7bb7-abd4-b97311cfe6e3` | LIVE (deviation) |
 
-1. **Intake origin defect (priority):** a synthetic application from each
-   `recoverycommunity.*` apply page to a staging replica, or a single labeled
-   synthetic submission against production with an agreed cleanup path. Then a
-   decision on whether to add those origins to `ALLOWED_ORIGINS` and the Turnstile
-   hostname list, or to route the apply pages to `vrcc.app`.
-2. **Deployment record:** read access to the Cloudflare Worker deployments and
-   custom-domain bindings (or the `deploy-production-candidate` run log). This would
-   confirm the Worker version, that `95b3e6c` was the deployed ref, and whether one
-   Worker serves all three hosts.
-3. **Auth configuration:** read access to the Supabase Auth settings (site URL,
+**Repository context (REPO, Rev `95b3e6c`; unchanged on `main`).**
+`ALLOWED_ORIGINS` in `supabase/functions/residence-intake/handler.ts` lists:
+- `recoveryresidence.org` and `.app` (with `www.`);
+- `gracehouse4.pages.dev`;
+- `vrcc.app` and `www.vrcc.app`;
+- two `workers.dev` origins;
+- `localhost:5173`.
+
+It does **not** list either `recoverycommunity.*` origin. A POST from an
+unlisted origin returns `403 forbidden_origin`.
+
+**What these observations do not establish.** A preflight response is not a
+submission. They do not show that any application succeeded or failed. They also
+don't show how a browser, Turnstile hostname attestation, or the receiver would
+treat an actual POST.
+
+**Conclusion (INF, high priority).** The observed CORS preflight responses and
+inspected receiver code indicate a probable cross-origin submission
+incompatibility for applications started on either `recoverycommunity.*` host.
+A completed application transaction has not been tested. If confirmed, a person
+seeking recovery housing from either Community Center address could be unable
+to apply, with nothing telling them why.
+
+**Verification required before treating this as a confirmed participant-facing
+defect:** a separately authorized synthetic submission from each
+`recoverycommunity.*` apply page (preferably against staging), or the
+equivalent receiver logs.
+
+---
+
+## 8. Gates 3 and 4 — outside Pass 1
+
+- **Gate 3, identity continuity and duplicate prevention: UNT.** Needs synthetic
+  accounts on each host, plus a read-only check that one person maps to one
+  `people` row.
+- **Gate 4, authorization and RLS enforcement: UNT.** Unauthenticated loads
+  issued no data requests, so there was nothing to deny. Needs a synthetic
+  role-matrix negative test against the deployed build. The register's
+  `pg_policies` observation remains Class D for this reviewer.
+
+## 9. Evidence still required to complete Gates 2–6
+
+**Needs separate runtime or access authorization:**
+1. **Intake origin (priority):** a synthetic submission from each
+   `recoverycommunity.*` apply page (staging preferred), or receiver logs. Then a
+   decision on whether to allowlist those origins plus their Turnstile
+   hostnames, or to route the apply pages to `vrcc.app`.
+2. **Deployment record:** read access to Cloudflare Worker deployments and
+   custom-domain bindings, or the `deploy-production-candidate` run log.
+3. **Auth configuration:** read access to Supabase Auth settings (site URL,
    redirect allowlist, CAPTCHA enforcement).
-4. **Synthetic identity tests** (Gates 2–4): accounts created on each host;
-   sign-in continuity across hosts; one `people` row per person; RLS denial matrix by
-   role; anonymous direct REST denial.
-5. **Consent persistence** (Gate 5): a synthetic housing-consent flow verifying
+4. **Synthetic identity tests (Gates 2–4):** cross-host sign-in continuity, one
+   `people` row per person, an RLS denial matrix by role, and anonymous direct
+   REST denial.
+5. **Consent persistence (Gate 5):** a synthetic housing-consent flow covering
    `consent_grants` creation, scope, withdrawal, and enforcement.
-6. **Analytics review** (Gate 6): Cloudflare Web Analytics settings and a privacy
-   assessment for pages used by people seeking recovery support.
-7. **Boundary language:** confirm the EJWRH apply consent wording against current
+
+**Records or configuration review only (no runtime authorization needed):**
+
+6. **Analytics review (Gate 6):** Cloudflare Web Analytics settings, plus a
+   privacy assessment for pages used by people seeking recovery support.
+7. **Boundary language:** the EJWRH apply consent wording against current
    approved EJWRH–GFA records.
 
-## Limitations
+**Deferred by decision:** a local build of `main`, to test whether production
+assets differ from `main`.
 
-- These are point-in-time observations (2026-10-29, 04:06–04:12Z) from one network
-  vantage point through an egress proxy. Cloudflare cache status was `HIT`, and edge
-  behavior can vary by location.
-- Byte-identical reproduction ties the assets to `95b3e6c`'s build inputs, not to a
-  deployment event. The Worker script itself cannot be observed from outside; only
-  its behavior was compared with source.
-- Browser probes ran in headless Chromium with non-GET requests aborted. Pages that
-  depend on those requests (analytics, the Turnstile handshake) may render
-  differently for real visitors.
-- Bundle analysis is static string inspection. Call sites inside unvisited
-  authenticated areas were enumerated but not exercised.
+## 10. Limitations
+
+- These are point-in-time observations from one network vantage point, through
+  an egress proxy, with Cloudflare cache HITs. Edge behavior can vary by location.
+- Byte-identical reproduction ties the assets to `95b3e6c`'s build inputs, not to
+  a deployment event. The Worker script itself cannot be observed; only its
+  behavior was compared with source.
+- Browser probes ran headless with non-GET requests aborted. Pages that depend on
+  those requests (analytics, the Turnstile handshake) may render differently for
+  real visitors.
+- Artifact analysis is static string inspection. Call sites inside signed-in
+  areas were enumerated, not exercised.
+- The DNS lookups, `/release.json` bodies, auth settings, preflight results, and
+  build result were transcribed from session output, as marked in `supp`. Other
+  timestamps are capture-file write times.
 - No test touched authentication, authorization, consent persistence, or data
   writes. Absence of an observed failure is not evidence of correct enforcement.
 
-## Disposition
+## 11. Disposition
 
 **DR-02: Open — contested.** Pass 1 narrows the question but does not answer it.
-The deployed reality is **one artifact, one Worker logic, one Supabase project,
-served on three hosts with host-dependent entry routing**. That is compatible with
-a shared-platform architecture, but it does not by itself favor Abstract, Unify,
-or Hybrid. It also exposes at least one boundary inconsistency (the intake origin
-allowlist) that an architectural decision will need to resolve explicitly. No
-architecture is approved; no production change is authorized.
+
+The observed deployment is one served artifact, reproducible from `95b3e6c`. It
+has one Worker behavior profile and one Supabase project, and it is served on
+three hosts with host-dependent entry routing. That is compatible with a
+shared-platform architecture. It does not favor Abstract, Unify, or Hybrid.
+
+Pass 1 also surfaced a probable boundary inconsistency, the intake origin
+allowlist, that any architectural decision will need to resolve explicitly.
+
+No architecture is approved. No production change is authorized.
