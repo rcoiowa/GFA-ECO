@@ -3,7 +3,7 @@
 **Authorized:** 2026-10-28 (executive direction supplied in audit session)  
 **Scope:** WS-01 Public Entry Points + WS-02 Identity & Relationships, linked investigations  
 **Status:** ACTIVE AUDIT / PROPOSED DISPOSITIONS — NO IMPLEMENTATION AUTHORIZATION  
-**Records:** 12; Preserve 5, Unify 3, Abstract 1, Investigate 3  
+**Records:** 12; 5 Preserve, 2 Unify, 1 Abstract, 3 Investigate, **1 unresolved disposition conflict** (DR-02). Counts describe active reconciled state, not prior source counts.  
 **Repository:** rcoiowa/GFA-ECO  
 **Decision authority:** Pending individual verification/approval; role labels below are proposed, not assignments.
 
@@ -28,7 +28,7 @@ Three separate columns of truth must be maintained in every investigation: **obs
 | ID | Domain | Distinction | Proposed | Verification required | Proposed verification roles | Decision status |
 |---|---|---|---|---|---|---|
 | DR-01 | Governance | GFA vs RecoveryOS | Preserve | Legal ownership, branding, data stewardship | Executive + Technical | Pending verification |
-| DR-02 | Experience | RecoveryOS vs VRCC | Unify | Routes, role access, participant journeys | Product + Technical | Pending verification |
+| DR-02 | Experience | RecoveryOS vs VRCC | **CONFLICT: Abstract (v0.1) / Unify (Audit v1.0)** | Routes, role access, participant journeys, identity and visibility boundaries | Product + Technical | **UNRESOLVED — no approved disposition** |
 | DR-03 | Functional | Grace vs Contact Connect | Preserve | AI boundary, human handoff, consent | Programs + Technical | Pending verification |
 | DR-04 | Operational | Grace House vs EJWRH | Preserve | Policies, admissions, capacity, authorization | Housing + Quality | Pending verification |
 | DR-05 | Consent | Housing inquiry vs application | Preserve | Forms, notices, workflow consequences | Housing + Quality | Pending verification |
@@ -40,7 +40,7 @@ Three separate columns of truth must be maintained in every investigation: **obs
 | DR-11 | Authorization | Coach vs Navigator vs Residence UI | Abstract | RLS, actions, shared components | Operations + Technical | Pending verification |
 | DR-12 | Taxonomy | Programs vs services vs resources | Unify | Definitions, database relationships, discovery | Programs + Quality | Pending verification |
 
-**Classification correction:** The authorized 12 row-by-row dispositions above total **5 Preserve, 3 Unify, 1 Abstract and 3 Investigate**; the previously supplied aggregate count (4/3/1/4) does not match the listed rows. Preserve the original aggregate as a source inconsistency rather than silently changing any individual row.
+**Historical source counts:** Audit v1.0 originally listed **5 Preserve, 3 Unify, 1 Abstract, 3 Investigate**; an earlier supplied aggregate read 4/3/1/4 and did not match its row detail. Baseline v0.1 lists DR-02 as **Abstract** instead of **Unify**, giving **5 Preserve, 2 Unify, 2 Abstract, 3 Investigate**. Reconciled counts exclude DR-02 from either disposition until resolved. No source's historical classification is overwritten.
 
 For each record, add as verified: current-state observation + date, source link and authority class, human/governance/operational necessity, historical origin, dependencies, privacy and safety risks, test references (synthetic only), recommended target, named verification owner if assigned, explicit decision-maker and decision date, and implementation status. No proposed disposition is an approved implementation.
 
@@ -92,3 +92,43 @@ For each record, add as verified: current-state observation + date, source link 
 ## Change control and next checkpoint
 
 No runtime or data mutation is permitted by this audit authorization. Proposed recommendation → evidence review → named owner verification → decision authority approval → separately authorized implementation → tested deployment. **Next checkpoint:** complete the WS-01 inventory and WS-02 boundary mapping with concrete URLs, repository paths, read-only database metadata, synthetic test plan and unresolved conflicts.
+
+## Baseline alignment — D-02 / DR-02 first reconciliation case
+
+**Baseline source:** Executive-supplied *GFA–RecoveryOS Distinction Register, Working v0.1*, October 28, 2026, reproduced in the audit conversation. The independent linked Claude artifact has **not** been fetched or authenticated, so this comparison is to the supplied text, not a verified external artifact version.
+
+**Active audit source:** this committed GitHub Audit v1.0 register, fetched and compared against the supplied baseline.
+
+**Stable IDs:** `DR-01` through `DR-12` are canonical tracker IDs; `D-01` through `D-12` are immutable aliases to their number-matched records. Aliases preserve source provenance, not duplicate entities.
+
+| Canonical ID | Baseline alias | Baseline proposal | Audit v1.0 proposal | Reconciled disposition status |
+|---|---|---|---|---|
+| DR-01 | D-01 | Preserve | Preserve | Proposed — agreement |
+| DR-02 | D-02 | **Abstract** | **Unify** | **UNRESOLVED — competing proposals** |
+| DR-03 | D-03 | Preserve | Preserve | Proposed — agreement |
+| DR-04 | D-04 | Preserve | Preserve | Proposed — agreement |
+| DR-05 | D-05 | Preserve | Preserve | Proposed — agreement |
+| DR-06 | D-06 | Investigate | Investigate | Proposed — agreement |
+| DR-07 | D-07 | Preserve | Preserve | Proposed — agreement |
+| DR-08 | D-08 | Unify | Unify | Proposed — agreement |
+| DR-09 | D-09 | Investigate | Investigate | Proposed — agreement |
+| DR-10 | D-10 | Investigate | Investigate | Proposed — agreement |
+| DR-11 | D-11 | Abstract | Abstract | Proposed — agreement |
+| DR-12 | D-12 | Unify | Unify | Proposed — agreement |
+
+**D-02/DR-02 comparison:** Baseline v0.1 describes *RecoveryOS / VRCC* as “Platform versus participant experience,” proposing **Abstract**. Audit v1.0 proposes **Unify**, describing one shared concept with contextual variation. These are not equivalent: Abstract could preserve a separately governed experience contract beneath a unified navigation surface; Unify could consolidate experience constructs. Neither establishes the deployed role, session, identity, or data boundary. **Decision: hold both proposals.** Determine actual routes, account requirements, role access, participant journey, identity binding, consent, data destinations, and deployment wiring before recommending a choice. A hybrid may emerge, but is not approved.
+
+### Governing gate and acceptance criteria
+
+1. Verify actual current state using named GitHub paths, deployed route evidence, Supabase metadata and read-only operational validation.
+2. Preserve necessary legal/organizational separation of GFA and RecoveryOS; do not merge participant identity with service records or Contact Connect inquiries with residence applications.
+3. Preserve Grace House/EJWRH staff and admission authority, Live-Out/residential boundaries, and Grace AI's non-decision role.
+4. Ensure each register item distinguishes observation, evidence-backed finding, recommendation, explicit approval (approver/date), and implementation.
+5. Before a change: document dependencies, denial/consent tests, functional participant journey acceptance tests, rollback plan, and **separate implementation authorization**.
+6. Until that gate is met, no route, domain, identity, RLS, workflow or production deployment change.
+
+**North Star:** One coherent experience. Distinct responsibilities. Connected services. No unnecessary complexity.
+
+“Connection Prevents Crisis” guides the experience as organizational doctrine and a testable hypothesis, not proof of causal prevention.
+
+**Initial reconciliation disposition:** 11 aligned proposed classifications; one unresolved conflict (DR-02). No disposition approved, no implementation authorized.
