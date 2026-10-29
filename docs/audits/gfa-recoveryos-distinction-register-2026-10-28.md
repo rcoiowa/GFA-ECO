@@ -132,3 +132,23 @@ No runtime or data mutation is permitted by this audit authorization. Proposed r
 “Connection Prevents Crisis” guides the experience as organizational doctrine and a testable hypothesis, not proof of causal prevention.
 
 **Initial reconciliation disposition:** 11 aligned proposed classifications; one unresolved conflict (DR-02). No disposition approved, no implementation authorized.
+
+## DR-02 evidence checkpoint — 2026-10-28 (read-only; no disposition)
+
+**Documentary evidence (repository inspected):**
+- [Route registry](../architecture/route-registry.md) lists a shared `apps/platform` deployment and public, participant, resident and future staff route subtrees. The route registry retains some historical `/app` wording; it is **not** proof of what a user currently reaches.
+- [Recoverycommunity domain map](../architecture/recoverycommunity-domain-map-2026-09-24.md) specifies `recoverycommunity.center` as public wayfinding, `recoverycommunity.app` as guarded `/vrcc/today`, and `vrcc.app` as a separate legacy entrance pending a distinct cutover. The domain map explicitly says Cloudflare bindings and runtime version require live verification.
+- [Application source](../../apps/platform/src/App.tsx) contains host-specific mapping for the two `recoverycommunity.*` addresses. Code presence is not proof of deployment.
+- [Historical HANDOFF](../HANDOFF.md) explicitly marks prelaunch YKY instructions superseded; do not treat its old production claims as current.
+
+**Read-only CQCX metadata evidence:** `pg_policies` confirms named SELECT/INSERT/UPDATE policies for `people`, `person_profiles`, `consent_grants`, `leads`, `support_requests`, `residence_application_intake`, `residence_applications`, `residencies`, and `program_enrollments`. This establishes policy definitions exist, **not** that role boundaries hold under tested identities. No participant rows were queried.
+
+| Gate | What is established | Outstanding runtime verification |
+|---|---|---|
+| Routes / deployments | One canonical platform with host-specific mappings in source; legacy VRCC references exist | Live DNS/Cloudflare bindings, current deployed build and actual root redirects |
+| Authentication / identity | Canonical CQCX person and relationship schema documented and previously inspected | Same auth instance and person ID across sign-in, VRCC, residence, accountless applicant conversion |
+| Authorization | Named policies and separate role-related route trees exist | Synthetic role/tenant-denial tests against deployed build and RLS |
+| Consent / data | Consent and service-relationship structures exist | Actual browser-to-API tracing, privacy notices, consent grants and data destination on each entrance |
+| Architecture | Shared frontend source plus intentionally distinct public and participant experiences | Whether legacy `vrcc.app` still runs separately and whether any user journey fragments identity |
+
+**Disposition remains contested:** baseline **Abstract** versus Audit v1.0 **Unify**. A **Hybrid** option is worth testing because a shared backend and differentiated experiences can coexist, but it is **not** selected or approved. No evidence in this checkpoint authorizes cutover, domain assignment, identity merge, schema change or production deployment.
