@@ -29,13 +29,7 @@ export async function listMyDocumentAssignments(
   return data ?? [];
 }
 
-/**
- * Sign/acknowledge a pending assignment through the audited RPC (Gate B1):
- * the server pins the exact document version + content hash into the audit
- * trail, distinguishes acknowledgment from signature, and only ever acts on
- * the person's own unacknowledged assignment. (The legacy direct-update path
- * is retired in Gate B6.)
- */
+/** @deprecated Pending calls fail closed. Use completeDocumentReview with explicit statements and pinned version/hash. */
 export async function acknowledgeDocumentAssignment(input: {
   assignmentId: number;
   signatureName?: string;
@@ -45,5 +39,7 @@ export async function acknowledgeDocumentAssignment(input: {
     p_signature_name: input.signatureName ?? null,
   });
   if (error) throw error;
-  return (data as { ok: boolean; code?: string; content_hash?: string }) ?? { ok: false, code: 'empty' };
+  return (
+    (data as { ok: boolean; code?: string; content_hash?: string }) ?? { ok: false, code: 'empty' }
+  );
 }

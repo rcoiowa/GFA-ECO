@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '@recoveryos/auth';
 import {
   ensureMyDocumentAssignments,
   listMyDocumentAssignments,
+  listMyDocumentReviewStates,
   type AssignmentWithDocument,
 } from '@recoveryos/data-access';
 import { allDocuments, type DocumentCategory } from '@recoveryos/residence-content';
@@ -34,30 +35,47 @@ export function DocumentsPage({
   const [assignments, setAssignments] = useState<AssignmentWithDocument[] | null>(null);
   const [assignmentsError, setAssignmentsError] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    if (!person) return;
-    setLoading(true);
-    setAssignmentsError(false);
-    try {
-      await ensureMyDocumentAssignments();
-      setAssignments(await listMyDocumentAssignments(person.id));
-    } catch {
-      setAssignmentsError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [person]);
+  const [currentIds, setCurrentIds] = useState<number[]>([]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+    setLoading(true);
+    setAssignmentsError(false);
+    setAssignments(null);
+    setCurrentIds([]);
+    void (async () => {
+      try {
+        if (person) {
+          await ensureMyDocumentAssignments();
+          const rows = await listMyDocumentAssignments(person.id);
+          const states = await listMyDocumentReviewStates();
+          if (!cancelled) {
+            setCurrentIds(states.filter((s) => s.ok && s.current).map((s) => s.assignment_id!));
+            setAssignments(rows);
+          }
+        }
+      } catch {
+        if (!cancelled) setAssignmentsError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [person?.id]);
 
   const pending = useMemo(
-    () => (assignments ?? []).filter((a) => !a.acknowledged_at),
-    [assignments],
+    () =>
+      (assignments ?? []).filter(
+        (a) => !a.acknowledged_at && a.person_id === person?.id && currentIds.includes(a.id),
+      ),
+    [assignments, currentIds, person?.id],
   );
-  const signed = useMemo(() => (assignments ?? []).filter((a) => a.acknowledged_at), [assignments]);
+  const signed = useMemo(
+    () => (assignments ?? []).filter((a) => a.acknowledged_at && a.person_id === person?.id),
+    [assignments, person?.id],
+  );
 
   return (
     <>
@@ -78,7 +96,7 @@ export function DocumentsPage({
         ) : assignmentsError ? (
           <Alert tone="attention">
             We couldn't load your signature records right now. The document library below still
-            works — and your signatures are safe.
+            works.
           </Alert>
         ) : pending.length > 0 ? (
           <Card>
@@ -107,14 +125,14 @@ export function DocumentsPage({
         ) : (
           <Alert tone="positive">
             {assignments?.length
-              ? 'Your assigned documents are complete.'
+              ? 'No current assigned documents are waiting for your review.'
               : 'No documents are assigned yet. If you are waiting for intake documents, ask staff to check your application and account link.'}
           </Alert>
         )}
 
         {signed.length > 0 ? (
           <Card>
-            <CardTitle>Completed by you</CardTitle>
+            <CardTitle>Recorded completions</CardTitle>
             <ul className="flex flex-col gap-1">
               {signed.map((a) => (
                 <li key={a.id} className="flex items-center justify-between py-1">
@@ -122,7 +140,7 @@ export function DocumentsPage({
                     to={`${basePath}/documents/${a.document_version.template.key}?assignment=${a.id}`}
                     className="font-medium text-experience-700 underline underline-offset-2"
                   >
-                    {a.document_version.template.name}
+                    {a.document_version.template.name} — version {a.document_version.version}
                   </Link>
                   <span className="text-sm text-ink-muted">
                     {new Date(a.acknowledged_at as string).toLocaleDateString()}
@@ -132,6 +150,35 @@ export function DocumentsPage({
             </ul>
           </Card>
         ) : null}
+
+        {(assignments ?? []).some(
+          (a) => a.person_id === person?.id && !a.acknowledged_at && !currentIds.includes(a.id),
+        ) && (
+          <Card>
+            <CardTitle>Earlier or inactive assignments</CardTitle>
+            <p>
+              These records remain available for reference. Review current applicable editions
+              above.
+            </p>
+            <ul>
+              {(assignments ?? [])
+                .filter(
+                  (a) =>
+                    a.person_id === person?.id && !a.acknowledged_at && !currentIds.includes(a.id),
+                )
+                .map((a) => (
+                  <li key={a.id}>
+                    <Link
+                      className="underline"
+                      to={`${basePath}/documents/${a.document_version.template.key}?assignment=${a.id}`}
+                    >
+                      {a.document_version.template.name} — version {a.document_version.version}
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+          </Card>
+        )}
 
         {!assignedOnly && (
           <Card>
