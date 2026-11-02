@@ -16,7 +16,11 @@ approved plan (see the identifier-migration boundary in
    role name, not service vocabulary.
 3. The **abbreviation "RA" remains provisional** (see verification findings below).
 4. **Recovery Circle is a community setting, not an individual role.**
-5. **Recovery Continuity** is adopted as a **proposed organizing principle** for the
+5. **Recovery Navigator is the standardized role name; "Resource Navigator" is
+   dropped everywhere in GFA work** (executive ratification, 2026-11-02). The
+   service term **"resource navigation"** remains valid — it names a service, not
+   the role (consistent with the Language Guide's service-definition distinctions).
+6. **Recovery Continuity** is adopted as a **proposed organizing principle** for the
    case for support and future platform design — proposal status, not ratified
    doctrine. The journey is presented as flexible and participant-directed.
    **Belonging and stability are outcomes people may define and pursue — not stages
@@ -57,10 +61,13 @@ Scan of the tracked working tree on branch `claude/clever-mendel-6yi7fu`:
 2. **"Recovery Support Ally" and "RSA" appear nowhere** in tracked text. There is
    nothing to replace in this repository; the rename applies to materials outside it
    (e.g., the master proposal), each on its own authority.
-3. **Naming conflict to resolve:** the working narrative above says "Recovery
-   Navigator"; some source material used **"Resource Navigator."** The ratified name
-   in this repository is **Recovery Navigator**. Working documents should use
-   Recovery Navigator unless a future decision changes it.
+3. **Naming conflict — RESOLVED 2026-11-02:** some source material used "Resource
+   Navigator"; the ratified name in this repository is **Recovery Navigator**, and
+   the executive ratified standardizing on it everywhere (Decision item 5). A
+   same-day scan found exactly one product-copy occurrence ("resource navigator"
+   in `apps/platform/src/public/ResidenceDirectoryPage.tsx`), corrected to
+   "Recovery Navigator" in this change. No route, slug, field, or component
+   identifier was renamed.
 4. **"RA" abbreviation:** no conflicting use of "RA"/"RAs" was found in tracked
    repository text; residence documents use "House Manager" (no Resident
    Advisor/Assistant role exists in current records). Caution: in the wider

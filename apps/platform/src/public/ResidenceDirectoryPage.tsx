@@ -207,7 +207,7 @@ export function ResidenceDirectoryPage() {
         <section className="mt-6 rounded-lg bg-experience-soft p-6">
           <h2 className="text-xl font-semibold text-experience-700">Not sure where to start?</h2>
           <p className="mt-2 max-w-2xl text-ink">
-            The VRCC is free for everyone — housed or not. A resource navigator can help you sort
+            The VRCC is free for everyone — housed or not. A Recovery Navigator can help you sort
             options, make calls, and land somewhere safe.
           </p>
           <Link
