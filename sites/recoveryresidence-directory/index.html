@@ -226,7 +226,7 @@ footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
     </div>
     <nav class="dir-links">
       <button id="nb-home" class="on" onclick="go('home')">Find a Residence</button>
-      <button onclick="alert('Operator listing submissions coming soon. For now, email listings@recoveryresidence.org')">List Your Residence</button>
+      <button onclick="location.assign('/recovery-residences/list-your-residence')">List Your Residence</button>
     </nav>
   </div>
 </header>
@@ -610,6 +610,7 @@ footer p,footer li{font-size:.9rem;line-height:1.8;list-style:none}
 
 <script>
 function go(p){
+  if(p==='grace'||p==='ejwrh'){ location.assign('/recovery-residences/'+(p==='grace'?'grace-house':'ejwrh')); return; }
   if(p==='apply'||p==='ejwrh-apply'){ location.assign('/recovery-residences/'+(p==='apply'?'grace-house':'ejwrh')+'/apply'); return; }
   ['home','grace','ejwrh','ejwrh-apply','jerrys','apply'].forEach(x=>{
     document.getElementById('pg-'+x).classList.toggle('hidden', x!==p);

@@ -94,6 +94,16 @@ export async function weatherResponse(request, env, cache, fetcher = fetch) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // Keep the searchable public directory separate from current residence
+    // profiles and intake. Only the housing domain uses it as its homepage.
+    const directoryEntry =
+      ['/directory', '/directory/'].includes(url.pathname) ||
+      (url.pathname === '/' &&
+        ['recoveryresidence.org', 'www.recoveryresidence.org'].includes(url.hostname));
+    if (['GET', 'HEAD'].includes(request.method) && directoryEntry) {
+      url.pathname = '/residence/directory/';
+      return this.fetch(new Request(url, request), env);
+    }
     if (
       ['GET', 'HEAD'].includes(request.method) &&
       ['/residence/directory/', '/residence/directory', '/residence/directory/index.html'].includes(
