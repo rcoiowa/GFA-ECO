@@ -128,7 +128,7 @@ export function IncidentsPage() {
     <>
       <PageHeader
         title="Incidents"
-        lede="Document within 24 hours: facts only, person-first language, initials in narratives. Reports are for learning, never punishment."
+        lede="Document within 24 hours. Separate observations, reported information, and unknowns; use initials in narratives. Follow the applicable safety and review process."
         crumbs={[{ to: '/staff/today', label: 'Today' }]}
       />
       {loading ? (
