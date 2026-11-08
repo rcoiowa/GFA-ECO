@@ -1,7 +1,7 @@
 import { PageHeader, Card } from '@recoveryos/ui';
 
 const TRACKS = [
-  ['Brain Atlas', 'Understand what addiction does in the brain — and how recovery rebuilds it.'],
+  ['Brain Atlas', 'Explore how substance use, stress, learning, and habits can relate to recovery.'],
   ['Recovering the Mind', 'A guided path through the early work of recovery thinking.'],
   ['Training the Mind', 'Practices that strengthen attention, patience, and self-kindness.'],
   ['The Tapes We Carry', 'Recognizing the old internal messages — and recording new ones.'],

@@ -102,20 +102,20 @@ export function GettingSettledPage() {
 
   const residencePhone = application?.residence?.phone;
   const helpLine = residencePhone
-    ? `Any staff member can sit with you through any of this — and paper copies are always available. Call ${residencePhone} any time.`
-    : 'Any staff member can sit with you through any of this — and paper copies are always available.';
+    ? `Ask staff for help with these steps or for paper copies. Call ${residencePhone} to arrange help; response times vary.`
+    : 'Ask staff for help with these steps or for paper copies.';
 
   return (
     <>
       <PageHeader
         title="Getting settled"
-        lede="A few things to look through before move-in — at your pace, with help whenever you want it."
+        lede="Review your required move-in documents and actions. Ask staff about any questions or deadlines."
       />
       {loading ? (
         <LoadingState label="Checking what's yours to look at…" />
       ) : error ? (
         <Alert tone="attention">
-          We couldn't load this right now — nothing is lost. Try again in a moment, or ask staff.
+          We couldn't load your current information. Try again in a moment, or ask staff to confirm your status.
         </Alert>
       ) : !application ? (
         <Card>
