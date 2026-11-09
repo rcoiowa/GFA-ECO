@@ -1,0 +1,90 @@
+/* Scoped GFA skin: no global token or residence-theme change. */
+.gfarc-workspace {
+  font-family: var(--gfa-font-body);
+}
+.gfarc-workspace-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  align-items: center;
+}
+.gfarc-workspace-nav a {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+  min-height: var(--gfa-control-min-height);
+  display: inline-flex;
+  align-items: center;
+}
+.gfarc-workspace-hero {
+  background: var(--gfa-night);
+  color: var(--gfa-on-night);
+  padding: clamp(1.5rem, 5vw, 3.5rem);
+  border-radius: var(--radius-lg);
+}
+.gfarc-workspace-hero h1 {
+  font-family: var(--gfa-font-display);
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  margin: 1rem 0 2rem;
+}
+.gfarc-workspace-hero h1 span {
+  color: var(--gfa-accent);
+}
+.gfarc-workspace-hero > p:last-child {
+  border-top: 1px solid var(--gfa-on-night-muted);
+  padding-top: 1rem;
+}
+.gfarc-eyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.gfarc-workspace-hero .gfarc-eyebrow {
+  color: var(--gfa-accent);
+}
+.gfarc-section-title {
+  font-family: var(--gfa-font-display);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 400;
+  line-height: 1.2;
+  margin-top: 0.6rem;
+}
+.gfarc-privacy-note {
+  background: var(--gfa-raised);
+  color: var(--gfa-ink);
+  padding: 1.5rem;
+  border: 1px solid var(--gfa-line);
+  border-left: 3px solid var(--gfa-action);
+  line-height: 1.65;
+}
+.gfarc-privacy-note strong {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.gfarc-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+.gfarc-guide-grid h3 {
+  font-weight: 650;
+  margin-bottom: 0.5rem;
+}
+.gfarc-save-message {
+  padding: 1rem;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-sm);
+}
+.gfarc-workspace input,
+.gfarc-workspace select,
+.gfarc-workspace button {
+  min-height: var(--gfa-control-min-height);
+}
+
+.gfarc-workspace :focus-visible {
+  outline-color: var(--gfa-focus);
+}

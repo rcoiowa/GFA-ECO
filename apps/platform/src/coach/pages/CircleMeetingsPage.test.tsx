@@ -42,6 +42,7 @@ function renderPage() {
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
   mocks.get.mockResolvedValue(workspace);
   mocks.save.mockResolvedValue({ ok: true, code: 'recorded', meeting_id: 1 });
 });
@@ -106,4 +107,114 @@ describe('Circle logging', () => {
     expect(await screen.findByText(/You don’t have Circle recording access/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Save Circle meeting' })).not.toBeInTheDocument();
   });
+});
+
+describe('Facilitator workspace integration', () => {
+  it('provides return paths and makes the persistence boundary visible', async () => {
+    renderPage();
+    await screen.findByRole('heading', { name: /Lead the circle/ });
+    expect(
+      screen.getAllByRole('link', { name: 'Back to Recovery Community Center' })[0],
+    ).toHaveAttribute('href', '/vrcc');
+    expect(screen.getByRole('link', { name: 'GFA website' })).toHaveAttribute(
+      'href',
+      'https://graceforaddictions.org',
+    );
+    expect(screen.getByRole('link', { name: 'Facilitation guide' })).toHaveAttribute(
+      'href',
+      '#facilitation-guide',
+    );
+    expect(
+      screen.getByText(/First-time participant counts and facilitator notes are not yet supported/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/does not import records saved on a device/)).toBeInTheDocument();
+  });
+
+  it('preserves existing recorded meetings alongside the new workspace', async () => {
+    mocks.get.mockResolvedValue({
+      ...workspace,
+      meetings: [
+        {
+          id: 1,
+          series_id: 1,
+          title: 'Existing gathering',
+          starts_at: '2026-09-29T23:30:00Z',
+          location_name: 'Hope+Elim',
+          occurrence_status: 'held',
+          participant_count: 15,
+          facilitator_names: ['Thomas', 'Archaletta'],
+          total_attendance: 17,
+          county: 'Polk',
+        },
+      ],
+    });
+    renderPage();
+    expect(await screen.findByText('Existing gathering · Hope+Elim')).toBeInTheDocument();
+    expect(
+      screen.getByText(/1 held meetings · 15 participant attendances · 2 facilitator attendances/),
+    ).toBeInTheDocument();
+    expect(mocks.save).not.toHaveBeenCalled();
+  });
+
+  it('keeps entered data and explains reconciliation after an uncertain save', async () => {
+    mocks.save.mockRejectedValue(new Error('Network interrupted'));
+    renderPage();
+    const user = userEvent.setup();
+    await screen.findByLabelText('Date');
+    await user.type(screen.getByLabelText('Date'), '2026-11-09');
+    await user.type(screen.getByLabelText('Participants present (exclude facilitators)'), '12');
+    await user.type(
+      screen.getByLabelText('Facilitators present — one name per line'),
+      'Facilitator',
+    );
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Save not confirmed');
+    expect(screen.getByLabelText('Participants present (exclude facilitators)')).toHaveValue(12);
+    await user.click(screen.getByRole('button', { name: 'Refresh recorded meetings' }));
+    expect(mocks.get).toHaveBeenCalledTimes(2);
+    expect(mocks.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('records a cancellation without attendance', async () => {
+    renderPage();
+    const user = userEvent.setup();
+    await screen.findByLabelText('Date');
+    await user.type(screen.getByLabelText('Date'), '2026-11-09');
+    await user.selectOptions(screen.getByLabelText('Meeting status'), 'cancelled');
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    expect(await screen.findByText('Circle meeting saved.')).toBeInTheDocument();
+    expect(mocks.save).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'cancelled', participants: null, facilitators: [] }),
+    );
+  });
+
+  it('does not send an invalid end time to the server', async () => {
+    renderPage();
+    const user = userEvent.setup();
+    await screen.findByLabelText('Date');
+    await user.type(screen.getByLabelText('Date'), '2026-11-09');
+    await user.clear(screen.getByLabelText('End time (optional)'));
+    await user.type(screen.getByLabelText('End time (optional)'), '17:00');
+    await user.type(screen.getByLabelText('Participants present (exclude facilitators)'), '1');
+    await user.type(
+      screen.getByLabelText('Facilitators present — one name per line'),
+      'Facilitator',
+    );
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Save not confirmed');
+    expect(mocks.save).not.toHaveBeenCalled();
+  });
+});
+
+it('keeps unsaved entries when the facilitator cancels leaving', async () => {
+  renderPage();
+  const user = userEvent.setup();
+  await screen.findByLabelText('Date');
+  await user.type(screen.getByLabelText('Participants present (exclude facilitators)'), '7');
+  vi.mocked(window.confirm).mockReturnValue(false);
+  await user.click(screen.getAllByRole('link', { name: 'Back to Recovery Community Center' })[0]);
+  expect(window.confirm).toHaveBeenCalledWith(
+    'Leave this meeting record? Unsaved changes will be lost.',
+  );
+  expect(screen.getByLabelText('Participants present (exclude facilitators)')).toHaveValue(7);
 });
