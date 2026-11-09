@@ -34,6 +34,9 @@ export async function testDocumentationV2(db, { as, adminQuery, call, cbh, forei
     review.sha256,
     'Prepared SQL requires exact-hash review',
   );
+  // PostgreSQL documents octal escapes portably; do not depend on \v support.
+  assert.equal((sql.match(/\\013/g) ?? []).length, 2, 'Both note trims use vertical-tab octal');
+  assert.equal(sql.includes(String.raw`\v`), false, 'Do not use a version-specific escape');
   await db.exec(sql);
   assert.deepEqual(
     (await adminQuery('select * from recoveryos.meetings order by id')).rows,
@@ -210,6 +213,42 @@ export async function testDocumentationV2(db, { as, adminQuery, call, cbh, forei
     (await workspace()).meetings.find((m) => m.id === zero.meeting_id).first_time_participant_count,
     0,
   );
+  // Persist, read back and retry boundary letters and all supported trim characters.
+  // These samples are synthetic process text, never participant records.
+  const noteCases = [
+    ['visit the new room', 'visit the new room'],
+    ['review v', 'review v'],
+    ['v', 'v'],
+    [' \t\n\r\f\vvisit the room v\v\f\r\n\t ', 'visit the room v'],
+    ['\v', null],
+    [' \t\n\r\f\v ', null],
+    ['review\vprocess', 'review\vprocess'],
+  ];
+  for (const [index, [input, expected]] of noteCases.entries()) {
+    const values = {
+      start: `2026-09-${String(index + 1).padStart(2, '0')}T23:30:00Z`,
+      end: null,
+      notes: input,
+    };
+    const result = await v2(values);
+    assert.equal(result.code, 'recorded');
+    assert.equal(
+      (await workspace()).meetings.find((m) => m.id === result.meeting_id).facilitator_notes,
+      expected,
+      `Note must round trip without losing boundary letters: ${JSON.stringify(input)}`,
+    );
+    assert.equal((await v2(values)).code, 'already_recorded');
+    assert.equal((await v2({ ...values, notes: expected })).code, 'already_recorded');
+    // Owner-side synthetic assertion proves the table constraint uses the same trim set.
+    await assert.rejects(
+      adminQuery(
+        'update recoveryos.circle_meeting_documentation set facilitator_notes=$1 where meeting_id=$2',
+        ['\vsynthetic process text\v', result.meeting_id],
+      ),
+      /violates check constraint/,
+    );
+    await as(2);
+  }
   // An insert failure after the base occurrence write rolls the whole RPC back.
   await adminQuery(
     `create function recoveryos.test_reject_document() returns trigger language plpgsql as $$begin raise exception 'synthetic_document_failure'; end$$`,

@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { createMemoryRouter, RouterProvider } from 'react-router';
 import type { ReactNode } from 'react';
 import { App } from './App';
 vi.mock('./public/useDesMoinesSky', () => ({
@@ -33,14 +33,26 @@ const anonymous = {
   signOut: vi.fn(),
 };
 
-const renderAt = (path: string) =>
-  render(
-    <MemoryRouter initialEntries={[path]}>
-      <App />
-    </MemoryRouter>,
-  );
+const { transferableAbortController } = await vi.importActual<{
+  transferableAbortController: () => AbortController;
+}>('node:util');
+
+const renderAt = (path: string) => {
+  const router = createMemoryRouter([{ path: '*', element: <App /> }], { initialEntries: [path] });
+  return render(<RouterProvider router={router} />);
+};
+
+afterEach(() => vi.unstubAllGlobals());
 
 beforeEach(() => {
+  vi.stubGlobal(
+    'AbortController',
+    class {
+      constructor() {
+        return transferableAbortController();
+      }
+    },
+  );
   vi.clearAllMocks();
   mocks.useAuth.mockReturnValue(anonymous);
 });
@@ -79,18 +91,22 @@ describe('service-critical public routes stay mounted', () => {
     expect(screen.getByRole('link', { name: 'Support now' })).toHaveAttribute('href', '/support');
   });
 
-  it('touching the pictured front desk navigates to the human front desk', () => {
+  it('touching the pictured front desk navigates to the human front desk', async () => {
     renderAt('/community-center/lobby');
     fireEvent.click(screen.getByRole('link', { name: 'Touch the front desk in the lobby scene' }));
-    expect(screen.getByRole('heading', { name: 'Let’s find your next step.' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Let’s find your next step.' }),
+    ).toBeInTheDocument();
   });
 
-  it('touching the pictured kiosk navigates to the self-service kiosk', () => {
+  it('touching the pictured kiosk navigates to the self-service kiosk', async () => {
     renderAt('/community-center/lobby');
     fireEvent.click(
       screen.getByRole('link', { name: 'Touch the self-service kiosk in the lobby scene' }),
     );
-    expect(screen.getByRole('heading', { name: 'What would help you today?' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'What would help you today?' }),
+    ).toBeInTheDocument();
   });
 
   it('/community-center/resources links to established resources without an account', () => {

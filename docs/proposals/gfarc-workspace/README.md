@@ -1,6 +1,6 @@
 # GFARC workspace integration — November 9, 2026
 
-Development candidate based on verified main `b0af2c1`. This is a tested frontend and **prepared-only** persistence extension, not a production release or complete source-guide migration.
+Original integration based on verified main `b0af2c1`, merged as `28559c4`. See [review follow-up](review-followup.md) for the subsequent navigation, refresh and SQL-escape hardening. This is a tested frontend and **prepared-only** persistence extension, not a production release or complete source-guide migration.
 
 ## What changes
 
@@ -33,7 +33,7 @@ The ratified intake prepared-chain directory is unchanged. This unrelated Circle
 ## Verification
 
 - `pnpm typecheck`: workspace passed.
-- `pnpm test`: 113 domain + 21 recovery-content + 272 platform tests passed (406). Includes 24 Circle UI, 22 data-access adapter and 5 navigation tests.
+- `pnpm test`: 113 domain + 21 recovery-content + 291 platform tests passed (425). Includes 36 Circle UI, 22 data-access adapter, 5 navigation and 7 nested router-shell tests.
 - `node tests/circle/database.mjs`: all four synthetic PGlite suites passed, including v2 recorder/shared-reader separation, explicit GFA role and scope matrices, read-only leadership, CBH exclusions, scope/identity/classification revocation, direct CRUD/helper denial, validation, null/zero semantics, historical/v1 ACL preservation, duplicates, legacy retry, and transactional rollback after a forced documentation failure.
 - `pnpm build`: passed; existing large-chunk warning remains.
 - Canonical backend, ICARE, language, table access, intake/booking/view/domain/provenance/prepared-chain, Cloudflare boundary, Grace static/safety/disclosure, public asset/artwork and contrast gates passed, including the unchanged approved intake prepared-chain lock. All 16 portable-theme contrast pairings passed. Table-access regression and 10 weather-proxy tests also passed.
