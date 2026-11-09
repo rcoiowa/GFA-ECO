@@ -212,7 +212,7 @@ it('keeps unsaved entries when the facilitator cancels leaving', async () => {
   await screen.findByLabelText('Date');
   await user.type(screen.getByLabelText('Participants present (exclude facilitators)'), '7');
   vi.mocked(window.confirm).mockReturnValue(false);
-  await user.click(screen.getAllByRole('link', { name: 'Back to Recovery Community Center' })[0]);
+  await user.click(screen.getAllByRole('link', { name: 'Back to Recovery Community Center' })[0]!);
   expect(window.confirm).toHaveBeenCalledWith(
     'Leave this meeting record? Unsaved changes will be lost.',
   );
