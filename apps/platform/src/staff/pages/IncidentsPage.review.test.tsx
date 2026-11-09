@@ -58,6 +58,17 @@ beforeEach(() => {
 });
 
 describe('IncidentsPage review', () => {
+  it('preserves the incident policy’s learning purpose alongside factual reporting guidance', async () => {
+    mocks.listIncidents.mockResolvedValue([]);
+    wrap();
+    expect(
+      await screen.findByText(/reports are used for improvement, not punishment/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/separate observations, reported information, and unknowns/i),
+    ).toBeInTheDocument();
+  });
+
   it('separates unreviewed reports and offers the review action', async () => {
     mocks.listIncidents.mockResolvedValue([
       incident({ id: 1 }),
