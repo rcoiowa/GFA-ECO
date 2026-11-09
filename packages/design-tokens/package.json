@@ -8,7 +8,8 @@
     "./themes/platform.css": "./src/themes/platform.css",
     "./themes/appearance.css": "./src/themes/appearance.css",
     "./themes/atmosphere.css": "./src/themes/atmosphere.css",
-    "./themes/brand.css": "./src/themes/brand.css"
+    "./themes/brand.css": "./src/themes/brand.css",
+    "./themes/gfa-shared.css": "./src/themes/gfa-shared.css"
   },
   "scripts": {
     "typecheck": "echo 'design-tokens: css only'"
