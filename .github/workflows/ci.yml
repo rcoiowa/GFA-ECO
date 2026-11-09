@@ -22,6 +22,8 @@ jobs:
         run: |
           node scripts/check-table-access.mjs
           node --test scripts/check-table-access.test.mjs
+      - name: Synthetic Circle persistence and authorization tests
+        run: node tests/circle/database.mjs
       - name: Contextual language guide regression checks
         run: |
           python3 scripts/test-language-guide.py

@@ -1,0 +1,43 @@
+{
+  "state": "prepared_only_not_applied",
+  "sql": "docs/proposals/gfarc-workspace/20261109_circle_documentation_v2.prepared.sql",
+  "sha256": "59033da9c6cfd7d2c88c395b05bb68fc920f8ed98b459ee714dd585f3d63bc16",
+  "reviewer": "Codex independent security review, 2026-11-09; not human governance approval",
+  "rationale": "Append-only optional first-time aggregate count and recorder-only process notes. Preserve existing Circle policy, v1 RPC, history, role assignments and source grants.",
+  "tables": {
+    "recoveryos.circle_meeting_documentation": {
+      "rlsEvidence": "RLS enabled with no client policies; explicit revokes override inherited default privileges. Only narrowly checked definer helpers own access.",
+      "denialTests": "tests/circle/documentation-v2.mjs: direct CRUD denied to anon/authenticated/service_role; foreign scope and revoked/banned/deleted/domain-changed identities denied; two authorized recorders cannot read or test equality of each other's notes.",
+      "rpcReview": "Unique versioned invoker RPC; private definer helpers use empty search_path, existing can_record and occurrence locks. New helpers deny PUBLIC/anon/service_role. Workspace only augments the existing scoped 200-record result. No caller-supplied recorder identity.",
+      "roles": {
+        "PUBLIC": {
+          "privileges": [],
+          "reason": "Private RPC-only documentation",
+          "sqlEvidence": "Explicit REVOKE ALL on circle_meeting_documentation from public"
+        },
+        "anon": {
+          "privileges": [],
+          "reason": "No anonymous documentation access",
+          "sqlEvidence": "Explicit REVOKE ALL on table and new functions from anon"
+        },
+        "authenticated": {
+          "privileges": [],
+          "reason": "Validated RPC access only, never direct table access",
+          "sqlEvidence": "Explicit REVOKE ALL on table; EXECUTE only on three new functions"
+        },
+        "service_role": {
+          "privileges": [],
+          "reason": "Prevent inherited bypass-RLS source access to private notes",
+          "sqlEvidence": "Explicit REVOKE ALL on table and new functions from service_role"
+        }
+      }
+    }
+  },
+  "activationGates": [
+    "Approve recorder-only notes audience, retention and operational correction path",
+    "Reconcile current live function hashes and migration ledger before any forward-only change",
+    "Pass isolated real-JWT/PostgREST save, capability, denial and multi-session race tests",
+    "Complete authenticated mobile/keyboard/zoom/accessibility browser acceptance",
+    "Reconcile served frontend baseline and exact-commit CI before release"
+  ]
+}

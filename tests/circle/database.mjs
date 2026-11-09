@@ -116,4 +116,5 @@ assert.equal((await call({series:cbh,count:16})).code,'duplicate_conflict');
 await db.exec('reset role;set role anon');await assert.rejects(db.query('select recoveryos.get_my_circle_workspace()'),/permission denied/);
 console.log('PASS: five roles, CBH subset, verified exact domain, revocation, scope isolation, county snapshots, closed designation, defaults, duplicate prevention.');
 
+await (await import('./documentation-v2.mjs')).testDocumentationV2(db, { as, adminQuery, call, cbh, foreign, saved });
 await db.close();

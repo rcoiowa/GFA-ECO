@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import '@recoveryos/design-tokens/themes/gfa-shared.css';
 import './CircleMeetingsPage.css';
@@ -9,6 +9,11 @@ import { Button, Card, LoadingState, ErrorState } from '@recoveryos/ui';
 import { circleTimeToISO } from '../circleTime';
 
 export function CircleMeetingsPage() {
+  const { person } = useAuth();
+  return <CircleMeetingsWorkspace key={person?.id ?? 'signed-out'} />;
+}
+
+function CircleMeetingsWorkspace() {
   const { person } = useAuth();
   const client = useQueryClient();
   const queryKey = ['circle-workspace', person?.id];
@@ -35,8 +40,26 @@ export function CircleMeetingsPage() {
   const [status, setStatus] = useState<'held' | 'cancelled'>('held');
   const [count, setCount] = useState('');
   const [names, setNames] = useState('');
+  const [firstTime, setFirstTime] = useState('');
+  const [notes, setNotes] = useState('');
+  const documentationV2 = query.data?.capabilities?.circle_documentation_v2 === true;
+  function resetFields() {
+    setDirty(false);
+    setCount('');
+    setNames('');
+    setFirstTime('');
+    setNotes('');
+    setMessage('');
+    setFailed(false);
+    setStatus('held');
+  }
   const series = query.data?.series ?? [];
   const circle = series.find((s) => String(s.id) === selected) ?? series[0];
+  // Never carry an author’s draft into another Circle after assignment changes.
+  // Layout reset clears sensitive state before the browser paints the replacement form.
+  useLayoutEffect(() => {
+    resetFields();
+  }, [circle?.id]);
   const meetings = query.data?.meetings ?? [];
   const held = meetings.filter((m) => m.occurrence_status === 'held');
   const people = names
@@ -72,7 +95,30 @@ export function CircleMeetingsPage() {
       ) {
         throw new Error('Enter a whole participant count and at least one facilitator.');
       }
+      if (
+        (!documentationV2 && (firstTime !== '' || notes.trim())) ||
+        (status === 'held' &&
+          firstTime !== '' &&
+          (!Number.isInteger(Number(firstTime)) ||
+            Number(firstTime) < 0 ||
+            Number(firstTime) > Number(count))) ||
+        Array.from(notes.trim()).length > 2000
+      ) {
+        setFailed(true);
+        setMessage(
+          'Check optional documentation: first-time participants must be a whole number from zero to total participants, and notes must be 2,000 characters or fewer. Extended documentation requires current server support.',
+        );
+        return;
+      }
       const result = await recordCircleMeeting({
+        ...(documentationV2
+          ? {
+              documentationV2: true,
+              firstTimeParticipants:
+                status === 'held' && firstTime !== '' ? Number(firstTime) : null,
+              facilitatorNotes: notes.trim(),
+            }
+          : {}),
         seriesId: circle.id,
         startsAt,
         endsAt,
@@ -150,11 +196,13 @@ export function CircleMeetingsPage() {
             Record aggregate attendance and meeting content. Leave participant names, contact
             information, diagnoses, trauma details and personal stories out of this form.
           </p>
-          <p className="mt-2">
-            First-time participant counts and facilitator notes are not yet supported by this
-            RecoveryOS record. They are not collected here. This page does not import records saved
-            on a device in the separate facilitator guide.
-          </p>
+          {!documentationV2 && (
+            <p className="mt-2">
+              First-time participant counts and facilitator notes are not yet supported by this
+              RecoveryOS record. They are not collected here. This page does not import records
+              saved on a device in the separate facilitator guide.
+            </p>
+          )}
         </aside>
       </section>
       {!circle ? (
@@ -173,6 +221,16 @@ export function CircleMeetingsPage() {
             aria-label="Circle meeting record"
             aria-busy={saving}
             onChange={() => setDirty(true)}
+            onReset={(event) => {
+              if (
+                dirty &&
+                !window.confirm('Clear this meeting record? Unsaved changes will be lost.')
+              ) {
+                event.preventDefault();
+                return;
+              }
+              resetFields();
+            }}
           >
             <fieldset disabled={saving} className="space-y-6 min-w-0">
               <legend className="text-xl font-semibold mb-4">Meeting details</legend>
@@ -185,11 +243,7 @@ export function CircleMeetingsPage() {
                     if (dirty && !window.confirm('Switch Circles? Unsaved changes will be lost.'))
                       return;
                     setSelected(e.target.value);
-                    setDirty(false);
-                    setCount('');
-                    setNames('');
-                    setMessage('');
-                    setStatus('held');
+                    resetFields();
                   }}
                 >
                   {series.map((s) => (
@@ -248,7 +302,10 @@ export function CircleMeetingsPage() {
                 <select
                   className={field}
                   value={status}
-                  onChange={(e) => setStatus(e.target.value as 'held' | 'cancelled')}
+                  onChange={(e) => {
+                    setStatus(e.target.value as 'held' | 'cancelled');
+                    setFirstTime('');
+                  }}
                 >
                   <option value="held">Held</option>
                   <option value="cancelled">Cancelled</option>
@@ -269,6 +326,26 @@ export function CircleMeetingsPage() {
                       onChange={(e) => setCount(e.target.value)}
                     />
                   </label>
+                  {documentationV2 && (
+                    <label className="block">
+                      First-time participants (optional)
+                      <input
+                        className={field}
+                        type="number"
+                        min="0"
+                        max={count || 10000}
+                        step="1"
+                        value={firstTime}
+                        onChange={(e) => setFirstTime(e.target.value)}
+                        aria-label="First-time participants (optional)"
+                        aria-describedby="first-time-help"
+                      />
+                      <span id="first-time-help" className="text-sm text-ink-muted">
+                        Included in participants present, not added to attendance. Leave blank if
+                        unknown or not collected; enter 0 only if none.
+                      </span>
+                    </label>
+                  )}
                   <label className="block">
                     Facilitators present — one name per line
                     <textarea
@@ -294,6 +371,29 @@ export function CircleMeetingsPage() {
                 Topic (optional)
                 <input className={field} name="topic" maxLength={240} />
               </label>
+              {documentationV2 && (
+                <label className="block">
+                  Facilitator notes (optional, private)
+                  <textarea
+                    className={field}
+                    rows={4}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    aria-label="Facilitator notes (optional, private)"
+                    aria-describedby="facilitator-notes-help"
+                  />
+                  <span id="facilitator-notes-help" className="text-sm text-ink-muted">
+                    Visible only to you, the author, while you retain Circle access, not to
+                    cofacilitators. Record only program/process observations and future facilitation
+                    plans. No participant identities, personal stories, diagnoses, trauma details or
+                    individual support records. Maximum 2,000 characters. This form does not save
+                    drafts on your device.
+                  </span>
+                  <span className="block text-sm">
+                    {Array.from(notes.trim()).length}/2,000 characters
+                  </span>
+                </label>
+              )}
               <details>
                 <summary className="cursor-pointer font-medium">
                   Optional programming classifications
@@ -323,6 +423,9 @@ export function CircleMeetingsPage() {
               </details>
               <Button type="submit" disabled={saving}>
                 {saving ? 'Saving…' : 'Save Circle meeting'}
+              </Button>
+              <Button type="reset" variant="secondary" disabled={saving}>
+                Clear form for another meeting
               </Button>
             </fieldset>
             {message && (
@@ -431,6 +534,17 @@ export function CircleMeetingsPage() {
                       {m.participant_count} participants + {m.facilitator_names?.length ?? 0}{' '}
                       facilitators = {m.total_attendance} people present
                     </p>
+                  )}
+                  {documentationV2 && m.occurrence_status === 'held' && (
+                    <p>
+                      First-time participants: {m.first_time_participant_count ?? 'Not collected'}
+                    </p>
+                  )}
+                  {documentationV2 && m.facilitator_notes && (
+                    <div className="mt-2">
+                      <p className="font-medium">Your private facilitator notes</p>
+                      <p className="whitespace-pre-wrap">{m.facilitator_notes}</p>
+                    </div>
                   )}
                   <p>{m.county ? `${m.county} County` : 'County not recorded'}</p>
                   {m.participation_access === 'closed_cbh_clients' && (

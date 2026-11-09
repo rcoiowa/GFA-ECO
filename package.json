@@ -24,6 +24,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,css,md,json}\""
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.3.14",
     "@recoveryos/residence-content": "workspace:*",
     "prettier": "^3.5.0",
     "sharp": "^0.35.3",

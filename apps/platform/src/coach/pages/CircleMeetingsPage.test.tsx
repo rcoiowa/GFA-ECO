@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
 import { CircleMeetingsPage } from './CircleMeetingsPage';
-const mocks = vi.hoisted(() => ({ get: vi.fn(), save: vi.fn() }));
-vi.mock('@recoveryos/auth', () => ({ useAuth: () => ({ person: { id: 202 } }) }));
+const mocks = vi.hoisted(() => ({ get: vi.fn(), save: vi.fn(), personId: 202 }));
+vi.mock('@recoveryos/auth', () => ({ useAuth: () => ({ person: { id: mocks.personId } }) }));
 vi.mock('@recoveryos/data-access', () => ({
   getMyCircleWorkspace: mocks.get,
   recordCircleMeeting: mocks.save,
@@ -42,6 +42,7 @@ function renderPage() {
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.personId = 202;
   vi.spyOn(window, 'confirm').mockReturnValue(true);
   mocks.get.mockResolvedValue(workspace);
   mocks.save.mockResolvedValue({ ok: true, code: 'recorded', meeting_id: 1 });
@@ -217,4 +218,249 @@ it('keeps unsaved entries when the facilitator cancels leaving', async () => {
     'Leave this meeting record? Unsaved changes will be lost.',
   );
   expect(screen.getByLabelText('Participants present (exclude facilitators)')).toHaveValue(7);
+});
+
+const v2Workspace = { ...workspace, capabilities: { circle_documentation_v2: true } };
+async function fillMeeting() {
+  const user = userEvent.setup();
+  await screen.findByLabelText('Date');
+  await user.type(screen.getByLabelText('Date'), '2026-11-09');
+  await user.type(screen.getByLabelText('Participants present (exclude facilitators)'), '12');
+  await user.type(screen.getByLabelText('Facilitators present — one name per line'), 'Facilitator');
+  return user;
+}
+const firstTimeField = () => screen.getByLabelText('First-time participants (optional)');
+const notesField = () => screen.getByLabelText('Facilitator notes (optional, private)');
+describe('Extended Circle documentation', () => {
+  beforeEach(() => mocks.get.mockResolvedValue(v2Workspace));
+  it('hides unsupported fields and uses the existing input contract', async () => {
+    mocks.get.mockResolvedValue(workspace);
+    renderPage();
+    const user = await fillMeeting();
+    expect(screen.queryByLabelText('First-time participants (optional)')).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText('Facilitator notes (optional, private)'),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    await screen.findByText('Circle meeting saved.');
+    expect(mocks.save.mock.calls[0]![0]).not.toHaveProperty('documentationV2');
+  });
+  it.each(['', '0', '3'])(
+    'saves optional first-time count %j without adding to attendance',
+    async (value) => {
+      renderPage();
+      const user = await fillMeeting();
+      if (value) await user.type(firstTimeField(), value);
+      await user.type(notesField(), '  Allow more time for closing.  ');
+      expect(screen.getByText(/Visible only to you, the author/)).toHaveTextContent(
+        'not to cofacilitators',
+      );
+      await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+      await screen.findByText('Circle meeting saved.');
+      expect(mocks.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documentationV2: true,
+          participants: 12,
+          firstTimeParticipants: value === '' ? null : Number(value),
+          facilitatorNotes: 'Allow more time for closing.',
+        }),
+      );
+    },
+  );
+  it('clears private drafts and prior records when the signed-in person changes', async () => {
+    mocks.get.mockResolvedValue({
+      ...v2Workspace,
+      meetings: [
+        {
+          id: 7,
+          series_id: 1,
+          title: 'Prior author meeting',
+          location_name: 'Hope+Elim',
+          starts_at: '2026-11-09T23:30:00Z',
+          occurrence_status: 'held',
+          participant_count: 12,
+          facilitator_names: ['Facilitator'],
+          total_attendance: 13,
+          facilitator_notes: 'Prior author saved note.',
+          first_time_participant_count: 2,
+        },
+      ],
+    });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const page = () => (
+      <MemoryRouter>
+        <QueryClientProvider client={client}>
+          <CircleMeetingsPage />
+        </QueryClientProvider>
+      </MemoryRouter>
+    );
+    const view = render(page());
+    const user = await fillMeeting();
+    await user.type(notesField(), 'Prior author draft.');
+    await user.type(firstTimeField(), '2');
+    // A different person must receive a fresh query and an empty form, never the prior draft.
+    expect(screen.getByText('Prior author saved note.')).toBeInTheDocument();
+    mocks.get.mockResolvedValue(v2Workspace);
+    mocks.personId = 303;
+    view.rerender(page());
+    expect(screen.queryByText('Prior author saved note.')).not.toBeInTheDocument();
+    await screen.findByLabelText('Date');
+    expect(screen.queryByText('Prior author saved note.')).not.toBeInTheDocument();
+    expect(notesField()).toHaveValue('');
+    expect(firstTimeField()).toHaveValue(null);
+    expect(mocks.get).toHaveBeenCalledTimes(2);
+  });
+  it('removes private state on access revocation, even if access is later restored', async () => {
+    renderPage();
+    const user = await fillMeeting();
+    await user.type(notesField(), 'Prior access draft.');
+    mocks.get.mockResolvedValue({ ...v2Workspace, series: [], meetings: [] });
+    await user.click(screen.getByRole('button', { name: 'Refresh recorded meetings' }));
+    await screen.findByText(/You don’t have Circle recording access/);
+    expect(
+      screen.queryByLabelText('Facilitator notes (optional, private)'),
+    ).not.toBeInTheDocument();
+    mocks.get.mockResolvedValue(v2Workspace);
+    await user.click(screen.getByRole('button', { name: 'Refresh recorded meetings' }));
+    await screen.findByLabelText('Date');
+    expect(notesField()).toHaveValue('');
+  });
+  it('does not silently drop entered documentation if server capability disappears', async () => {
+    renderPage();
+    const user = await fillMeeting();
+    await user.type(firstTimeField(), '2');
+    await user.type(notesField(), 'Use a shorter opening.');
+    mocks.get.mockResolvedValue(workspace);
+    await user.click(screen.getByRole('button', { name: 'Refresh recorded meetings' }));
+    await screen.findByText(
+      /First-time participant counts and facilitator notes are not yet supported/,
+    );
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('requires current server support');
+    expect(mocks.save).not.toHaveBeenCalled();
+  });
+  it('rejects invalid first-time counts and overly long Unicode notes', async () => {
+    renderPage();
+    const user = await fillMeeting();
+    // Submit directly as well as browser constraints: validation must survive programmatic submits.
+    for (const value of ['13', '-1', '1.5']) {
+      await user.clear(firstTimeField());
+      await user.type(firstTimeField(), value);
+      fireEvent.submit(screen.getByRole('form', { name: 'Circle meeting record' }));
+      expect(await screen.findByRole('alert')).toHaveTextContent('whole number');
+    }
+    await user.clear(firstTimeField());
+    fireEvent.change(notesField(), { target: { value: '🌱'.repeat(2001) } });
+    fireEvent.submit(screen.getByRole('form', { name: 'Circle meeting record' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('2,000 characters');
+    expect(mocks.save).not.toHaveBeenCalled();
+    fireEvent.change(notesField(), { target: { value: '🌱'.repeat(2000) } });
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    await screen.findByText('Circle meeting saved.');
+    expect(mocks.save).toHaveBeenCalledTimes(1);
+  });
+  it('retains fields through an uncertain save and refresh, then retries the same payload', async () => {
+    mocks.save.mockRejectedValueOnce(new Error('Network interrupted'));
+    renderPage();
+    const user = await fillMeeting();
+    await user.type(firstTimeField(), '2');
+    await user.type(notesField(), 'Leave time for reflection.');
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    await screen.findByRole('alert');
+    await user.click(screen.getByRole('button', { name: 'Refresh recorded meetings' }));
+    expect(firstTimeField()).toHaveValue(2);
+    expect(notesField()).toHaveValue('Leave time for reflection.');
+    mocks.save.mockResolvedValue({ ok: true, code: 'already_recorded', meeting_id: 1 });
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    await screen.findByText('This meeting was already saved. No duplicate was added.');
+    expect(mocks.save.mock.calls[1]![0]).toEqual(mocks.save.mock.calls[0]![0]);
+  });
+  it('preserves conflicting documentation and prevents simultaneous submissions', async () => {
+    let finish!: (value: unknown) => void;
+    mocks.save.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    renderPage();
+    const user = await fillMeeting();
+    await user.type(notesField(), 'Use a shorter opening.');
+    const form = screen.getByRole('form', { name: 'Circle meeting record' });
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+    expect(mocks.save).toHaveBeenCalledTimes(1);
+    expect(notesField()).toBeDisabled();
+    await act(async () => finish({ ok: false, code: 'conflict', meeting_id: 1 }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('different details');
+    expect(notesField()).toHaveValue('Use a shorter opening.');
+  });
+  it('clears optional fields on explicit reset and confirmed Circle switch', async () => {
+    mocks.get.mockResolvedValue({
+      ...v2Workspace,
+      series: [...workspace.series, { ...workspace.series[0], id: 2 }],
+    });
+    renderPage();
+    const user = await fillMeeting();
+    await user.type(firstTimeField(), '2');
+    await user.type(notesField(), 'Use a shorter opening.');
+    vi.mocked(window.confirm).mockReturnValue(false);
+    await user.selectOptions(screen.getByLabelText('Circle'), '2');
+    expect(notesField()).toHaveValue('Use a shorter opening.');
+    vi.mocked(window.confirm).mockReturnValue(true);
+    await user.selectOptions(screen.getByLabelText('Circle'), '2');
+    expect(firstTimeField()).toHaveValue(null);
+    expect(notesField()).toHaveValue('');
+    await user.type(notesField(), 'Try a quieter room.');
+    await user.click(screen.getByRole('button', { name: 'Clear form for another meeting' }));
+    expect(notesField()).toHaveValue('');
+    expect(screen.getByLabelText('Date')).toHaveValue('');
+  });
+  it('clears first-time attendance on cancellation and does not restore stale counts', async () => {
+    renderPage();
+    const user = await fillMeeting();
+    await user.type(firstTimeField(), '2');
+    await user.selectOptions(screen.getByLabelText('Meeting status'), 'cancelled');
+    expect(screen.queryByLabelText('First-time participants (optional)')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    await screen.findByText('Circle meeting saved.');
+    expect(mocks.save).toHaveBeenCalledWith(
+      expect.objectContaining({ firstTimeParticipants: null, participants: null }),
+    );
+    await user.selectOptions(screen.getByLabelText('Meeting status'), 'held');
+    expect(firstTimeField()).toHaveValue(null);
+  });
+  it('reads back private notes and treats historical missing counts as unknown', async () => {
+    const meeting = {
+      id: 1,
+      series_id: 1,
+      title: 'Historical circle',
+      starts_at: '2026-11-09T23:30:00Z',
+      location_name: 'Hope+Elim',
+      occurrence_status: 'held',
+      participant_count: 12,
+      facilitator_names: ['Facilitator'],
+      total_attendance: 13,
+    };
+    mocks.get.mockResolvedValue({ ...v2Workspace, meetings: [meeting] });
+    renderPage();
+    expect(await screen.findByText('First-time participants: Not collected')).toBeInTheDocument();
+    expect(screen.queryByText('Your private facilitator notes')).not.toBeInTheDocument();
+    mocks.get.mockResolvedValue({
+      ...v2Workspace,
+      meetings: [
+        {
+          ...meeting,
+          first_time_participant_count: 0,
+          facilitator_notes: 'Leave time for closing.',
+        },
+      ],
+    });
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Refresh recorded meetings' }));
+    expect(await screen.findByText('First-time participants: 0')).toBeInTheDocument();
+    expect(screen.getByText('Leave time for closing.')).toBeInTheDocument();
+    expect(screen.getByText(/1 held meetings · 12 participant attendances/)).toBeInTheDocument();
+  });
 });
