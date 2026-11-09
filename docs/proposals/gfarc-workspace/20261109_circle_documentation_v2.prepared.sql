@@ -11,7 +11,7 @@ create table recoveryos.circle_meeting_documentation (
   first_time_participant_count integer check (first_time_participant_count between 0 and 10000),
   facilitator_notes text check (
     facilitator_notes is null or
-    (length(facilitator_notes) between 1 and 2000 and facilitator_notes = btrim(facilitator_notes, E' \t\n\r\f\v'))
+    (length(facilitator_notes) between 1 and 2000 and facilitator_notes = btrim(facilitator_notes, E' \t\n\r\f\013'))
   )
 );
 alter table recoveryos.circle_meeting_documentation enable row level security;
@@ -70,7 +70,7 @@ create function recoveryos_circle_private.record_documented_occurrence(
 ) returns jsonb language plpgsql security definer set search_path = '' as $$
 declare
   v_me bigint := recoveryos.current_person_id();
-  v_notes text := nullif(btrim(p_facilitator_notes, E' \t\n\r\f\v'), '');
+  v_notes text := nullif(btrim(p_facilitator_notes, E' \t\n\r\f\013'), '');
   v_result jsonb;
   v_id bigint;
   v_document recoveryos.circle_meeting_documentation%rowtype;

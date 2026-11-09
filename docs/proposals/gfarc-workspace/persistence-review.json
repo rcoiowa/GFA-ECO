@@ -1,8 +1,8 @@
 {
   "state": "prepared_only_not_applied",
   "sql": "docs/proposals/gfarc-workspace/20261109_circle_documentation_v2.prepared.sql",
-  "sha256": "dede87e0794b1f55d9272d4982353d3a7157bc3154f6c46f5dca39681943ca68",
-  "reviewer": "Codex independent security review, 2026-11-09: shared-note revision and four-suite rerun passed; not human retention-policy approval",
+  "sha256": "c0e2b8e84e5109a933cc63c8a3b2fab80916f76969c7842f244a99e7008024ce",
+  "reviewer": "Codex independent security review, 2026-11-09: shared-note revision, explicit octal trim spelling and four-suite rerun passed; not human retention-policy approval",
   "rationale": "November 9 executive approval: minimized Circle notes shared with explicitly GFA-scoped operational staff and read-only leadership. Preserve writer roles, v1 RPC, history and source grants; reject domain/global/technical/fixture-only sharing.",
   "tables": {
     "recoveryos.circle_meeting_documentation": {

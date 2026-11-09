@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
-import { Link } from 'react-router';
+import { Link, useBlocker } from 'react-router';
 import '@recoveryos/design-tokens/themes/gfa-shared.css';
 import './CircleMeetingsPage.css';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -29,10 +29,25 @@ function CircleMeetingsWorkspace() {
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, [dirty]);
-  function confirmLeave(event: React.MouseEvent<HTMLAnchorElement>) {
-    if (dirty && !window.confirm('Leave this meeting record? Unsaved changes will be lost.'))
-      event.preventDefault();
-  }
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      dirty &&
+      (currentLocation.pathname !== nextLocation.pathname ||
+        currentLocation.search !== nextLocation.search),
+  );
+  const promptedTransition = useRef<string | null>(null);
+  useEffect(() => {
+    if (blocker.state !== 'blocked') {
+      promptedTransition.current = null;
+      return;
+    }
+    // StrictMode may re-run effects; ask once for this blocked transition.
+    if (promptedTransition.current === blocker.location.key) return;
+    promptedTransition.current = blocker.location.key;
+    if (window.confirm('Leave this meeting record? Unsaved changes will be lost.'))
+      blocker.proceed();
+    else blocker.reset();
+  }, [blocker]);
   const [selected, setSelected] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -53,8 +68,15 @@ function CircleMeetingsWorkspace() {
     setFailed(false);
     setStatus('held');
   }
-  const series = query.data?.series ?? [];
-  const readOnlySeries = query.data?.readOnlySeries ?? [];
+  const error = query.error as { code?: string; status?: number } | null;
+  const accessError =
+    query.isError &&
+    (error?.status === 401 ||
+      error?.status === 403 ||
+      ['42501', 'PGRST301', 'PGRST302', 'PGRST303'].includes(error?.code ?? ''));
+  const workspace = accessError ? undefined : query.data;
+  const series = workspace?.series ?? [];
+  const readOnlySeries = workspace?.readOnlySeries ?? [];
   const visibleSeries = [...series, ...readOnlySeries];
   const circle = series.find((s) => String(s.id) === selected) ?? series[0];
   // Never carry an author’s draft into another Circle after assignment changes.
@@ -62,7 +84,7 @@ function CircleMeetingsWorkspace() {
   useLayoutEffect(() => {
     resetFields();
   }, [circle?.id]);
-  const meetings = query.data?.meetings ?? [];
+  const meetings = workspace?.meetings ?? [];
   const held = meetings.filter((m) => m.occurrence_status === 'held');
   const people = names
     .split('\n')
@@ -157,7 +179,7 @@ function CircleMeetingsWorkspace() {
     }
   }
   if (query.isPending) return <LoadingState label="Opening your Circles…" />;
-  if (query.isError)
+  if (query.isError && (!query.data || accessError))
     return (
       <ErrorState
         message="We couldn’t load your available Circles."
@@ -166,16 +188,26 @@ function CircleMeetingsWorkspace() {
     );
   return (
     <div className="gfarc-workspace space-y-8" data-gfa-theme="gfa">
+      {query.isError && (
+        <div role="alert" className="gfarc-save-message">
+          Recorded meetings could not be refreshed. Your entered details are still here, but the
+          list may be out of date. Refresh recorded meetings before retrying a save to check whether
+          it already succeeded.
+          <Button
+            variant="secondary"
+            onClick={() => void query.refetch()}
+            disabled={query.isFetching}
+          >
+            Retry refresh
+          </Button>
+        </div>
+      )}
       <nav aria-label="Meeting workspace navigation" className="gfarc-workspace-nav">
-        <Link to="/vrcc" onClick={confirmLeave}>
-          Back to Recovery Community Center
-        </Link>
+        <Link to="/vrcc">Back to Recovery Community Center</Link>
         <a href="#meeting-record">Meeting record</a>
         <a href="#facilitation-guide">Facilitation guide</a>
         <a href="#recorded-meetings">Recorded meetings</a>
-        <a href="https://graceforaddictions.org" onClick={confirmLeave}>
-          GFA website
-        </a>
+        <a href="https://graceforaddictions.org">GFA website</a>
       </nav>
       <header className="gfarc-workspace-hero">
         <p className="gfarc-eyebrow">GFA Recovery Circle · Facilitator workspace</p>
@@ -569,12 +601,8 @@ function CircleMeetingsWorkspace() {
         </Card>
       </section>
       <footer className="gfarc-workspace-nav" aria-label="Return paths">
-        <Link to="/vrcc" onClick={confirmLeave}>
-          Back to Recovery Community Center
-        </Link>
-        <a href="https://graceforaddictions.org" onClick={confirmLeave}>
-          Visit Grace For Addictions
-        </a>
+        <Link to="/vrcc">Back to Recovery Community Center</Link>
+        <a href="https://graceforaddictions.org">Visit Grace For Addictions</a>
       </footer>
     </div>
   );

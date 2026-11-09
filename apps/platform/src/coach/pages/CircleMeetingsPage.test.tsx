@@ -1,9 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { useReducer } from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router';
+import { createMemoryRouter, RouterProvider, Link, useNavigate } from 'react-router';
 import { CircleMeetingsPage } from './CircleMeetingsPage';
+// jsdom's AbortSignal is not accepted by Node's native Request used by data routers.
+const { transferableAbortController } = await vi.importActual<{
+  transferableAbortController: () => AbortController;
+}>('node:util');
 const mocks = vi.hoisted(() => ({ get: vi.fn(), save: vi.fn(), personId: 202 }));
 vi.mock('@recoveryos/auth', () => ({ useAuth: () => ({ person: { id: mocks.personId } }) }));
 vi.mock('@recoveryos/data-access', () => ({
@@ -30,23 +35,30 @@ const workspace = {
   meetings: [],
 };
 function renderPage() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const router = createMemoryRouter([{ path: '*', element: <CircleMeetingsPage /> }]);
   return render(
-    <MemoryRouter>
-      <QueryClientProvider
-        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
-      >
-        <CircleMeetingsPage />
-      </QueryClientProvider>
-    </MemoryRouter>,
+    <QueryClientProvider client={client}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
   );
 }
 beforeEach(() => {
+  vi.stubGlobal(
+    'AbortController',
+    class {
+      constructor() {
+        return transferableAbortController();
+      }
+    },
+  );
   vi.clearAllMocks();
   mocks.personId = 202;
   vi.spyOn(window, 'confirm').mockReturnValue(true);
   mocks.get.mockResolvedValue(workspace);
   mocks.save.mockResolvedValue({ ok: true, code: 'recorded', meeting_id: 1 });
 });
+afterEach(() => vi.unstubAllGlobals());
 describe('Circle logging', () => {
   it('saves 15 participants and two facilitators separately with Chicago times', async () => {
     renderPage();
@@ -335,12 +347,17 @@ describe('Extended Circle documentation', () => {
       ],
     });
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    let refreshPerson!: () => void;
+    const PersonPage = () => {
+      const [, refresh] = useReducer((n: number) => n + 1, 0);
+      refreshPerson = refresh;
+      return <CircleMeetingsPage />;
+    };
+    const router = createMemoryRouter([{ path: '*', element: <PersonPage /> }]);
     const page = () => (
-      <MemoryRouter>
-        <QueryClientProvider client={client}>
-          <CircleMeetingsPage />
-        </QueryClientProvider>
-      </MemoryRouter>
+      <QueryClientProvider client={client}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
     );
     const view = render(page());
     const user = await fillMeeting();
@@ -351,6 +368,7 @@ describe('Extended Circle documentation', () => {
     mocks.get.mockResolvedValue(v2Workspace);
     mocks.personId = 303;
     view.rerender(page());
+    act(() => refreshPerson());
     expect(screen.queryByText('Prior author saved note.')).not.toBeInTheDocument();
     await screen.findByLabelText('Date');
     expect(screen.queryByText('Prior author saved note.')).not.toBeInTheDocument();
@@ -508,5 +526,198 @@ describe('Extended Circle documentation', () => {
     expect(await screen.findByText('First-time participants: 0')).toBeInTheDocument();
     expect(screen.getByText('Leave time for closing.')).toBeInTheDocument();
     expect(screen.getByText(/1 held meetings · 12 participant attendances/)).toBeInTheDocument();
+  });
+});
+
+function renderNavigationPage(entries = ['/coach/circles'], index = entries.length - 1) {
+  function NavigationPage() {
+    const navigate = useNavigate();
+    return (
+      <>
+        <Link to="/other">Sidebar destination</Link>
+        <button onClick={() => void navigate('/other')}>Programmatic destination</button>
+        <CircleMeetingsPage />
+      </>
+    );
+  }
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const router = createMemoryRouter(
+    [
+      { path: '/coach/circles', element: <NavigationPage /> },
+      { path: '/other', element: <p>Other page</p> },
+    ],
+    { initialEntries: entries, initialIndex: index },
+  );
+  render(
+    <QueryClientProvider client={client}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  );
+  return router;
+}
+
+describe('Circle draft navigation and refresh safety', () => {
+  beforeEach(() => mocks.get.mockResolvedValue(v2Workspace));
+  it.each(['Sidebar destination', 'Programmatic destination'])(
+    'blocks %s until departure is allowed',
+    async (name) => {
+      const router = renderNavigationPage();
+      const user = await fillMeeting();
+      await user.type(notesField(), 'Keep this draft.');
+      vi.mocked(window.confirm).mockReturnValue(false);
+      await user.click(screen.getByText(name));
+      expect(router.state.location.pathname).toBe('/coach/circles');
+      expect(notesField()).toHaveValue('Keep this draft.');
+      expect(window.confirm).toHaveBeenCalledTimes(1);
+      vi.mocked(window.confirm).mockReturnValue(true);
+      await user.click(screen.getByText(name));
+      expect(await screen.findByText('Other page')).toBeInTheDocument();
+      expect(router.state.location.pathname).toBe('/other');
+      expect(window.confirm).toHaveBeenCalledTimes(2);
+    },
+  );
+  it.each([-1, 1])(
+    'guards history navigation direction %s and resumes only on approval',
+    async (direction) => {
+      const router = renderNavigationPage(
+        direction === -1 ? ['/other', '/coach/circles'] : ['/coach/circles', '/other'],
+        direction === -1 ? 1 : 0,
+      );
+      const user = await fillMeeting();
+      await user.type(notesField(), 'Keep this history draft.');
+      vi.mocked(window.confirm).mockReturnValue(false);
+      await act(async () => {
+        await router.navigate(direction);
+      });
+      expect(router.state.location.pathname).toBe('/coach/circles');
+      expect(notesField()).toHaveValue('Keep this history draft.');
+      vi.mocked(window.confirm).mockReturnValue(true);
+      await act(async () => {
+        await router.navigate(direction);
+      });
+      expect(await screen.findByText('Other page')).toBeInTheDocument();
+      expect(window.confirm).toHaveBeenCalledTimes(2);
+    },
+  );
+  it('does not prompt for clean forms', async () => {
+    renderNavigationPage();
+    await screen.findByLabelText('Date');
+    await userEvent.setup().click(screen.getByText('Sidebar destination'));
+    expect(await screen.findByText('Other page')).toBeInTheDocument();
+    expect(window.confirm).not.toHaveBeenCalled();
+  });
+  it('warns on document unload only while dirty and permits in-page anchors', async () => {
+    renderNavigationPage();
+    await screen.findByLabelText('Date');
+    const cleanUnload = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(cleanUnload);
+    expect(cleanUnload.defaultPrevented).toBe(false);
+    const user = await fillMeeting();
+    const dirtyUnload = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(dirtyUnload);
+    expect(dirtyUnload.defaultPrevented).toBe(true);
+    const dateNode = screen.getByLabelText('Date');
+    await user.click(screen.getByRole('link', { name: 'Facilitation guide' }));
+    expect(screen.getByLabelText('Date')).toBe(dateNode);
+    expect(window.confirm).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Date')).toHaveValue('2026-11-09');
+    await user.click(screen.getByRole('button', { name: 'Clear form for another meeting' }));
+    const clearedUnload = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(clearedUnload);
+    expect(clearedUnload.defaultPrevented).toBe(false);
+    vi.mocked(window.confirm).mockClear();
+    await user.click(screen.getByText('Sidebar destination'));
+    expect(await screen.findByText('Other page')).toBeInTheDocument();
+    expect(window.confirm).not.toHaveBeenCalled();
+  });
+  it('allows leaving after a confirmed save without prompting', async () => {
+    renderNavigationPage();
+    const user = await fillMeeting();
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    await screen.findByText('Circle meeting saved.');
+    await user.click(screen.getByText('Sidebar destination'));
+    expect(await screen.findByText('Other page')).toBeInTheDocument();
+    expect(window.confirm).not.toHaveBeenCalled();
+  });
+  it('keeps navigation guarded after an uncertain save', async () => {
+    renderNavigationPage();
+    const user = await fillMeeting();
+    mocks.save.mockRejectedValueOnce(new Error('Response interrupted'));
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    await screen.findByText(/Save not confirmed/);
+    vi.mocked(window.confirm).mockReturnValue(false);
+    await user.click(screen.getByText('Sidebar destination'));
+    expect(window.confirm).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText('Date')).toHaveValue('2026-11-09');
+  });
+  it('keeps confirmed saves clean even when their subsequent refresh fails', async () => {
+    renderNavigationPage();
+    const user = await fillMeeting();
+    const dateNode = screen.getByLabelText('Date');
+    mocks.get.mockRejectedValueOnce(new Error('Refresh interrupted'));
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    await screen.findByText(/Recorded meetings could not be refreshed/);
+    expect(screen.getByText('Circle meeting saved.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Date')).toBe(dateNode);
+    expect(dateNode).toHaveValue('2026-11-09');
+    await user.click(screen.getByText('Sidebar destination'));
+    expect(await screen.findByText('Other page')).toBeInTheDocument();
+    expect(window.confirm).not.toHaveBeenCalled();
+  });
+  it('preserves all entered values and exact retry after a cached refresh failure', async () => {
+    renderPage();
+    const user = await fillMeeting();
+    await user.clear(screen.getByLabelText('Start time'));
+    await user.type(screen.getByLabelText('Start time'), '18:00');
+    await user.clear(screen.getByLabelText('End time (optional)'));
+    await user.type(screen.getByLabelText('End time (optional)'), '19:00');
+    await user.type(screen.getByLabelText('Topic (optional)'), 'Connection');
+    await user.click(screen.getByText('Optional programming classifications'));
+    await user.selectOptions(screen.getByLabelText('ICARE phase'), 'Connect');
+    await user.type(screen.getByLabelText('Domain'), 'Community');
+    await user.type(screen.getByLabelText('Theme'), 'Welcome');
+    await user.type(firstTimeField(), '2');
+    await user.type(notesField(), 'Plan a shorter opening.');
+    const dateNode = screen.getByLabelText('Date');
+    mocks.save.mockRejectedValueOnce(new Error('Response lost'));
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    await screen.findByText(/Save not confirmed/);
+    const original = mocks.save.mock.calls[0]![0];
+    mocks.get.mockRejectedValueOnce(new Error('Network unavailable'));
+    await user.click(screen.getByRole('button', { name: 'Refresh recorded meetings' }));
+    await screen.findByText(/Recorded meetings could not be refreshed/);
+    expect(screen.getByLabelText('Date')).toBe(dateNode);
+    expect(dateNode).toHaveValue('2026-11-09');
+    expect(screen.getByLabelText('Topic (optional)')).toHaveValue('Connection');
+    expect(notesField()).toHaveValue('Plan a shorter opening.');
+    await user.click(screen.getByRole('button', { name: 'Retry refresh' }));
+    await waitFor(() =>
+      expect(
+        screen.queryByText(/Recorded meetings could not be refreshed/),
+      ).not.toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
+    await screen.findByText('Circle meeting saved.');
+    expect(mocks.save.mock.calls[1]![0]).toEqual(original);
+  });
+  it('shows initial load failure without a form and allows retry', async () => {
+    mocks.get.mockRejectedValueOnce(new Error('Offline'));
+    renderPage();
+    await screen.findByText('We couldn’t load your available Circles.');
+    expect(screen.queryByLabelText('Date')).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: /try again|retry/i }));
+    expect(await screen.findByLabelText('Date')).toBeInTheDocument();
+  });
+  it('fails closed on an explicit access-denied refresh and clears prior draft', async () => {
+    renderPage();
+    const user = await fillMeeting();
+    await user.type(notesField(), 'Old access draft.');
+    mocks.get.mockRejectedValueOnce({ code: '42501', message: 'Permission denied' });
+    await user.click(screen.getByRole('button', { name: 'Refresh recorded meetings' }));
+    await screen.findByText('We couldn’t load your available Circles.');
+    expect(screen.queryByLabelText('Date')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /try again|retry/i }));
+    await screen.findByLabelText('Date');
+    expect(notesField()).toHaveValue('');
   });
 });
