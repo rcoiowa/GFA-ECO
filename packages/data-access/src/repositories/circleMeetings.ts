@@ -40,6 +40,7 @@ export interface CircleMeeting {
 export interface CircleWorkspace {
   capabilities?: { circle_documentation_v2?: boolean };
   series: CircleSeries[];
+  readOnlySeries?: CircleSeries[];
   meetings: CircleMeeting[];
 }
 export async function getMyCircleWorkspace(): Promise<CircleWorkspace> {

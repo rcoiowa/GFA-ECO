@@ -54,6 +54,8 @@ function CircleMeetingsWorkspace() {
     setStatus('held');
   }
   const series = query.data?.series ?? [];
+  const readOnlySeries = query.data?.readOnlySeries ?? [];
+  const visibleSeries = [...series, ...readOnlySeries];
   const circle = series.find((s) => String(s.id) === selected) ?? series[0];
   // Never carry an author’s draft into another Circle after assignment changes.
   // Layout reset clears sensitive state before the browser paints the replacement form.
@@ -208,8 +210,9 @@ function CircleMeetingsWorkspace() {
       {!circle ? (
         <Card>
           <p>
-            You don’t have Circle recording access yet. Ask your coordinator to confirm your role or
-            Circle assignment.
+            {readOnlySeries.length > 0
+              ? 'Read-only Circle access. You can review meeting documentation shared with authorized GFA staff and leadership. Recording requires separate Circle recording authorization.'
+              : 'You don’t have Circle recording access yet. Ask your coordinator to confirm your role or Circle assignment.'}
           </p>
         </Card>
       ) : (
@@ -373,21 +376,20 @@ function CircleMeetingsWorkspace() {
               </label>
               {documentationV2 && (
                 <label className="block">
-                  Facilitator notes (optional, private)
+                  Facilitator notes (optional, shared)
                   <textarea
                     className={field}
                     rows={4}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    aria-label="Facilitator notes (optional, private)"
+                    aria-label="Facilitator notes (optional, shared)"
                     aria-describedby="facilitator-notes-help"
                   />
                   <span id="facilitator-notes-help" className="text-sm text-ink-muted">
-                    Visible only to you, the author, while you retain Circle access, not to
-                    cofacilitators. Record only program/process observations and future facilitation
-                    plans. No participant identities, personal stories, diagnoses, trauma details or
-                    individual support records. Maximum 2,000 characters. This form does not save
-                    drafts on your device.
+                    Shared with authorized GFA staff and leadership. Record only program/process
+                    observations and future facilitation plans. No participant identities, personal
+                    stories, diagnoses, trauma details or individual support records. Maximum 2,000
+                    characters. This form does not save drafts on your device.
                   </span>
                   <span className="block text-sm">
                     {Array.from(notes.trim()).length}/2,000 characters
@@ -434,8 +436,8 @@ function CircleMeetingsWorkspace() {
               </p>
             )}
             <p className="text-sm text-ink-muted">
-              Saving uses your authorized RecoveryOS Circle assignment. A confirmation means the
-              server accepted this meeting, not that individual peer connections occurred.
+              Saving uses your authorized RecoveryOS Circle access. A confirmation means the server
+              accepted this meeting, not that individual peer connections occurred.
             </p>
           </form>
         </Card>
@@ -508,8 +510,8 @@ function CircleMeetingsWorkspace() {
           </p>
           <p className="mt-1 text-sm text-ink-muted">
             Totals cover the latest {meetings.length} records shown (up to 200) for Circles you can
-            document. Attendance is not unique people served or completed peer connections.
-            Cancelled meetings are excluded.
+            access. Attendance is not unique people served or completed peer connections. Cancelled
+            meetings are excluded.
           </p>
           {meetings.length === 0 ? (
             <p className="mt-3">No Circle meetings recorded yet.</p>
@@ -523,7 +525,8 @@ function CircleMeetingsWorkspace() {
                   <p>
                     {new Intl.DateTimeFormat('en-US', {
                       timeZone:
-                        series.find((s) => s.id === m.series_id)?.timezone ?? 'America/Chicago',
+                        visibleSeries.find((s) => s.id === m.series_id)?.timezone ??
+                        'America/Chicago',
                       dateStyle: 'medium',
                       timeStyle: 'short',
                     }).format(new Date(m.starts_at))}{' '}
@@ -542,7 +545,7 @@ function CircleMeetingsWorkspace() {
                   )}
                   {documentationV2 && m.facilitator_notes && (
                     <div className="mt-2">
-                      <p className="font-medium">Your private facilitator notes</p>
+                      <p className="font-medium">Facilitator notes</p>
                       <p className="whitespace-pre-wrap">{m.facilitator_notes}</p>
                     </div>
                   )}

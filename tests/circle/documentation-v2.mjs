@@ -4,6 +4,12 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 
 export async function testDocumentationV2(db, { as, adminQuery, call, cbh, foreign, saved }) {
+  await adminQuery(
+    'create table recoveryos.person_classification(person_id bigint primary key references recoveryos.people(id), classification text not null)',
+  );
+  await adminQuery(
+    "insert into recoveryos.person_classification select id,'production' from recoveryos.people",
+  );
   await adminQuery('create role service_role bypassrls');
   await adminQuery('grant usage on schema recoveryos,recoveryos_circle_private to service_role');
   // Simulate inherited Supabase grants, to prove explicit revocation is sufficient.
@@ -357,6 +363,7 @@ export async function testDocumentationV2(db, { as, adminQuery, call, cbh, forei
     true,
   );
   console.log(
-    'PASS v2: historical/ACL preservation; optional first-time/zero/cancelled validation; atomic document save/readback; author-only notes; duplicate equality protection; legacy retry; revocation/banned/deleted/anonymous/domain eligibility; direct CRUD and anon/service-role denial.',
+    'PASS v2: historical/ACL preservation; optional first-time/zero/cancelled validation; atomic document save/readback; recorder notes/global-only isolation; duplicate equality protection; legacy retry; revocation/banned/deleted/anonymous/domain eligibility; direct CRUD and anon/service-role denial.',
   );
+  return { v2, workspace, newRecord, second, cbhRecord };
 }

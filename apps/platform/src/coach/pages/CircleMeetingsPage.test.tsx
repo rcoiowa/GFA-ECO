@@ -230,17 +230,65 @@ async function fillMeeting() {
   return user;
 }
 const firstTimeField = () => screen.getByLabelText('First-time participants (optional)');
-const notesField = () => screen.getByLabelText('Facilitator notes (optional, private)');
+const notesField = () => screen.getByLabelText('Facilitator notes (optional, shared)');
 describe('Extended Circle documentation', () => {
   beforeEach(() => mocks.get.mockResolvedValue(v2Workspace));
+  it('shows authorized shared documentation read-only with its Circle timezone', async () => {
+    mocks.get.mockResolvedValue({
+      ...v2Workspace,
+      series: [],
+      readOnlySeries: [{ ...workspace.series[0], timezone: 'Pacific/Honolulu' }],
+      meetings: [
+        {
+          id: 7,
+          series_id: 1,
+          title: 'Shared meeting',
+          location_name: 'Hope+Elim',
+          starts_at: '2026-11-09T23:30:00Z',
+          occurrence_status: 'held',
+          participant_count: 12,
+          facilitator_names: ['Facilitator'],
+          total_attendance: 13,
+          facilitator_notes: 'Allow more time for closing.',
+          first_time_participant_count: 2,
+        },
+      ],
+    });
+    renderPage();
+    expect(await screen.findByText(/Read-only Circle access/)).toBeInTheDocument();
+    expect(screen.queryByRole('form', { name: 'Circle meeting record' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save Circle meeting' })).not.toBeInTheDocument();
+    expect(screen.getByText('Facilitator notes')).toBeInTheDocument();
+    expect(screen.getByText('Allow more time for closing.')).toBeInTheDocument();
+    const time = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Pacific/Honolulu',
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(new Date('2026-11-09T23:30:00Z'));
+    expect(screen.getByText(`${time} · held`)).toBeInTheDocument();
+    expect(mocks.save).not.toHaveBeenCalled();
+  });
+  it('keeps read-only Circles out of the recording selector and stores no note draft on device', async () => {
+    mocks.get.mockResolvedValue({
+      ...v2Workspace,
+      readOnlySeries: [{ ...workspace.series[0], id: 2, name: 'Read-only circle' }],
+    });
+    const storage = vi.spyOn(Storage.prototype, 'setItem');
+    renderPage();
+    const user = await fillMeeting();
+    expect(screen.queryByRole('option', { name: /Read-only circle/ })).not.toBeInTheDocument();
+    await user.type(notesField(), 'Plan more reflection time.');
+    expect(screen.getByText(/Shared with authorized GFA staff and leadership/)).toBeInTheDocument();
+    expect(screen.queryByText(/Visible only to you/)).not.toBeInTheDocument();
+    expect(storage).not.toHaveBeenCalled();
+    storage.mockRestore();
+  });
   it('hides unsupported fields and uses the existing input contract', async () => {
     mocks.get.mockResolvedValue(workspace);
     renderPage();
     const user = await fillMeeting();
     expect(screen.queryByLabelText('First-time participants (optional)')).not.toBeInTheDocument();
-    expect(
-      screen.queryByLabelText('Facilitator notes (optional, private)'),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Facilitator notes (optional, shared)')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
     await screen.findByText('Circle meeting saved.');
     expect(mocks.save.mock.calls[0]![0]).not.toHaveProperty('documentationV2');
@@ -252,9 +300,9 @@ describe('Extended Circle documentation', () => {
       const user = await fillMeeting();
       if (value) await user.type(firstTimeField(), value);
       await user.type(notesField(), '  Allow more time for closing.  ');
-      expect(screen.getByText(/Visible only to you, the author/)).toHaveTextContent(
-        'not to cofacilitators',
-      );
+      expect(
+        screen.getByText(/Shared with authorized GFA staff and leadership/),
+      ).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: 'Save Circle meeting' }));
       await screen.findByText('Circle meeting saved.');
       expect(mocks.save).toHaveBeenCalledWith(
@@ -317,9 +365,7 @@ describe('Extended Circle documentation', () => {
     mocks.get.mockResolvedValue({ ...v2Workspace, series: [], meetings: [] });
     await user.click(screen.getByRole('button', { name: 'Refresh recorded meetings' }));
     await screen.findByText(/You don’t have Circle recording access/);
-    expect(
-      screen.queryByLabelText('Facilitator notes (optional, private)'),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Facilitator notes (optional, shared)')).not.toBeInTheDocument();
     mocks.get.mockResolvedValue(v2Workspace);
     await user.click(screen.getByRole('button', { name: 'Refresh recorded meetings' }));
     await screen.findByLabelText('Date');
@@ -445,7 +491,7 @@ describe('Extended Circle documentation', () => {
     mocks.get.mockResolvedValue({ ...v2Workspace, meetings: [meeting] });
     renderPage();
     expect(await screen.findByText('First-time participants: Not collected')).toBeInTheDocument();
-    expect(screen.queryByText('Your private facilitator notes')).not.toBeInTheDocument();
+    expect(screen.queryByText('Facilitator notes')).not.toBeInTheDocument();
     mocks.get.mockResolvedValue({
       ...v2Workspace,
       meetings: [

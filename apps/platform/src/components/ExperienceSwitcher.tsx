@@ -18,7 +18,8 @@ export function ExperienceSwitcher({ current }: { current: string }) {
 
   // Navigation hint only. RPC checks the current verified Auth email and role scope.
   if (
-    session?.user.email?.toLowerCase().endsWith('@graceforaddictions.org') &&
+    (session?.user.email?.toLowerCase().endsWith('@graceforaddictions.org') ||
+      roles.some((role) => ['program_manager', 'administrator', 'executive'].includes(role))) &&
     !workspaces.some((w) => w.key === 'circles')
   )
     workspaces.push({ key: 'circles', label: 'Circle meetings', path: '/coach/circles' });
