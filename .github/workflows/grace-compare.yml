@@ -77,6 +77,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
+      # This workflow deploys the grace function from the checked-out ref to the
+      # canonical project and does not restore the previously deployed bundle.
+      # Refuse to run on a merged-but-unevaluated policy candidate; evaluating a
+      # candidate needs the separately approved path in the evaluation plan.
+      - name: Approved-policy deploy preflight
+        run: node scripts/grace-model-lock-verify.mjs --require-approved-policy
+
       - name: Deterministic safety-floor regression controls
         run: node scripts/grace-floor-selftest.mjs
 

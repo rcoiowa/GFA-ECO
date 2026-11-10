@@ -19,5 +19,14 @@
       "model_attributable_critical_failures": 0
     },
     "note": "Server-side only. Never browser-controllable. Changing model or disable_thinking requires a NEW model-evaluation decision and a bump here; grace-model-lock-verify.mjs fails on drift."
+  },
+  "grace_policy_candidate": {
+    "policy_version": "grace-policy-1.2.1",
+    "status": "evaluation_pending",
+    "source_change": "3f3ed33 (October 21 language guide; docs/decisions/2026-10-21-language-guide-reconciliation.md)",
+    "evaluation_owner": null,
+    "release_authority": "Thomas (separate release decision; merge is not approval)",
+    "evaluation_plan": "docs/plans/2026-11-10-grace-policy-1.2.1-evaluation-and-release-gate.md",
+    "note": "A candidate is source that differs from grace_v1.policy_version. It may exist on main but must NOT be deployed by grace-lock / grace-eval / grace-compare (they run grace-model-lock-verify.mjs --require-approved-policy). Promotion = new evaluation evidence + Thomas's release decision, then grace_v1.policy_version and its evidence are updated in one reviewable change and this block is removed. grace_v1 evidence above qualifies grace-policy-1.2.0 only."
   }
 }
