@@ -24,12 +24,16 @@ describe('auth navigation privacy boundary', () => {
     '/my-housing/consent',
     '/vrcc/resources',
     '/admin/access',
+    '/staff/document-review',
   ])('keeps %s without authorizing it', (path) => {
     expect(safeAuthReturnPath(path)).toBe(path);
   });
   it('keeps published documents but drops assignment and person IDs', () => {
     expect(safeAuthReturnPath('/my-housing/documents/resident_handbook?assignment=42')).toBe(
       '/my-housing/documents/resident_handbook',
+    );
+    expect(safeAuthReturnPath('/staff/document-review?application=42')).toBe(
+      '/staff/document-review',
     );
     expect(safeAuthReturnPath('/staff/messages/123')).toBe('/staff/messages');
   });

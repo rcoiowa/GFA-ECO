@@ -32,3 +32,4 @@ export * from './repositories/leadsQueue';
 export * from './repositories/circleMeetings';
 
 export * from './repositories/housingFollowThrough';
+export * from './repositories/documentReview';
