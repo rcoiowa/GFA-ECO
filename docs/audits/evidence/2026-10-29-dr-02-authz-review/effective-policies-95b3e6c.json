@@ -1,0 +1,1232 @@
+{
+ "source_revision": "95b3e6c17ab5ce6ed9431e7f2a5eb4a54c7eec8b",
+ "source_path": "supabase/launch/migrations/*.sql (filename order)",
+ "method": "static text replay of create/drop policy statements (policy_replay.py); not a catalog replay",
+ "limitations": "Does not execute SQL; misses policies created dynamically, outside launch/migrations (prepared/, live-drift/, seeds), or in schemas other than those named; predicates truncated to 400 chars. Prior G3 catalog replay (2026-09-14) reported 230 policies across recoveryos/public; this static replay yields 131 effective (164 create, 38 drop). The difference is unexplained here.",
+ "policies": [
+  {
+   "table": "action_steps",
+   "name": "action_steps_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using ( exists (select 1 from goals g where g.id = goal_id and g.person_id = current_person_id()) )"
+  },
+  {
+   "table": "appointment_reminders",
+   "name": "appt_reminder_admin",
+   "file": "0101_reminder_engine.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "appointments",
+   "name": "appointments_request_self",
+   "file": "0021_appointment_request_self.sql",
+   "cmd": "insert",
+   "to": "public",
+   "expr": "for insert with check ( person_id = current_person_id() and status = 'requested' and provider_person_id is null )"
+  },
+  {
+   "table": "appointments",
+   "name": "appointments_select_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (person_id = current_person_id())"
+  },
+  {
+   "table": "appointments",
+   "name": "appt_provider_select",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (provider_person_id = recoveryos.current_person_id() or recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "audit_log",
+   "name": "audit_log_platform_admin_select",
+   "file": "0117_access_governance.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recoveryos.is_platform_admin())"
+  },
+  {
+   "table": "backfill_log",
+   "name": "backfill_admin",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "bed_assignments",
+   "name": "bed_assignments_self",
+   "file": "0014_provider_hub.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( exists (select 1 from residencies r where r.id = residency_id and r.person_id = current_person_id()) )"
+  },
+  {
+   "table": "bed_assignments",
+   "name": "bed_assignments_staff_select",
+   "file": "0115_residence_hardening.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (exists (select 1 from recoveryos.residencies r where r.id = bed_assignments.residency_id and r.residence_id in (select recoveryos.staff_residence_ids())))"
+  },
+  {
+   "table": "booking_proposals",
+   "name": "bp_parties_select",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (exists (select 1 from recoveryos.booking_requests b where b.id = booking_request_id and (b.participant_person_id = recoveryos.current_person_id() or b.provider_person_id = recoveryos.current_person_id() or recoveryos.is_admin_staff())))"
+  },
+  {
+   "table": "booking_requests",
+   "name": "br_participant_insert",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "insert",
+   "to": "authenticated",
+   "expr": "for insert to authenticated with check (participant_person_id = recoveryos.current_person_id() or (recoveryos.is_support_staff() and provider_person_id = recoveryos.current_person_id()))"
+  },
+  {
+   "table": "booking_requests",
+   "name": "br_parties_select",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (participant_person_id = recoveryos.current_person_id() or provider_person_id = recoveryos.current_person_id() or recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "check_ins",
+   "name": "check_ins_insert_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "insert",
+   "to": "public",
+   "expr": "for insert with check (person_id = current_person_id())"
+  },
+  {
+   "table": "check_ins",
+   "name": "check_ins_select_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (person_id = current_person_id())"
+  },
+  {
+   "table": "check_ins",
+   "name": "check_ins_staff_ratings",
+   "file": "0023_recovery_pulse.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( exists ( select 1 from residencies r where r.person_id = check_ins.person_id and r.residence_id in (select staff_residence_ids()) and r.residency_status in ('active', 'on_pass', 'transitioning') ) )"
+  },
+  {
+   "table": "chore_assignments",
+   "name": "chore_assignments_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( exists (select 1 from residencies r where r.id = residency_id and r.person_id = current_person_id()) )"
+  },
+  {
+   "table": "chore_assignments",
+   "name": "chore_assignments_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using ( exists (select 1 from residencies r where r.id = residency_id and r.residence_id in (select staff_residence_ids())) )"
+  },
+  {
+   "table": "coaching_relationships",
+   "name": "coaching_rel_staff_select",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "coaching_relationships",
+   "name": "coaching_select_involved",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( participant_person_id = current_person_id() or coach_person_id = current_person_id() )"
+  },
+  {
+   "table": "consent_grants",
+   "name": "consent_grants_insert_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "insert",
+   "to": "public",
+   "expr": "for insert with check (person_id = current_person_id())"
+  },
+  {
+   "table": "consent_grants",
+   "name": "consent_grants_residence_staff_read",
+   "file": "0140_consent_extension.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using ( consent_type_id in (select id from recoveryos.consent_types where key in ('residence_screening','information_disclosure', 'supervision_coordination')) and ( exists (select 1 from recoveryos.residencies r where r.person_id = consent_grants.person_id and r.residence_id in (select recoveryos.staff_residence_ids())) or exists (select 1 from recoveryos.residence_appl"
+  },
+  {
+   "table": "consent_grants",
+   "name": "consent_grants_select_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (person_id = current_person_id())"
+  },
+  {
+   "table": "consent_types",
+   "name": "consent_types_read",
+   "file": "0118_performance_hardening.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ((select auth.uid()) is not null)"
+  },
+  {
+   "table": "contact_methods",
+   "name": "contact_methods_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using (person_id = current_person_id())"
+  },
+  {
+   "table": "conversation_members",
+   "name": "convmem_self_select",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (person_id = recoveryos.current_person_id() or conversation_id in (select recoveryos.my_conversation_ids()) or recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "conversations",
+   "name": "conv_member_select",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (id in (select recoveryos.my_conversation_ids()) or recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "curfew_exceptions",
+   "name": "curfew_exceptions_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( exists (select 1 from residencies r where r.id = residency_id and r.person_id = current_person_id()) )"
+  },
+  {
+   "table": "curfew_exceptions",
+   "name": "curfew_exceptions_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using ( exists (select 1 from residencies r where r.id = residency_id and r.residence_id in (select staff_residence_ids())) )"
+  },
+  {
+   "table": "curfew_schedules",
+   "name": "curfew_schedules_read",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( residence_id in (select residence_id from residencies where person_id = current_person_id() and residency_status in ('active','on_pass','transitioning')) or residence_id in (select staff_residence_ids()) )"
+  },
+  {
+   "table": "curfew_schedules",
+   "name": "curfew_schedules_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using (residence_id in (select staff_residence_ids()))"
+  },
+  {
+   "table": "document_assignments",
+   "name": "document_assignments_ack_self",
+   "file": "0013_residence_documents.sql",
+   "cmd": "update",
+   "to": "public",
+   "expr": "for update using (person_id = current_person_id() and acknowledged_at is null) with check (person_id = current_person_id())"
+  },
+  {
+   "table": "document_assignments",
+   "name": "document_assignments_select_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (person_id = current_person_id())"
+  },
+  {
+   "table": "document_templates",
+   "name": "document_templates_read",
+   "file": "0118_performance_hardening.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ((select auth.uid()) is not null and is_active)"
+  },
+  {
+   "table": "document_templates",
+   "name": "document_templates_read_assigned",
+   "file": "0020_fix_document_policy_recursion.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (id in (select my_assigned_document_template_ids()))"
+  },
+  {
+   "table": "document_versions",
+   "name": "document_versions_read",
+   "file": "0013_residence_documents.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( published_at is not null and exists ( select 1 from document_templates t where t.id = template_id and t.is_active ) )"
+  },
+  {
+   "table": "document_versions",
+   "name": "document_versions_read_assigned",
+   "file": "0020_fix_document_policy_recursion.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (id in (select my_assigned_document_version_ids()))"
+  },
+  {
+   "table": "domain_external_mappings",
+   "name": "domain_external_mappings_read",
+   "file": "0129_domain_vocabulary.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recoveryos.is_platform_admin())"
+  },
+  {
+   "table": "domain_subcategories",
+   "name": "domain_subcategories_read",
+   "file": "0129_domain_vocabulary.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (true)"
+  },
+  {
+   "table": "domains",
+   "name": "domains_read",
+   "file": "0129_domain_vocabulary.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (true)"
+  },
+  {
+   "table": "emergency_contacts",
+   "name": "emergency_contacts_self",
+   "file": "0141_conditional_intake_data.sql",
+   "cmd": "all",
+   "to": "authenticated",
+   "expr": "for all to authenticated using (person_id = recoveryos.current_person_id()) with check (person_id = recoveryos.current_person_id())"
+  },
+  {
+   "table": "emergency_contacts",
+   "name": "emergency_contacts_staff_read",
+   "file": "0141_conditional_intake_data.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (exists ( select 1 from recoveryos.residencies r where r.person_id = emergency_contacts.person_id and r.residence_id in (select recoveryos.staff_residence_ids()) union all select 1 from recoveryos.residence_applications a where a.person_id = emergency_contacts.person_id and a.residence_id in (select recoveryos.staff_residence_ids())))"
+  },
+  {
+   "table": "employment_curfew_exceptions",
+   "name": "employment_curfew_self_read",
+   "file": "0022_residency_phase.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( exists (select 1 from residencies r where r.id = residency_id and r.person_id = current_person_id()) )"
+  },
+  {
+   "table": "employment_curfew_exceptions",
+   "name": "employment_curfew_staff",
+   "file": "0022_residency_phase.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using ( exists (select 1 from residencies r where r.id = residency_id and r.residence_id in (select staff_residence_ids())) )"
+  },
+  {
+   "table": "fee_ledger",
+   "name": "fee_ledger_self",
+   "file": "0014_provider_hub.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( exists (select 1 from residencies r where r.id = residency_id and r.person_id = current_person_id()) )"
+  },
+  {
+   "table": "fee_ledger",
+   "name": "fee_ledger_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using ( exists (select 1 from residencies r where r.id = residency_id and r.residence_id in (select staff_residence_ids())) )"
+  },
+  {
+   "table": "follow_ups",
+   "name": "fu_scope_select",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (person_id = recoveryos.current_person_id() or assigned_person_id = recoveryos.current_person_id() or recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "goals",
+   "name": "goals_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using (person_id = current_person_id())"
+  },
+  {
+   "table": "grievances",
+   "name": "grievances_file_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "insert",
+   "to": "public",
+   "expr": "for insert with check (filed_by_person_id = current_person_id())"
+  },
+  {
+   "table": "grievances",
+   "name": "grievances_scoped_select",
+   "file": "0115_residence_hardening.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (filed_by_person_id = recoveryos.current_person_id() or recoveryos.is_residence_manager_of(residence_id) or recoveryos.is_platform_admin())"
+  },
+  {
+   "table": "house_posts",
+   "name": "house_posts_resident_read",
+   "file": "0015_house_board_reports.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( residence_id in (select residence_id from residencies where person_id = current_person_id() and residency_status in ('active', 'on_pass', 'transitioning')) )"
+  },
+  {
+   "table": "house_posts",
+   "name": "house_posts_resident_write",
+   "file": "0015_house_board_reports.sql",
+   "cmd": "insert",
+   "to": "public",
+   "expr": "for insert with check ( author_person_id = current_person_id() and category in ('milestone', 'gratitude') and residence_id in (select residence_id from residencies where person_id = current_person_id() and residency_status in ('active', 'on_pass', 'transitioning')) )"
+  },
+  {
+   "table": "house_posts",
+   "name": "house_posts_staff",
+   "file": "0015_house_board_reports.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using (residence_id in (select staff_residence_ids()))"
+  },
+  {
+   "table": "incidents",
+   "name": "incidents_staff_insert",
+   "file": "0115_residence_hardening.sql",
+   "cmd": "insert",
+   "to": "authenticated",
+   "expr": "for insert to authenticated with check (reported_by_person_id = recoveryos.current_person_id() and residence_id in (select recoveryos.staff_residence_ids()))"
+  },
+  {
+   "table": "incidents",
+   "name": "incidents_staff_select",
+   "file": "0115_residence_hardening.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (residence_id in (select recoveryos.staff_residence_ids()))"
+  },
+  {
+   "table": "iowa_checklist_items",
+   "name": "iowa_checklist_items_read",
+   "file": "0118_performance_hardening.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ((select auth.uid()) is not null)"
+  },
+  {
+   "table": "iowa_checklist_status",
+   "name": "iowa_checklist_status_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using (residence_id in (select staff_residence_ids()))"
+  },
+  {
+   "table": "leads",
+   "name": "leads_staff_select",
+   "file": "0102_lead_intake_content.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recoveryos.is_support_staff() or recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "leads",
+   "name": "leads_staff_update",
+   "file": "0102_lead_intake_content.sql",
+   "cmd": "update",
+   "to": "authenticated",
+   "expr": "for update to authenticated using (recoveryos.is_support_staff() or recoveryos.is_admin_staff()) with check (recoveryos.is_support_staff() or recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "medication_status_reviews",
+   "name": "medication_status_reviews_self_read",
+   "file": "0143_medication_status_review.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (person_id = recoveryos.current_person_id())"
+  },
+  {
+   "table": "medication_status_reviews",
+   "name": "medication_status_reviews_staff_read",
+   "file": "0143_medication_status_review.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (exists ( select 1 from recoveryos.residencies r where r.person_id = medication_status_reviews.person_id and r.residence_id in (select recoveryos.staff_residence_ids()) union all select 1 from recoveryos.residence_applications a where a.person_id = medication_status_reviews.person_id and a.residence_id in (select recoveryos.staff_residence_ids())))"
+  },
+  {
+   "table": "meeting_attendance",
+   "name": "meeting_attendance_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using ( exists (select 1 from meetings m where m.id = meeting_id and m.residence_id in (select staff_residence_ids())) )"
+  },
+  {
+   "table": "meetings",
+   "name": "circle_occurrences_rpc_only",
+   "file": "20261005071446_circle_meeting_logging.sql",
+   "cmd": "all",
+   "to": "anon,authenticated",
+   "expr": "as restrictive for all to anon,authenticated using (series_id is null) with check (series_id is null)"
+  },
+  {
+   "table": "meetings",
+   "name": "meetings_read",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( residence_id is null or residence_id in (select residence_id from residencies where person_id = current_person_id() and residency_status in ('active','on_pass','transitioning')) or residence_id in (select staff_residence_ids()) )"
+  },
+  {
+   "table": "meetings",
+   "name": "meetings_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using (residence_id in (select staff_residence_ids()))"
+  },
+  {
+   "table": "messages",
+   "name": "msg_member_select",
+   "file": "0109_messaging.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (conversation_id in (select recoveryos.my_conversation_ids()))"
+  },
+  {
+   "table": "migration_state",
+   "name": "migstate_admin",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "narr_compliance",
+   "name": "narr_compliance_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using (residence_id in (select staff_residence_ids()))"
+  },
+  {
+   "table": "narr_standards",
+   "name": "narr_standards_read",
+   "file": "0118_performance_hardening.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ((select auth.uid()) is not null)"
+  },
+  {
+   "table": "navigation_needs",
+   "name": "nav_needs_select",
+   "file": "0113_navigation_privacy_correction.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (person_id = recoveryos.current_person_id() or person_id in (select recoveryos.my_navigation_participant_ids()) or recoveryos.is_platform_admin())"
+  },
+  {
+   "table": "navigation_referrals",
+   "name": "nav_referrals_select",
+   "file": "0113_navigation_privacy_correction.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (person_id = recoveryos.current_person_id() or person_id in (select recoveryos.my_navigation_participant_ids()) or recoveryos.is_platform_admin())"
+  },
+  {
+   "table": "navigation_relationships",
+   "name": "navigation_rel_staff_select",
+   "file": "0113_navigation_privacy_correction.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recoveryos.is_platform_admin())"
+  },
+  {
+   "table": "navigation_relationships",
+   "name": "navigation_select_involved",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( participant_person_id = current_person_id() or navigator_person_id = current_person_id() )"
+  },
+  {
+   "table": "notification_deliveries",
+   "name": "nd_recipient_select",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (exists (select 1 from recoveryos.notifications n where n.id = notification_id and n.recipient_person_id = recoveryos.current_person_id()))"
+  },
+  {
+   "table": "notifications",
+   "name": "notif_own_select",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recipient_person_id = recoveryos.current_person_id())"
+  },
+  {
+   "table": "notifications",
+   "name": "notif_own_update",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "update",
+   "to": "authenticated",
+   "expr": "for update to authenticated using (recipient_person_id = recoveryos.current_person_id()) with check (recipient_person_id = recoveryos.current_person_id())"
+  },
+  {
+   "table": "organizations",
+   "name": "organizations_read",
+   "file": "0118_performance_hardening.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ((select auth.uid()) is not null)"
+  },
+  {
+   "table": "passes",
+   "name": "passes_self_request",
+   "file": "0009_row_level_security.sql",
+   "cmd": "insert",
+   "to": "public",
+   "expr": "for insert with check ( status = 'requested' and exists (select 1 from residencies r where r.id = residency_id and r.person_id = current_person_id()) )"
+  },
+  {
+   "table": "passes",
+   "name": "passes_self_select",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( exists (select 1 from residencies r where r.id = residency_id and r.person_id = current_person_id()) )"
+  },
+  {
+   "table": "passes",
+   "name": "passes_staff_select",
+   "file": "0115_residence_hardening.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (exists (select 1 from recoveryos.residencies r where r.id = passes.residency_id and r.residence_id in (select recoveryos.staff_residence_ids())))"
+  },
+  {
+   "table": "people",
+   "name": "people_select_self",
+   "file": "0118_performance_hardening.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (auth_user_id = (select auth.uid()))"
+  },
+  {
+   "table": "people",
+   "name": "people_select_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( exists (select 1 from residencies r where r.person_id = people.id and r.residence_id in (select staff_residence_ids())) or exists (select 1 from residence_applications a where a.person_id = people.id and a.residence_id in (select staff_residence_ids())) )"
+  },
+  {
+   "table": "people",
+   "name": "people_update_self",
+   "file": "0118_performance_hardening.sql",
+   "cmd": "update",
+   "to": "public",
+   "expr": "for update using (auth_user_id = (select auth.uid()))"
+  },
+  {
+   "table": "person_classification",
+   "name": "pc_admin_select",
+   "file": "0030_person_classification.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "person_profiles",
+   "name": "person_profiles_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using (person_id = current_person_id())"
+  },
+  {
+   "table": "program_enrollments",
+   "name": "program_enrollments_select_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (person_id = current_person_id())"
+  },
+  {
+   "table": "programs",
+   "name": "programs_read",
+   "file": "0118_performance_hardening.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ((select auth.uid()) is not null)"
+  },
+  {
+   "table": "provider_meeting_rooms",
+   "name": "pmr_admin_manage",
+   "file": "0105_meeting_provisioning.sql",
+   "cmd": "all",
+   "to": "authenticated",
+   "expr": "for all to authenticated using (recoveryos.is_admin_staff()) with check (recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "provider_meeting_rooms",
+   "name": "pmr_own_select",
+   "file": "0105_meeting_provisioning.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (person_id = recoveryos.current_person_id() or recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "recovery_capital_assessments",
+   "name": "rca_insert_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "insert",
+   "to": "public",
+   "expr": "for insert with check (person_id = current_person_id())"
+  },
+  {
+   "table": "recovery_capital_assessments",
+   "name": "rca_select_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (person_id = current_person_id())"
+  },
+  {
+   "table": "recovery_plans",
+   "name": "recovery_plans_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using (person_id = current_person_id())"
+  },
+  {
+   "table": "referrals",
+   "name": "referrals_public_insert",
+   "file": "0016_referrals.sql",
+   "cmd": "insert",
+   "to": "anon, authenticated",
+   "expr": "for insert to anon, authenticated with check (status = 'received' and handled_by_person_id is null and handled_at is null)"
+  },
+  {
+   "table": "referrals",
+   "name": "referrals_staff",
+   "file": "0016_referrals.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (residence_id in (select staff_residence_ids()))"
+  },
+  {
+   "table": "residence_application_intake",
+   "name": "residence_application_intake_staff_select",
+   "file": "0122_public_intake_boundary.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (residence_id in (select recoveryos.staff_residence_ids()) or recoveryos.is_care_operations_staff())"
+  },
+  {
+   "table": "residence_applications",
+   "name": "residence_applications_self_insert",
+   "file": "0018_applicant_flow.sql",
+   "cmd": "insert",
+   "to": "public",
+   "expr": "for insert with check ( person_id = current_person_id() and status = 'submitted' and decided_at is null and decided_by_person_id is null )"
+  },
+  {
+   "table": "residence_applications",
+   "name": "residence_applications_self_select",
+   "file": "0018_applicant_flow.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (person_id = current_person_id())"
+  },
+  {
+   "table": "residence_applications",
+   "name": "residence_applications_staff",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (residence_id in (select staff_residence_ids()))"
+  },
+  {
+   "table": "residence_beds",
+   "name": "residence_beds_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using ( exists (select 1 from residence_rooms rm join residence_units u on u.id = rm.unit_id where rm.id = room_id and u.residence_id in (select staff_residence_ids())) )"
+  },
+  {
+   "table": "residence_chores",
+   "name": "chores_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using (residence_id in (select staff_residence_ids()))"
+  },
+  {
+   "table": "residence_chores",
+   "name": "residence_chores_read",
+   "file": "0014_provider_hub.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( residence_id in (select residence_id from residencies where person_id = current_person_id() and residency_status in ('active', 'on_pass', 'transitioning')) )"
+  },
+  {
+   "table": "residence_listing_submissions",
+   "name": "residence_listing_submissions_admin_select",
+   "file": "0122_public_intake_boundary.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recoveryos.is_platform_admin())"
+  },
+  {
+   "table": "residence_rooms",
+   "name": "residence_rooms_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using ( exists (select 1 from residence_units u where u.id = unit_id and u.residence_id in (select staff_residence_ids())) )"
+  },
+  {
+   "table": "residence_units",
+   "name": "residence_units_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using (residence_id in (select staff_residence_ids()))"
+  },
+  {
+   "table": "residences",
+   "name": "residences_manager_update",
+   "file": "0014_provider_hub.sql",
+   "cmd": "update",
+   "to": "public",
+   "expr": "for update using ( id in (select ra.residence_id from role_assignments ra where ra.person_id = current_person_id() and ra.role_key = 'residence_manager' and ra.revoked_at is null) )"
+  },
+  {
+   "table": "residences",
+   "name": "residences_read",
+   "file": "0118_performance_hardening.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ((select auth.uid()) is not null)"
+  },
+  {
+   "table": "residencies",
+   "name": "residencies_select_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (person_id = current_person_id())"
+  },
+  {
+   "table": "residencies",
+   "name": "residencies_staff_select",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (residence_id in (select staff_residence_ids()))"
+  },
+  {
+   "table": "residency_medication_items",
+   "name": "residency_medication_items_self_read",
+   "file": "0141_conditional_intake_data.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (person_id = recoveryos.current_person_id())"
+  },
+  {
+   "table": "residency_medication_items",
+   "name": "residency_medication_items_staff_read",
+   "file": "0141_conditional_intake_data.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (exists ( select 1 from recoveryos.residencies r where r.person_id = residency_medication_items.person_id and r.residence_id in (select recoveryos.staff_residence_ids()) union all select 1 from recoveryos.residence_applications a where a.person_id = residency_medication_items.person_id and a.residence_id in (select recoveryos.staff_residence_ids())))"
+  },
+  {
+   "table": "residency_phases",
+   "name": "residency_phases_self",
+   "file": "0014_provider_hub.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ( exists (select 1 from residencies r where r.id = residency_id and r.person_id = current_person_id()) )"
+  },
+  {
+   "table": "residency_phases",
+   "name": "residency_phases_staff",
+   "file": "0014_provider_hub.sql",
+   "cmd": "all",
+   "to": "public",
+   "expr": "for all using ( exists (select 1 from residencies r where r.id = residency_id and r.residence_id in (select staff_residence_ids())) )"
+  },
+  {
+   "table": "resource_domains",
+   "name": "resource_domains_read",
+   "file": "0131_resource_domains.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (true)"
+  },
+  {
+   "table": "resources",
+   "name": "resources_admin",
+   "file": "0102_lead_intake_content.sql",
+   "cmd": "all",
+   "to": "authenticated",
+   "expr": "for all to authenticated using (recoveryos.is_admin_staff()) with check (recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "resources",
+   "name": "resources_read",
+   "file": "0102_lead_intake_content.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (is_active)"
+  },
+  {
+   "table": "role_assignments",
+   "name": "role_assignments_select_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (person_id = current_person_id())"
+  },
+  {
+   "table": "screenings",
+   "name": "screenings_staff_insert",
+   "file": "0115_residence_hardening.sql",
+   "cmd": "insert",
+   "to": "authenticated",
+   "expr": "for insert to authenticated with check (recorded_by_person_id = recoveryos.current_person_id() and exists (select 1 from recoveryos.residencies r where r.id = screenings.residency_id and r.residence_id in (select recoveryos.staff_residence_ids())))"
+  },
+  {
+   "table": "screenings",
+   "name": "screenings_staff_select",
+   "file": "0115_residence_hardening.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (exists (select 1 from recoveryos.residencies r where r.id = screenings.residency_id and r.residence_id in (select recoveryos.staff_residence_ids())))"
+  },
+  {
+   "table": "service_events",
+   "name": "service_events_provider_read",
+   "file": "0135_self_insert_boundary.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (provider_person_id = recoveryos.current_person_id())"
+  },
+  {
+   "table": "service_events",
+   "name": "service_events_select_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (person_id = current_person_id())"
+  },
+  {
+   "table": "service_events",
+   "name": "service_events_staff",
+   "file": "0015_house_board_reports.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (residence_id in (select staff_residence_ids()))"
+  },
+  {
+   "table": "service_types",
+   "name": "service_types_read",
+   "file": "0118_performance_hardening.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using ((select auth.uid()) is not null)"
+  },
+  {
+   "table": "slogans",
+   "name": "slogans_admin",
+   "file": "0102_lead_intake_content.sql",
+   "cmd": "all",
+   "to": "authenticated",
+   "expr": "for all to authenticated using (recoveryos.is_admin_staff()) with check (recoveryos.is_admin_staff())"
+  },
+  {
+   "table": "slogans",
+   "name": "slogans_read",
+   "file": "0102_lead_intake_content.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (is_active)"
+  },
+  {
+   "table": "staff_preauthorizations",
+   "name": "staff_preauth_platform_select",
+   "file": "0117_access_governance.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recoveryos.is_platform_admin())"
+  },
+  {
+   "table": "supervision_coordination_records",
+   "name": "supervision_coordination_self_read",
+   "file": "0141_conditional_intake_data.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (person_id = recoveryos.current_person_id())"
+  },
+  {
+   "table": "supervision_coordination_records",
+   "name": "supervision_coordination_staff_read",
+   "file": "0141_conditional_intake_data.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using ( exists (select 1 from recoveryos.consent_grants g where g.id = supervision_coordination_records.consent_grant_id and g.status = 'granted' and g.revoked_at is null and (g.expires_at is null or g.expires_at > now())) and exists ( select 1 from recoveryos.residencies r where r.person_id = supervision_coordination_records.person_id and r.residence_id in (select reco"
+  },
+  {
+   "table": "support_request_events",
+   "name": "sre_parties_select",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (exists (select 1 from recoveryos.support_requests s where s.id = support_request_id and (s.person_id = recoveryos.current_person_id() or s.claimed_by_person_id = recoveryos.current_person_id() or recoveryos.is_admin_staff())))"
+  },
+  {
+   "table": "support_requests",
+   "name": "sr_participant_insert",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "insert",
+   "to": "authenticated",
+   "expr": "for insert to authenticated with check (person_id = recoveryos.current_person_id() and status in ('submitted','open') and claimed_by_person_id is null and coaching_relationship_id is null)"
+  },
+  {
+   "table": "support_requests",
+   "name": "sr_participant_select",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (person_id = recoveryos.current_person_id())"
+  },
+  {
+   "table": "support_requests",
+   "name": "sr_staff_pool_select",
+   "file": "0026_coaching_domain_rls.sql",
+   "cmd": "select",
+   "to": "authenticated",
+   "expr": "for select to authenticated using (recoveryos.is_support_staff() and (status in ('submitted','open') or claimed_by_person_id = recoveryos.current_person_id() or recoveryos.is_admin_staff()))"
+  },
+  {
+   "table": "support_team_memberships",
+   "name": "support_team_select_self",
+   "file": "0009_row_level_security.sql",
+   "cmd": "select",
+   "to": "public",
+   "expr": "for select using (person_id = current_person_id() or member_person_id = current_person_id())"
+  }
+ ],
+ "rls_enabled": [
+  "action_steps",
+  "appointment_reminders",
+  "appointments",
+  "audit_log",
+  "backfill_log",
+  "bed_assignments",
+  "booking_proposals",
+  "booking_requests",
+  "check_ins",
+  "chore_assignments",
+  "coaching_relationships",
+  "consent_grants",
+  "consent_types",
+  "contact_methods",
+  "conversation_members",
+  "conversations",
+  "curfew_exceptions",
+  "curfew_schedules",
+  "document_assignments",
+  "document_templates",
+  "document_versions",
+  "domain_external_mappings",
+  "domain_subcategories",
+  "domains",
+  "emergency_contacts",
+  "employment_curfew_exceptions",
+  "fee_ledger",
+  "follow_ups",
+  "funding_sources",
+  "goals",
+  "grievances",
+  "house_posts",
+  "incidents",
+  "iowa_checklist_items",
+  "iowa_checklist_status",
+  "leads",
+  "locations",
+  "medication_status_reviews",
+  "meeting_attendance",
+  "meeting_facilitator_assignments",
+  "meeting_series",
+  "meetings",
+  "messages",
+  "migration_state",
+  "narr_compliance",
+  "narr_standards",
+  "navigation_needs",
+  "navigation_referrals",
+  "navigation_relationships",
+  "notification_deliveries",
+  "notifications",
+  "organization_relationships",
+  "organizations",
+  "passes",
+  "people",
+  "person_classification",
+  "person_profiles",
+  "program_enrollments",
+  "programs",
+  "provider_meeting_rooms",
+  "recovery_capital_assessments",
+  "recovery_plans",
+  "referrals",
+  "residence_application_intake",
+  "residence_applications",
+  "residence_beds",
+  "residence_chores",
+  "residence_listing_submissions",
+  "residence_rooms",
+  "residence_units",
+  "residences",
+  "residencies",
+  "residency_medication_items",
+  "residency_phases",
+  "resource_domains",
+  "resources",
+  "role_assignments",
+  "screenings",
+  "service_events",
+  "service_types",
+  "slogans",
+  "staff_preauthorizations",
+  "supervision_coordination_records",
+  "support_request_events",
+  "support_requests",
+  "support_team_memberships"
+ ],
+ "tables": {
+  "people": "0002_identity_organizations.sql",
+  "person_profiles": "0002_identity_organizations.sql",
+  "contact_methods": "0002_identity_organizations.sql",
+  "organizations": "0002_identity_organizations.sql",
+  "organization_relationships": "0002_identity_organizations.sql",
+  "locations": "0002_identity_organizations.sql",
+  "programs": "0002_identity_organizations.sql",
+  "funding_sources": "0002_identity_organizations.sql",
+  "role_assignments": "0003_roles_participation.sql",
+  "program_enrollments": "0003_roles_participation.sql",
+  "residences": "0004_residences.sql",
+  "residence_units": "0004_residences.sql",
+  "residence_rooms": "0004_residences.sql",
+  "residence_beds": "0004_residences.sql",
+  "residence_applications": "0004_residences.sql",
+  "residencies": "0004_residences.sql",
+  "bed_assignments": "0004_residences.sql",
+  "service_types": "0005_services_recovery.sql",
+  "service_events": "0005_services_recovery.sql",
+  "recovery_plans": "0005_services_recovery.sql",
+  "goals": "0005_services_recovery.sql",
+  "action_steps": "0005_services_recovery.sql",
+  "check_ins": "0005_services_recovery.sql",
+  "recovery_capital_assessments": "0005_services_recovery.sql",
+  "coaching_relationships": "0005_services_recovery.sql",
+  "navigation_relationships": "0005_services_recovery.sql",
+  "support_team_memberships": "0005_services_recovery.sql",
+  "appointments": "0006_scheduling_residence_operations.sql",
+  "meetings": "0006_scheduling_residence_operations.sql",
+  "meeting_attendance": "0006_scheduling_residence_operations.sql",
+  "residence_chores": "0006_scheduling_residence_operations.sql",
+  "chore_assignments": "0006_scheduling_residence_operations.sql",
+  "curfew_schedules": "0006_scheduling_residence_operations.sql",
+  "curfew_exceptions": "0006_scheduling_residence_operations.sql",
+  "passes": "0006_scheduling_residence_operations.sql",
+  "screenings": "0006_scheduling_residence_operations.sql",
+  "incidents": "0006_scheduling_residence_operations.sql",
+  "grievances": "0006_scheduling_residence_operations.sql",
+  "consent_types": "0007_consent_documents_audit.sql",
+  "consent_grants": "0007_consent_documents_audit.sql",
+  "document_templates": "0007_consent_documents_audit.sql",
+  "document_versions": "0007_consent_documents_audit.sql",
+  "document_assignments": "0007_consent_documents_audit.sql",
+  "audit_log": "0007_consent_documents_audit.sql",
+  "residency_phases": "0014_provider_hub.sql",
+  "fee_ledger": "0014_provider_hub.sql",
+  "narr_standards": "0014_provider_hub.sql",
+  "narr_compliance": "0014_provider_hub.sql",
+  "iowa_checklist_items": "0014_provider_hub.sql",
+  "iowa_checklist_status": "0014_provider_hub.sql",
+  "house_posts": "0015_house_board_reports.sql",
+  "referrals": "0016_referrals.sql",
+  "employment_curfew_exceptions": "0022_residency_phase.sql",
+  "support_requests": "0025_coaching_domain_tables.sql",
+  "support_request_events": "0025_coaching_domain_tables.sql",
+  "booking_requests": "0025_coaching_domain_tables.sql",
+  "booking_proposals": "0025_coaching_domain_tables.sql",
+  "conversations": "0025_coaching_domain_tables.sql",
+  "conversation_members": "0025_coaching_domain_tables.sql",
+  "messages": "0025_coaching_domain_tables.sql",
+  "notifications": "0025_coaching_domain_tables.sql",
+  "notification_deliveries": "0025_coaching_domain_tables.sql",
+  "follow_ups": "0025_coaching_domain_tables.sql",
+  "migration_state": "0025_coaching_domain_tables.sql",
+  "backfill_log": "0025_coaching_domain_tables.sql",
+  "person_classification": "0030_person_classification.sql",
+  "appointment_reminders": "0101_reminder_engine.sql",
+  "leads": "0102_lead_intake_content.sql",
+  "slogans": "0102_lead_intake_content.sql",
+  "resources": "0102_lead_intake_content.sql",
+  "staff_preauthorizations": "0103_admin_bootstrap.sql",
+  "provider_meeting_rooms": "0105_meeting_provisioning.sql",
+  "navigation_needs": "0112_navigation_domain.sql",
+  "navigation_referrals": "0112_navigation_domain.sql",
+  "residence_listing_submissions": "0122_public_intake_boundary.sql",
+  "residence_application_intake": "0122_public_intake_boundary.sql",
+  "domains": "0129_domain_vocabulary.sql",
+  "domain_subcategories": "0129_domain_vocabulary.sql",
+  "domain_external_mappings": "0129_domain_vocabulary.sql",
+  "resource_domains": "0131_resource_domains.sql",
+  "emergency_contacts": "0141_conditional_intake_data.sql",
+  "residency_medication_items": "0141_conditional_intake_data.sql",
+  "supervision_coordination_records": "0141_conditional_intake_data.sql",
+  "medication_status_reviews": "0143_medication_status_review.sql",
+  "meeting_series": "20261005071446_circle_meeting_logging.sql",
+  "meeting_facilitator_assignments": "20261005071446_circle_meeting_logging.sql"
+ }
+}
