@@ -6,8 +6,10 @@
 # Then confirms the DEPLOYED function actually serves claude-sonnet-5.
 #
 # This does NOT set GRACE_PROVIDER_CONFIGURED, does NOT activate Grace for real
-# participants, and does NOT change vrcc.app or the SMTP posture. grace-policy is
-# unchanged (grace-policy-1.2.0).
+# participants, and does NOT change vrcc.app or the SMTP posture. It deploys the
+# grace function from the checked-out ref, so the preflight below refuses to run
+# unless the source POLICY_VERSION is the approved, evaluated policy recorded in
+# grace-model-lock.json (a merged-but-unevaluated candidate is blocked).
 #
 # Required secrets on `p4h-live-gate`: SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ACCESS_TOKEN.
 name: Grace V1 model lock
@@ -52,8 +54,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      - name: Static model-lock declaration check
-        run: node scripts/grace-model-lock-verify.mjs
+      - name: Static model-lock + approved-policy deploy preflight
+        run: node scripts/grace-model-lock-verify.mjs --require-approved-policy
 
       - uses: supabase/setup-cli@v1
         with:
