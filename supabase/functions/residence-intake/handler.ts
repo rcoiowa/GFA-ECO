@@ -39,7 +39,9 @@ function corsHeaders(origin: string | null): Record<string, string> {
   if (origin && ALLOWED_ORIGINS.has(origin)) {
     base['access-control-allow-origin'] = origin;
     base['access-control-allow-methods'] = 'POST, OPTIONS';
-    base['access-control-allow-headers'] = 'content-type, authorization, apikey';
+    // supabase.functions.invoke sends x-client-info on browser requests.
+    // Omitting it blocks the POST at preflight, before intake can reach the DB.
+    base['access-control-allow-headers'] = 'content-type, authorization, apikey, x-client-info';
     base['access-control-max-age'] = '86400';
     base['vary'] = 'origin';
   }
