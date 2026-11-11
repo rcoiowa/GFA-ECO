@@ -1,5 +1,11 @@
 # Phase A Discovery — RecoveryOS Master Consolidation
 
+> **Later re-verification:** a 2026-11-11 read-only source-of-truth assessment
+> (runtime probes, repository state, governance-check runs, and an unresolved-conflict
+> register) exists at `source-of-truth-assessment-2026-11-11.md`. The 2026-08-04
+> documents below remain the Phase A record; where they state then-current conditions
+> (deployment, blockers), prefer the dated later records.
+
 Governing directive: **RecoveryOS Master Discovery, Consolidation & Execution
 Commander** (owner-issued, 2026-08-04). This directory holds the Phase A
 deliverables produced from what the current Claude Code environment can
