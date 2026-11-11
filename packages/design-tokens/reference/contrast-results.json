@@ -1,0 +1,137 @@
+[
+  {
+    "theme": "gfa",
+    "foreground": "ink",
+    "background": "surface",
+    "ratio": 14.86,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "gfa",
+    "foreground": "muted",
+    "background": "surface",
+    "ratio": 5.91,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "gfa",
+    "foreground": "muted",
+    "background": "raised",
+    "ratio": 6.3,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "gfa",
+    "foreground": "actionText",
+    "background": "action",
+    "ratio": 6.52,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "gfa",
+    "foreground": "accentText",
+    "background": "accent",
+    "ratio": 6.99,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "gfa",
+    "foreground": "onNight",
+    "background": "night",
+    "ratio": 17.34,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "gfa",
+    "foreground": "onNightMuted",
+    "background": "night",
+    "ratio": 13.14,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "gfa",
+    "foreground": "focus",
+    "background": "surface",
+    "ratio": 6.11,
+    "minimum": 3,
+    "pass": true
+  },
+  {
+    "theme": "grace-house",
+    "foreground": "ink",
+    "background": "surface",
+    "ratio": 15.42,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "grace-house",
+    "foreground": "muted",
+    "background": "surface",
+    "ratio": 5.53,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "grace-house",
+    "foreground": "muted",
+    "background": "raised",
+    "ratio": 5.85,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "grace-house",
+    "foreground": "actionText",
+    "background": "action",
+    "ratio": 9.76,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "grace-house",
+    "foreground": "accentText",
+    "background": "accent",
+    "ratio": 6.86,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "grace-house",
+    "foreground": "onNight",
+    "background": "night",
+    "ratio": 16.64,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "grace-house",
+    "foreground": "onNightMuted",
+    "background": "night",
+    "ratio": 11.16,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "theme": "grace-house",
+    "foreground": "focus",
+    "background": "surface",
+    "ratio": 9.76,
+    "minimum": 3,
+    "pass": true
+  },
+  {
+    "observation": "Original housing amber focus on warm paper",
+    "ratio": 2.25,
+    "minimum": 3,
+    "pass": false,
+    "correction": "Use plum focus on light; amber may remain in dark mode."
+  }
+]

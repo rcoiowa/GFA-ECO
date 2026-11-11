@@ -13,10 +13,6 @@ describe('auth navigation privacy boundary', () => {
     '/home%00',
     '/home/../home',
     '/unknown',
-    '/admin',
-    '/admin/access',
-    '/vrcc/resources',
-    '/staff/messages/123',
     '/residences/applications/intake/123',
     '/residences/applications/other',
     null,
@@ -31,6 +27,8 @@ describe('auth navigation privacy boundary', () => {
     '/residence/documents',
     '/staff/document-review',
     '/residences/applications/intake',
+    '/vrcc/resources',
+    '/admin/access',
   ])('keeps %s without authorizing it', (path) => {
     expect(safeAuthReturnPath(path)).toBe(path);
   });
@@ -49,6 +47,7 @@ describe('auth navigation privacy boundary', () => {
     expect(safeAuthReturnPath('/staff/document-review?application=42')).toBe(
       '/staff/document-review',
     );
+    expect(safeAuthReturnPath('/staff/messages/123')).toBe('/staff/messages');
   });
   it('retains reviewed query/hash values and drops personal values and credentials', () => {
     expect(

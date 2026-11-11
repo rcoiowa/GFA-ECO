@@ -69,7 +69,25 @@ function mount(entry: string | { pathname: string; state: unknown }) {
           }
         />
         <Route
+          path="/admin/access"
+          element={
+            <RequireRole anyOf={['administrator']}>
+              <Probe />
+            </RequireRole>
+          }
+        />
+        <Route
           path="/residence/documents"
+          element={
+            <RequireAuth>
+              <OnboardingConsentGate>
+                <Probe />
+              </OnboardingConsentGate>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/vrcc/resources"
           element={
             <RequireAuth>
               <OnboardingConsentGate>
@@ -123,7 +141,6 @@ describe('auth destination journeys', () => {
       expect(await screen.findByTestId('destination')).toHaveTextContent(destination);
     },
   );
-
   it('keeps guarded housing intent through registration, email callback, refresh and sign-in', async () => {
     const first = mount('/my-housing/consent?tab=overview#main');
     fireEvent.click(await screen.findByRole('link', { name: 'Create your account' }));
@@ -186,7 +203,7 @@ describe('auth destination journeys', () => {
     expect(await screen.findByTestId('destination')).toHaveTextContent('/my-housing/documents');
   });
   it('rechecks role authorization after sign-in instead of treating next as authority', async () => {
-    mount('/staff/document-review');
+    mount('/admin/access');
     fill('Email', 'synthetic@example.test');
     fill('Password', 'synthetic-passphrase');
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
@@ -203,10 +220,10 @@ describe('auth destination journeys', () => {
     expect(await screen.findByTestId('destination')).toHaveTextContent('/home');
   });
   it('preserves an interrupted onboarding destination while signed out', async () => {
-    mount('/onboarding?next=%2Fresidence%2Fdocuments');
+    mount('/onboarding?next=%2Fvrcc%2Fresources');
     expect(await screen.findByRole('link', { name: 'Create your account' })).toHaveAttribute(
       'href',
-      '/register?next=%2Fresidence%2Fdocuments',
+      '/register?next=%2Fvrcc%2Fresources',
     );
   });
   it('returns through consent onboarding to the guarded destination once complete', async () => {
@@ -214,9 +231,9 @@ describe('auth destination journeys', () => {
     m.state.person = { id: 1 };
     m.state.roles = ['participant'];
     m.missing.mockResolvedValueOnce([{ id: 1 }]).mockResolvedValue([]);
-    mount('/residence/documents?tab=overview#main');
+    mount('/vrcc/resources?tab=overview#main');
     expect(await screen.findByTestId('destination')).toHaveTextContent(
-      '/residence/documents?tab=overview#main',
+      '/vrcc/resources?tab=overview#main',
     );
     expect(m.missing).toHaveBeenCalledTimes(3);
   });

@@ -8,6 +8,11 @@ on:
         description: Exact commit SHA or reviewed release ref to deploy
         required: true
         type: string
+      housing_follow_through_enabled:
+        description: Enable reviewed housing follow-through after backend acceptance
+        required: true
+        default: false
+        type: boolean
       confirmation:
         description: Type DEPLOY_STAGING
         required: true
@@ -74,6 +79,7 @@ jobs:
           VITE_SUPABASE_URL: https://cqcxvwoukyhxyokfwnjm.supabase.co
           VITE_SUPABASE_ANON_KEY: sb_publishable_OMRkXXJ71z9RlUIAAfy2Jw_h04TYK3x
           VITE_RELEASE: ${{ env.RELEASE_SHA }}
+          VITE_HOUSING_FOLLOW_THROUGH_ENABLED: ${{ inputs.housing_follow_through_enabled && 'true' || 'false' }}
           VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
       - name: Enforce canonical backend in staging assets
         run: |

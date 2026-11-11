@@ -214,8 +214,9 @@ export function ResidenceDirectoryPage() {
         <section className="mt-6 rounded-lg bg-experience-soft p-6">
           <h2 className="text-xl font-semibold text-experience-700">Not Sure Where to Start?</h2>
           <p className="mt-2 max-w-2xl text-ink">
-            The VRCC is free for everyone — housed or not. A resource navigator can help you sort
-            options, make calls, and land somewhere safe.
+            You can ask about community support whether or not you need housing. Ask about current
+            options, costs, and requirements. A resource navigator can help you explore options and
+            ways to contact a residence. Each residence decides admission and bed availability.
           </p>
           <Link
             to="/register"

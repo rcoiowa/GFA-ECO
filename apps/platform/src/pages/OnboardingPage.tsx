@@ -6,7 +6,11 @@ import {
   listMissingRequiredConsents,
   recordConsentDecision,
 } from '@recoveryos/data-access';
-import { safeAuthReturnPath, participantOnboardingApplies, type ConsentType } from '@recoveryos/domain';
+import {
+  safeAuthReturnPath,
+  participantOnboardingApplies,
+  type ConsentType,
+} from '@recoveryos/domain';
 import { Alert, Button, Card, ErrorState, LoadingState } from '@recoveryos/ui';
 import { track } from '../lib/analytics';
 
@@ -211,9 +215,8 @@ export function OnboardingPage() {
                 ))}
                 {needAllMessage ? (
                   <p role="alert" className="text-sm font-medium text-ink">
-                    Each agreement above is needed to use the VRCC. If you&rsquo;d rather not
-                    decide right now, that&rsquo;s okay — support below stays open to you either
-                    way.
+                    Each agreement above is needed to use the VRCC. If you&rsquo;d rather not decide
+                    right now, that&rsquo;s okay — support below stays open to you either way.
                   </p>
                 ) : null}
                 <Button type="submit" size="lg" disabled={saving}>
@@ -244,7 +247,7 @@ export function OnboardingPage() {
             <Link to="/support" className="underline underline-offset-2 hover:text-ink">
               Support options
             </Link>{' '}
-            are always available — no agreement or account needed.
+            can be viewed without an agreement or account. Contact availability and response times vary.
           </p>
         ) : null}
       </div>

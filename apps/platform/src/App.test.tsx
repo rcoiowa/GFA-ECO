@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { createMemoryRouter, RouterProvider } from 'react-router';
 import type { ReactNode } from 'react';
 import { App } from './App';
 vi.mock('./public/useDesMoinesSky', () => ({
@@ -33,14 +33,26 @@ const anonymous = {
   signOut: vi.fn(),
 };
 
-const renderAt = (path: string) =>
-  render(
-    <MemoryRouter initialEntries={[path]}>
-      <App />
-    </MemoryRouter>,
-  );
+const { transferableAbortController } = await vi.importActual<{
+  transferableAbortController: () => AbortController;
+}>('node:util');
+
+const renderAt = (path: string) => {
+  const router = createMemoryRouter([{ path: '*', element: <App /> }], { initialEntries: [path] });
+  return render(<RouterProvider router={router} />);
+};
+
+afterEach(() => vi.unstubAllGlobals());
 
 beforeEach(() => {
+  vi.stubGlobal(
+    'AbortController',
+    class {
+      constructor() {
+        return transferableAbortController();
+      }
+    },
+  );
   vi.clearAllMocks();
   mocks.useAuth.mockReturnValue(anonymous);
 });
@@ -60,7 +72,7 @@ describe('service-critical public routes stay mounted', () => {
       ['I need support now', '/support'],
       ['I want to connect and grow', '/register'],
       ['I am looking for recovery housing', '/recovery-residences'],
-      ['I already have an account', '/sign-in'],
+      ['I already have an account', '/home'],
     ] as const) {
       expect(screen.getByRole('link', { name: new RegExp(name) })).toHaveAttribute('href', path);
     }
@@ -70,33 +82,59 @@ describe('service-critical public routes stay mounted', () => {
   it('/community-center/lobby mounts the guest journey', () => {
     renderAt('/community-center/lobby');
     expect(screen.getByRole('heading', { name: 'Welcome. Take your time.' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Touch the front desk in the lobby scene' })).toHaveAttribute('href', '/community-center/front-desk');
-    expect(screen.getByRole('link', { name: 'Touch the self-service kiosk in the lobby scene' })).toHaveAttribute('href', '/community-center/kiosk');
+    expect(
+      screen.getByRole('link', { name: 'Touch the front desk in the lobby scene' }),
+    ).toHaveAttribute('href', '/community-center/front-desk');
+    expect(
+      screen.getByRole('link', { name: 'Touch the self-service kiosk in the lobby scene' }),
+    ).toHaveAttribute('href', '/community-center/kiosk');
     expect(screen.getByRole('link', { name: 'Support now' })).toHaveAttribute('href', '/support');
   });
 
-  it('touching the pictured front desk navigates to the human front desk', () => {
+  it('touching the pictured front desk navigates to the human front desk', async () => {
     renderAt('/community-center/lobby');
     fireEvent.click(screen.getByRole('link', { name: 'Touch the front desk in the lobby scene' }));
-    expect(screen.getByRole('heading', { name: 'Let’s find your next step.' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Let’s find your next step.' }),
+    ).toBeInTheDocument();
   });
 
-  it('touching the pictured kiosk navigates to the self-service kiosk', () => {
+  it('touching the pictured kiosk navigates to the self-service kiosk', async () => {
     renderAt('/community-center/lobby');
-    fireEvent.click(screen.getByRole('link', { name: 'Touch the self-service kiosk in the lobby scene' }));
-    expect(screen.getByRole('heading', { name: 'What would help you today?' })).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole('link', { name: 'Touch the self-service kiosk in the lobby scene' }),
+    );
+    expect(
+      await screen.findByRole('heading', { name: 'What would help you today?' }),
+    ).toBeInTheDocument();
   });
 
   it('/community-center/resources links to established resources without an account', () => {
     renderAt('/community-center/resources');
     expect(screen.getByRole('heading', { name: 'Find a useful next step.' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Explore Recovery Iowa →' })).toHaveAttribute('href', 'https://recovery-iowa.org/get-support/');
-    expect(screen.getByRole('link', { name: 'Search Iowa 211 →' })).toHaveAttribute('href', 'https://search.211iowa.org/');
-    expect(screen.getByRole('link', { name: 'Open Support Now →' })).toHaveAttribute('href', '/support');
-    fireEvent.change(screen.getByLabelText('Resource category'), { target: { value: 'Legal help' } });
-    expect(screen.getByRole('link', { name: 'Explore legal help →' })).toHaveAttribute('href', 'https://iowalegalaid.org/');
+    expect(screen.getByRole('link', { name: 'Explore Recovery Iowa →' })).toHaveAttribute(
+      'href',
+      'https://recovery-iowa.org/get-support/',
+    );
+    expect(screen.getByRole('link', { name: 'Search Iowa 211 →' })).toHaveAttribute(
+      'href',
+      'https://search.211iowa.org/',
+    );
+    expect(screen.getByRole('link', { name: 'Open Support Now →' })).toHaveAttribute(
+      'href',
+      '/support',
+    );
+    fireEvent.change(screen.getByLabelText('Resource category'), {
+      target: { value: 'Legal help' },
+    });
+    expect(screen.getByRole('link', { name: 'Explore legal help →' })).toHaveAttribute(
+      'href',
+      'https://iowalegalaid.org/',
+    );
     expect(screen.queryByRole('link', { name: 'Search Iowa 211 →' })).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Search resources'), { target: { value: 'no such resource' } });
+    fireEvent.change(screen.getByLabelText('Search resources'), {
+      target: { value: 'no such resource' },
+    });
     expect(screen.getByRole('status')).toHaveTextContent('0 resources found');
   });
 

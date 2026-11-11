@@ -33,10 +33,14 @@ export interface CircleMeeting {
   topic_category: string | null;
   programming_icare_phase: string | null;
   programming_domain: string | null;
+  first_time_participant_count?: number | null;
+  facilitator_notes?: string | null;
   recorded_at: string;
 }
 export interface CircleWorkspace {
+  capabilities?: { circle_documentation_v2?: boolean };
   series: CircleSeries[];
+  readOnlySeries?: CircleSeries[];
   meetings: CircleMeeting[];
 }
 export async function getMyCircleWorkspace(): Promise<CircleWorkspace> {
@@ -55,22 +59,57 @@ export interface CircleInput {
   theme?: string;
   icarePhase?: string;
   domain?: string;
+  documentationV2?: boolean;
+  firstTimeParticipants?: number | null;
+  facilitatorNotes?: string;
 }
 export async function recordCircleMeeting(
   input: CircleInput,
 ): Promise<{ ok: boolean; code: string; meeting_id: number }> {
-  const { data, error } = await getSupabase().rpc('record_circle_meeting', {
-    p_series_id: input.seriesId,
-    p_starts_at: input.startsAt,
-    p_ends_at: input.endsAt,
-    p_status: input.status,
-    p_participant_count: input.participants,
-    p_facilitator_names: input.facilitators,
-    p_topic_title: input.topic || null,
-    p_topic_category: input.theme || null,
-    p_icare_phase: input.icarePhase || null,
-    p_domain: input.domain || null,
-  });
+  const notes = input.facilitatorNotes?.trim() || null;
+  if (
+    !input.documentationV2 &&
+    (input.firstTimeParticipants !== undefined || input.facilitatorNotes !== undefined)
+  ) {
+    throw new Error('This server does not support extended Circle documentation.');
+  }
+  if (notes && Array.from(notes).length > 2000) {
+    throw new Error('Facilitator notes must be 2000 characters or fewer.');
+  }
+  if (
+    input.firstTimeParticipants != null &&
+    (!Number.isInteger(input.firstTimeParticipants) ||
+      input.firstTimeParticipants < 0 ||
+      input.status !== 'held' ||
+      input.participants == null ||
+      input.firstTimeParticipants > input.participants)
+  ) {
+    throw new Error(
+      'First-time participants must be a whole number within total participants for a held meeting.',
+    );
+  }
+  const { data, error } = await getSupabase().rpc(
+    input.documentationV2 ? 'record_circle_meeting_v2' : 'record_circle_meeting',
+    {
+      ...(input.documentationV2
+        ? {
+            p_first_time_participant_count:
+              input.status === 'held' ? (input.firstTimeParticipants ?? null) : null,
+            p_facilitator_notes: notes,
+          }
+        : {}),
+      p_series_id: input.seriesId,
+      p_starts_at: input.startsAt,
+      p_ends_at: input.endsAt,
+      p_status: input.status,
+      p_participant_count: input.participants,
+      p_facilitator_names: input.facilitators,
+      p_topic_title: input.topic || null,
+      p_topic_category: input.theme || null,
+      p_icare_phase: input.icarePhase || null,
+      p_domain: input.domain || null,
+    },
+  );
   if (error) throw error;
   return data;
 }

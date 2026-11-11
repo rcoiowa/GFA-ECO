@@ -144,7 +144,7 @@ export function GraceHousePage() {
 
       <footer className="border-t border-line py-6">
         <p className="mx-auto max-w-4xl px-4 text-sm text-ink-muted">
-          Grace For Addictions · No shame. No stigma. Just grace. · In immediate danger, call 911.
+          Grace For Addictions · No Shame, No Stigma, Just Grace. · In immediate danger, call 911.
           For crisis support, call or text 988. ·{' '}
           <Link to="/support" className="underline underline-offset-2 hover:text-ink">
             All support options

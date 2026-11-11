@@ -50,7 +50,7 @@ describe('MyApplicationPage withdraw', () => {
     mocks.withdrawMyApplication.mockResolvedValue(undefined);
     wrap();
     fireEvent.click(await screen.findByRole('button', { name: /withdraw my application/i }));
-    expect(screen.getByText(/the door stays open/i)).toBeInTheDocument();
+    expect(screen.getByText(/if you decide to reapply/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /yes, withdraw it/i }));
     await waitFor(() => expect(mocks.withdrawMyApplication).toHaveBeenCalledWith(3));
     expect(await screen.findByText(/this application was withdrawn/i)).toBeInTheDocument();
@@ -59,7 +59,7 @@ describe('MyApplicationPage withdraw', () => {
   it('offers no withdrawal on a decided application', async () => {
     mocks.getMyLatestApplication.mockResolvedValue(application('declined'));
     wrap();
-    expect(await screen.findByText(/right fit this time/i)).toBeInTheDocument();
+    expect(await screen.findByText(/declined this application/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /withdraw/i })).not.toBeInTheDocument();
   });
 

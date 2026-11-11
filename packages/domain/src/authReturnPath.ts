@@ -2,19 +2,88 @@
  * Add destinations and finite navigation values here only after privacy review.
  * Unknown query/fragment values are dropped, never copied into auth emails.
  */
-// Preserve deployed public destinations and the existing staff intake notification target.
+// Union of the deployed (2026-11-04 release) and main destination sets —
+// reconciliation 2026-11-11: nothing live removed, nothing approved dropped.
 const destinations = new Set([
+  '/admin',
+  '/admin/access',
+  '/admin/audit',
+  '/admin/directory/submissions',
+  '/admin/evidence',
+  '/admin/notifications',
+  '/admin/operations',
+  '/admin/people',
+  '/admin/residences',
+  '/admin/system',
+  '/coach',
+  '/coach/follow-ups',
+  '/coach/messages',
+  '/coach/notifications',
+  '/coach/participants',
+  '/coach/requests',
+  '/coach/sessions',
   '/home',
-  '/recovery-residences/my-application',
-  '/recovery-residences/grace-house/apply',
-  '/recovery-residences/ejwrh/apply',
-  '/recovery-residences/list-your-residence',
   '/my-housing',
   '/my-housing/consent',
   '/my-housing/documents',
+  '/navigator',
+  '/navigator/connections',
+  '/navigator/follow-ups',
+  '/navigator/messages',
+  '/navigator/notifications',
+  '/navigator/people',
+  '/navigator/requests',
+  '/recovery-residences/ejwrh/apply',
+  '/recovery-residences/grace-house/apply',
+  '/recovery-residences/list-your-residence',
+  '/recovery-residences/my-application',
+  '/residence',
+  '/residence/connect',
   '/residence/documents',
-  '/staff/document-review',
+  '/residence/documents/grievance',
+  '/residence/house',
+  '/residence/journey',
+  '/residence/recovery',
+  '/residence/schedule',
+  '/residence/support/grounding',
+  '/residence/today',
+  '/residences',
   '/residences/applications/intake',
+  '/staff',
+  '/staff/applications',
+  '/staff/beds',
+  '/staff/board',
+  '/staff/compliance',
+  '/staff/document-review',
+  '/staff/fees',
+  '/staff/grievances',
+  '/staff/house-ops',
+  '/staff/incidents',
+  '/staff/inquiries',
+  '/staff/messages',
+  '/staff/notifications',
+  '/staff/reports',
+  '/staff/residents',
+  '/staff/screenings',
+  '/staff/today',
+  '/vrcc',
+  '/vrcc/check-in',
+  '/vrcc/connect',
+  '/vrcc/getting-settled',
+  '/vrcc/grace',
+  '/vrcc/journey',
+  '/vrcc/learn',
+  '/vrcc/messages',
+  '/vrcc/notifications',
+  '/vrcc/privacy',
+  '/vrcc/profile',
+  '/vrcc/recovery',
+  '/vrcc/resources',
+  '/vrcc/sessions',
+  '/vrcc/support/grounding',
+  '/vrcc/today',
+  '/vrcc/tools',
+  '/vrcc/tools/recovery-capital',
 ]);
 const documentKeys = new Set([
   'change_course_leaders_policy',
@@ -55,9 +124,15 @@ export function safeAuthReturnPath(value: unknown): string | null {
   if (url.origin !== 'https://navigation.invalid' || url.pathname !== rawPath) return null;
   let path = url.pathname;
   const document = path.match(/^\/(my-housing|residence)\/documents\/([a-z_]+)$/);
+  const record = path.match(
+    /^\/(staff\/messages|coach\/(?:messages|participants)|navigator\/(?:messages|people))\/[0-9]+$/,
+  );
   if (document) {
     // Published document keys are content identifiers; assignment IDs are never carried.
     if (!documentKeys.has(document[2]!)) path = `/${document[1]}/documents`;
+  } else if (record) {
+    // Person IDs must not enter auth emails/history. Return to the scoped list to reselect.
+    path = `/${record[1]}`;
   } else if (!destinations.has(path)) return null;
   // Queue notifications carry navigation only, never applicant IDs or view state.
   if (path === '/residences/applications/intake') return path;

@@ -92,7 +92,7 @@ export function SupportNowPage() {
 
       <footer className="border-t border-line py-6">
         <p className="mx-auto max-w-4xl px-4 text-sm text-ink-muted">
-          Grace For Addictions · Connection prevents crisis · No shame. No stigma. Just grace.
+          Grace For Addictions · Connection prevents crisis · No Shame, No Stigma, Just Grace.
         </p>
       </footer>
     </div>

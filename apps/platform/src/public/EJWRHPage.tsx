@@ -87,7 +87,7 @@ export function EJWRHPage() {
         <section className="mt-10 rounded-lg bg-experience-soft p-6">
           <h2 className="text-xl font-semibold text-experience-700">How applying works</h2>
           <ol className="mt-3 list-decimal space-y-2 pl-5 text-ink">
-            <li>Complete the short, confidential application.</li>
+            <li>Review the application’s privacy information and complete the required fields.</li>
             <li>A real person reviews it and contacts you using the method you choose.</li>
             <li>
               If the residence may be a fit, intake and house documents are reviewed with staff

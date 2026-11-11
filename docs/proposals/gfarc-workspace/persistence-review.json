@@ -1,0 +1,43 @@
+{
+  "state": "prepared_only_not_applied",
+  "sql": "docs/proposals/gfarc-workspace/20261109_circle_documentation_v2.prepared.sql",
+  "sha256": "c0e2b8e84e5109a933cc63c8a3b2fab80916f76969c7842f244a99e7008024ce",
+  "reviewer": "Codex independent security review, 2026-11-09: shared-note revision, explicit octal trim spelling and four-suite rerun passed; not human retention-policy approval",
+  "rationale": "November 9 executive approval: minimized Circle notes shared with explicitly GFA-scoped operational staff and read-only leadership. Preserve writer roles, v1 RPC, history and source grants; reject domain/global/technical/fixture-only sharing.",
+  "tables": {
+    "recoveryos.circle_meeting_documentation": {
+      "rlsEvidence": "RLS enabled with no client policies; explicit revokes override inherited default privileges. Only narrowly checked definer helpers own access.",
+      "denialTests": "tests/circle/documentation-v2.mjs and shared-notes.mjs: direct CRUD/helper denials; scoped staff/leadership matrix; CBH narrowing; global/email/assignment/technical/intake exclusions; foreign/mixed-scope and account/classification revocation denial; immutable duplicate protection.",
+      "rpcReview": "Versioned invoker RPC; private definer helpers have empty search_path. New actor predicate requires explicit production classification and valid Auth account; sharing uses one matching GFA-scoped role row. Internal predicates have no client EXECUTE. Read-only series does not alter can_record or v1; writer locks classification then original authorization rows.",
+      "roles": {
+        "PUBLIC": {
+          "privileges": [],
+          "reason": "Private RPC-only documentation",
+          "sqlEvidence": "Explicit REVOKE ALL on circle_meeting_documentation from public"
+        },
+        "anon": {
+          "privileges": [],
+          "reason": "No anonymous documentation access",
+          "sqlEvidence": "Explicit REVOKE ALL on table and new functions from anon"
+        },
+        "authenticated": {
+          "privileges": [],
+          "reason": "Validated RPC access only, never direct table access",
+          "sqlEvidence": "Explicit REVOKE ALL on table; EXECUTE only on three new functions"
+        },
+        "service_role": {
+          "privileges": [],
+          "reason": "Prevent inherited bypass-RLS source access to private notes",
+          "sqlEvidence": "Explicit REVOKE ALL on table and new functions from service_role"
+        }
+      }
+    }
+  },
+  "activationGates": [
+    "Establish retention rule and correction/removal reviewer, or explicit interim policy; shared-note audience approved November 9",
+    "Reconcile current live function hashes and migration ledger before any forward-only change",
+    "Pass isolated real-JWT/PostgREST save, capability, denial and multi-session race tests",
+    "Complete authenticated mobile/keyboard/zoom/accessibility browser acceptance",
+    "Reconcile served frontend baseline and exact-commit CI before release"
+  ]
+}

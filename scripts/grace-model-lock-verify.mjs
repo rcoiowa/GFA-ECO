@@ -6,7 +6,7 @@
  *     GRACE_MODEL           = claude-sonnet-5
  *     GRACE_DISABLE_THINKING = 1  (true)
  *
- * Two checks:
+ * Three checks:
  *   1. STATIC — `grace-model-lock.json` must still declare the APPROVED tuple
  *      below. If someone edits the lock file to a different model/flag WITHOUT a
  *      new model-evaluation decision (which would also change APPROVED here, a
@@ -19,6 +19,16 @@
  *      is not independently observable in the response — the lock is set and
  *      recorded, and model_id is the observable drift signal.)
  *
+ *   3. POLICY — the POLICY_VERSION in supabase/functions/grace/policy.ts must be
+ *      either the APPROVED policy (grace_v1.policy_version, the one the recorded
+ *      evaluation evidence qualifies) or the single DECLARED candidate
+ *      (grace_policy_candidate, status evaluation_pending). An undeclared version
+ *      fails everywhere. With `--require-approved-policy` (used by every workflow
+ *      that runs `supabase functions deploy grace`) a candidate ALSO fails, so
+ *      merged-but-unevaluated policy text cannot reach the deployed function.
+ *      Merged, evaluated, release-approved, deployed and production-verified are
+ *      separate states; this check only guards merged -> deployed.
+ *
  * Exit non-zero on any drift so CI / a deploy preflight blocks it.
  */
 import { readFileSync } from 'node:fs';
@@ -30,7 +40,15 @@ import { dirname, join } from 'node:path';
 const APPROVED = { model: 'claude-sonnet-5', disable_thinking: true };
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const lock = JSON.parse(readFileSync(join(__dir, '..', 'grace-model-lock.json'), 'utf8')).grace_v1;
+const lockFile = JSON.parse(readFileSync(join(__dir, '..', 'grace-model-lock.json'), 'utf8'));
+const lock = lockFile.grace_v1;
+const candidate = lockFile.grace_policy_candidate ?? null;
+const REQUIRE_APPROVED_POLICY = process.argv.includes('--require-approved-policy');
+const policySource = readFileSync(
+  join(__dir, '..', 'supabase', 'functions', 'grace', 'policy.ts'),
+  'utf8',
+);
+const sourcePolicy = policySource.match(/export const POLICY_VERSION = '([^']+)'/)?.[1] ?? null;
 
 let fail = 0;
 const check = (ok, msg) => {
@@ -41,6 +59,41 @@ const check = (ok, msg) => {
 console.log('Grace V1 model-lock — STATIC:');
 check(lock.model === APPROVED.model, `lock model ${lock.model} === ${APPROVED.model}`);
 check(lock.disable_thinking === APPROVED.disable_thinking, `lock disable_thinking ${lock.disable_thinking} === ${APPROVED.disable_thinking}`);
+
+console.log(
+  `Grace V1 policy gate — STATIC${REQUIRE_APPROVED_POLICY ? ' (deploy preflight: approved policy required)' : ''}:`,
+);
+check(Boolean(sourcePolicy), `policy.ts declares POLICY_VERSION (${sourcePolicy})`);
+const isApproved = sourcePolicy === lock.policy_version;
+const isDeclaredCandidate =
+  !isApproved &&
+  candidate !== null &&
+  sourcePolicy === candidate.policy_version &&
+  candidate.status === 'evaluation_pending';
+if (candidate !== null) {
+  check(
+    candidate.policy_version !== lock.policy_version,
+    `declared candidate ${candidate.policy_version} differs from approved ${lock.policy_version}`,
+  );
+}
+if (isApproved) {
+  check(true, `source policy ${sourcePolicy} is the approved, evaluated policy`);
+} else if (isDeclaredCandidate && !REQUIRE_APPROVED_POLICY) {
+  check(
+    true,
+    `source policy ${sourcePolicy} is a declared CANDIDATE (evaluation pending; approved = ${lock.policy_version}); not approved for deployment`,
+  );
+} else if (isDeclaredCandidate) {
+  check(
+    false,
+    `source policy ${sourcePolicy} is an unevaluated candidate; this workflow deploys grace and requires approved ${lock.policy_version} (see ${candidate.evaluation_plan})`,
+  );
+} else {
+  check(
+    false,
+    `source policy ${sourcePolicy} is neither approved (${lock.policy_version}) nor a declared evaluation_pending candidate`,
+  );
+}
 
 const SUPABASE_URL = (process.env.SUPABASE_URL ?? '').replace(/\/$/, '');
 const ANON = process.env.SUPABASE_ANON_KEY ?? '';
@@ -80,6 +133,15 @@ async function live() {
     return;
   }
   check(modelId === APPROVED.model, `deployed model_id ${modelId} === ${APPROVED.model}`);
+  const deployedPolicy = body?.policy_version ?? null;
+  if (deployedPolicy === null) {
+    console.log('  [--] deployed policy_version not present in response; not asserted.');
+  } else {
+    check(
+      deployedPolicy === lock.policy_version,
+      `deployed policy_version ${deployedPolicy} === approved ${lock.policy_version}`,
+    );
+  }
 }
 
 await live();

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { HOUSING_CONSENT_KEYS } from '../../public/HousingConsentPage';
+import { HOUSING_CONSENT_KEYS, activeGrant } from '../../public/HousingConsentPage';
 import { useAuth } from '@recoveryos/auth';
 import {
   listActiveConsentTypes,
@@ -103,7 +103,7 @@ export function PrivacyConsentPage() {
             .filter((type) => !HOUSING_CONSENT_KEYS.includes(type.key))
             .map((type) => {
               const current = currentByType.get(type.id);
-              const isGranted = current?.status === 'granted';
+              const isGranted = current ? activeGrant(current) : false;
               return (
                 <li key={type.id}>
                   <Card>
@@ -117,7 +117,11 @@ export function PrivacyConsentPage() {
                           {isGranted ? (
                             <span className="text-positive-700">Currently: allowed</span>
                           ) : current ? (
-                            <span className="text-ink-muted">Currently: not allowed</span>
+                            <span className="text-ink-muted">
+                              {current.status === 'granted'
+                                ? 'Currently: not allowed (permission expired or withdrawn)'
+                                : 'Currently: not allowed'}
+                            </span>
                           ) : (
                             <span className="text-ink-muted">No decision yet</span>
                           )}

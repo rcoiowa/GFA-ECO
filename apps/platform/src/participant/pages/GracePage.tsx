@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { Alert, Button, Card, LoadingState, PageHeader } from '@recoveryos/ui';
 import { SupportNowButton } from '@recoveryos/safety';
@@ -71,24 +71,33 @@ export function GracePage() {
     };
   }, []);
 
-  const loadConsent = useCallback(async () => {
-    if (!personId) return;
-    setChecking(true);
-    try {
-      setConsented(await hasActiveAiConsent(personId));
-    } catch {
-      setConsented(false);
-    } finally {
-      setChecking(false);
+  useEffect(() => {
+    let current = true;
+    setConsented(false);
+    setChecking(Boolean(personId));
+    if (personId) {
+      void hasActiveAiConsent(personId)
+        .then((active) => {
+          if (current) setConsented(active);
+        })
+        .catch(() => {
+          if (current) setConsented(false);
+        })
+        .finally(() => {
+          if (current) setChecking(false);
+        });
     }
+    return () => {
+      current = false;
+    };
   }, [personId]);
 
   useEffect(() => {
-    void loadConsent();
-  }, [loadConsent]);
-
-  useEffect(() => {
-    logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' });
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    logRef.current?.scrollTo?.({
+      top: logRef.current.scrollHeight,
+      behavior: reducedMotion ? 'auto' : 'smooth',
+    });
   }, [messages, sending]);
 
   async function grant() {
@@ -113,8 +122,8 @@ export function GracePage() {
     }
     if (result.code === 'ai_unconfigured') {
       setNotice(
-        'Grace isn’t fully set up yet, so she can’t reply right now. If you need support, ' +
-          'Support Now and your team are still here.',
+        'Grace cannot reply in this channel right now. You can still use ' +
+          'Support Now or view ways to contact your team. Response times vary.',
       );
       return;
     }
@@ -159,20 +168,43 @@ export function GracePage() {
     }
   }
 
-  if (checking) return <LoadingState label="Opening Grace…" />;
-
   const disclosureBanner = (
     <Alert tone="info">
       <span className="font-medium">About Grace:</span> {DISCLOSURE}
     </Alert>
   );
 
+  // Support and AI identity remain available while identity/consent is unresolved.
+  if (checking || !personId) {
+    return (
+      <div className="space-y-4">
+        <PageHeader
+          title="Grace, AI Support Navigator"
+          lede="AI support is optional. Human support options remain available."
+        />
+        {disclosureBanner}
+        {checking ? (
+          <LoadingState label="Checking Grace consent…" />
+        ) : (
+          <Alert tone="info">
+            Grace needs a verified account link before you can use it. Your team can help verify
+            that link.
+          </Alert>
+        )}
+        <SupportNowButton basePath="/vrcc" />
+        <Link to="/support" className="underline underline-offset-2">
+          View public support options
+        </Link>
+      </div>
+    );
+  }
+
   // ---- Consent-required state (§9, §25) ------------------------------------
   if (!consented) {
     return (
       <div className="space-y-4">
         <PageHeader
-          title="Grace"
+          title="Grace, AI Support Navigator"
           lede="An optional AI support navigator for reflection, options, and next steps."
           crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
         />
@@ -180,14 +212,15 @@ export function GracePage() {
         <Card>
           <h2 className="text-lg font-semibold text-ink">Grace needs your okay first</h2>
           <p className="mt-2 text-ink-muted">
-            Grace is powered by an AI language model. She listens, reflects, and points you toward
-            real people and canonical GFA resources — she doesn’t diagnose, treat, or give medical,
-            legal, or clinical advice, and she doesn’t remember conversations between sessions. Your
-            conversation isn’t shared with your coach unless you choose to reach out, and Grace
-            never alerts anyone on her own.
+            Grace uses an AI service to generate responses and help you explore options and approved
+            recovery resources. Grace has no lived experience and does not provide medical, legal,
+            or clinical advice. This screen does not save a chat history for your next visit.
+            Grace does not send messages or alert staff on your behalf. Review Privacy & consent
+            before deciding what to share.
           </p>
           <p className="mt-2 text-ink-muted">
-            You can use everything else in VRCC without Grace, and you can turn her off any time on
+            Choosing not to use Grace does not itself restrict access to other services. Each
+            service’s eligibility and requirements still apply. You can turn Grace off on
             your{' '}
             <Link to="/vrcc/privacy" className="underline underline-offset-2">
               Privacy &amp; consent
@@ -214,21 +247,22 @@ export function GracePage() {
   return (
     <div className="flex h-[calc(100dvh-11rem)] min-h-[26rem] flex-col space-y-3">
       <PageHeader
-        title="Grace"
-        lede="A calm place to think out loud. Grace is AI — real people are one tap away."
+        title="Grace, AI Support Navigator"
+        lede="Optional AI help with reflection, resources, and next steps. You choose whether to contact a person."
         crumbs={[{ to: '/vrcc/today', label: 'Today' }]}
       />
       {disclosureBanner}
 
       {!online ? (
         <Alert tone="attention">
-          Grace needs an internet connection. Support Now still works offline.
+          Grace needs an internet connection. You can try Support Now for support options; calls,
+          texts, and online services need a working connection.
         </Alert>
       ) : null}
       {surfaceSupport ? (
         <Alert tone="critical">
-          It sounds like this is really heavy. You don’t have to carry it alone — you can reach a
-          real person right now.
+          If you need urgent help, open Support Now for crisis and emergency contact options.
+          Choosing a contact does not confirm a connection; follow the contact’s instructions.
           <span className="mt-2 block">
             <SupportNowButton basePath="/vrcc" />
           </span>
@@ -281,7 +315,7 @@ export function GracePage() {
             </div>
           ))
         )}
-        {sending ? <p className="text-sm text-ink-muted">Grace is thinking…</p> : null}
+        {sending ? <p className="text-sm text-ink-muted">Generating an AI response…</p> : null}
       </div>
 
       <form

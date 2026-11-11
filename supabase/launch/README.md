@@ -1,5 +1,10 @@
 # RecoveryOS Launch Bootstrap (`supabase/launch/`)
 
+> Current replay caveat (2026-10-21): the expanded chain includes historical drift
+> dependencies and applied migrations still under `prepared/`. Do not blindly run
+> the original bootstrap recipe below against a remote project. See
+> [the reviewed local replay and access gate](../../docs/readiness/2026-10-30/README.md).
+
 Deterministic bootstrap of a clean RecoveryOS production backend from an **empty** Supabase
 project. This is the launch counterpart to `supabase/migrations/` (the dev project's full
 history, kept for audit): the launch set contains the **final canonical architecture only** —
