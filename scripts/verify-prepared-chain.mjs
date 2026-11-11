@@ -25,6 +25,47 @@ import { join } from 'node:path';
 
 const PREPARED_DIR = 'supabase/launch/prepared';
 
+// ---------------------------------------------------------------------------
+// Applied-status reconciliation (2026-11-11, Prompt 3 Phase A, Increment 2).
+// The live CQCX ledger was read through authorized read-only access on
+// 2026-11-11 and confirms the first three prepared artifacts of the approved
+// rev-2 chain were APPLIED on 2026-09-17 under the ratified Convergence Gate A
+// authorization (docs/decisions/2026-09-16-p0-approval-packet-rev2.md;
+// docs/deployment/convergence-release-plan-2026-09-17.md; per-artifact
+// live-readback verifications alongside each file). The pinned artifacts are
+// NOT edited — their in-file "PREPARED ONLY / NOT APPLIED" status lines are
+// historical text frozen by the hash pins above; THIS record is the current
+// applied status. 0150 and 0151 remain NOT APPLIED (held/sequenced per G11),
+// which the same ledger read confirms.
+// Full mapping: docs/migration/applied-ledger-reconciliation-2026-11-11.md.
+const APPLIED_PREPARED = {
+  '0147_classification_authorization_isolation.prepared.sql': {
+    ledger_version: '20260917145239',
+    applied_on: '2026-09-17',
+  },
+  '0148_view_and_function_exposure_hardening.prepared.sql': {
+    ledger_version: '20260917163228',
+    applied_on: '2026-09-17',
+  },
+  '0149_shared_intake_workflow.prepared.sql': {
+    ledger_version: '20260917163627',
+    applied_on: '2026-09-17',
+  },
+};
+
+// Applied to CQCX but PENDING AUTHORIZATION REVIEW (executive direction,
+// 2026-11-11): the live ledger carries 20261023223104
+// document_review_attestations (applied 2026-10-23) and the artifact below is
+// byte-identical to the SHA-256 that draft PR #45 declared. The underlying
+// apply-authorization record has NOT been located; per executive direction it
+// must be located or reviewed, never retrospectively presumed. This pin only
+// freezes the artifact so the applied SQL's source cannot drift while that
+// review is open. It does not assert approval and does not activate anything.
+const APPLIED_PENDING_AUTHORIZATION_REVIEW = {
+  'docs/proposals/document-review/20261023201920_document_review_attestations.sql':
+    '9894cacaad3c143ff07f819a702434a37e3847d689f42ab86b9f7f029fa8cb48',
+};
+
 // Executive authorization: docs/decisions/2026-10-05-circle-meeting-logging.md.
 // Applied to canonical CQCX on October 5. No intake-chain dependency.
 const APPLIED_DOWNSTREAM = {
@@ -84,6 +125,21 @@ for (const [path, pin] of Object.entries(APPLIED_DOWNSTREAM)) {
     if (sha256(path) !== pin) failures.push(`applied downstream hash drift: ${path}`);
   } catch {
     failures.push(`missing applied downstream artifact: ${path}`);
+  }
+}
+
+// Applied-status records must name real approved artifacts; the pending-review
+// artifact must exist and match the hash the live apply was reconciled to.
+for (const name of Object.keys(APPLIED_PREPARED)) {
+  if (!(name in APPROVED)) failures.push(`applied-status record names unknown artifact: ${name}`);
+}
+for (const [path, pin] of Object.entries(APPLIED_PENDING_AUTHORIZATION_REVIEW)) {
+  try {
+    if (sha256(path) !== pin) {
+      failures.push(`applied artifact pending authorization review drifted: ${path}`);
+    }
+  } catch {
+    failures.push(`missing applied artifact pending authorization review: ${path}`);
   }
 }
 
