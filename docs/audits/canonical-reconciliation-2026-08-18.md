@@ -1,5 +1,12 @@
 # RecoveryOS Canonical Reconciliation — 2026-08-18
 
+> **⚠️ HISTORICAL SNAPSHOT (notice added 2026-11-11).** The canonical-backend designation
+> (CQCX, `recoveryos` schema, launch line only) still holds; the state details do not: the
+> launch ledger has advanced far past 0122 (live tail verified 2026-11-11 includes 0147–0149
+> and October entries), `residence-intake` is deployed (v7), and the memory documents §
+> proposed here were realized later under different names. Current verified state:
+> `docs/operations/recoveryos-canonical-state-2026-11-11.md` (executive designation pending).
+
 **Session type:** reconciliation audit only. No merges, no deploys, no migrations, no DNS, no
 default-branch changes were performed. This document records verified state so any future session
 can reach the same conclusions from Git + live infrastructure alone.

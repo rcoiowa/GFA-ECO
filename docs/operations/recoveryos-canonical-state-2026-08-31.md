@@ -1,5 +1,13 @@
 # RecoveryOS Canonical State (2026-08-31) — AUTHORITATIVE RECONCILIATION
 
+> **⚠️ HISTORICAL SNAPSHOT (notice added 2026-11-11).** Later verified evidence has moved
+> past this record's estate facts: the live CQCX ledger tail is no longer 0146 (0147–0149
+> applied 2026-09-17, plus October entries); the public domains serve the platform from the
+> `recoveryos-staging` Worker (release `4990829e`); `virtualrecovery` no longer exists; the
+> "pilot vs production-candidate" Worker framing no longer matches observed production. A
+> prepared successor record exists at `recoveryos-canonical-state-2026-11-11.md`
+> (**executive designation pending**). This notice adds history; it ratifies nothing.
+
 > **Record note (2026-09-03, not part of the reconciliation text):** this edition
 > incorporates the 2026-09-01 Controlling executive scope update and was committed to git
 > on 2026-09-03 by executive direction; the prior edition remains in git history. Estate
