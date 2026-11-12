@@ -76,7 +76,10 @@ unconfigured in DEV (no provider key anywhere); DR-02 untouched.
 - **Hosted CI on PR #53:** running at report time; its conclusion is appended below before
   this phase is considered closed.
 
-> **Hosted CI conclusion:** _pending — appended by amendment._
+> **Hosted CI conclusion (appended 2026-11-12): run 43164634396 on head `b89176ed` —
+> SUCCESS**, including the new environment-separation guard, the table-access gate with the
+> adopted migration registered, the 80-check document-review suite with the adopted
+> migration in its replay, and the full existing gate set.
 
 ## 4. Schema parity statement (honest gaps, per the authorization)
 
