@@ -1,0 +1,25 @@
+{
+  // DEV Worker config — Phase C2 (2026-11-12). INERT until Phase C3 is
+  // separately authorized: no Worker named recoveryos-dev exists yet, no
+  // GitHub `dev` environment or secrets exist, and deploy-dev.yml refuses to
+  // run without them. This file exists so the DEV deployment path is reviewed
+  // code, not improvisation.
+  //
+  // HARD RULES (enforced by scripts/check-env-separation.mjs in CI):
+  //   * name must be exactly "recoveryos-dev" — never a production Worker name;
+  //   * no routes or custom domains may ever be added here: DEV serves only
+  //     its own workers.dev hostname;
+  //   * builds deployed with this config must reference the DEV Supabase
+  //     project and must NOT reference the production project.
+  "$schema": "https://esm.sh/wrangler/config-schema.json",
+  "name": "recoveryos-dev",
+  "main": "workers/platform/index.mjs",
+  "vars": { "WEATHER_ENABLED": "true" },
+  "compatibility_date": "2026-07-01",
+  "assets": {
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "directory": "./apps/platform/dist",
+    "not_found_handling": "single-page-application",
+  },
+}
