@@ -1,0 +1,10 @@
+{
+  "ref": "swvelaicdcatzudeymly",
+  "project_name": "recoveryos-dev",
+  "organization_id": "kbnlehuzvpzbupklsiaj",
+  "region": "us-west-1",
+  "approved_by": "Thomas DeGarmeaux, Executive Director",
+  "approved_on": "2026-11-12",
+  "authorization": "Executive Authorization — Phase C3-B2 (RecoveryOS Controlled DEV Database Bootstrap)",
+  "note": "Isolated synthetic-only DEV project. This file contains no credentials and never may. The cloud bootstrap target refuses to run without this artifact and refuses any other ref."
+}

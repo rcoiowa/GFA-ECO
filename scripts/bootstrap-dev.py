@@ -272,6 +272,11 @@ class DevProjectTarget:
 
     def __enter__(self):
         # Expected-state verification: refuse anything but an empty project.
+        # Managed-baseline note (C3-B2 preflight finding): a FRESH managed
+        # project has NO supabase_migrations.schema_migrations table at all —
+        # the platform's migration mechanism creates it on first apply. The
+        # expected states are therefore: ledger table ABSENT (fresh baseline)
+        # or PRESENT WITH ZERO ROWS; any rows refuse.
         schema = self.query("select count(*) from pg_namespace where nspname = 'recoveryos'")
         if schema.strip() != '0':
             fail('cloud DEV target refused: recoveryos schema already exists (not an empty project)')
@@ -282,7 +287,7 @@ class DevProjectTarget:
             union all select '0' limit 1""")
         if rows.strip() not in ('', '0'):
             fail('cloud DEV target refused: migration ledger is not empty')
-        print(f'DEV target {self.ref}: verified empty/expected state')
+        print(f'DEV target {self.ref}: verified empty/expected state (ledger absent or empty)')
         return self
 
     def _psql(self, args, text_in):
@@ -356,6 +361,11 @@ def main():
     ap.add_argument('--expect-fingerprint')
     ap.add_argument('--skip-prelude', action='store_true',
                     help='local-stack already provides auth/storage schemas; skip the synthetic prelude')
+    ap.add_argument('--emit-plan', metavar='OUT',
+                    help='run EVERY gate (chain guard, identity when --target dev-project, '
+                         'manifest hash/order/drift checks, profile selection) but connect to '
+                         'NOTHING; write the verified ordered plan as JSON to OUT. Used by the '
+                         'authorized-connector apply path so the same refusals govern it.')
     args = ap.parse_args()
 
     refuse_production(json.dumps(vars(args)), os.environ.get('DEV_BOOTSTRAP_MANIFEST', ''), str(MANIFEST))
@@ -367,6 +377,24 @@ def main():
 
     entries = load_manifest(args.profile, args.include_activations, args.with_fixtures)
     print(f'{len(entries)} manifest entries verified (profile={args.profile})')
+
+    if args.emit_plan:
+        ident_ref = None
+        if args.target == 'dev-project':
+            ident_ref = load_dev_identity()['ref']
+        plan = {
+            'generated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+            'target': args.target,
+            'dev_ref': ident_ref,
+            'profile': args.profile,
+            'include_activations': args.include_activations,
+            'with_fixtures': args.with_fixtures,
+            'prelude': 'docker' if args.target == 'docker' else 'managed-placeholder',
+            'entries': entries,
+        }
+        Path(args.emit_plan).write_text(json.dumps(plan, indent=1))
+        print(f'PLAN EMITTED ({len(entries)} entries) -> {args.emit_plan}; nothing was contacted')
+        return
 
     if args.target == 'docker':
         target_cls = DockerTarget(args.keep)

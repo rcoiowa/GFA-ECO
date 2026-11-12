@@ -112,10 +112,22 @@ expect('dev-project without DEV_DB_PASSWORD refused',
        run_dev_target({'ref': 'zzzzzzzzzzzzzzzzzzzz', 'approved_by': 'x', 'approved_on': 'x'},
                       env_extra={'DEV_DB_PASSWORD': ''}), 'DEV_DB_PASSWORD')
 
-# The committed identity artifact must NOT exist before Phase C3-B authorizes it.
-ok = not (ROOT / 'scripts' / 'dev-project-identity.json').exists()
-results.append(('identity artifact absent until C3-B', ok))
-print(('PASS' if ok else 'FAIL'), 'identity artifact absent until C3-B')
+# The committed identity artifact (created under the Phase C3-B2 executive
+# authorization) must name the approved DEV project — and nothing else.
+ident_path = ROOT / 'scripts' / 'dev-project-identity.json'
+try:
+    ident = json.loads(ident_path.read_text())
+    ok = (
+        ident.get('ref') == 'swvelaicdcatzudeymly'
+        and ident.get('ref') != 'cqcx' + 'vwoukyhxyokfwnjm'
+        and bool(ident.get('approved_by')) and bool(ident.get('approved_on'))
+        and 'password' not in ident_path.read_text().lower()
+        and 'secret' not in json.dumps(ident).lower()
+    )
+except Exception:
+    ok = False
+results.append(('identity artifact names the approved DEV project only', ok))
+print(('PASS' if ok else 'FAIL'), 'identity artifact names the approved DEV project only')
 
 # 7. Workflow structure: deploy-dev.yml refuses before acting and cannot be retargeted.
 wf = (ROOT / '.github/workflows/deploy-dev.yml').read_text()
