@@ -27,12 +27,21 @@ port = 54322
 shadow_port = 54320
 major_version = 17
 
+# C2-V validation finding: CLI 3.x AUTO-APPLIES supabase/migrations/ on
+# `supabase start` — which in this repository is the RETIRED YKY history and
+# crashed the stack at a YKY-only migration. Disabling automatic migrations is
+# therefore a hard requirement, not a convenience: the canonical schema comes
+# ONLY from scripts/bootstrap-dev.py (hash-pinned live-parity manifest).
+[db.migrations]
+enabled = false
+
 [studio]
 enabled = true
 port = 54323
 
-# Local mail capture — nothing leaves the machine.
-[inbucket]
+# Local mail capture (Mailpit) — nothing leaves the machine.
+# (CLI >= 3.x renamed [inbucket] to [local_smtp]; C2-V validation finding.)
+[local_smtp]
 enabled = true
 port = 54324
 

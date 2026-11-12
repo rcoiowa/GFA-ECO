@@ -55,7 +55,11 @@ from pathlib import Path
 import argparse, hashlib, json, os, subprocess, sys, time, uuid
 
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST = ROOT / 'scripts' / 'dev-bootstrap-manifest.json'
+# DEV_BOOTSTRAP_MANIFEST exists ONLY so the guard test suite can point the
+# script at deliberately broken manifests and prove the refusals fire. Its
+# value and content pass through the same production-refusal scan.
+MANIFEST = Path(os.environ['DEV_BOOTSTRAP_MANIFEST']) if os.environ.get('DEV_BOOTSTRAP_MANIFEST') \
+    else Path(__file__).resolve().parents[1] / 'scripts' / 'dev-bootstrap-manifest.json'
 PROD_REF = 'cqcx' + 'vwoukyhxyokfwnjm'  # split so this file never contains the literal
 PINNED_IMAGE = 'postgres@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3'
 
@@ -73,6 +77,14 @@ create schema storage; create table storage.buckets(id text primary key,public b
 create schema extensions; create extension pgcrypto with schema extensions;
 -- Explicit inaccessible placeholder for historical 0138; no captured policies/grants/data.
 create table public.housing_applications(id bigint primary key);
+alter table public.housing_applications enable row level security;
+revoke all on public.housing_applications from public,anon,authenticated,service_role;
+'''
+
+# The CLI local stack already provides roles, auth, storage, and extensions;
+# only the historical 0138 containment placeholder is missing there.
+LOCAL_STACK_PRELUDE = '''
+create table if not exists public.housing_applications(id bigint primary key);
 alter table public.housing_applications enable row level security;
 revoke all on public.housing_applications from public,anon,authenticated,service_role;
 '''
@@ -252,7 +264,7 @@ def main():
                     help='local-stack already provides auth/storage schemas; skip the synthetic prelude')
     args = ap.parse_args()
 
-    refuse_production(json.dumps(vars(args)), json.dumps(dict(os.environ.get('DEV_BOOTSTRAP_EXTRA', '') and {} or {})))
+    refuse_production(json.dumps(vars(args)), os.environ.get('DEV_BOOTSTRAP_MANIFEST', ''), str(MANIFEST))
 
     print('Running chain guard first…')
     r = subprocess.run(['node', str(ROOT / 'scripts/verify-prepared-chain.mjs')], cwd=ROOT)
@@ -264,8 +276,11 @@ def main():
 
     target_cls = DockerTarget(args.keep) if args.target == 'docker' else LocalStackTarget()
     with target_cls as t:
-        if args.target == 'docker' and not args.skip_prelude:
-            t.sql(PRELUDE, 'synthetic infrastructure prelude')
+        if not args.skip_prelude:
+            if args.target == 'docker':
+                t.sql(PRELUDE, 'synthetic infrastructure prelude')
+            else:
+                t.sql(LOCAL_STACK_PRELUDE, 'local-stack 0138 containment placeholder')
         for e in entries:
             apply_entry(t, e)
         fp = t.query(FINGERPRINT_SQL)
