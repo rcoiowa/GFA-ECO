@@ -155,7 +155,9 @@ and either registered or removed — your call; (b) the §7 residual token model
 standing items (attestation approver record; `recoveryos-staging` rename; Circle retention
 owner) — unaffected by C3.
 
-> **Hosted CI on C3-A head `f88699e`:** _pending — appended by amendment._
+> **Hosted CI on C3-A head `f88699e4…` (appended 2026-11-12): run 43168784715 — SUCCESS**,
+> including all 21 guard negative proofs (the seven new cloud-target refusals among them)
+> and the full existing gate set.
 
 **Recommendation: GO for Phase C3-B** — capacity verified at $0, the cloud path is
 implemented and provably inert until your identity artifact exists, every refusal has an
