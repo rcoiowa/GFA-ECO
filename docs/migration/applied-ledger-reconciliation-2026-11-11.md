@@ -37,8 +37,12 @@ applied status; the in-file text is historical.
 ## 3. Anomalies and gaps carried forward
 
 1. **`0123`** appears in `supabase/live-drift/cqcx/` marked APPLIED but has no row in the
-   live `schema_migrations` ledger — likely applied outside ledger tracking (Class E). One
-   authorized read of the affected objects would settle it. No action taken.
+   live `schema_migrations` ledger. **RESOLVED (C2-V, 2026-11-12): documented by design,
+   not an anomaly** — the file's own header and
+   `docs/migration/ejwrh-intake-drift-reconciliation.md` §7 record it as a TYPE D live
+   configuration change (grants-only hardening on `public.housing_applications`), executed
+   2026-08-14T09:29:28Z under explicit authorization via the authorized gate, deliberately
+   outside the migration ledger. No further action needed.
 2. **Housing follow-through SQL out of tree** (see mapping) — reconciling it was not in this
    increment's authorization. Proposed for the next authorization: merge or copy the exact
    applied `activation.sql` (hash-verified against PR #41's ACTIVATION.md record) into the

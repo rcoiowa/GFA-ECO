@@ -16,6 +16,26 @@ container).
   **Phase C4 work — directory reserved; nothing here yet.** The existing
   `.github/workflows/live-gate.yml` MODE A/B harness is the base to extend.
 
+## Real CLI local stack (validated 2026-11-12, CLI 3.1.0)
+
+First start is two-phase, because PostgREST's configured `recoveryos` schema
+does not exist until the bootstrap runs:
+
+```bash
+supabase start -x studio,imgproxy,realtime,logflare,vector,supavisor,postgres-meta --ignore-health-check
+python3 scripts/bootstrap-dev.py --target local-stack --with-fixtures --include-activations
+docker restart supabase_rest_recoveryos-local   # reload schema cache → healthy
+```
+
+`[db.migrations] enabled = false` in `supabase/config.toml` is a hard
+requirement: CLI 3.x otherwise auto-applies `supabase/migrations/` (the
+retired YKY history) on start. Never run `supabase db reset`.
+
+Known limitation in TLS-intercepting sandboxes: the Edge runtime cannot fetch
+remote modules (esm.sh) through an intercepting proxy, so local function
+serving needs a normal network (or the deployed DEV project); function logic
+is covered by `deno check` + the receiver tests in CI either way.
+
 ## Rules
 
 - Synthetic fixture personas only (`supabase/dev-fixtures/`); no production
