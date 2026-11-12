@@ -83,7 +83,8 @@
     "supabase/launch/migrations/20261005093045_accountless_application_conversion.sql": "9bfd7406b4da4c40caa8ce66a2d42249e0a06b73fc3f78acc502b2db8e9ee3b6",
     "supabase/launch/prepared/0147_classification_authorization_isolation.prepared.sql": "2913d1446d37fddd32d7a9400aff0b28b79d6f6251cc8cfa3a4a3e1e07636182",
     "supabase/launch/prepared/0148_view_and_function_exposure_hardening.prepared.sql": "ce763899ed3c47a87d1fd62dc35c05f362bb2cf8f19832c47635482c8e4a8093",
-    "supabase/launch/prepared/0149_shared_intake_workflow.prepared.sql": "f701f2714e0ebc6c70ab111d486c48559edc65d6e0965170b2243f75467def27"
+    "supabase/launch/prepared/0149_shared_intake_workflow.prepared.sql": "f701f2714e0ebc6c70ab111d486c48559edc65d6e0965170b2243f75467def27",
+    "supabase/launch/migrations/20261020010443_housing_follow_through_private_admin_collaboration.sql": "697799f8204f13aca062d94f9d1129efc8fcc17a645c460d493fed61eb11d9b4"
   },
   "newMigrations": {}
 }
