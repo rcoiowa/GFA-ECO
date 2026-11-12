@@ -77,6 +77,16 @@ const APPLIED_DOWNSTREAM = {
     'dca60784aa998e1f3b2876a96f8363efad23fc891c2624b97b5293f2cde443ce',
   'supabase/launch/migrations/20261005071446_circle_meeting_logging.sql':
     '0a9c40b4651333a40f824b301887d2a5912b6d1b8afe2823deb25736a823d142',
+  // Housing follow-through + owner-private admin collaboration. Live ledger
+  // 20261020010443 (applied 2026-10-20; ledger read verified 2026-11-11).
+  // Adopted 2026-11-12 (Phase C2) from PR #42's branch where ACTIVATION.md
+  // records it as 'approved and applied' with verified results (Class D);
+  // approver attribution pending executive confirmation — this pin records
+  // provenance, not authorization. The file embeds the verbatim applied SQL
+  // (original artifact SHA-256 7bd74792…a439) after a provenance header;
+  // the pin below is the adopted file's own hash.
+  'supabase/launch/migrations/20261020010443_housing_follow_through_private_admin_collaboration.sql':
+    '697799f8204f13aca062d94f9d1129efc8fcc17a645c460d493fed61eb11d9b4',
 };
 
 // Approved rev-2 pins (exact filename -> SHA-256), frozen at RC assembly.
