@@ -39,7 +39,9 @@ passed this workflow as run 43124838514 on `3761d644`, differing from `b6c9d0a0`
 the merge-commit metadata). The recorded final conclusion is appended below when the run
 completes.
 
-> **Final conclusion:** _pending — appended by amendment._
+> **Final conclusion (appended 2026-11-12): run 43156559753 completed — SUCCESS.**
+> The reconciled `main` is CI-green. Every verification item in the Phase B2-C
+> authorization (steps 1–9) is now confirmed.
 
 ## 4. What this changes — and what it does not
 
