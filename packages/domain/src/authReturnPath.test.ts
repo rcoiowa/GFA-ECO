@@ -13,6 +13,8 @@ describe('auth navigation privacy boundary', () => {
     '/home%00',
     '/home/../home',
     '/unknown',
+    '/residences/applications/intake/123',
+    '/residences/applications/other',
     null,
     {},
   ])('rejects %s', (value) => {
@@ -22,14 +24,28 @@ describe('auth navigation privacy boundary', () => {
     '/my-housing',
     '/my-housing/documents',
     '/my-housing/consent',
+    '/residence/documents',
+    '/staff/document-review',
+    '/residences/applications/intake',
     '/vrcc/resources',
     '/admin/access',
   ])('keeps %s without authorizing it', (path) => {
     expect(safeAuthReturnPath(path)).toBe(path);
   });
+  it('strips every query and fragment from the exact intake queue return path', () => {
+    expect(
+      safeAuthReturnPath('/residences/applications/intake?application=42&tab=documents#main'),
+    ).toBe('/residences/applications/intake');
+    expect(
+      safeAuthReturnPath('/residences/applications/intake?next=https://evil.test#private'),
+    ).toBe('/residences/applications/intake');
+  });
   it('keeps published documents but drops assignment and person IDs', () => {
     expect(safeAuthReturnPath('/my-housing/documents/resident_handbook?assignment=42')).toBe(
       '/my-housing/documents/resident_handbook',
+    );
+    expect(safeAuthReturnPath('/staff/document-review?application=42')).toBe(
+      '/staff/document-review',
     );
     expect(safeAuthReturnPath('/staff/messages/123')).toBe('/staff/messages');
   });

@@ -30,5 +30,5 @@ export * from './repositories/admin';
 export * from './repositories/intakeReadiness';
 export * from './repositories/leadsQueue';
 export * from './repositories/circleMeetings';
-
+export * from './repositories/documentReview';
 export * from './repositories/housingFollowThrough';

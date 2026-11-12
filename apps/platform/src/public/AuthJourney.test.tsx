@@ -61,11 +61,29 @@ function mount(entry: string | { pathname: string; state: unknown }) {
           }
         />
         <Route
+          path="/staff/document-review"
+          element={
+            <RequireRole anyOf={['residence_staff']}>
+              <Probe />
+            </RequireRole>
+          }
+        />
+        <Route
           path="/admin/access"
           element={
             <RequireRole anyOf={['administrator']}>
               <Probe />
             </RequireRole>
+          }
+        />
+        <Route
+          path="/residence/documents"
+          element={
+            <RequireAuth>
+              <OnboardingConsentGate>
+                <Probe />
+              </OnboardingConsentGate>
+            </RequireAuth>
           }
         />
         <Route
@@ -75,6 +93,16 @@ function mount(entry: string | { pathname: string; state: unknown }) {
               <OnboardingConsentGate>
                 <Probe />
               </OnboardingConsentGate>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/residences/applications/intake"
+          element={
+            <RequireAuth>
+              <RequireRole anyOf={['residence_staff']}>
+                <Probe />
+              </RequireRole>
             </RequireAuth>
           }
         />
@@ -99,6 +127,20 @@ beforeEach(() => {
   m.missing.mockResolvedValue([]);
 });
 describe('auth destination journeys', () => {
+  it.each(['/my-housing/documents/resident_handbook', '/residence/documents/resident_handbook'])(
+    'preserves document intent through sign-in/register links and successful return: %s',
+    async (destination) => {
+      mount(`/sign-in?next=${encodeURIComponent(destination)}`);
+      expect(screen.getByRole('link', { name: 'Create your account' })).toHaveAttribute(
+        'href',
+        `/register?next=${encodeURIComponent(destination)}`,
+      );
+      fill('Email', 'synthetic@example.test');
+      fill('Password', 'synthetic-passphrase');
+      fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+      expect(await screen.findByTestId('destination')).toHaveTextContent(destination);
+    },
+  );
   it('keeps guarded housing intent through registration, email callback, refresh and sign-in', async () => {
     const first = mount('/my-housing/consent?tab=overview#main');
     fireEvent.click(await screen.findByRole('link', { name: 'Create your account' }));
@@ -196,3 +238,26 @@ describe('auth destination journeys', () => {
     expect(m.missing).toHaveBeenCalledTimes(3);
   });
 });
+
+it.each([true, false])(
+  'restores the exact logged-out intake queue and still checks staff role (authorized=%s)',
+  async (authorized) => {
+    m.signIn.mockImplementation(async () => {
+      m.state.session = { user: { id: 'synthetic' } };
+      m.state.person = { id: 1 };
+      m.state.roles = authorized ? ['residence_staff'] : ['participant'];
+      return { error: null };
+    });
+    mount('/residences/applications/intake?application=42&tab=documents#main');
+    expect(await screen.findByRole('link', { name: 'Create your account' })).toHaveAttribute(
+      'href',
+      '/register?next=%2Fresidences%2Fapplications%2Fintake',
+    );
+    fill('Email', 'synthetic@example.test');
+    fill('Password', 'synthetic-passphrase');
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(await screen.findByTestId('destination')).toHaveTextContent(
+      authorized ? '/residences/applications/intake' : '/not-authorized',
+    );
+  },
+);

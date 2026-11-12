@@ -163,6 +163,7 @@ export async function recordSupervisionCoordination(input: {
  * same pinned version + hash + immutability + readiness effect as e-signing.
  * The paper path never carries an adverse eligibility/readiness consequence.
  */
+/** @deprecated Use recordDocumentPaperReview with exact assignment, statements and witness confirmation. */
 export async function recordPaperSignature(input: {
   personId: number;
   templateKey: string;
@@ -197,6 +198,11 @@ export async function convertApplicationIntake(input: {
 
 /** One readiness checklist item (§9a six-class taxonomy). */
 export interface ReadinessItem {
+  document_version_id?: number;
+  version?: string;
+  content_hash?: string;
+  historical_completed?: boolean;
+  completion_evidence?: 'pending' | 'attested' | 'legacy_recorded';
   key: string;
   label: string;
   class:
@@ -220,7 +226,9 @@ export interface ReadinessItem {
 
 export async function applicationIntakeReadiness(
   applicationId: number,
-): Promise<IntakeRpcResult & { complete?: boolean; items?: ReadinessItem[]; blocking_unmet?: string[] }> {
+): Promise<
+  IntakeRpcResult & { complete?: boolean; items?: ReadinessItem[]; blocking_unmet?: string[] }
+> {
   return callRpc('application_intake_readiness', { p_application_id: applicationId });
 }
 
@@ -282,7 +290,9 @@ export interface MedicationItem {
 export async function listActiveMedicationItems(personId: number): Promise<MedicationItem[]> {
   const { data, error } = await getSupabase()
     .from('residency_medication_items')
-    .select('id, person_id, name, storage_requirement, is_moud, prescriber_on_file, started_at, ended_at')
+    .select(
+      'id, person_id, name, storage_requirement, is_moud, prescriber_on_file, started_at, ended_at',
+    )
     .eq('person_id', personId)
     .is('ended_at', null)
     .order('started_at', { ascending: true });
@@ -292,10 +302,15 @@ export async function listActiveMedicationItems(personId: number): Promise<Medic
 
 /** Staff creates a person/application without creating an auth account. */
 export async function createAccountlessApplicationFromIntake(input: {
-  intakeId: number; firstName: string; lastName: string; confirm: boolean;
+  intakeId: number;
+  firstName: string;
+  lastName: string;
+  confirm: boolean;
 }): Promise<IntakeRpcResult & { application_id?: number; person_id?: number }> {
   return callRpc('create_accountless_application_from_intake', {
-    p_intake_id: input.intakeId, p_first_name: input.firstName,
-    p_last_name: input.lastName, p_confirm: input.confirm,
+    p_intake_id: input.intakeId,
+    p_first_name: input.firstName,
+    p_last_name: input.lastName,
+    p_confirm: input.confirm,
   });
 }

@@ -1,5 +1,12 @@
 # Blockers and Unverified Items — 2026-08-04
 
+> **⚠️ HISTORICAL SNAPSHOT (notice added 2026-11-11).** These were the 2026-08-04 blockers.
+> Most were later resolved or re-scoped (Supabase and Cloudflare read access worked on
+> 2026-11-11; R-01 was superseded by ADR-0014; the vrcc.app answerer question is resolved at
+> the content level). The current unresolved list lives in
+> `docs/discovery/source-of-truth-assessment-2026-11-11.md` §5–§7 and the 2026-11-11
+> reconciliation plan §10.
+
 ## Genuine blockers
 
 | #    | Blocker                                                              | Blocks                                                                                                                                              | Resolution                                                                                                    |

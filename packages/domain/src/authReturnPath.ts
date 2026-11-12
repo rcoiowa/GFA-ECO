@@ -2,6 +2,8 @@
  * Add destinations and finite navigation values here only after privacy review.
  * Unknown query/fragment values are dropped, never copied into auth emails.
  */
+// Union of the deployed (2026-11-04 release) and main destination sets —
+// reconciliation 2026-11-11: nothing live removed, nothing approved dropped.
 const destinations = new Set([
   '/admin',
   '/admin/access',
@@ -52,6 +54,7 @@ const destinations = new Set([
   '/staff/beds',
   '/staff/board',
   '/staff/compliance',
+  '/staff/document-review',
   '/staff/fees',
   '/staff/grievances',
   '/staff/house-ops',
@@ -100,6 +103,7 @@ const documentKeys = new Set([
   'narr_ii_self_assessment',
   'participant_agreement',
   'resident_handbook',
+  'resident_rights',
   'return_to_use_response_policy',
   'screening_policy_consent',
 ]);
@@ -130,6 +134,8 @@ export function safeAuthReturnPath(value: unknown): string | null {
     // Person IDs must not enter auth emails/history. Return to the scoped list to reselect.
     path = `/${record[1]}`;
   } else if (!destinations.has(path)) return null;
+  // Queue notifications carry navigation only, never applicant IDs or view state.
+  if (path === '/residences/applications/intake') return path;
   const query = new URLSearchParams();
   const tab = url.searchParams.get('tab');
   if (tab && tabs.has(tab) && url.searchParams.getAll('tab').length === 1) query.set('tab', tab);

@@ -1,36 +1,18 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@recoveryos/auth';
 import {
-  acknowledgeDocumentAssignment,
   applicationIntakeReadiness,
   ensureMyDocumentAssignments,
   getMyLatestApplication,
-  hasElectronicRecordsConsent,
   listMyDocumentAssignments,
   recordResidenceConsentGrant,
   type AssignmentWithDocument,
   type MyApplication,
 } from '@recoveryos/data-access';
-import { getDocument } from '@recoveryos/residence-content';
-import { Alert, Button, Card, CardTitle, LoadingState, PageHeader, TextField } from '@recoveryos/ui';
-import { MarkdownView } from '../../components/MarkdownView';
+import { Alert, Button, Card, CardTitle, LoadingState, PageHeader } from '@recoveryos/ui';
 
-/**
- * B5A "Getting settled": the participant's intake-stage view. Documents render
- * from THEIR assignment's pinned version (the exact terms they act on — never
- * the latest edition), acknowledgments are one tap, the single signature
- * document takes a typed name, and screening consent is their own one-tap
- * grant. Items that don't apply never render; there are no counts of
- * requirements — just what's theirs to do, why, and who can help.
- */
-
-/** Why each action matters, in one plain sentence. */
-function whyText(a: AssignmentWithDocument): string {
-  if (a.document_version.template.requires_signature)
-    return 'This is an agreement you sign — take your time and ask about anything unclear first.';
-  return 'This just confirms you received and read it — nothing more.';
-}
-
+/** Intake overview. Document actions use the shared, server-enforced review page. */
 export function GettingSettledPage() {
   const { person } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -38,10 +20,6 @@ export function GettingSettledPage() {
   const [application, setApplication] = useState<MyApplication | null>(null);
   const [assignments, setAssignments] = useState<AssignmentWithDocument[]>([]);
   const [screeningConsentMet, setScreeningConsentMet] = useState<boolean | null>(null);
-  const [eConsent, setEConsent] = useState(false);
-  const [paperInfoFor, setPaperInfoFor] = useState<string | null>(null);
-  const [openKey, setOpenKey] = useState<string | null>(null);
-  const [signatureName, setSignatureName] = useState('');
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState(false);
 
@@ -55,11 +33,6 @@ export function GettingSettledPage() {
       if (app && app.status === 'approved') {
         await ensureMyDocumentAssignments();
         setAssignments(await listMyDocumentAssignments(person.id));
-        try {
-          setEConsent(await hasElectronicRecordsConsent(person.id));
-        } catch {
-          setEConsent(false);
-        }
         try {
           const r = await applicationIntakeReadiness(app.id);
           const item = (r.items ?? []).find((i) => i.key === 'screening_consent');
@@ -79,19 +52,12 @@ export function GettingSettledPage() {
     void load();
   }, [load]);
 
-  const pending = useMemo(() => assignments.filter((a) => !a.acknowledged_at), [assignments]);
-  const done = useMemo(() => assignments.filter((a) => a.acknowledged_at), [assignments]);
-
   const act = async (fn: () => Promise<{ ok: boolean; code?: string }>) => {
     setBusy(true);
     setActionError(false);
     try {
       const r = await fn();
       if (!r.ok && r.code !== 'already_acknowledged') setActionError(true);
-      else {
-        setOpenKey(null);
-        setSignatureName('');
-      }
       await load();
     } catch {
       setActionError(true);
@@ -140,219 +106,29 @@ export function GettingSettledPage() {
             You're approved at {application.residence?.name ?? 'your residence'}. {helpLine}
           </Alert>
           {actionError ? (
-            <Alert tone="critical">That didn't save. Try again, or do it on paper with staff.</Alert>
+            <Alert tone="critical">
+              That didn't save. Try again, or do it on paper with staff.
+            </Alert>
           ) : null}
 
-          {assignments.length === 0 ? (
-            <Card data-testid="pending-edition">
-              <CardTitle>Your documents aren't in the app yet</CardTitle>
-              <p className="text-ink-muted">
-                Your house's document set is still being prepared here. Staff will go through
-                everything with you in person, on paper — you're not missing anything, and nothing
-                is waiting on you.
+          <Card
+            data-testid={assignments.length === 0 ? 'pending-edition' : 'document-review-links'}
+          >
+            <CardTitle>Your documents</CardTitle>
+            {assignments.length === 0 ? (
+              <p>
+                No documents are assigned yet. Ask staff to check your application and document set.
               </p>
-            </Card>
-          ) : (
-            <>
-              {pending.length > 0 ? (
-                <Card>
-                  <CardTitle>To look through ({pending.length} left)</CardTitle>
-                  <ul className="flex flex-col gap-3">
-                    {pending.map((a) => {
-                      const t = a.document_version.template;
-                      const summary = getDocument(t.key)?.summary;
-                      const isOpen = openKey === t.key;
-                      return (
-                        <li key={a.id} className="rounded-md border border-line bg-surface-raised p-4">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <span className="font-medium text-ink">{t.name}</span>
-                            <span className="rounded-full bg-attention-50 px-3 py-0.5 text-sm text-attention-700">
-                              {t.requires_signature ? 'To sign' : 'To read'}
-                            </span>
-                          </div>
-                          {summary ? <p className="mt-1 text-sm text-ink-muted">{summary}</p> : null}
-                          <p className="mt-1 text-sm text-ink-faint">{whyText(a)}</p>
-                          {isOpen ? (
-                            <div className="mt-3">
-                              <MarkdownView markdown={a.document_version.body_markdown} />
-                              <p className="mt-3 text-sm text-ink-faint">
-                                Version {a.document_version.version}. Paper copies are always
-                                available from staff.
-                              </p>
-                              {t.requires_signature ? (
-                                <div className="mt-3 flex flex-col gap-3 sm:max-w-md">
-                                  {!eConsent ? (
-                                    <div data-testid="e-consent-step">
-                                      <p className="text-sm font-medium text-ink">
-                                        Before signing electronically
-                                      </p>
-                                      <ul className="mt-1 list-disc pl-5 text-sm text-ink-muted">
-                                        <li>You can sign on paper with staff instead — always.</li>
-                                        <li>
-                                          You can withdraw electronic consent at any time; anything
-                                          already signed stays valid.
-                                        </li>
-                                        <li>
-                                          You can view your signed documents here whenever you
-                                          want, and get a paper copy free any time.
-                                        </li>
-                                      </ul>
-                                      <p className="mt-1 text-sm text-ink-faint">
-                                        The full electronic-records disclosure is Section 13 of
-                                        this agreement.
-                                      </p>
-                                      <Button
-                                        className="mt-2"
-                                        disabled={busy}
-                                        onClick={() =>
-                                          void act(async () => {
-                                            const r = await recordResidenceConsentGrant({
-                                              personId: person!.id,
-                                              typeKey: 'electronic_records',
-                                            });
-                                            if (r.ok || r.code === 'already_granted')
-                                              setEConsent(true);
-                                            return r;
-                                          })
-                                        }
-                                      >
-                                        I agree to use electronic records and signatures
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <>
-                                      <TextField
-                                        label="Type your full name as your signature"
-                                        value={signatureName}
-                                        onChange={(e) => setSignatureName(e.target.value)}
-                                        autoComplete="name"
-                                      />
-                                      <p className="text-sm text-ink-muted">
-                                        Selecting &ldquo;Sign {t.name}&rdquo; is your electronic
-                                        signature and your agreement to be bound by this document.
-                                      </p>
-                                      <Button
-                                        disabled={busy || !signatureName.trim()}
-                                        onClick={() =>
-                                          void act(() =>
-                                            acknowledgeDocumentAssignment({
-                                              assignmentId: a.id,
-                                              signatureName: signatureName.trim(),
-                                            }),
-                                          )
-                                        }
-                                      >
-                                        {busy ? 'Signing…' : `Sign ${t.name}`}
-                                      </Button>
-                                    </>
-                                  )}
-                                  <button
-                                    type="button"
-                                    className="self-start text-sm text-experience-700 underline underline-offset-2"
-                                    onClick={() =>
-                                      setPaperInfoFor(paperInfoFor === t.key ? null : t.key)
-                                    }
-                                  >
-                                    I prefer to sign on paper
-                                  </button>
-                                  {paperInfoFor === t.key ? (
-                                    <Alert tone="info">
-                                      No problem — tell any staff member. They&rsquo;ll print it,
-                                      you sign with them, and they record your paper signature.
-                                      Choosing paper never affects your eligibility, your intake
-                                      progress, or your move-in.
-                                    </Alert>
-                                  ) : null}
-                                </div>
-                              ) : (
-                                <Button
-                                  className="mt-3"
-                                  disabled={busy}
-                                  onClick={() =>
-                                    void act(() =>
-                                      acknowledgeDocumentAssignment({ assignmentId: a.id }),
-                                    )
-                                  }
-                                >
-                                  I've read this
-                                </Button>
-                              )}
-                            </div>
-                          ) : (
-                            <Button
-                              variant="secondary"
-                              className="mt-2"
-                              onClick={() => {
-                                setOpenKey(t.key);
-                                setSignatureName('');
-                              }}
-                            >
-                              {t.requires_signature ? 'Read & sign' : 'Read it'}
-                            </Button>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </Card>
-              ) : (
-                <Alert tone="positive">Your documents are all done — nothing left to sign or read.</Alert>
-              )}
-
-              {done.length > 0 ? (
-                <Card>
-                  <CardTitle>Done</CardTitle>
-                  <p className="mb-2 text-sm text-ink-muted">
-                    Your signed documents stay available here for your whole residency — no
-                    expiration, no restrictions. Open one to read it again or print/save a copy;
-                    staff will print a paper copy free any time you ask.
-                  </p>
-                  <ul className="flex flex-col gap-1">
-                    {done.map((a) => {
-                      const t = a.document_version.template;
-                      const isOpen = openKey === `done:${t.key}`;
-                      return (
-                        <li key={a.id} className="border-b border-line py-1.5 text-sm">
-                          <div className="flex items-center justify-between">
-                            <button
-                              type="button"
-                              className="font-medium text-experience-700 underline underline-offset-2"
-                              onClick={() => setOpenKey(isOpen ? null : `done:${t.key}`)}
-                            >
-                              {t.name}
-                            </button>
-                            <span className="text-ink-muted">
-                              {a.signed_at ? 'Signed' : 'Read'}{' '}
-                              {new Date(a.acknowledged_at as string).toLocaleDateString()}
-                              {a.signature_name ? ` as “${a.signature_name}”` : ''}
-                            </span>
-                          </div>
-                          {isOpen ? (
-                            <div className="mt-2">
-                              <MarkdownView markdown={a.document_version.body_markdown} />
-                              <p className="mt-2 text-sm text-ink-faint">
-                                Version {a.document_version.version}
-                                {a.signed_at
-                                  ? ` · signed ${new Date(a.signed_at).toLocaleString()}`
-                                  : ''}
-                              </p>
-                              <Button
-                                variant="secondary"
-                                className="mt-2"
-                                onClick={() => window.print()}
-                              >
-                                Print or save a copy
-                              </Button>
-                            </div>
-                          ) : null}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </Card>
-              ) : null}
-            </>
-          )}
+            ) : (
+              <p>
+                Open each document to review its exact edition, ask questions, select your
+                statements, and sign when required. Your saved receipts remain available.
+              </p>
+            )}
+            <Link className="mt-3 block underline" to="/my-housing/documents">
+              Open my documents and receipts
+            </Link>
+          </Card>
 
           {screeningConsentMet === false ? (
             <Card data-testid="screening-consent-card">

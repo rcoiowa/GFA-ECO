@@ -1,5 +1,13 @@
 # RecoveryOS Service-Readiness Scorecard
 
+> **⚠️ HISTORICAL SNAPSHOT (notice added 2026-11-11).** This scorecard describes the
+> 2026-08-14/15 gate state. Much of it was overtaken by verified later events: 0122 and the
+> launch line through 0146 (plus 0147–0149) are applied, `residence-intake` is deployed, and
+> the public domains serve the platform (release `4990829e`, verified 2026-11-11). Open items
+> that still stand (e.g. the manual screen-reader pass) are carried in
+> `docs/plans/2026-11-11-gfa-reconciliation-decision-and-release-plan.md`. Current verified
+> state: `docs/operations/recoveryos-canonical-state-2026-11-11.md` (designation pending).
+
 **Date:** 2026-08-14 · **Branch HEAD:** `b1eb4ef` (on `claude/recoveryos-intake-audit-zouh7q`) ·
 **Updated:** 2026-08-15 on `claude/public-support-onboarding-85u07i` — the two Type B repo
 fast-follows from Execution Plan step 2 are **implemented and gate-verified**: `fix(safety):
