@@ -111,7 +111,10 @@ path, residence-scoped staff verified bidirectionally (GH staff see GH rows only
 staff see zero GH rows), no privilege escalation, `test_fixture` classification semantics
 untouched. Fixed DEV-namespace UUIDs documented in the file.
 
-> **Hosted CI on final head `4712f671`:** _pending — appended by amendment._
+> **Hosted CI on final head `4712f671` (appended 2026-11-12): run 43166887135 — SUCCESS**,
+> including the 14 guard negative proofs, the separation guard, both review gates with the
+> adopted migration, the deno checks/receiver tests, and the 80-check document-review suite.
+> The intermediate head `eb593bfd` also ran green (run 43166694407).
 
 ## 8. Unresolved risks
 
