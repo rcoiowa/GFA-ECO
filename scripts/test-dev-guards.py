@@ -79,6 +79,44 @@ m = copy.deepcopy(REAL)
 m['entries'][1]['order'] = m['entries'][0]['order']
 expect('non-increasing order fails closed', run_bootstrap(m), 'strictly increasing')
 
+# 6b. Cloud DEV target (Phase C3-A skeleton): inert and fail-closed until C3-B.
+def run_dev_target(identity: dict | None, env_extra=None):
+    env = dict(os.environ, DEV_BOOTSTRAP_MANIFEST='')
+    env.pop('DEV_BOOTSTRAP_MANIFEST')
+    if identity is None:
+        env['DEV_PROJECT_IDENTITY'] = '/nonexistent/dev-project-identity.json'
+    else:
+        f = tempfile.NamedTemporaryFile('w', suffix='.json', delete=False)
+        json.dump(identity, f)
+        f.close()
+        env['DEV_PROJECT_IDENTITY'] = f.name
+    if env_extra:
+        env.update(env_extra)
+    return subprocess.run([sys.executable, str(BOOTSTRAP), '--target', 'dev-project'],
+                          env=env, cwd=ROOT, capture_output=True, text=True, timeout=120)
+
+expect('dev-project without identity artifact refused', run_dev_target(None),
+       'does not exist')
+expect('dev-project identity naming PRODUCTION refused',
+       run_dev_target({'ref': 'cqcx' + 'vwoukyhxyokfwnjm', 'approved_by': 'x', 'approved_on': 'x'}),
+       'PRODUCTION project')
+expect('dev-project identity naming a retired project refused',
+       run_dev_target({'ref': 'ykykeioydvtxpyreshhs', 'approved_by': 'x', 'approved_on': 'x'}),
+       'retired project')
+expect('dev-project malformed ref refused',
+       run_dev_target({'ref': 'not-a-ref', 'approved_by': 'x', 'approved_on': 'x'}),
+       'malformed')
+expect('dev-project without approval fields refused',
+       run_dev_target({'ref': 'zzzzzzzzzzzzzzzzzzzz'}), 'missing approved_by')
+expect('dev-project without DEV_DB_PASSWORD refused',
+       run_dev_target({'ref': 'zzzzzzzzzzzzzzzzzzzz', 'approved_by': 'x', 'approved_on': 'x'},
+                      env_extra={'DEV_DB_PASSWORD': ''}), 'DEV_DB_PASSWORD')
+
+# The committed identity artifact must NOT exist before Phase C3-B authorizes it.
+ok = not (ROOT / 'scripts' / 'dev-project-identity.json').exists()
+results.append(('identity artifact absent until C3-B', ok))
+print(('PASS' if ok else 'FAIL'), 'identity artifact absent until C3-B')
+
 # 7. Workflow structure: deploy-dev.yml refuses before acting and cannot be retargeted.
 wf = (ROOT / '.github/workflows/deploy-dev.yml').read_text()
 checks = {

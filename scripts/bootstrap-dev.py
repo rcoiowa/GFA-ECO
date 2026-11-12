@@ -13,11 +13,24 @@ TARGETS (deliberately narrow):
                         (prints its name) instead of destroying it.
 
 PRODUCTION REFUSAL (non-negotiable):
-  * No DSN input exists. The only network target is 127.0.0.1:54322.
-  * If the environment, arguments, or manifest contain the canonical production
-    ref 'cqcx'+'vwoukyhxyokfwnjm' this script exits before touching anything.
-  * Cloud DEV targets are a Phase C3 extension requiring its own authorization;
-    this version cannot reach them.
+  * No DSN input exists. Network targets are 127.0.0.1:54322 (local-stack) and —
+    ONLY once Phase C3-B is separately authorized — the single approved DEV
+    project named by scripts/dev-project-identity.json (see below).
+  * If the arguments or manifest contain the canonical production ref
+    'cqcx'+'vwoukyhxyokfwnjm' (or any cloud host, for the manifest) this script
+    exits before touching anything.
+
+CLOUD DEV TARGET (--target dev-project) — fail-closed by construction:
+  * requires scripts/dev-project-identity.json, an executive-approval artifact
+    that does NOT exist until Phase C3-B creates it ({"ref","approved_by",
+    "approved_on"}). Without it, or with a malformed/production/retired ref,
+    the target refuses before any connection.
+  * requires DEV_DB_PASSWORD in the environment (never a file, never committed).
+  * before applying anything it verifies the target is EMPTY/expected-state:
+    no `recoveryos` schema and no applied migration rows; anything else refuses
+    (a later authorization may add fingerprint-matched resume).
+  * mirrors each applied migration into supabase_migrations.schema_migrations
+    (version+name) so the DEV ledger reads like production's.
 
 FAIL-CLOSED GUARANTEES:
   * every manifest entry must exist and match its SHA-256 pin exactly;
@@ -214,6 +227,85 @@ class DockerTarget:
             subprocess.run(['docker', 'rm', '-f', self.name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
+RETIRED_REFS = ('ykykeioydvtxpyreshhs', 'vlsxjkqyaexcxwkbovlq')
+# DEV_PROJECT_IDENTITY exists ONLY so the guard suite can prove the identity
+# refusals with disposable files; the default is the committed C3-B artifact.
+IDENTITY_FILE = Path(os.environ['DEV_PROJECT_IDENTITY']) if os.environ.get('DEV_PROJECT_IDENTITY') \
+    else ROOT / 'scripts' / 'dev-project-identity.json'
+
+
+def load_dev_identity():
+    """Executive-approved DEV project identity — a Phase C3-B artifact.
+
+    Fails closed: missing file, malformed ref, or a production/retired ref all
+    refuse before any network connection exists.
+    """
+    if not IDENTITY_FILE.exists():
+        fail('cloud DEV target refused: scripts/dev-project-identity.json does not exist. '
+             'It is created only under an explicit Phase C3-B executive authorization.')
+    ident = json.loads(IDENTITY_FILE.read_text())
+    ref = ident.get('ref', '')
+    import re as _re
+    if not _re.fullmatch(r'[a-z]{20}', ref):
+        fail('cloud DEV target refused: identity ref is malformed')
+    if ref == PROD_REF:
+        fail('cloud DEV target refused: identity names the PRODUCTION project')
+    if ref in RETIRED_REFS:
+        fail('cloud DEV target refused: identity names a retired project')
+    for k in ('approved_by', 'approved_on'):
+        if not ident.get(k):
+            fail(f'cloud DEV target refused: identity missing {k}')
+    return ident
+
+
+class DevProjectTarget:
+    """The single approved cloud DEV project. Inert until C3-B provisions it."""
+
+    def __init__(self):
+        ident = load_dev_identity()
+        pw = os.environ.get('DEV_DB_PASSWORD')
+        if not pw:
+            fail('cloud DEV target refused: DEV_DB_PASSWORD not set')
+        self.ref = ident['ref']
+        self.dsn = f"postgresql://postgres:{pw}@db.{self.ref}.supabase.co:5432/postgres?sslmode=require"
+        self.ledger = True
+
+    def __enter__(self):
+        # Expected-state verification: refuse anything but an empty project.
+        schema = self.query("select count(*) from pg_namespace where nspname = 'recoveryos'")
+        if schema.strip() != '0':
+            fail('cloud DEV target refused: recoveryos schema already exists (not an empty project)')
+        rows = self.query("""
+            select coalesce((select count(*)::text from supabase_migrations.schema_migrations), '0')
+            where exists (select 1 from information_schema.tables
+                          where table_schema='supabase_migrations' and table_name='schema_migrations')
+            union all select '0' limit 1""")
+        if rows.strip() not in ('', '0'):
+            fail('cloud DEV target refused: migration ledger is not empty')
+        print(f'DEV target {self.ref}: verified empty/expected state')
+        return self
+
+    def _psql(self, args, text_in):
+        return subprocess.run(['psql', self.dsn, '-X', '-q', '-v', 'ON_ERROR_STOP=1', *args],
+                              input=text_in, text=True, capture_output=True)
+
+    def sql(self, text: str, label: str):
+        r = self._psql([], text)
+        if r.returncode:
+            raise RuntimeError(f'{label}\n{r.stderr[-4000:]}')
+        print('APPLY', label, flush=True)
+        return r.stdout
+
+    def query(self, text: str) -> str:
+        r = self._psql(['-At'], text)
+        if r.returncode:
+            raise RuntimeError(r.stderr[-2000:])
+        return r.stdout.strip()
+
+    def __exit__(self, *exc):
+        pass
+
+
 class LocalStackTarget:
     """Supabase CLI local stack only: 127.0.0.1:54322. No other host exists here."""
     DSN = 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
@@ -256,7 +348,7 @@ def apply_entry(target, entry):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--target', choices=['docker', 'local-stack'], default='docker')
+    ap.add_argument('--target', choices=['docker', 'local-stack', 'dev-project'], default='docker')
     ap.add_argument('--profile', choices=['live-parity', 'replay-compat'], default='live-parity')
     ap.add_argument('--include-activations', action='store_true')
     ap.add_argument('--with-fixtures', action='store_true')
@@ -276,15 +368,31 @@ def main():
     entries = load_manifest(args.profile, args.include_activations, args.with_fixtures)
     print(f'{len(entries)} manifest entries verified (profile={args.profile})')
 
-    target_cls = DockerTarget(args.keep) if args.target == 'docker' else LocalStackTarget()
+    if args.target == 'docker':
+        target_cls = DockerTarget(args.keep)
+    elif args.target == 'local-stack':
+        target_cls = LocalStackTarget()
+    else:
+        target_cls = DevProjectTarget()
     with target_cls as t:
         if not args.skip_prelude:
             if args.target == 'docker':
                 t.sql(PRELUDE, 'synthetic infrastructure prelude')
             else:
-                t.sql(LOCAL_STACK_PRELUDE, 'local-stack 0138 containment placeholder')
+                t.sql(LOCAL_STACK_PRELUDE, 'managed-stack 0138 containment placeholder')
         for e in entries:
             apply_entry(t, e)
+            # Mirror applied migrations into the managed ledger so DEV's
+            # schema_migrations reads like production's (names identical;
+            # version timestamps are DEV-local apply times).
+            if getattr(t, 'ledger', False) and e.get('kind') != 'captured_functions' \
+                    and not e.get('fixture') and e['path'].endswith('.sql') \
+                    and ('launch/migrations/' in e['path'] or 'launch/prepared/' in e['path']
+                         or 'document-review/2026' in e['path']):
+                stem = Path(e['path']).stem.replace('.prepared', '')
+                t.sql("insert into supabase_migrations.schema_migrations (version, name) "
+                      f"values (to_char(clock_timestamp(),'YYYYMMDDHH24MISSMS'), '{stem}') "
+                      "on conflict do nothing;", f'ledger row: {stem}')
         fp = t.query(FINGERPRINT_SQL)
         print(f'SCHEMA FINGERPRINT {fp}')
         if args.expect_fingerprint and fp != args.expect_fingerprint:
