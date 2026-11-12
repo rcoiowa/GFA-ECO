@@ -183,7 +183,9 @@ class DockerTarget:
         subprocess.run(['docker', 'run', '-d', '--rm', '--network', 'none', '--tmpfs',
                         '/var/lib/postgresql/data', '-e', 'POSTGRES_HOST_AUTH_METHOD=trust',
                         '--name', self.name, PINNED_IMAGE], check=True, stdout=subprocess.DEVNULL)
-        for _ in range(60):
+        # 120s window: a loaded machine (e.g. the CLI stack running alongside)
+        # can push container startup past 30s — C2-V robustness finding.
+        for _ in range(240):
             if subprocess.run(['docker', 'exec', self.name, 'pg_isready', '-U', 'postgres'],
                               capture_output=True).returncode == 0:
                 return self

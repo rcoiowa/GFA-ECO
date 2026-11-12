@@ -1,8 +1,10 @@
 -- Initial DEV acceptance battery — Phase C2 (2026-11-12).
 -- Runs against a DISPOSABLE bootstrap with DEV fixtures applied
 -- (scripts/test-dev-acceptance.py). Read-only: one transaction, ends ROLLBACK.
--- Impersonation shim: auth.uid() reads test.uid (bootstrap prelude);
--- actors run as `authenticated` via SET LOCAL ROLE, exactly like the P0 suites.
+-- Impersonation: actors run as `authenticated` via SET LOCAL ROLE. The helper
+-- below sets BOTH identity channels so the battery works on the plain-container
+-- shim (auth.uid() reads test.uid) AND the real CLI stack (Supabase's
+-- auth.uid() reads request.jwt.claims/request.jwt.claim.sub).
 --
 -- What it proves (each assertion raises on failure):
 --   A. identity resolution per persona (auth user -> person);
@@ -22,6 +24,13 @@
 \set ON_ERROR_STOP on
 begin;
 
+-- Dual-channel impersonation helper (plain-container shim + real GoTrue uid).
+create or replace function pg_temp.impersonate(u text) returns void language sql as $$
+  select set_config('test.uid', u, true),
+         set_config('request.jwt.claim.sub', u, true),
+         set_config('request.jwt.claims', json_build_object('sub', u, 'role', 'authenticated')::text, true);
+$$;
+
 do $$ begin
   if (select count(*) from recoveryos.people where last_name = 'Devfixture') <> 12 then
     raise exception 'acceptance requires the DEV fixtures (12 personas)';
@@ -29,7 +38,7 @@ do $$ begin
 end $$;
 
 -- ---------- A/B: participant plane ----------
-select set_config('test.uid', '00000000-0000-4000-a000-000000000001', true);
+select pg_temp.impersonate('00000000-0000-4000-a000-000000000001');
 set local role authenticated;
 do $$
 declare pid bigint; n int;
@@ -56,7 +65,7 @@ end $$;
 reset role;
 
 -- ---------- C: revoked/expired persona ----------
-select set_config('test.uid', '00000000-0000-4000-a000-000000000002', true);
+select pg_temp.impersonate('00000000-0000-4000-a000-000000000002');
 set local role authenticated;
 do $$
 declare pid bigint; n int;
@@ -76,7 +85,7 @@ end $$;
 reset role;
 
 -- ---------- D: residence staff scoping ----------
-select set_config('test.uid', '00000000-0000-4000-a000-000000000007', true);
+select pg_temp.impersonate('00000000-0000-4000-a000-000000000007');
 set local role authenticated;
 do $$
 declare n int; scope bigint[];
@@ -90,7 +99,7 @@ begin
 end $$;
 reset role;
 
-select set_config('test.uid', '00000000-0000-4000-a000-000000000008', true);
+select pg_temp.impersonate('00000000-0000-4000-a000-000000000008');
 set local role authenticated;
 do $$
 declare n int; scope bigint[];
@@ -105,7 +114,7 @@ end $$;
 reset role;
 
 -- ---------- E: no privilege escalation through grant_role_assignment ----------
-select set_config('test.uid', '00000000-0000-4000-a000-000000000001', true);
+select pg_temp.impersonate('00000000-0000-4000-a000-000000000001');
 set local role authenticated;
 do $$
 declare res jsonb; target bigint;
