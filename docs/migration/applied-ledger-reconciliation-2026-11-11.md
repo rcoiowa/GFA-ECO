@@ -19,7 +19,7 @@ version-controlled source without changing the functioning production environmen
 | `20260917163627` → `0149_shared_intake_workflow` | `supabase/launch/prepared/0149_….prepared.sql` | same |
 | `20261005071446/092358/093045` (circle ×2, accountless conversion) | `supabase/launch/migrations/20261005*.sql` (hash-pinned in chain guard) | 2026-10-05 decision records |
 | `20261020010443` → `housing_follow_through_private_admin_collaboration` | **NOT in the integration tree** — exists only as `docs/proposals/housing-follow-through/activation.sql` on unmerged PR #42's branch (`release/housing-admin-live-2026-10-20`) | PR #41 records "approved and applied 2026-10-20" (Class D); record to be confirmed |
-| `20261023223104` → `document_review_attestations` | `docs/proposals/document-review/20261023201920_document_review_attestations.sql` — byte-identical to PR #45's declared SHA-256 `9894cacd…` (verified), now hash-pinned by the chain guard | **NOT LOCATED.** Per executive direction (2026-11-11) the apply authorization must be located or reviewed, not presumed. Pinned as *applied, pending authorization review* |
+| `20261023223104` → `document_review_attestations` | `docs/proposals/document-review/20261023201920_document_review_attestations.sql` — byte-identical to PR #45's declared SHA-256 `9894caca…` (verified), now hash-pinned by the chain guard | **NOT LOCATED.** Per executive direction (2026-11-11) the apply authorization must be located or reviewed, not presumed. Pinned as *applied, pending authorization review* |
 
 **Status lines inside the prepared 0147–0149 files** still read "PREPARED ONLY / NOT APPLIED."
 Those artifacts are frozen byte-for-byte by executive-approved SHA-256 pins
