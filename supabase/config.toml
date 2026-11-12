@@ -1,0 +1,89 @@
+# RecoveryOS local development stack (Supabase CLI) — Phase C2, 2026-11-12.
+#
+# ███ HAZARD — READ BEFORE USING THE CLI ███
+# `supabase db reset` (and `supabase migration up`) apply `supabase/migrations/`,
+# which in THIS repository is the RETIRED YKY dev-project history and must never
+# be applied anywhere (supabase/README.md). The canonical schema is built ONLY by
+#   python3 scripts/bootstrap-dev.py --target local-stack
+# which applies the hash-pinned live-parity manifest
+# (scripts/dev-bootstrap-manifest.json). Use `supabase start` / `supabase stop`;
+# never `db reset`. CI guard: scripts/check-env-separation.mjs.
+#
+# This stack is LOCAL AND DISPOSABLE. It holds synthetic data only. It has no
+# production credentials and must never be pointed at CQCX.
+
+project_id = "recoveryos-local"
+
+[api]
+enabled = true
+port = 54321
+# Mirror live PostgREST exposure (launch 0010).
+schemas = ["public", "graphql_public", "recoveryos"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+# C2-V validation finding: CLI 3.x AUTO-APPLIES supabase/migrations/ on
+# `supabase start` — which in this repository is the RETIRED YKY history and
+# crashed the stack at a YKY-only migration. Disabling automatic migrations is
+# therefore a hard requirement, not a convenience: the canonical schema comes
+# ONLY from scripts/bootstrap-dev.py (hash-pinned live-parity manifest).
+[db.migrations]
+enabled = false
+
+[studio]
+enabled = true
+port = 54323
+
+# Local mail capture (Mailpit) — nothing leaves the machine.
+# (CLI >= 3.x renamed [inbucket] to [local_smtp]; C2-V validation finding.)
+[local_smtp]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173/sign-in", "http://localhost:5173/reset-password"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+# Local only: skip confirmation emails so journeys run unattended; Inbucket
+# still captures everything sent. Production Auth config is managed in the
+# dashboard and is NOT represented by this file.
+enable_confirmations = false
+
+[edge_runtime]
+enabled = true
+policy = "oneshot"
+
+# verify_jwt flags mirror the live inventory (verified 2026-11-11).
+[functions.grace]
+verify_jwt = true
+[functions.grace-judge]
+verify_jwt = true
+[functions.grace-coaching-canary]
+verify_jwt = true
+[functions.create-meeting]
+verify_jwt = true
+[functions.lead-intake]
+verify_jwt = false
+[functions.residence-intake]
+verify_jwt = false
+[functions.ejwrh]
+verify_jwt = false
+
+[analytics]
+enabled = false

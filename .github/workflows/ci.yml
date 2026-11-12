@@ -30,6 +30,10 @@ jobs:
           python3 scripts/check-language-guide.py
       - name: Enforce canonical backend in deployable source (Phase H guardrail)
         run: node scripts/check-no-retired-ref.mjs
+      - name: Environment separation guard (DEV never CQCX; prod never DEV/test keys)
+        run: node scripts/check-env-separation.mjs
+      - name: DEV guard negative proofs (refusals fire before any action)
+        run: python3 scripts/test-dev-guards.py
       - name: Verify ICARE governance lock (Authority ↔ lock ↔ BARC code)
         run: node scripts/icare-lock-verify.mjs
       - name: ICARE governance regression guard (prohibited behavior)
